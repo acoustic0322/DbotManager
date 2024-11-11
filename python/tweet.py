@@ -45,7 +45,7 @@ def save_tweet_history(account_id, comment_id, tweet_mode, target_tweet_id):
             """
             cursor.execute(sql, (account_id, comment_id, tweet_mode, target_tweet_id, datetime.now()))
             connection.commit()
-            print("ツイート履歴を保存しました。")
+            outputLog("ツイート履歴を保存しました。")
     finally:
         connection.close()        
 
@@ -65,14 +65,13 @@ def get_comment_by_id(comment_id):
         with connection.cursor() as cursor:
             # 認証情報を格納しているテーブルからデータを取得
             sql = "SELECT comment FROM comment_master WHERE id=%s"
-            print("comment_id=",comment_id)
             cursor.execute(sql, (comment_id,))
             result = cursor.fetchone()
     finally:
         connection.close()
 
     if result is None:
-        print("エラー: 指定したコメントIDに対応するレコードが見つかりません。")
+        outputLog("エラー: 指定したコメントIDに対応するレコードが見つかりません。")
         return None
     
     return result["comment"]  # コメントを返す
@@ -89,13 +88,13 @@ def verify_credentials(account_master):
     api = tweepy.API(auth)
     try:
         api.verify_credentials()
-        print("認証成功")
+        outputLog("認証成功")
         return True
     except tweepy.errors.Unauthorized:
-        print("認証エラー")
+        outputLog("認証エラー")
         return False
     except Exception as e:
-        print(f"エラーが発生しました: {e}")
+        outputLog(f"エラーが発生しました: {e}")
         return False
 
 # 認証を確認する関数 (APIオブジェクトを返す)
@@ -109,10 +108,10 @@ def create_api(credentials):
     api = tweepy.API(auth)
     try:
         api.verify_credentials()
-        print("認証成功 (API)")
+        outputLog("認証成功 (API)")
         return api
     except tweepy.errors.Unauthorized:
-        print("認証エラー (API)")
+        outputLog("認証エラー (API)")
         return Nonev
 
 # 認証を確認する関数 (Clientオブジェクトを返す)
@@ -125,12 +124,12 @@ def create_client(credentials):
         bearer_token=credentials['bearer_token']
     )
 
-    print("consumer_key="+credentials['api_key'])
-    print("consumer_secret="+credentials['api_key_secret'])
-    print("access_token="+credentials['access_token'])
-    print("access_token_secret="+credentials['access_token_secret'])
-    print("bearer_token="+credentials['bearer_token'])    
-    print("認証成功 (Client)")
+#    print("consumer_key="+credentials['api_key'])
+#    print("consumer_secret="+credentials['api_key_secret'])
+#    print("access_token="+credentials['access_token'])
+#    print("access_token_secret="+credentials['access_token_secret'])
+#    print("bearer_token="+credentials['bearer_token'])    
+#    print("認証成功 (Client)")
 
     return client
 
@@ -142,11 +141,11 @@ def create_client2(credentials):
         access_token_secret=credentials['access_token_secret']
     )
 
-    print("consumer_key="+credentials['api_key'])
-    print("consumer_secret="+credentials['api_key_secret'])
-    print("access_token="+credentials['access_token'])
-    print("access_token_secret="+credentials['access_token_secret'])
-    print("認証成功 (Client)")
+#    print("consumer_key="+credentials['api_key'])
+#    print("consumer_secret="+credentials['api_key_secret'])
+#    print("access_token="+credentials['access_token'])
+#    print("access_token_secret="+credentials['access_token_secret'])
+#    print("認証成功 (Client)")
 
     return client    
 
@@ -161,10 +160,10 @@ def create_api(credentials):
     api = tweepy.API(auth)
     try:
         api.verify_credentials()
-        print("認証成功 (API)")
+        outputLog("認証成功 (API)")
         return api
     except tweepy.errors.Unauthorized:
-        print("認証エラー (API)")
+        outputLog("認証エラー (API)")
         return None
 
 # コマンドライン引数の解析関数
@@ -192,9 +191,9 @@ def proc_like_tweet_cli(credentials, tweet_id):
         reset_time = int(e.response.headers.get("x-rate-limit-reset"))
         reset_datetime = datetime.fromtimestamp(reset_time)
         wait_time = (reset_datetime - datetime.now()).total_seconds()
-        print(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
+        return f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）"
     except tweepy.errors.TweepyException as e:
-        print(f"いいねエラー: {e}")
+        return f"その他エラー({e})"
 
 
 # ツイートをブックマークに追加する関数
@@ -228,28 +227,35 @@ def proc_create_tweet(credentials ,comment_id):
             text=value
         )
         print(f"https://twitter.com/user/status/{response.data['id']}")   
+
     except tweepy.errors.Forbidden as e:
         if "You are not allowed to create a Tweet with duplicate content." in str(e):
-            print("エラー: 重複ツイートは許可されていません。内容を変更してください。")
+            return outputLog("重複ツイート")
         else:
-            print(f"その他のエラーが発生しました: {e}")    
-        return False
+            return f"その他エラー({e})"
+    return ""  # 空文字列を返すことで成功を示す
 
-    return True
-
+def outputLog(message):
+    # 現在時刻を取得してメッセージに追加
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    full_message = f"[{current_time}] {message}"
+    
+    # 標準出力にメッセージを出力
+    print(full_message)
 
 # コマンドライン引数を解析
-if len(sys.argv) < 4:
-    print("使用方法: python good_tweet3.py account_id=<ID> tweet_id=<TWEET_ID> tweet_mode=<MODE>")
-    sys.exit(1)
+#if len(sys.argv) < 4:
+#    print("使用方法: python good_tweet3.py account_id=<ID> tweet_id=<TWEET_ID> tweet_mode=<MODE>")
+#    sys.exit(1)
 
 args = parse_arguments(sys.argv[1:])
+outputLog(args)
+
 account_id = int(args.get("account_id"))
 tweet_id = args.get("tweet_id")
 tweet_mode = args.get("tweet_mode")
 #tweet_text = args.get("text")
 comment_id = args.get("comment_id")
-print("test comment_id=",comment_id)
 
 # 認証情報を取得
 credentials = get_account_master(account_id)
@@ -269,10 +275,20 @@ if credentials:
                 api = create_api(credentials)
                 result = proc_bookmark_tweet(api, tweet_id)
             else:
-                print(f"サポートされていないtweet_mode: {tweet_mode}")
+                # エラーメッセージを標準エラーに出力
+                print(f"サポートされていないtweet_mode: {tweet_mode}", file=sys.stderr)
+#                print(f"エラーが発生しました: ", file=sys.stderr)
+                # 終了コードを1にして異常終了を示す
+                sys.exit(1)
 
-            if result:
+
+            if result == "":
                 save_tweet_history(account_id, '1' , tweet_mode , tweet_id)
+                sys.exit(0)
+            else:
+                print(f"エラーが発生しました: {result}", file=sys.stderr)
+                sys.exit(1)
 
 else:
-    print(f"ID {credential_id} の認証情報が見つかりませんでした。")
+    print(f"エラーが発生しました: ID {credential_id} の認証情報が見つかりませんでした。", file=sys.stderr)
+    sys.exit(1)

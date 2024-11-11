@@ -6,7 +6,9 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -115,7 +117,7 @@ namespace DbotManager
         #region Button
         private void buttonいいね_Click(object sender, EventArgs e)
         {
-
+            TweetProc(TweetProcTypes.LIKE);
         }
 
         private void buttonブックマーク_Click(object sender, EventArgs e)
@@ -180,6 +182,37 @@ namespace DbotManager
             return 0;
         }
 
+        private string GetTweetId()
+        {
+            string input = textBoxUrlTweetID.Text;
+            string extractedNumber = ExtractNumber(input);
+
+            if (extractedNumber != null)
+            {
+                Console.WriteLine($"Extracted number: {extractedNumber}");
+            }
+            else
+            {
+                Console.WriteLine("No valid number found.");
+            }
+
+            return extractedNumber;
+        }
+
+        private string ExtractNumber(string input)
+        {
+            // URLの場合と単なる数値の場合を考慮
+            Match match = Regex.Match(input, @"(?:status/(\d+)|^(\d+))");
+
+            if (match.Success)
+            {
+                // マッチした部分のうち、最初にキャプチャされたグループ（数値部分）を返す
+                return match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region pythonスクリプト
@@ -189,6 +222,7 @@ namespace DbotManager
             int userId = GetUserId();
             int accountId = GetAccountId();
             int commentId = GetCommentId();
+            string tweetId = GetTweetId();
 
             // Pythonスクリプトのパスを指定
             string pythonScriptPath = @"python\tweet.py";
@@ -197,6 +231,9 @@ namespace DbotManager
             {
                 case TweetProcTypes.TWEET:
                     pythonScriptPath += $" tweet_mode=tweet account_id={accountId} comment_id={commentId}";
+                    break;
+                case TweetProcTypes.LIKE:
+                    pythonScriptPath += $" tweet_mode=like account_id={accountId} tweet_id={tweetId}";
                     break;
             }
 
