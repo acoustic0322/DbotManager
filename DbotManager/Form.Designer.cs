@@ -1,6 +1,6 @@
 ﻿namespace DbotManager
 {
-    partial class MainForm
+    partial class Form
     {
         /// <summary>
         /// 必要なデザイナー変数です。
@@ -37,11 +37,28 @@
             this.buttonいいね = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dataGridViewComment = new System.Windows.Forms.DataGridView();
+            this.CommentMaster_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CommentMaster_UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CommentMaster_AccountId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CommentMaster_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CommentMaster_Enable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.buttonコメント = new System.Windows.Forms.Button();
             this.dataGridViewAccount = new System.Windows.Forms.DataGridView();
+            this.AccountMaster_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_Name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_LoginId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_LoginPass = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_ApiKey = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_ApiKeySecret = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_AccessToken = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_BearerToken = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_RefreshToken = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AccountMaster_Enable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.comboBoxUserMaster = new System.Windows.Forms.ComboBox();
             this.tabPage履歴 = new System.Windows.Forms.TabPage();
             this.dataGridViewTweetHistory = new System.Windows.Forms.DataGridView();
+            this.textBoxLog = new System.Windows.Forms.TextBox();
             this.tabControl.SuspendLayout();
             this.tabPageデバッグ.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -143,12 +160,54 @@
             // 
             // dataGridViewComment
             // 
+            this.dataGridViewComment.AllowUserToAddRows = false;
+            this.dataGridViewComment.AllowUserToDeleteRows = false;
             this.dataGridViewComment.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewComment.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.CommentMaster_Id,
+            this.CommentMaster_UserId,
+            this.CommentMaster_AccountId,
+            this.CommentMaster_Comment,
+            this.CommentMaster_Enable});
             this.dataGridViewComment.Location = new System.Drawing.Point(6, 26);
             this.dataGridViewComment.Name = "dataGridViewComment";
+            this.dataGridViewComment.RowHeadersVisible = false;
             this.dataGridViewComment.RowTemplate.Height = 21;
+            this.dataGridViewComment.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewComment.Size = new System.Drawing.Size(607, 94);
             this.dataGridViewComment.TabIndex = 4;
+            // 
+            // CommentMaster_Id
+            // 
+            this.CommentMaster_Id.DataPropertyName = "Id";
+            this.CommentMaster_Id.HeaderText = "Id";
+            this.CommentMaster_Id.Name = "CommentMaster_Id";
+            // 
+            // CommentMaster_UserId
+            // 
+            this.CommentMaster_UserId.DataPropertyName = "UserId";
+            this.CommentMaster_UserId.HeaderText = "UserId";
+            this.CommentMaster_UserId.Name = "CommentMaster_UserId";
+            // 
+            // CommentMaster_AccountId
+            // 
+            this.CommentMaster_AccountId.DataPropertyName = "AccountId";
+            this.CommentMaster_AccountId.HeaderText = "AccountId";
+            this.CommentMaster_AccountId.Name = "CommentMaster_AccountId";
+            // 
+            // CommentMaster_Comment
+            // 
+            this.CommentMaster_Comment.DataPropertyName = "Comment";
+            this.CommentMaster_Comment.HeaderText = "コメント";
+            this.CommentMaster_Comment.Name = "CommentMaster_Comment";
+            // 
+            // CommentMaster_Enable
+            // 
+            this.CommentMaster_Enable.DataPropertyName = "Enable";
+            this.CommentMaster_Enable.FalseValue = "False";
+            this.CommentMaster_Enable.HeaderText = "有効";
+            this.CommentMaster_Enable.Name = "CommentMaster_Enable";
+            this.CommentMaster_Enable.TrueValue = "True";
             // 
             // buttonコメント
             // 
@@ -159,18 +218,101 @@
             this.buttonコメント.TabIndex = 4;
             this.buttonコメント.Text = "コメント";
             this.buttonコメント.UseVisualStyleBackColor = true;
+            this.buttonコメント.Click += new System.EventHandler(this.buttonコメント_Click);
             // 
             // dataGridViewAccount
             // 
             this.dataGridViewAccount.AllowUserToAddRows = false;
             this.dataGridViewAccount.AllowUserToDeleteRows = false;
             this.dataGridViewAccount.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewAccount.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.AccountMaster_Id,
+            this.AccountMaster_UserId,
+            this.AccountMaster_Name,
+            this.AccountMaster_LoginId,
+            this.AccountMaster_LoginPass,
+            this.AccountMaster_ApiKey,
+            this.AccountMaster_ApiKeySecret,
+            this.AccountMaster_AccessToken,
+            this.AccountMaster_BearerToken,
+            this.AccountMaster_RefreshToken,
+            this.AccountMaster_Enable});
             this.dataGridViewAccount.Location = new System.Drawing.Point(22, 45);
             this.dataGridViewAccount.MultiSelect = false;
             this.dataGridViewAccount.Name = "dataGridViewAccount";
+            this.dataGridViewAccount.RowHeadersVisible = false;
             this.dataGridViewAccount.RowTemplate.Height = 21;
+            this.dataGridViewAccount.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewAccount.Size = new System.Drawing.Size(731, 268);
             this.dataGridViewAccount.TabIndex = 1;
+            // 
+            // AccountMaster_Id
+            // 
+            this.AccountMaster_Id.DataPropertyName = "Id";
+            this.AccountMaster_Id.HeaderText = "Id";
+            this.AccountMaster_Id.Name = "AccountMaster_Id";
+            // 
+            // AccountMaster_UserId
+            // 
+            this.AccountMaster_UserId.DataPropertyName = "UserId";
+            this.AccountMaster_UserId.HeaderText = "UserId";
+            this.AccountMaster_UserId.Name = "AccountMaster_UserId";
+            // 
+            // AccountMaster_Name
+            // 
+            this.AccountMaster_Name.DataPropertyName = "Name";
+            this.AccountMaster_Name.HeaderText = "Name";
+            this.AccountMaster_Name.Name = "AccountMaster_Name";
+            // 
+            // AccountMaster_LoginId
+            // 
+            this.AccountMaster_LoginId.DataPropertyName = "LoginId";
+            this.AccountMaster_LoginId.HeaderText = "ログインID";
+            this.AccountMaster_LoginId.Name = "AccountMaster_LoginId";
+            // 
+            // AccountMaster_LoginPass
+            // 
+            this.AccountMaster_LoginPass.DataPropertyName = "LoginPass";
+            this.AccountMaster_LoginPass.HeaderText = "ログインパス";
+            this.AccountMaster_LoginPass.Name = "AccountMaster_LoginPass";
+            // 
+            // AccountMaster_ApiKey
+            // 
+            this.AccountMaster_ApiKey.DataPropertyName = "ApiKey";
+            this.AccountMaster_ApiKey.HeaderText = "ApiKey";
+            this.AccountMaster_ApiKey.Name = "AccountMaster_ApiKey";
+            // 
+            // AccountMaster_ApiKeySecret
+            // 
+            this.AccountMaster_ApiKeySecret.DataPropertyName = "ApiKeySecret";
+            this.AccountMaster_ApiKeySecret.HeaderText = "ApiKeySecret";
+            this.AccountMaster_ApiKeySecret.Name = "AccountMaster_ApiKeySecret";
+            // 
+            // AccountMaster_AccessToken
+            // 
+            this.AccountMaster_AccessToken.DataPropertyName = "AccessToken";
+            this.AccountMaster_AccessToken.HeaderText = "AccessToken";
+            this.AccountMaster_AccessToken.Name = "AccountMaster_AccessToken";
+            // 
+            // AccountMaster_BearerToken
+            // 
+            this.AccountMaster_BearerToken.DataPropertyName = "BearerToken";
+            this.AccountMaster_BearerToken.HeaderText = "BearerToken";
+            this.AccountMaster_BearerToken.Name = "AccountMaster_BearerToken";
+            // 
+            // AccountMaster_RefreshToken
+            // 
+            this.AccountMaster_RefreshToken.DataPropertyName = "RefreshToken";
+            this.AccountMaster_RefreshToken.HeaderText = "RefreshToken";
+            this.AccountMaster_RefreshToken.Name = "AccountMaster_RefreshToken";
+            // 
+            // AccountMaster_Enable
+            // 
+            this.AccountMaster_Enable.DataPropertyName = "Enable";
+            this.AccountMaster_Enable.FalseValue = "False";
+            this.AccountMaster_Enable.HeaderText = "有効";
+            this.AccountMaster_Enable.Name = "AccountMaster_Enable";
+            this.AccountMaster_Enable.TrueValue = "True";
             // 
             // comboBoxUserMaster
             // 
@@ -189,7 +331,7 @@
             this.tabPage履歴.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage履歴.Name = "tabPage履歴";
             this.tabPage履歴.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPage履歴.Size = new System.Drawing.Size(645, 642);
+            this.tabPage履歴.Size = new System.Drawing.Size(760, 642);
             this.tabPage履歴.TabIndex = 1;
             this.tabPage履歴.Text = "履歴";
             this.tabPage履歴.UseVisualStyleBackColor = true;
@@ -203,15 +345,24 @@
             this.dataGridViewTweetHistory.Size = new System.Drawing.Size(631, 626);
             this.dataGridViewTweetHistory.TabIndex = 0;
             // 
-            // MainForm
+            // textBoxLog
+            // 
+            this.textBoxLog.Location = new System.Drawing.Point(798, 42);
+            this.textBoxLog.Multiline = true;
+            this.textBoxLog.Name = "textBoxLog";
+            this.textBoxLog.Size = new System.Drawing.Size(606, 642);
+            this.textBoxLog.TabIndex = 1;
+            // 
+            // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(794, 712);
+            this.ClientSize = new System.Drawing.Size(1416, 712);
+            this.Controls.Add(this.textBoxLog);
             this.Controls.Add(this.tabControl);
             this.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Name = "MainForm";
+            this.Name = "Form";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.tabControl.ResumeLayout(false);
@@ -224,6 +375,7 @@
             this.tabPage履歴.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -243,6 +395,23 @@
         private System.Windows.Forms.TextBox textBoxUrlTweetID;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.DataGridView dataGridViewTweetHistory;
+        private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_Id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_UserId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_AccountId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_Comment;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn CommentMaster_Enable;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_Id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_UserId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_Name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_LoginId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_LoginPass;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ApiKey;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ApiKeySecret;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_AccessToken;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_BearerToken;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_RefreshToken;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Enable;
+        private System.Windows.Forms.TextBox textBoxLog;
     }
 }
 

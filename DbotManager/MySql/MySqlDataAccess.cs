@@ -107,6 +107,48 @@ FROM account_master;";
         return accountMasterList;
     }
 
+    public List<CommentMaster> GetCommentMaster()
+    {
+        List<CommentMaster> commentMasterList = new List<CommentMaster>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"SELECT id,user_id,
+                        account_id,comment,enable 
+                        FROM comment_master;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            CommentMaster commentItem = new CommentMaster()
+                            {
+                                Id = int.Parse(reader["id"].ToString()),
+                                UserId = int.Parse(reader["user_id"].ToString()),
+                                Comment = reader["comment"].ToString(),
+                                Enable = reader["enable"].ToString() == "1",
+                            };
+
+                            commentMasterList.Add(commentItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return commentMasterList;
+    }
+
     public List<UserMaster> GetUserNames()
     {
         List<UserMaster> userList = new List<UserMaster>();
