@@ -347,9 +347,11 @@
             // 
             // textBoxLog
             // 
+            this.textBoxLog.Font = new System.Drawing.Font("Meiryo UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.textBoxLog.Location = new System.Drawing.Point(798, 42);
             this.textBoxLog.Multiline = true;
             this.textBoxLog.Name = "textBoxLog";
+            this.textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.textBoxLog.Size = new System.Drawing.Size(606, 642);
             this.textBoxLog.TabIndex = 1;
             // 

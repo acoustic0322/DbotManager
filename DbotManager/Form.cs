@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
@@ -240,6 +241,8 @@ namespace DbotManager
             // Pythonの実行ファイルのパスを指定（通常 "python" または "python3" でOK）
             string pythonExePath = "python";
 
+            MakeFolder(pythonExePath);
+
             // プロセス情報の設定
             ProcessStartInfo psi = new ProcessStartInfo
             {
@@ -306,6 +309,44 @@ namespace DbotManager
             if (message != null)
             {
                 textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText(message + Environment.NewLine)));
+
+                // ログファイルに書き込み
+                SaveLogToFile(message);
+            }
+        }
+
+        // ログメッセージを日付別のファイルに保存するメソッド
+        private void SaveLogToFile(string message)
+        {
+            // ログフォルダのパスを設定
+            string logDirectory = "log";
+
+            MakeFolder(logDirectory);
+
+            // 日付別のログファイルパスを設定
+            string logFilePath = Path.Combine(logDirectory, $"log_{DateTime.Now:yyyyMMdd}.txt"); // 例: log/log_20241113.txt
+
+            try
+            {
+                // メッセージを追記で日別ログファイルに書き込み
+                using (StreamWriter writer = new StreamWriter(logFilePath, true))
+                {
+                    writer.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // ファイル書き込みに失敗した場合のエラーハンドリング
+                textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText("ログの書き込みに失敗しました: " + ex.Message + Environment.NewLine)));
+            }
+        }
+
+        private void MakeFolder(string folderPath)
+        {
+            // ログフォルダが存在しない場合は作成
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
             }
         }
 
