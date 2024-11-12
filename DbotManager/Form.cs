@@ -49,13 +49,13 @@ namespace DbotManager
         #region FillControls
         private void FillControls()
         {
-            FillControls_TweetHistory();
-            FillControls_UserName();
-            FillControls_AccountMaster();
-            FillControls_CommentMaster();
+            FillDebugControls_TweetHistory();
+            FillDebugControls_UserName();
+            FillDebugControls_AccountMaster();
+            FillDebugControls_CommentMaster();
         }
 
-        private void FillControls_TweetHistory()
+        private void FillDebugControls_TweetHistory()
         {
             List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistory();
 
@@ -69,7 +69,7 @@ namespace DbotManager
             }
         }
 
-        private void FillControls_AccountMaster()
+        private void FillDebugControls_AccountMaster()
         {
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == GetUserId()).ToList();
 
@@ -83,7 +83,7 @@ namespace DbotManager
             }
         }
 
-        private void FillControls_CommentMaster()
+        private void FillDebugControls_CommentMaster()
         {
 
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster().Where(x => x.UserId == GetUserId()).ToList();
@@ -98,7 +98,7 @@ namespace DbotManager
             }
         }
 
-        private void FillControls_UserName()
+        private void FillDebugControls_UserName()
         {
             List<UserMaster> userList = dataAccess.GetUserNames();
 
@@ -116,19 +116,29 @@ namespace DbotManager
         #endregion
 
         #region Button
-        private void buttonいいね_Click(object sender, EventArgs e)
+        private void buttonいいね_Debug_Click(object sender, EventArgs e)
         {
-            TweetProc(TweetProcTypes.LIKE);
+            int userId = GetUserId();
+            int accountId = GetAccountId();
+            int commentId = GetCommentId();
+            string tweetId = GetTweetId();
+
+            TweetProc(TweetProcTypes.LIKE, userId, accountId, commentId, tweetId);
         }
 
-        private void buttonブックマーク_Click(object sender, EventArgs e)
+        private void buttonブックマーク_Debug_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void buttonコメント_Click(object sender, EventArgs e)
+        private void buttonコメント_Debug_Click(object sender, EventArgs e)
         {
-            TweetProc(TweetProcTypes.TWEET);
+            int userId = GetUserId();
+            int accountId = GetAccountId();
+            int commentId = GetCommentId();
+            string tweetId = GetTweetId();
+
+            TweetProc(TweetProcTypes.TWEET , userId , accountId , commentId , tweetId);
         }
 
         #endregion
@@ -139,8 +149,8 @@ namespace DbotManager
         {
             if (_isLoading) return;
 
-            FillControls_AccountMaster();
-            FillControls_CommentMaster();
+            FillDebugControls_AccountMaster();
+            FillDebugControls_CommentMaster();
         }
         #endregion
 
@@ -185,7 +195,7 @@ namespace DbotManager
 
         private string GetTweetId()
         {
-            string input = textBoxUrlTweetID.Text;
+            string input = textBoxUrlTweetID_Debug.Text;
             string extractedNumber = ExtractNumber(input);
 
             if (extractedNumber != null)
@@ -218,12 +228,9 @@ namespace DbotManager
 
         #region pythonスクリプト
 
-        private void TweetProc(TweetProcTypes tweetProcType)
+        private void TweetProc(TweetProcTypes tweetProcType, int userId , int accountId , int commentId , string tweetId)
         {
-            int userId = GetUserId();
-            int accountId = GetAccountId();
-            int commentId = GetCommentId();
-            string tweetId = GetTweetId();
+
 
             // Pythonスクリプトのパスを指定
             string pythonScriptPath = @"python\tweet.py";
@@ -350,7 +357,20 @@ namespace DbotManager
             }
         }
 
+        private void buttonいいねリスト作成_Click(object sender, EventArgs e)
+        {
+            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster().ToList();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistory();
+
+            int 件数 = 0;
+            if(radioButtonいいね件数100.Checked)
+            {
+
+            }
+        }
+
         #endregion
+
 
     }
 }
