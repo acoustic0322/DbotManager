@@ -111,6 +111,7 @@
     <Compile Include="Table\CommentMaster.cs" />
     <Compile Include="Table\TweetHistory.cs" />
     <Compile Include="Table\UserMaster.cs" />
+    <Compile Include="TweetTask.cs" />
     <EmbeddedResource Include="Form.resx">
       <DependentUpon>Form.cs</DependentUpon>
     </EmbeddedResource>

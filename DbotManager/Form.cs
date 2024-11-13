@@ -18,9 +18,15 @@ namespace DbotManager
 {
     public partial class Form : System.Windows.Forms.Form
     {
+        TweetTask _tweetTask;
         private MySqlDataAccess dataAccess;
 
         private bool _isLoading = true;
+
+        private string dbMachineName = "localhost";
+        private string dbUser = "d_bot";
+        private string dbRoot = "root";
+        private string dbPass = "abcd1234";
 
         private enum TweetProcTypes
         {
@@ -34,11 +40,14 @@ namespace DbotManager
             InitializeComponent();
 
             // MySQLデータアクセスの初期化
-            dataAccess = new MySqlDataAccess("localhost", "d_bot", "root", "abcd1234");
+            dataAccess = new MySqlDataAccess(dbMachineName, dbUser, dbRoot, dbPass);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            MakeFolder("python");
+            _tweetTask = new TweetTask(AppendLog, dbMachineName, dbUser, dbRoot, dbPass);
+
             FillControls();
             _isLoading = false;
         }
@@ -57,7 +66,7 @@ namespace DbotManager
 
         private void FillDebugControls_TweetHistory()
         {
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistory();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView();
 
             if (tweetHistoryList != null)
             {
@@ -128,7 +137,12 @@ namespace DbotManager
 
         private void buttonブックマーク_Debug_Click(object sender, EventArgs e)
         {
+            int userId = GetUserId();
+            int accountId = GetAccountId();
+            int commentId = GetCommentId();
+            string tweetId = GetTweetId();
 
+            TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, commentId, tweetId);
         }
 
         private void buttonコメント_Debug_Click(object sender, EventArgs e)
@@ -138,7 +152,7 @@ namespace DbotManager
             int commentId = GetCommentId();
             string tweetId = GetTweetId();
 
-            TweetProc(TweetProcTypes.TWEET , userId , accountId , commentId , tweetId);
+            TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, tweetId);
         }
 
         #endregion
@@ -228,20 +242,23 @@ namespace DbotManager
 
         #region pythonスクリプト
 
-        private void TweetProc(TweetProcTypes tweetProcType, int userId , int accountId , int commentId , string tweetId)
+        private void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)
         {
 
 
             // Pythonスクリプトのパスを指定
             string pythonScriptPath = @"python\tweet.py";
 
-            switch(tweetProcType)
+            switch (tweetProcType)
             {
                 case TweetProcTypes.TWEET:
                     pythonScriptPath += $" tweet_mode=tweet account_id={accountId} comment_id={commentId}";
                     break;
                 case TweetProcTypes.LIKE:
                     pythonScriptPath += $" tweet_mode=like account_id={accountId} tweet_id={tweetId}";
+                    break;
+                case TweetProcTypes.BOOKMARK:
+                    pythonScriptPath += $" tweet_mode=bookmark account_id={accountId} tweet_id={tweetId}";
                     break;
             }
 
@@ -281,33 +298,8 @@ namespace DbotManager
                     process.Kill(); // 必要に応じてプロセスを強制終了
                 }
 
-//                process.WaitForExit();
+                //                process.WaitForExit();
             }
-
-            /*
-            // プロセスの実行
-            using (Process process = new Process { StartInfo = psi })
-            {
-
-
-
-                process.Start();
-
-                // 標準出力の取得
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
-
-                process.WaitForExit();
-
-                // 結果の表示
-                Console.WriteLine("Output:\n" + output);
-                if (!string.IsNullOrEmpty(error))
-                {
-                    Console.WriteLine("Error:\n" + error);
-                }
-            }
-            */
-
         }
 
         // TextBoxにログを表示するメソッド
@@ -315,11 +307,22 @@ namespace DbotManager
         {
             if (message != null)
             {
+                textBoxLog.Invoke((MethodInvoker)(() =>
+                    textBoxLog.AppendText(message + Environment.NewLine)
+                ));
+
+                // 必要に応じてログファイルにも書き込む
+                SaveLogToFile(message);
+            }
+            /*
+            if (message != null)
+            {
                 textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText(message + Environment.NewLine)));
 
                 // ログファイルに書き込み
                 SaveLogToFile(message);
             }
+            */
         }
 
         // ログメッセージを日付別のファイルに保存するメソッド
@@ -359,14 +362,20 @@ namespace DbotManager
 
         private void buttonいいねリスト作成_Click(object sender, EventArgs e)
         {
-            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster().ToList();
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistory();
+            if (radioButtonいいね件数50.Checked) _tweetTask.件数 = 50;
+            else if (radioButtonいいね件数100.Checked) _tweetTask.件数 = 100;
+            else if (radioButtonいいね件数200.Checked) _tweetTask.件数 = 200;
+            else _tweetTask.件数 = int.Parse(textBoxいいね件数.Text);
 
-            int 件数 = 0;
-            if(radioButtonいいね件数100.Checked)
-            {
+            _tweetTask.TargetTweetID = GetTweetId();
+            _tweetTask.InitAccountList();
+            dataGridViewいいねリスト.DataSource = _tweetTask.TweetAccountList;
 
-            }
+        }
+
+        private void buttonいいねブックマーク実行_Click(object sender, EventArgs e)
+        {
+            _tweetTask.StartTask();
         }
 
         #endregion
