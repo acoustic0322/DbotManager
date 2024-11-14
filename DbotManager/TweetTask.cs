@@ -59,7 +59,7 @@ namespace DbotManager
             // 過去TargetTweetID宛に処理済みだった場合は省くため、リスト抽出
             List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView()
                 .Where(x => x.TargetTweetID == TargetTweetID 
-                && x.Result == "成功" 
+                && x.Result
                 && x.TweetMode == GetTweetMode(TweetProcType))
                 .ToList();
             List<string> skipAccountIdList = tweetHistoryList.Select(x => x.AccountId).Distinct().ToList();
