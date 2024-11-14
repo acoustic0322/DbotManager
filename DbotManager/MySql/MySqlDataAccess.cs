@@ -15,7 +15,7 @@ public class MySqlDataAccess
         connectionString = $"Server={server};Database={database};Uid={user};Pwd={password};charset=utf8mb4;";
     }
 
-    public List<TweetHistory> GetTweetHistory()
+    public List<TweetHistory> GetTweetHistoryView()
     {
         List<TweetHistory> tweetHistoryList = new List<TweetHistory>();
 
@@ -25,7 +25,7 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = "SELECT user_name, account_name, tweet_mode, comment, updatetime FROM tweet_history_view;";
+                string query = "SELECT user_name, account_id, account_name, comment, tweet_mode, target_tweet_id, result, error_log ,updatetime FROM tweet_history_view;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -35,9 +35,13 @@ public class MySqlDataAccess
                             TweetHistory tweetHistory = new TweetHistory
                             {
                                 UserName = reader["user_name"].ToString(),
+                                AccountId = reader["account_id"].ToString(),
                                 AccountName = reader["account_name"].ToString(),
-                                TweetMode = reader["tweet_mode"].ToString(),
                                 Comment = reader["comment"].ToString(),
+                                TweetMode = reader["tweet_mode"].ToString(),
+                                TargetTweetID = reader["target_tweet_id"].ToString(),
+                                Result = reader["result"].ToString() == "1",
+                                ErrorLog = reader["error_log"].ToString(),
                                 UpdateTime = Convert.ToDateTime(reader["updatetime"])
                             };
 

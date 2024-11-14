@@ -89,6 +89,8 @@ def verify_credentials(account_master):
     auth = tweepy.OAuth1UserHandler(
         'KvW6WlyCmfyCBMRPhzvsQx2pW',#account_master['api_key'],
         'q2HZ3vQd3IX3chkwvO74Nhi4NFUDCvL0yuOrEkMGjnibnle44z',#account_master['api_key_secret'],
+#        'SBd4tiZXE2w65cquDEWHLuqHi',#'KvW6WlyCmfyCBMRPhzvsQx2pW',#account_master['api_key'],
+#        'K7f1EfMmPkRWXCQYz4HREbPrvunTk4h3ymZtG1RoMwZcBfBUYC',#'q2HZ3vQd3IX3chkwvO74Nhi4NFUDCvL0yuOrEkMGjnibnle44z',#account_master['api_key_secret'],
         '1737035338269458432-aRxFxngxyewfin23MonoY32nbq3ilM',#account_master['access_token'],
         'lJ4ETUbQTokCv7U0b84rpUoa9peescsaUTPWNlIP5Ea33'#account_master['access_token_secret']
     )
@@ -256,6 +258,9 @@ def outputLog(message):
 #    print("使用方法: python good_tweet3.py account_id=<ID> tweet_id=<TWEET_ID> tweet_mode=<MODE>")
 #    sys.exit(1)
 
+verify_credentials(1)
+
+
 args = parse_arguments(sys.argv[1:])
 outputLog(args)
 
@@ -264,6 +269,7 @@ tweet_id = args.get("tweet_id")
 tweet_mode = args.get("tweet_mode")
 #tweet_text = args.get("text")
 comment_id = args.get("comment_id")
+
 
 # 認証情報を取得
 credentials = get_account_master(account_id)
