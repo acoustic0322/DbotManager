@@ -40,27 +40,55 @@ def refresh_access_token(client_id, client_secret, refresh_token):
     
     return response_json.get('access_token'), response_json.get('refresh_token')
 
+#args = sys.argv
 
-# # Twitter Developer Portalから取得したキーを設定
+#if len(args) < 3:
+#    sys.exit()
+
+# ファイルのパスを指定
+#file_path = os.path.join(args[2],'key.txt')  # ここに実際のファイルパスを指定します
+
+# ファイルを開いて内容を読み込み、行ごとに配列に格納
+#with open(file_path, 'r', encoding='utf-8') as file:  # UTF-8エンコーディングを使用
+#    lines = [line.strip() for line in file.readlines()]  # 行ごとに読み込み、リストに格納
+
+#if len(lines) < 8:
+#    sys.exit()
+
+
 ck = "SBd4tiZXE2w65cquDEWHLuqHi"
 cs = "K7f1EfMmPkRWXCQYz4HREbPrvunTk4h3ymZtG1RoMwZcBfBUYC"
-at = "1730390380116627456-Xe51uSHfnVr5YcwqBH7rDG3T44Trry"
-ats = "rEa5y4BgUFgZdDxzAQRSsj2pqm0KsWN0WvkRkx9Dey3Fp"
-bearer_token = "Ri1BZTJSLVZRdjk5OTZDV1hWaDIwcC1kdDNoRDUyNExaZGg1SjhLeEFsV19yOjE3MjE2OTA4MzYzMTU6MToxOmF0OjE"
-
-refresh_token = "Sk1pTmdQNHpYZHBJMGpLRFpTTjRITjlQeHFWUlA1c0NRS1hqRnpOTjB4NDN4OjE3MzE2MTM0MTAxNDc6MTowOmFjOjE"
+at = "880773299885625344-ydL3qpYkcOKmz4sats2Y08bgsm17up1"
+ats = "R0KNblcAaGuxZNfqszFUDZ4Zgkn5fJm9K2KYBOcjcebnL"
+bearer_token = "QlhlcFZLdHJOc3RYUUwxaFMyTDhiRlR6RFN6b01TVERPRGIyX1AxQVBTY1M2OjE3MzE1NjM4NTg0NjY6MTowOmF0OjE"
+refresh_token = "aFd2M2VmaFM0RTR4Qm4tNVYySGw4UE5uY1V4aHgtUXdSbjJSRlNjWldRYjVjOjE3MzE1NjM4NTg0NjY6MToxOnJ0OjE"
 client_id = "S0o0T2dOU3ZESDByR0ZTcW9vcE86MTpjaQ"
 client_secret = "is6iQmgF4k29fEQiKX8TzEXGlThSg9Wo3pPt4Eu5UM6nB3QgBR"
-#client_id = "YUZDcUhJclBPWmNTSTlSOFNSYUs6MTpjaQ"
-#client_secret = "IMX3NPYqOY7mrmKdskHnKrmfbxkic9BmflBCAtU-lWDGzkkH5w"
 
-#https://twitter.com/i/oauth2/authorize?response_type=code&client_id=YUZDcUhJclBPWmNTSTlSOFNSYUs6MTpjaQ&redirect_uri=https://x.com&scope=tweet.read%20users.read%20tweet.write%20bookmark.read%20bookmark.write%20offline.access&state=state&code_challenge=challenge&code_challenge_method=plain
-#Sk1pTmdQNHpYZHBJMGpLRFpTTjRITjlQeHFWUlA1c0NRS1hqRnpOTjB4NDN4OjE3MzE2MTM0MTAxNDc6MTowOmFjOjE
+bearer_token = "OHFDX1FrR1dRMDBqRk9JOVdvNHJqUkszYmtUNjdSNHk0c0ZydGlnQ3I2bWVuOjE3MzE2MTQwMzQ4Mzg6MToxOmF0OjE"
+refresh_token = "Z0hJT3ZBYS1Hd3dKMTFPZmZObzJVaUlobnpRSTdNenV5MUtwVjVxTDU5c2VBOjE3MzE2MTQwMzQ4Mzg6MToxOnJ0OjE"
 
+
+# # Twitter Developer Portalから取得したキーを設定
+#ck = lines[0]
+#cs = lines[1]
+#at = lines[2]
+#ats = lines[3]
+#bearer_token = lines[4]
+#refresh_token = lines[5]
+#client_id = lines[6]
+#client_secret = lines[7]
 
 # ツイートのID
-tweet_id = "1856523237208797221"  # ここに対象のツイートのIDを入力してください
+tweet_id = "1856811778942120181"#args[1]  # ここに対象のツイートのIDを入力してください
 
+#proxy_url = args[3]
+#if proxy_url!="":
+#    # プロキシ設定がある場合のみ設定
+#    proxies = {
+#        "http": proxy_url,
+#        "https": proxy_url
+#    }
 
 try:
     client = tweepy.Client(bearer_token=bearer_token, consumer_key=ck, consumer_secret=cs, access_token=at, access_token_secret=ats)
@@ -68,8 +96,6 @@ try:
 #        client.session.proxies = proxies
     client.bookmark(tweet_id=tweet_id)
 except:
-    print("bookmark exce")
-
     try:
         new_bearer_token,new_refresh_token = refresh_access_token(client_id,client_secret,refresh_token)
         print("new_bearer_token=",new_bearer_token)
