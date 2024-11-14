@@ -52,7 +52,7 @@
             this.buttonいいねリスト作成 = new System.Windows.Forms.Button();
             this.checkBox_15分以内に履歴のある無料アカウントを除外する = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.textBoxいいね件数 = new System.Windows.Forms.TextBox();
             this.radioButtonいいね件数50 = new System.Windows.Forms.RadioButton();
             this.radioButtonいいね件数その他 = new System.Windows.Forms.RadioButton();
             this.radioButtonいいね件数100 = new System.Windows.Forms.RadioButton();
@@ -135,6 +135,7 @@
             this.buttonいいねブックマーク実行.TabIndex = 3;
             this.buttonいいねブックマーク実行.Text = "実行";
             this.buttonいいねブックマーク実行.UseVisualStyleBackColor = true;
+            this.buttonいいねブックマーク実行.Click += new System.EventHandler(this.buttonいいねブックマーク実行_Click);
             // 
             // dataGridViewいいねリスト
             // 
@@ -275,6 +276,7 @@
             // radioButtonいいね
             // 
             this.radioButtonいいね.AutoSize = true;
+            this.radioButtonいいね.Checked = true;
             this.radioButtonいいね.Location = new System.Drawing.Point(6, 26);
             this.radioButtonいいね.Name = "radioButtonいいね";
             this.radioButtonいいね.Size = new System.Drawing.Size(64, 23);
@@ -318,7 +320,7 @@
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.textBox1);
+            this.groupBox4.Controls.Add(this.textBoxいいね件数);
             this.groupBox4.Controls.Add(this.radioButtonいいね件数50);
             this.groupBox4.Controls.Add(this.radioButtonいいね件数その他);
             this.groupBox4.Controls.Add(this.radioButtonいいね件数100);
@@ -330,16 +332,17 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "件数設定";
             // 
-            // textBox1
+            // textBoxいいね件数
             // 
-            this.textBox1.Location = new System.Drawing.Point(242, 25);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(92, 27);
-            this.textBox1.TabIndex = 1;
+            this.textBoxいいね件数.Location = new System.Drawing.Point(242, 25);
+            this.textBoxいいね件数.Name = "textBoxいいね件数";
+            this.textBoxいいね件数.Size = new System.Drawing.Size(92, 27);
+            this.textBoxいいね件数.TabIndex = 1;
             // 
             // radioButtonいいね件数50
             // 
             this.radioButtonいいね件数50.AutoSize = true;
+            this.radioButtonいいね件数50.Checked = true;
             this.radioButtonいいね件数50.Location = new System.Drawing.Point(6, 26);
             this.radioButtonいいね件数50.Name = "radioButtonいいね件数50";
             this.radioButtonいいね件数50.Size = new System.Drawing.Size(60, 23);
@@ -732,7 +735,7 @@
         private System.Windows.Forms.Button buttonいいねリスト作成;
         private System.Windows.Forms.CheckBox checkBox_15分以内に履歴のある無料アカウントを除外する;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox textBoxいいね件数;
         private System.Windows.Forms.RadioButton radioButtonいいね件数50;
         private System.Windows.Forms.RadioButton radioButtonいいね件数その他;
         private System.Windows.Forms.RadioButton radioButtonいいね件数100;

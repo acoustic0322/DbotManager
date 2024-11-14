@@ -45,7 +45,8 @@ namespace DbotManager
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            _tweetTask = new TweetTask(dbMachineName, dbUser, dbRoot, dbPass);
+            MakeFolder("python");
+            _tweetTask = new TweetTask(AppendLog, dbMachineName, dbUser, dbRoot, dbPass);
 
             FillControls();
             _isLoading = false;
@@ -299,31 +300,6 @@ namespace DbotManager
 
                 //                process.WaitForExit();
             }
-
-            /*
-            // プロセスの実行
-            using (Process process = new Process { StartInfo = psi })
-            {
-
-
-
-                process.Start();
-
-                // 標準出力の取得
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
-
-                process.WaitForExit();
-
-                // 結果の表示
-                Console.WriteLine("Output:\n" + output);
-                if (!string.IsNullOrEmpty(error))
-                {
-                    Console.WriteLine("Error:\n" + error);
-                }
-            }
-            */
-
         }
 
         // TextBoxにログを表示するメソッド
@@ -331,11 +307,22 @@ namespace DbotManager
         {
             if (message != null)
             {
+                textBoxLog.Invoke((MethodInvoker)(() =>
+                    textBoxLog.AppendText(message + Environment.NewLine)
+                ));
+
+                // 必要に応じてログファイルにも書き込む
+                SaveLogToFile(message);
+            }
+            /*
+            if (message != null)
+            {
                 textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText(message + Environment.NewLine)));
 
                 // ログファイルに書き込み
                 SaveLogToFile(message);
             }
+            */
         }
 
         // ログメッセージを日付別のファイルに保存するメソッド
@@ -378,12 +365,17 @@ namespace DbotManager
             if (radioButtonいいね件数50.Checked) _tweetTask.件数 = 50;
             else if (radioButtonいいね件数100.Checked) _tweetTask.件数 = 100;
             else if (radioButtonいいね件数200.Checked) _tweetTask.件数 = 200;
+            else _tweetTask.件数 = int.Parse(textBoxいいね件数.Text);
 
             _tweetTask.TargetTweetID = GetTweetId();
             _tweetTask.InitAccountList();
-
             dataGridViewいいねリスト.DataSource = _tweetTask.TweetAccountList;
 
+        }
+
+        private void buttonいいねブックマーク実行_Click(object sender, EventArgs e)
+        {
+            _tweetTask.StartTask();
         }
 
         #endregion
