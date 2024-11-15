@@ -1,0 +1,173 @@
+﻿<Window x:Class="Twitterリプライ等自動化_API.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Twitterリプライ等自動化_API"
+        mc:Ignorable="d"
+        Title="20240824-Twitterリプライ等自動化_API" Height="896" Width="1495" Closed="Window_Closed" FontFamily="Meiryo" FontSize="14" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1279*"/>
+            <ColumnDefinition Width="216*"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="開始" Content="開始" HorizontalAlignment="Left" Height="30" Margin="23,10,0,0" VerticalAlignment="Top" Width="96" PreviewMouseDown="開始_PreviewMouseDown"/>
+        <RadioButton x:Name="リプライラジオボタン" Content="リプライ" HorizontalAlignment="Left" Height="30" Margin="236,58,0,0" VerticalAlignment="Top" Width="96" VerticalContentAlignment="Center" GroupName="モード選択" IsChecked="True"/>
+        <RadioButton x:Name="単純投稿ラジオボタン" Content="単純投稿" HorizontalAlignment="Left" Height="30" Margin="26,58,0,0" VerticalAlignment="Top" Width="96" VerticalContentAlignment="Center" GroupName="モード選択" IsChecked="True"/>
+        <Button x:Name="アカウント追加" Content="プロファイル追加" HorizontalAlignment="Left" Margin="25,239,0,0" Width="148" Click="アカウント追加_Click" Height="35" VerticalAlignment="Top"/>
+        <DataGrid x:Name="アカウント毎の設定" Margin="24,336,45,22" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserSortColumns="False" IsReadOnly="True" AutoGenerateColumns="False" RowHeight="80" FrozenColumnCount="1" Grid.ColumnSpan="2">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="手動キー更新">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button x:Name="手動キー更新" Click="手動キー更新_Click" Content="更新" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="実行確認">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding 実行確認, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="プロファイル名" Binding="{Binding アカウント名}"/>
+                <DataGridTemplateColumn Header="コメント※通常の改行で複数設定、【改行】で文字列改行">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding コメント, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="画像※フォルダでランダム">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding 画像, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MouseDoubleClick="画像選択_MouseDoubleClick" Cursor="Hand"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="動画※フォルダでランダム">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding 動画, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MouseDoubleClick="動画選択_MouseDoubleClick" Cursor="Hand"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="監視アカウント※改行で複数設定">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding 監視アカウント, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="予約投稿時間※改行で複数設定 00:00">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding 予約投稿時間, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="メモ">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding メモ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalScrollBarVisibility="Auto"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="カスタマーキー" Visibility="Hidden">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding カスタマーキー, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="カスタマーシークレット" Visibility="Hidden">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding カスタマーシークレット, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="アクセストークン">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding アクセストークン, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="アクセスシークレットトークン">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding アクセストークンシークレット, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="ベアラトークン">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding ベアラトークン, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="リフレッシュトークン">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding リフレッシュトークン, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="クライアントID" Visibility="Hidden">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding クライアントID, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="クライアントシークレットID" Visibility="Hidden">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding クライアントシークレットID, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="プロキシURL">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding プロキシURL, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="DMMID">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding DMMID, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button x:Name="アカウント削除" Content="プロファイル削除" HorizontalAlignment="Left" Margin="24,284,0,0" Width="149" Click="アカウント削除_Click" Height="35" VerticalAlignment="Top"/>
+        <TextBox x:Name="リプライ対象URL" HorizontalAlignment="Left" Margin="695,75,0,0" TextWrapping="Wrap" Width="298" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Height="230" VerticalAlignment="Top"/>
+        <Label x:Name="リプライラベル" Content="" HorizontalAlignment="Left" Height="58" Margin="677,10,0,0" VerticalAlignment="Top" Width="316" VerticalContentAlignment="Bottom"/>
+        <RadioButton x:Name="ブックマークいいねラジオボタン" Content="ブックマーク、いいね、リツイート" HorizontalAlignment="Left" Height="30" Margin="25,131,0,0" VerticalAlignment="Top" Width="277" VerticalContentAlignment="Center" GroupName="モード選択"/>
+        <TextBox x:Name="キー入力" HorizontalAlignment="Left" Margin="1020,146,0,0" TextWrapping="Wrap" Width="336" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Height="159" VerticalAlignment="Top" Visibility="Hidden" Grid.ColumnSpan="2"/>
+        <Label x:Name="キー説明" Content="" HorizontalAlignment="Left" Height="131" Margin="1020,10,0,0" VerticalAlignment="Top" Width="448" VerticalContentAlignment="Bottom" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Visibility="Hidden" Grid.ColumnSpan="2"/>
+        <CheckBox x:Name="いいねcheck" Content="いいね" HorizontalAlignment="Left" Height="24" Margin="23,166,0,0" VerticalAlignment="Top" Width="86" IsChecked="True"/>
+        <CheckBox x:Name="ブックマークcheck" Content="ブックマーク" HorizontalAlignment="Left" Height="24" Margin="114,166,0,0" VerticalAlignment="Top" Width="135" IsChecked="True"/>
+        <CheckBox x:Name="リツイートcheck" Content="リツイート" HorizontalAlignment="Left" Height="24" Margin="254,166,0,0" VerticalAlignment="Top" Width="124" IsChecked="True"/>
+        <Button x:Name="キー保存" Content="キー更新" HorizontalAlignment="Left" Height="32" Margin="94,146,0,0" VerticalAlignment="Top" Width="95" Click="キー保存_Click" IsCancel="True" Grid.Column="1"/>
+        <Button x:Name="キー入手" Content="キー入手" HorizontalAlignment="Left" Height="32" Margin="94,194,0,0" VerticalAlignment="Top" Width="95" Click="キー入手_Click" IsCancel="True" Grid.Column="1"/>
+        <Button x:Name="csvインポート" Content="CSVインポート" HorizontalAlignment="Left" Height="34" Margin="248,285,0,0" VerticalAlignment="Top" Width="130" Click="csvインポート_Click"/>
+        <Button x:Name="専用CSV取得" Content="専用CSV取得" HorizontalAlignment="Left" Height="35" Margin="248,239,0,0" VerticalAlignment="Top" Width="130" Click="専用CSV取得_Click"/>
+        <Button x:Name="csvエクスポート" Content="CSVエクスポート" HorizontalAlignment="Left" Height="34" Margin="383,284,0,0" VerticalAlignment="Top" Width="130" Click="csvエクスポート_Click"/>
+        <RadioButton x:Name="監視ラジオボタン" Content="監視モード" HorizontalAlignment="Left" Height="30" Margin="24,97,0,0" VerticalAlignment="Top" Width="126" VerticalContentAlignment="Center" GroupName="モード選択"/>
+        <RadioButton x:Name="予約投稿ラジオボタン" Content="予約投稿" HorizontalAlignment="Left" Height="30" Margin="127,58,0,0" VerticalAlignment="Top" Width="109" VerticalContentAlignment="Center" GroupName="モード選択"/>
+        <Button x:Name="デフォルトフォルダ参照" Content="デフォルトフォルダ" HorizontalAlignment="Left" Height="30" Margin="191,10,0,0" VerticalAlignment="Top" Width="154" Click="デフォルトフォルダ参照_Click"/>
+        <TextBox x:Name="デフォルトフォルダ" HorizontalAlignment="Left" Height="48" Margin="350,10,0,0" VerticalAlignment="Top" Width="231" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" TextChanged="デフォルトフォルダ_TextChanged"/>
+        <CheckBox x:Name="ファイル削除" Content="投稿後ファイル削除" HorizontalAlignment="Left" Height="24" Margin="25,210,0,0" VerticalAlignment="Top" Width="170"/>
+        <RadioButton x:Name="監視2ラジオボタン" Content="監視モード(toリプ)" HorizontalAlignment="Left" Height="30" Margin="155,97,0,0" VerticalAlignment="Top" Width="161" VerticalContentAlignment="Center" GroupName="モード選択"/>
+        <RadioButton x:Name="モノマネ投稿" Content="モノマネ投稿" HorizontalAlignment="Left" Height="30" Margin="321,97,0,0" VerticalAlignment="Top" Width="161" VerticalContentAlignment="Center" GroupName="モード選択"/>
+        <TextBox x:Name="txtMessages" HorizontalAlignment="Left" Height="226" Margin="1020,75,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="309" Grid.ColumnSpan="2"/>
+        <Button x:Name="中断" Content="中断" HorizontalAlignment="Left" Height="30" Margin="1373,10,0,0" VerticalAlignment="Top" Width="95" Click="中断_Click" Visibility="Hidden"/>
+    </Grid>
+</Window>
