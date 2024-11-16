@@ -20,5 +20,6 @@ namespace DbotManager.Table
         public string BearerToken { get; set; }
         public string RefreshToken { get; set; }
         public bool Enable { get; set; }
+        public bool Paid { get; set; }
     }
 }

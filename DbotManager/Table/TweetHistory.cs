@@ -11,6 +11,7 @@ namespace DbotManager.Table
         public string UserName { get; set; }
         public string AccountId { get; set; }
         public string AccountName { get; set; }
+        public bool Paid { get; set; }
         public string TweetMode { get; set; }
         public string TargetTweetID { get; set; }
         public string Comment { get; set; }

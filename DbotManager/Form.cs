@@ -130,7 +130,7 @@ namespace DbotManager
             int userId = GetUserId();
             int accountId = GetAccountId();
             int commentId = GetCommentId();
-            string tweetId = GetTweetId();
+            string tweetId = GetTweetId(true);
 
             TweetProc(TweetProcTypes.LIKE, userId, accountId, commentId, tweetId);
         }
@@ -140,7 +140,7 @@ namespace DbotManager
             int userId = GetUserId();
             int accountId = GetAccountId();
             int commentId = GetCommentId();
-            string tweetId = GetTweetId();
+            string tweetId = GetTweetId(true);
 
             TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, commentId, tweetId);
         }
@@ -150,7 +150,7 @@ namespace DbotManager
             int userId = GetUserId();
             int accountId = GetAccountId();
             int commentId = GetCommentId();
-            string tweetId = GetTweetId();
+            string tweetId = GetTweetId(true);
 
             TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, tweetId);
         }
@@ -207,9 +207,9 @@ namespace DbotManager
             return 0;
         }
 
-        private string GetTweetId()
+        private string GetTweetId(bool debug_mode = false)
         {
-            string input = textBoxUrlTweetID_Debug.Text;
+            string input = debug_mode ? textBoxUrlTweetID_Debug.Text : textBoxUrlTweetID.Text;
             string extractedNumber = ExtractNumber(input);
 
             if (extractedNumber != null)
@@ -366,7 +366,7 @@ namespace DbotManager
             else if (radioButtonいいね件数100.Checked) _tweetTask.件数 = 100;
             else if (radioButtonいいね件数200.Checked) _tweetTask.件数 = 200;
             else _tweetTask.件数 = int.Parse(textBoxいいね件数.Text);
-
+            _tweetTask.制限時間以内に履歴ありの無料アカウントを排除 = checkBox_15分以内に履歴のある無料アカウントを除外する.Checked;
             _tweetTask.TargetTweetID = GetTweetId();
             _tweetTask.InitAccountList();
             dataGridViewいいねリスト.DataSource = _tweetTask.TweetAccountList;
@@ -379,5 +379,10 @@ namespace DbotManager
         }
 
         #endregion
+
+        private void buttonクリアlog_Click(object sender, EventArgs e)
+        {
+            textBoxLog.Text = string.Empty;
+        }
     }
 }

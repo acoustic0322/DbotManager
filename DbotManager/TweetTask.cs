@@ -1,4 +1,5 @@
 ﻿using DbotManager.Table;
+using MySqlX.XDevAPI.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -38,6 +39,7 @@ namespace DbotManager
 
         public int 件数 { get; set; }
         public string TargetTweetID { get; set; }
+        public bool 制限時間以内に履歴ありの無料アカウントを排除 { get; set; }
 
         public List<AccountMaster> TweetAccountList { get; set; }
 
@@ -57,21 +59,49 @@ namespace DbotManager
             var dataAccess = new MySqlDataAccess(dbMachineName, dbUser, dbRoot, dbPass);
 
             // 過去TargetTweetID宛に処理済みだった場合は省くため、リスト抽出
+            /*
             List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView()
                 .Where(x => x.TargetTweetID == TargetTweetID 
                 && x.Result
                 && x.TweetMode == GetTweetMode(TweetProcType))
                 .ToList();
-            List<string> skipAccountIdList = tweetHistoryList.Select(x => x.AccountId).Distinct().ToList();
+            */
 
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
-            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster()
-                .Where(x => !skipAccountIdList.Contains(x.Id.ToString()))
+            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster().Where(x => x.Enable).ToList();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView();
+
+            DateTime now = DateTime.Now;
+            List<string> 無料制限中アカウント = new List<string>();
+
+            if(制限時間以内に履歴ありの無料アカウントを排除)
+            {
+                無料制限中アカウント = tweetHistoryList.Where(th => th.Paid == false && (now - th.UpdateTime).TotalMinutes <= 15 && th.Result).Select(x => x.AccountId).ToList();
+            }
+
+            List<string> ツイート済アカウント = new List<string>();
+
+            if(TweetProcType == TweetProcTypes.LIKE || TweetProcType == TweetProcTypes.BOOKMARK)
+            {
+                ツイート済アカウント.AddRange(tweetHistoryList
+                .Where(x => x.TargetTweetID == TargetTweetID
+                && x.Result
+                && x.TweetMode == GetTweetMode(TweetProcType))
+                .Select(x => x.AccountId)
+                .ToList());
+            }
+
+            // AccountMaster から条件に合う AccountId を除外
+            var 除外対象アカウント = 無料制限中アカウント.Concat(ツイート済アカウント).Distinct().ToList();
+
+            // 除外対象アカウントに含まれないアカウントをフィルタリング
+            var フィルタ済アカウントリスト = accountMasterList
+                .Where(am => !除外対象アカウント.Contains(am.Id.ToString()))
                 .ToList();
 
             // リストをシャッフルし、上限数を設定
             var random = new Random();
-            var shuffledList = accountMasterList.OrderBy(x => random.Next()).Take(件数).ToList();
+            var shuffledList = フィルタ済アカウントリスト.OrderBy(x => random.Next()).Take(件数).ToList();
 
             retList.AddRange(shuffledList);
 

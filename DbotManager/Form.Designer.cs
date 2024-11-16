@@ -87,6 +87,7 @@
             this.tabPage履歴 = new System.Windows.Forms.TabPage();
             this.dataGridViewTweetHistory = new System.Windows.Forms.DataGridView();
             this.textBoxLog = new System.Windows.Forms.TextBox();
+            this.buttonクリアlog = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPageいいねブックマーク.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewいいねリスト)).BeginInit();
@@ -660,14 +661,25 @@
             this.textBoxLog.Multiline = true;
             this.textBoxLog.Name = "textBoxLog";
             this.textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxLog.Size = new System.Drawing.Size(606, 642);
+            this.textBoxLog.Size = new System.Drawing.Size(606, 589);
             this.textBoxLog.TabIndex = 1;
+            // 
+            // buttonクリアlog
+            // 
+            this.buttonクリアlog.Location = new System.Drawing.Point(798, 637);
+            this.buttonクリアlog.Name = "buttonクリアlog";
+            this.buttonクリアlog.Size = new System.Drawing.Size(103, 44);
+            this.buttonクリアlog.TabIndex = 4;
+            this.buttonクリアlog.Text = "クリア";
+            this.buttonクリアlog.UseVisualStyleBackColor = true;
+            this.buttonクリアlog.Click += new System.EventHandler(this.buttonクリアlog_Click);
             // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1416, 712);
+            this.Controls.Add(this.buttonクリアlog);
             this.Controls.Add(this.textBoxLog);
             this.Controls.Add(this.tabControl);
             this.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
@@ -758,6 +770,7 @@
         private System.Windows.Forms.RadioButton radioButtonいいね;
         private System.Windows.Forms.RadioButton radioButtonブックマーク;
         private System.Windows.Forms.Button buttonいいねブックマーク実行;
+        private System.Windows.Forms.Button buttonクリアlog;
     }
 }
 
