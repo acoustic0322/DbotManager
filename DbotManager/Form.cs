@@ -384,5 +384,15 @@ namespace DbotManager
         {
             textBoxLog.Text = string.Empty;
         }
+
+        private void buttonDebugGetBearerToken_Click(object sender, EventArgs e)
+        {
+            _tweetTask.StartTask(TweetTask.TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+        }
+
+        private void buttonDebugGetAccessToken_Click(object sender, EventArgs e)
+        {
+            _tweetTask.StartTask(TweetTask.TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+        }
     }
 }

@@ -32,7 +32,9 @@ namespace DbotManager
         {
             LIKE,
             BOOKMARK,
-            TWEET
+            TWEET,
+            GET_ACCESSTOKEN,
+            GET_REFRESHTOKEN
         }
 
         public TweetProcTypes TweetProcType { get; set; }
@@ -49,6 +51,11 @@ namespace DbotManager
             {
                 TweetProc(TweetProcType, item.UserId , item.Id, 1 ,TargetTweetID);
             }
+        }
+
+        public void StartTask(TweetProcTypes tweetProcType,int userId, int accountId, int commentId, string tweetId)
+        {
+            TweetProc(tweetProcType, userId, accountId, commentId, tweetId);
         }
 
         public void InitAccountList()
@@ -122,6 +129,12 @@ namespace DbotManager
                 case TweetProcTypes.TWEET:
                     return "tweet";
                     break;
+                case TweetProcTypes.GET_ACCESSTOKEN:
+                    return "get_access_token";
+                    break;
+                case TweetProcTypes.GET_REFRESHTOKEN:
+                    return "get_refresh_token";
+                    break;
             }
             return string.Empty;
         }
@@ -136,13 +149,19 @@ namespace DbotManager
             switch (tweetProcType)
             {
                 case TweetProcTypes.TWEET:
-                    pythonScriptPath += $" tweet_mode=tweet account_id={accountId} comment_id={commentId}";
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
                     break;
                 case TweetProcTypes.LIKE:
-                    pythonScriptPath += $" tweet_mode=like account_id={accountId} tweet_id={tweetId}";
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
                 case TweetProcTypes.BOOKMARK:
-                    pythonScriptPath += $" tweet_mode=bookmark account_id={accountId} tweet_id={tweetId}";
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
+                    break;
+                case TweetProcTypes.GET_ACCESSTOKEN:
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId}";
+                    break;
+                case TweetProcTypes.GET_REFRESHTOKEN:
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId}";
                     break;
             }
 

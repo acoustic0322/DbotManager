@@ -88,6 +88,8 @@
             this.dataGridViewTweetHistory = new System.Windows.Forms.DataGridView();
             this.textBoxLog = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
+            this.buttonDebugGetAccessToken = new System.Windows.Forms.Button();
+            this.buttonDebugGetBearerToken = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPageいいねブックマーク.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewいいねリスト)).BeginInit();
@@ -386,6 +388,8 @@
             // 
             // tabPageデバッグ
             // 
+            this.tabPageデバッグ.Controls.Add(this.buttonDebugGetBearerToken);
+            this.tabPageデバッグ.Controls.Add(this.buttonDebugGetAccessToken);
             this.tabPageデバッグ.Controls.Add(this.groupBox2);
             this.tabPageデバッグ.Controls.Add(this.groupBox1);
             this.tabPageデバッグ.Controls.Add(this.dataGridViewAccount);
@@ -674,6 +678,28 @@
             this.buttonクリアlog.UseVisualStyleBackColor = true;
             this.buttonクリアlog.Click += new System.EventHandler(this.buttonクリアlog_Click);
             // 
+            // buttonDebugGetAccessToken
+            // 
+            this.buttonDebugGetAccessToken.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDebugGetAccessToken.Location = new System.Drawing.Point(373, 9);
+            this.buttonDebugGetAccessToken.Name = "buttonDebugGetAccessToken";
+            this.buttonDebugGetAccessToken.Size = new System.Drawing.Size(139, 27);
+            this.buttonDebugGetAccessToken.TabIndex = 7;
+            this.buttonDebugGetAccessToken.Text = "AccessToken取得";
+            this.buttonDebugGetAccessToken.UseVisualStyleBackColor = true;
+            this.buttonDebugGetAccessToken.Click += new System.EventHandler(this.buttonDebugGetAccessToken_Click);
+            // 
+            // buttonDebugGetBearerToken
+            // 
+            this.buttonDebugGetBearerToken.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDebugGetBearerToken.Location = new System.Drawing.Point(518, 9);
+            this.buttonDebugGetBearerToken.Name = "buttonDebugGetBearerToken";
+            this.buttonDebugGetBearerToken.Size = new System.Drawing.Size(229, 27);
+            this.buttonDebugGetBearerToken.TabIndex = 8;
+            this.buttonDebugGetBearerToken.Text = "Bearer/RefreshToken取得";
+            this.buttonDebugGetBearerToken.UseVisualStyleBackColor = true;
+            this.buttonDebugGetBearerToken.Click += new System.EventHandler(this.buttonDebugGetBearerToken_Click);
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -771,6 +797,8 @@
         private System.Windows.Forms.RadioButton radioButtonブックマーク;
         private System.Windows.Forms.Button buttonいいねブックマーク実行;
         private System.Windows.Forms.Button buttonクリアlog;
+        private System.Windows.Forms.Button buttonDebugGetBearerToken;
+        private System.Windows.Forms.Button buttonDebugGetAccessToken;
     }
 }
 
