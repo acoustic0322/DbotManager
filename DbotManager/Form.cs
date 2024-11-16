@@ -387,12 +387,24 @@ namespace DbotManager
 
         private void buttonDebugGetBearerToken_Click(object sender, EventArgs e)
         {
-            _tweetTask.StartTask(TweetTask.TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+            string command = _tweetTask.GetTweetCommand(TweetTask.TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+
+            // クリップボードに文字列を設定
+            Clipboard.SetText(command);
+            MessageBox.Show("コマンドプロンプトに貼り付け操作を行って実行してください" , "確認");
+            Process.Start("cmd.exe"); // "/k" はコマンド実行後もウィンドウを開いたままにする
+
         }
 
         private void buttonDebugGetAccessToken_Click(object sender, EventArgs e)
         {
-            _tweetTask.StartTask(TweetTask.TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+            string command = _tweetTask.GetTweetCommand(TweetTask.TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+
+            // クリップボードに文字列を設定
+            Clipboard.SetText(command);
+            MessageBox.Show("コマンドプロンプトに貼り付け操作を行って実行してください", "確認");
+            Process.Start("cmd.exe"); // "/k" はコマンド実行後もウィンドウを開いたままにする
+
         }
     }
 }

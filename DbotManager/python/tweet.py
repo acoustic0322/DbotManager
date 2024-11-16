@@ -7,6 +7,8 @@ import requests
 import time
 from datetime import datetime
 
+import pyperclip
+
 # MySQLから認証情報を取得する関数
 def get_account_master(id):
     # MySQLデータベースに接続
@@ -234,8 +236,6 @@ def proc_like_tweet_cli(credentials, tweet_id):
 # ツイートをブックマークに追加する関数
 def proc_bookmark_tweet5(credentials, tweet_id, account_id):
     try:
-#        client_id = "S0o0T2dOU3ZESDByR0ZTcW9vcE86MTpjaQ"
-#        client_secret = "is6iQmgF4k29fEQiKX8TzEXGlThSg9Wo3pPt4Eu5UM6nB3QgBR"
         client_id = credentials['client_id']
         client_secret = credentials['client_secret']
         refresh_token = credentials['refresh_token']
@@ -328,7 +328,13 @@ def proc_get_access_token(credentials , account_id):
         # 認可URLの取得
         redirect_url = auth.get_authorization_url()
 
-        print(f"右のURLにツイートしたいアカウントでアクセスする: {redirect_url}")
+#        print(f"右のURLにツイートしたいアカウントでアクセスする: {redirect_url}")
+        print(f"以下のURLをクリップボードにコピーしました。ブラウザを開いてアクセスしてください: ")
+        print(f"{redirect_url}")
+
+        # クリップボードにコピー
+        pyperclip.copy(redirect_url)
+
 
         oauth_token = input("oauth_tokenを入力: ")
         oauth_verifier = input("oauth_verifierを入力: ")
@@ -347,7 +353,7 @@ def proc_get_access_token(credentials , account_id):
 
             update_access_token(account_id , access_token , access_token_secret)
 
-            input("保存ができたらエンター")
+            input("アクセストークン,アクセストークンシークレットを更新しました")
             os.system('cls')
         except Exception as e:
             print(f"エラー: {e}")
@@ -376,7 +382,12 @@ def proc_get_refresh_token(credentials , account_id):
 
         # 認証URLを取得する
         authorization_url = auth.get_authorization_url()
-        print(f"右のURLにツイートしたいアカウントでアクセスする: {authorization_url}")
+#        print(f"右のURLにツイートしたいアカウントでアクセスする: {authorization_url}")
+        print(f"以下のURLをクリップボードにコピーしました。ブラウザを開いてアクセスしてください: ")
+        print(f"{authorization_url}")
+
+        # クリップボードにコピー
+        pyperclip.copy(authorization_url)
 
         # 認証後のコールバックURLからコードを取得し、アクセストークンを交換する
         code = input("ブラウザで認証後に表示されるコードを入力してください: ")
@@ -397,7 +408,8 @@ def proc_get_refresh_token(credentials , account_id):
 
             # print(f"Expires In: {expires_in}")
 
-            input("保存ができたらエンター")
+#            input("保存ができたらエンター")
+            input("BearerToken,RefreshTokenを更新しました")
         except Exception as e:
             print(f"エラー: {e}")
             input()

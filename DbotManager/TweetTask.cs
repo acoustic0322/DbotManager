@@ -206,6 +206,36 @@ namespace DbotManager
 
         }
 
+        public string GetTweetCommand(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)
+        {
+
+
+            // Pythonスクリプトのパスを指定
+            string pythonScriptPath = @"python python\tweet.py";
+
+            switch (tweetProcType)
+            {
+                case TweetProcTypes.TWEET:
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
+                    break;
+                case TweetProcTypes.LIKE:
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
+                    break;
+                case TweetProcTypes.BOOKMARK:
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
+                    break;
+                case TweetProcTypes.GET_ACCESSTOKEN:
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId}";
+                    break;
+                case TweetProcTypes.GET_REFRESHTOKEN:
+                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId}";
+                    break;
+            }
+
+            return pythonScriptPath;
+
+        }
+
 
     }
 }
