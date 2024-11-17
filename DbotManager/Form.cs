@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -28,13 +29,6 @@ namespace DbotManager
         private string dbRoot = "root";
         private string dbPass = "abcd1234";
 
-        private enum TweetProcTypes
-        {
-            LIKE,
-            BOOKMARK,
-            TWEET
-        }
-
         public Form()
         {
             InitializeComponent();
@@ -53,9 +47,12 @@ namespace DbotManager
         }
 
         #region DataGridView
+
+
         #endregion
 
         #region FillControls
+
         private void FillControls()
         {
             FillDebugControls_TweetHistory();
@@ -125,6 +122,7 @@ namespace DbotManager
         #endregion
 
         #region Button
+
         private void buttonいいね_Debug_Click(object sender, EventArgs e)
         {
             int userId = GetUserId();
@@ -132,7 +130,7 @@ namespace DbotManager
             int commentId = GetCommentId();
             string tweetId = GetTweetId(true);
 
-            TweetProc(TweetProcTypes.LIKE, userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(TweetProcTypes.LIKE, userId, accountId, commentId, tweetId);
         }
 
         private void buttonブックマーク_Debug_Click(object sender, EventArgs e)
@@ -142,7 +140,17 @@ namespace DbotManager
             int commentId = GetCommentId();
             string tweetId = GetTweetId(true);
 
-            TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, commentId, tweetId);
+        }
+
+        private void buttonリプライ_Debug_Click(object sender, EventArgs e)
+        {
+            int userId = GetUserId();
+            int accountId = GetAccountId();
+            int commentId = GetCommentId();
+            string tweetId = GetTweetId(true);
+
+            _tweetTask.TweetProc(TweetProcTypes.RETWEET, userId, accountId, commentId, tweetId);
         }
 
         private void buttonコメント_Debug_Click(object sender, EventArgs e)
@@ -152,7 +160,63 @@ namespace DbotManager
             int commentId = GetCommentId();
             string tweetId = GetTweetId(true);
 
-            TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, tweetId);
+        }
+
+        private void buttonいいねリスト作成_Click(object sender, EventArgs e)
+        {
+            if (radioButtonいいね件数50.Checked) _tweetTask.件数 = 50;
+            else if (radioButtonいいね件数100.Checked) _tweetTask.件数 = 100;
+            else if (radioButtonいいね件数200.Checked) _tweetTask.件数 = 200;
+            else _tweetTask.件数 = int.Parse(textBoxいいね件数.Text);
+            _tweetTask.制限時間以内に履歴ありの無料アカウントを排除 = checkBox_15分以内に履歴のある無料アカウントを除外する.Checked;
+            _tweetTask.TargetTweetID = GetTweetId();
+
+            _tweetTask.LikeEnable = checkBoxいいね.Checked;
+            _tweetTask.BookmarkEnable = checkBoxブックマーク.Checked;
+            _tweetTask.RetweetEnable = checkBoxリプライ.Checked;
+
+            _tweetTask.InitAccountList();
+            dataGridViewいいねリスト.DataSource = _tweetTask.TweetAccountList;
+
+        }
+
+        private void buttonいいねブックマーク実行_Click(object sender, EventArgs e)
+        {
+            _tweetTask.StartTask();
+        }
+
+
+        private void buttonクリアlog_Click(object sender, EventArgs e)
+        {
+            textBoxRenew.Text = string.Empty;
+        }
+
+        private void buttonDebugGetBearerToken_Click(object sender, EventArgs e)
+        {
+            string command = _tweetTask.GetTweetCommand(TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+
+            // クリップボードに文字列を設定
+            Clipboard.SetText(command);
+            MessageBox.Show("コマンドプロンプトに貼り付け操作を行って実行してください", "確認");
+            Process.Start("cmd.exe"); // "/k" はコマンド実行後もウィンドウを開いたままにする
+
+        }
+
+        private void buttonDebugGetAccessToken_Click(object sender, EventArgs e)
+        {
+            string command = _tweetTask.GetTweetCommand(TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+
+            // クリップボードに文字列を設定
+            Clipboard.SetText(command);
+            MessageBox.Show("コマンドプロンプトに貼り付け操作を行って実行してください", "確認");
+            Process.Start("cmd.exe"); // "/k" はコマンド実行後もウィンドウを開いたままにする
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            FillControls();
         }
 
         #endregion
@@ -240,75 +304,15 @@ namespace DbotManager
 
         #endregion
 
-        #region pythonスクリプト
-
-        private void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)
-        {
-
-
-            // Pythonスクリプトのパスを指定
-            string pythonScriptPath = @"python\tweet.py";
-
-            switch (tweetProcType)
-            {
-                case TweetProcTypes.TWEET:
-                    pythonScriptPath += $" tweet_mode=tweet account_id={accountId} comment_id={commentId}";
-                    break;
-                case TweetProcTypes.LIKE:
-                    pythonScriptPath += $" tweet_mode=like account_id={accountId} tweet_id={tweetId}";
-                    break;
-                case TweetProcTypes.BOOKMARK:
-                    pythonScriptPath += $" tweet_mode=bookmark account_id={accountId} tweet_id={tweetId}";
-                    break;
-            }
-
-            // Pythonの実行ファイルのパスを指定（通常 "python" または "python3" でOK）
-            string pythonExePath = "python";
-
-            MakeFolder(pythonExePath);
-
-            // プロセス情報の設定
-            ProcessStartInfo psi = new ProcessStartInfo
-            {
-                FileName = pythonExePath,
-                Arguments = pythonScriptPath,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using (Process process = new Process())
-            {
-                process.StartInfo = psi;
-
-                // Pythonの標準出力と標準エラーを取得して、TextBoxに出力
-                process.OutputDataReceived += (s, ea) => AppendLog(ea.Data);
-                process.ErrorDataReceived += (s, ea) => AppendLog("ERROR: " + ea.Data);
-
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                // タイムアウトを設定して待機（例えば5秒）
-                bool exited = process.WaitForExit(5000);
-                if (!exited)
-                {
-                    AppendLog("タイムアウト: プロセスが5秒以内に終了しませんでした");
-                    process.Kill(); // 必要に応じてプロセスを強制終了
-                }
-
-                //                process.WaitForExit();
-            }
-        }
+        #region ファイル処理関連
 
         // TextBoxにログを表示するメソッド
         private void AppendLog(string message)
         {
             if (message != null)
             {
-                textBoxLog.Invoke((MethodInvoker)(() =>
-                    textBoxLog.AppendText(message + Environment.NewLine)
+                textBoxRenew.Invoke((MethodInvoker)(() =>
+                    textBoxRenew.AppendText(message + Environment.NewLine)
                 ));
 
                 // 必要に応じてログファイルにも書き込む
@@ -347,7 +351,7 @@ namespace DbotManager
             catch (Exception ex)
             {
                 // ファイル書き込みに失敗した場合のエラーハンドリング
-                textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText("ログの書き込みに失敗しました: " + ex.Message + Environment.NewLine)));
+                textBoxRenew.Invoke((MethodInvoker)(() => textBoxRenew.AppendText("ログの書き込みに失敗しました: " + ex.Message + Environment.NewLine)));
             }
         }
 
@@ -360,51 +364,10 @@ namespace DbotManager
             }
         }
 
-        private void buttonいいねリスト作成_Click(object sender, EventArgs e)
-        {
-            if (radioButtonいいね件数50.Checked) _tweetTask.件数 = 50;
-            else if (radioButtonいいね件数100.Checked) _tweetTask.件数 = 100;
-            else if (radioButtonいいね件数200.Checked) _tweetTask.件数 = 200;
-            else _tweetTask.件数 = int.Parse(textBoxいいね件数.Text);
-            _tweetTask.制限時間以内に履歴ありの無料アカウントを排除 = checkBox_15分以内に履歴のある無料アカウントを除外する.Checked;
-            _tweetTask.TargetTweetID = GetTweetId();
-            _tweetTask.InitAccountList();
-            dataGridViewいいねリスト.DataSource = _tweetTask.TweetAccountList;
 
-        }
-
-        private void buttonいいねブックマーク実行_Click(object sender, EventArgs e)
-        {
-            _tweetTask.StartTask();
-        }
 
         #endregion
 
-        private void buttonクリアlog_Click(object sender, EventArgs e)
-        {
-            textBoxLog.Text = string.Empty;
-        }
 
-        private void buttonDebugGetBearerToken_Click(object sender, EventArgs e)
-        {
-            string command = _tweetTask.GetTweetCommand(TweetTask.TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
-
-            // クリップボードに文字列を設定
-            Clipboard.SetText(command);
-            MessageBox.Show("コマンドプロンプトに貼り付け操作を行って実行してください" , "確認");
-            Process.Start("cmd.exe"); // "/k" はコマンド実行後もウィンドウを開いたままにする
-
-        }
-
-        private void buttonDebugGetAccessToken_Click(object sender, EventArgs e)
-        {
-            string command = _tweetTask.GetTweetCommand(TweetTask.TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
-
-            // クリップボードに文字列を設定
-            Clipboard.SetText(command);
-            MessageBox.Show("コマンドプロンプトに貼り付け操作を行って実行してください", "確認");
-            Process.Start("cmd.exe"); // "/k" はコマンド実行後もウィンドウを開いたままにする
-
-        }
     }
 }

@@ -233,6 +233,22 @@ def proc_like_tweet_cli(credentials, tweet_id):
     except tweepy.errors.TweepyException as e:
         return outputLog(f"その他エラー({e})")
 
+# ツイートにリプライをする関数
+def proc_retweet(credentials, tweet_id):
+    try:
+        client = create_client(credentials)
+        # 実行したい操作 (例: 特定のツイートにいいねをつける)
+        client.retweet(tweet_id)
+        outputLog("リプライしました")
+    except tweepy.errors.TooManyRequests as e:
+        # レート制限に引っかかった場合
+        reset_time = int(e.response.headers.get("x-rate-limit-reset"))
+        reset_datetime = datetime.fromtimestamp(reset_time)
+        wait_time = (reset_datetime - datetime.now()).total_seconds()
+        return outputLog(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
+    except tweepy.errors.TweepyException as e:
+        return outputLog(f"その他エラー({e})")
+
 # ツイートをブックマークに追加する関数
 def proc_bookmark_tweet5(credentials, tweet_id, account_id):
     try:
@@ -444,15 +460,17 @@ credentials = get_account_master(account_id)
 
 if credentials:
     # 認証を確認
-#    verify_result , verify_message = verify_credentials(credentials)
+    verify_result , verify_message = verify_credentials(credentials)
 
-#    if verify_result:
-    if True:
+    if verify_result:
+#    if True:
         client = create_client(credentials)
         if client:
             error_log = ""
             if tweet_mode == "tweet":
                 error_log = proc_create_tweet(credentials, comment_id)
+            elif tweet_mode == "retweet":
+                error_log = proc_retweet(credentials, tweet_id)
             elif tweet_mode == "like":  #動かない
                 error_log = proc_like_tweet_cli(credentials, tweet_id)
             elif tweet_mode == "bookmark":
@@ -478,8 +496,8 @@ if credentials:
                 save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , False , error_log)
 #                print(f"エラーが発生しました: {result}", file=sys.stderr)
                 sys.exit(1)
-#    else:
-#        save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , False , verify_message)
+    else:
+        save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , False , verify_message)
 
 else:
     outputLog(f"エラーが発生しました: ID {credential_id} の認証情報が見つかりませんでした。", file=sys.stderr)

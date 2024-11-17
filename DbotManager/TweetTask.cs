@@ -10,6 +10,16 @@ using System.Threading.Tasks;
 
 namespace DbotManager
 {
+    public enum TweetProcTypes
+    {
+        LIKE,
+        BOOKMARK,
+        RETWEET,
+        TWEET,
+        GET_ACCESSTOKEN,
+        GET_REFRESHTOKEN
+    }
+
     public class TweetTask
     {
         private readonly Action<string> logAction;
@@ -28,16 +38,13 @@ namespace DbotManager
             this.dbPass = dbPass;
         }
 
-        public enum TweetProcTypes
-        {
-            LIKE,
-            BOOKMARK,
-            TWEET,
-            GET_ACCESSTOKEN,
-            GET_REFRESHTOKEN
-        }
+
 
         public TweetProcTypes TweetProcType { get; set; }
+
+        public bool LikeEnable { get; set; }
+        public bool BookmarkEnable { get; set; }
+        public bool RetweetEnable { get; set; }
 
         public int 件数 { get; set; }
         public string TargetTweetID { get; set; }
@@ -49,13 +56,8 @@ namespace DbotManager
         {
             foreach(var item in TweetAccountList)
             {
-                TweetProc(TweetProcType, item.UserId , item.Id, 1 ,TargetTweetID);
+                TweetProc(item.UserId , item.Id, 1 ,TargetTweetID);
             }
-        }
-
-        public void StartTask(TweetProcTypes tweetProcType,int userId, int accountId, int commentId, string tweetId)
-        {
-            TweetProc(tweetProcType, userId, accountId, commentId, tweetId);
         }
 
         public void InitAccountList()
@@ -88,12 +90,30 @@ namespace DbotManager
 
             List<string> ツイート済アカウント = new List<string>();
 
-            if(TweetProcType == TweetProcTypes.LIKE || TweetProcType == TweetProcTypes.BOOKMARK)
+            if(LikeEnable)
             {
                 ツイート済アカウント.AddRange(tweetHistoryList
                 .Where(x => x.TargetTweetID == TargetTweetID
                 && x.Result
-                && x.TweetMode == GetTweetMode(TweetProcType))
+                && x.TweetMode == GetTweetMode(TweetProcTypes.LIKE))
+                .Select(x => x.AccountId)
+                .ToList());
+            }
+            if (BookmarkEnable)
+            {
+                ツイート済アカウント.AddRange(tweetHistoryList
+                .Where(x => x.TargetTweetID == TargetTweetID
+                && x.Result
+                && x.TweetMode == GetTweetMode(TweetProcTypes.BOOKMARK))
+                .Select(x => x.AccountId)
+                .ToList());
+            }
+            if (RetweetEnable)
+            {
+                ツイート済アカウント.AddRange(tweetHistoryList
+                .Where(x => x.TargetTweetID == TargetTweetID
+                && x.Result
+                && x.TweetMode == GetTweetMode(TweetProcTypes.RETWEET))
                 .Select(x => x.AccountId)
                 .ToList());
             }
@@ -126,6 +146,9 @@ namespace DbotManager
                 case TweetProcTypes.BOOKMARK:
                     return "bookmark";
                     break;
+                case TweetProcTypes.RETWEET:
+                    return "retweet";
+                    break;
                 case TweetProcTypes.TWEET:
                     return "tweet";
                     break;
@@ -139,7 +162,24 @@ namespace DbotManager
             return string.Empty;
         }
 
-        private void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)
+        private void TweetProc(int userId, int accountId, int commentId, string tweetId)
+        {
+            if (LikeEnable)
+            {
+                TweetProc(TweetProcTypes.LIKE, userId, accountId, commentId, tweetId);
+            }
+            if (BookmarkEnable)
+            {
+                TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, commentId, tweetId);
+            }
+            if (RetweetEnable)
+            {
+                TweetProc(TweetProcTypes.RETWEET, userId, accountId, commentId, tweetId);
+            }
+
+        }
+
+        public void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)
         {
 
 
@@ -152,9 +192,8 @@ namespace DbotManager
                     pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
                     break;
                 case TweetProcTypes.LIKE:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
-                    break;
                 case TweetProcTypes.BOOKMARK:
+                case TweetProcTypes.RETWEET:
                     pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
                 case TweetProcTypes.GET_ACCESSTOKEN:
