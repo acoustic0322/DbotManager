@@ -239,6 +239,32 @@ def proc_like_test(credentials, tweet_id):
     except tweepy.errors.TweepyException as e:
         return outputLog(f"その他エラー({e})")
 
+# 認証
+def authenticate_twitter(credentials):
+    auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
+    auth.set_access_token(credentials['access_token'], credentials['access_token_secret']  )
+    api = tweepy.API(auth, wait_on_rate_limit=True)
+    return api
+
+# 認証
+def authenticate_twitter2(credentials):
+    auth = tweepy.OAuthHandler(credentials['client_id'], credentials['client_secret'])
+    auth.set_access_token(credentials['access_token'], credentials['access_token_secret']  )
+    api = tweepy.API(auth, wait_on_rate_limit=True)
+    return api
+
+# 特定のツイートにいいねをする
+def proc_like_test2(credentials, tweet_id):
+    api = authenticate_twitter(credentials)
+    try:
+        api.create_favorite(tweet_id)
+        print(f"ツイートID {tweet_id} にいいねしました！")
+    except tweepy.errors.Forbidden as e:
+        print(f"権限エラー: {e}")
+    except tweepy.errors.HTTPException as e:
+        print(f"HTTPエラー: {e}")
+    except Exception as e:
+        print(f"その他のエラー: {e}")
 
 # ツイートにリプライをする関数
 def proc_retweet(credentials, tweet_id):
@@ -475,7 +501,7 @@ if credentials:
             elif tweet_mode == "retweet":
                 error_log = proc_retweet(credentials, tweet_id)
             elif tweet_mode == "like":  #動かない
-                error_log = proc_like(credentials, tweet_id)
+                error_log = proc_like_test2(credentials, tweet_id)
             elif tweet_mode == "bookmark":
                 error_log = proc_bookmark(credentials, tweet_id, account_id)
             elif tweet_mode == "get_refresh_token":
