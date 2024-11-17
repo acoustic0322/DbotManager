@@ -112,6 +112,8 @@ FROM account_master;";
         return accountMasterList;
     }
 
+    #region CommentMaster
+
     public List<CommentMaster> GetCommentMaster()
     {
         List<CommentMaster> commentMasterList = new List<CommentMaster>();
@@ -153,6 +155,145 @@ FROM account_master;";
 
         return commentMasterList;
     }
+
+    public CommentMaster GetCommentMaster(int commentId)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"SELECT id,user_id,
+                        account_id,comment,enable 
+                        FROM comment_master;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            CommentMaster commentItem = new CommentMaster()
+                            {
+                                Id = int.Parse(reader["id"].ToString()),
+                                UserId = int.Parse(reader["user_id"].ToString()),
+                                Comment = reader["comment"].ToString(),
+                                Enable = reader["enable"].ToString() == "1",
+                            };
+
+                            return commentItem;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+
+        }
+
+        return null;
+    }
+
+    public bool UpdateCommentMaster(CommentMaster commentMaster)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"UPDATE comment_master 
+                             SET user_id = @UserId,
+                                 account_id = @AccountId,
+                                 comment = @Comment,
+                                 whole = @Whole,
+                                 enable = @Enable
+                             WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserId", commentMaster.UserId);
+                    command.Parameters.AddWithValue("@AccountId", commentMaster.AccountId);
+                    command.Parameters.AddWithValue("@Comment", commentMaster.Comment);
+                    command.Parameters.AddWithValue("@Whole", commentMaster.Whole ? 1 : 0);
+                    command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Id", commentMaster.Id);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+        return false;
+    }
+
+    public int InsertCommentMaster(CommentMaster commentMaster)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"INSERT INTO comment_master (user_id, account_id, comment, enable, whole) 
+                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Whole);";
+//                SELECT LAST_INSERT_ID(); ";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserId", commentMaster.UserId);
+                    command.Parameters.AddWithValue("@AccountId", commentMaster.AccountId);
+                    command.Parameters.AddWithValue("@Comment", commentMaster.Comment);
+                    command.Parameters.AddWithValue("@Whole", commentMaster.Comment);
+                    command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
+
+                    int insertedId = Convert.ToInt32(command.ExecuteScalar());
+                    return insertedId;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+        return -1; // エラー時は -1 を返す
+    }
+
+    public bool DeleteCommentMaster(int commentId)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"DELETE FROM comment_master WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", commentId);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+        return false;
+    }
+
+
+    #endregion
 
     public List<UserMaster> GetUserNames()
     {

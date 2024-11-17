@@ -3,10 +3,8 @@ import tweepy
 import pymysql
 import os
 import requests
-
 import time
 from datetime import datetime
-
 import pyperclip
 
 # MySQLから認証情報を取得する関数
@@ -162,31 +160,7 @@ def create_client(credentials):
         access_token_secret=credentials['access_token_secret'],
         bearer_token=credentials['bearer_token']
     )
-
-#    print("consumer_key="+credentials['api_key'])
-#    print("consumer_secret="+credentials['api_key_secret'])
-#    print("access_token="+credentials['access_token'])
-#    print("access_token_secret="+credentials['access_token_secret'])
-#    print("bearer_token="+credentials['bearer_token'])    
-#    print("認証成功 (Client)")
-
     return client
-
-def create_client2(credentials):
-    client = tweepy.Client(
-        consumer_key=credentials['api_key'],
-        consumer_secret=credentials['api_key_secret'],
-        access_token=credentials['access_token'],
-        access_token_secret=credentials['access_token_secret']
-    )
-
-#    print("consumer_key="+credentials['api_key'])
-#    print("consumer_secret="+credentials['api_key_secret'])
-#    print("access_token="+credentials['access_token'])
-#    print("access_token_secret="+credentials['access_token_secret'])
-#    print("認証成功 (Client)")
-
-    return client    
 
 # APIオブジェクトを返す関数 (OAuth 1.0a User Context)
 def create_api(credentials):
@@ -218,7 +192,7 @@ def print_id(text):
     return 
 
 # ツイートにいいねをする関数
-def proc_like_tweet_cli(credentials, tweet_id):
+def proc_like(credentials, tweet_id):
     try:
         client = create_client(credentials)
         # 実行したい操作 (例: 特定のツイートにいいねをつける)
@@ -232,6 +206,39 @@ def proc_like_tweet_cli(credentials, tweet_id):
         return outputLog(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
     except tweepy.errors.TweepyException as e:
         return outputLog(f"その他エラー({e})")
+
+def proc_like_test(credentials, tweet_id):
+    try:
+        client_id = credentials['client_id']
+        client_secret = credentials['client_secret']
+        refresh_token = credentials['refresh_token']
+
+        new_bearer_token,new_refresh_token = refresh_access_token(client_id,client_secret,refresh_token)
+        outputLog(f"new_bearer_token= {new_bearer_token}")
+        outputLog(f"new_refresh_token= {new_refresh_token}")
+        update_refresh_token(account_id, new_bearer_token , new_refresh_token)
+
+        client = tweepy.Client(
+            bearer_token=new_bearer_token,
+            consumer_key=credentials['api_key'],
+            consumer_secret=credentials['api_key_secret'],
+            access_token=credentials['access_token'],
+            access_token_secret=credentials['access_token_secret']             
+        )
+
+#        client = create_client(credentials)
+        # 実行したい操作 (例: 特定のツイートにいいねをつける)
+        client.like(tweet_id)
+        outputLog("いいねをつけました")
+    except tweepy.errors.TooManyRequests as e:
+        # レート制限に引っかかった場合
+        reset_time = int(e.response.headers.get("x-rate-limit-reset"))
+        reset_datetime = datetime.fromtimestamp(reset_time)
+        wait_time = (reset_datetime - datetime.now()).total_seconds()
+        return outputLog(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
+    except tweepy.errors.TweepyException as e:
+        return outputLog(f"その他エラー({e})")
+
 
 # ツイートにリプライをする関数
 def proc_retweet(credentials, tweet_id):
@@ -250,7 +257,7 @@ def proc_retweet(credentials, tweet_id):
         return outputLog(f"その他エラー({e})")
 
 # ツイートをブックマークに追加する関数
-def proc_bookmark_tweet5(credentials, tweet_id, account_id):
+def proc_bookmark(credentials, tweet_id, account_id):
     try:
         client_id = credentials['client_id']
         client_secret = credentials['client_secret']
@@ -312,7 +319,7 @@ def refresh_access_token(client_id, client_secret, refresh_token):
     return response_json.get('access_token'), response_json.get('refresh_token')
 
 
-def proc_create_tweet(credentials ,comment_id):
+def proc_tweet(credentials ,comment_id):
 
     try:
 
@@ -441,10 +448,7 @@ def outputLog(message):
     # 標準出力にメッセージを出力
     print(full_message)
 
-# コマンドライン引数を解析
-#if len(sys.argv) < 4:
-#    print("使用方法: python good_tweet3.py account_id=<ID> tweet_id=<TWEET_ID> tweet_mode=<MODE>")
-#    sys.exit(1)
+
 
 args = parse_arguments(sys.argv[1:])
 account_id = int(args.get("account_id","0"))
@@ -463,21 +467,17 @@ if credentials:
     verify_result , verify_message = verify_credentials(credentials)
 
     if verify_result:
-#    if True:
         client = create_client(credentials)
         if client:
             error_log = ""
             if tweet_mode == "tweet":
-                error_log = proc_create_tweet(credentials, comment_id)
+                error_log = proc_tweet(credentials, comment_id)
             elif tweet_mode == "retweet":
                 error_log = proc_retweet(credentials, tweet_id)
             elif tweet_mode == "like":  #動かない
-                error_log = proc_like_tweet_cli(credentials, tweet_id)
+                error_log = proc_like(credentials, tweet_id)
             elif tweet_mode == "bookmark":
-                # API認証を確認
-#                api = create_api(credentials)
-#                result = proc_bookmark_tweet(api, tweet_id)
-                error_log = proc_bookmark_tweet5(credentials, tweet_id, account_id)
+                error_log = proc_bookmark(credentials, tweet_id, account_id)
             elif tweet_mode == "get_refresh_token":
                 error_log = proc_get_refresh_token(credentials , account_id )
             elif tweet_mode == "get_access_token":
@@ -485,7 +485,6 @@ if credentials:
             else:
                 # エラーメッセージを標準エラーに出力
                 outputLog(f"サポートされていないtweet_mode: {tweet_mode}")
-#                print(f"エラーが発生しました: ", file=sys.stderr)
                 # 終了コードを1にして異常終了を示す
                 sys.exit(1)
 

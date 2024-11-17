@@ -366,6 +366,70 @@ namespace DbotManager
 
 
 
+
+        #endregion
+
+        #region コメントタブ
+        private void dataGridViewComment_SelectionChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            FillDebugControls_コメント();
+        }
+
+        private void FillDebugControls_コメント()
+        {
+            int commentId = GetCommentId();
+
+            CommentMaster commentMaster = dataAccess.GetCommentMaster(commentId);
+
+            checkBoxコメント有効.Checked = commentMaster.Enable;
+            checkBoxコメント_全アカウント共通.Checked = commentMaster.Whole;
+            textBoxコメント.Text = commentMaster.Comment;
+            textBoxコメント_コメントID.Text = commentId.ToString();
+            textBoxコメント_UserID.Text = commentMaster.UserId.ToString();
+            textBoxコメント_AccountId.Text = commentMaster.AccountId.ToString();
+        }
+
+        private void buttonコメント削除_Click(object sender, EventArgs e)
+        {
+            dataAccess.DeleteCommentMaster(int.Parse(textBoxコメント_コメントID.Text));
+            FillDebugControls_CommentMaster();
+
+        }
+
+        private void buttonコメント追加_Click(object sender, EventArgs e)
+        {
+            CommentMaster commentMaster = new CommentMaster()
+            {
+                Id = int.Parse(textBoxコメント_コメントID.Text),
+                UserId = int.Parse(textBoxコメント_UserID.Text),
+                AccountId = int.Parse(textBoxコメント_AccountId.Text),
+                Whole = checkBoxコメント_全アカウント共通.Checked,
+                Enable = checkBoxコメント有効.Checked,
+                Comment = textBoxコメント.Text,
+            };
+
+            dataAccess.InsertCommentMaster(commentMaster);
+            FillDebugControls_CommentMaster();
+
+        }
+
+        private void buttonコメント保存_Click(object sender, EventArgs e)
+        {
+            CommentMaster commentMaster = new CommentMaster()
+            {
+                Id = int.Parse(textBoxコメント_コメントID.Text),
+                UserId = int.Parse(textBoxコメント_UserID.Text),
+                AccountId = int.Parse(textBoxコメント_AccountId.Text),
+                Whole = checkBoxコメント_全アカウント共通.Checked,
+                Enable = checkBoxコメント有効.Checked,
+                Comment = textBoxコメント.Text,
+            };
+
+            dataAccess.UpdateCommentMaster(commentMaster);
+            FillDebugControls_CommentMaster();
+        }
+
         #endregion
 
 
