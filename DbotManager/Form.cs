@@ -372,9 +372,13 @@ namespace DbotManager
         #region コメントタブ
         private void dataGridViewComment_SelectionChanged(object sender, EventArgs e)
         {
-            if (_isLoading) return;
+        }
+
+        private void buttonコメント編集_Click(object sender, EventArgs e)
+        {
             FillDebugControls_コメント();
         }
+
 
         private void FillDebugControls_コメント()
         {
@@ -430,8 +434,8 @@ namespace DbotManager
             FillDebugControls_CommentMaster();
         }
 
-        #endregion
 
+        #endregion
 
     }
 }

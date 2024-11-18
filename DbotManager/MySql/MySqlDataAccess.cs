@@ -125,7 +125,7 @@ FROM account_master;";
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable 
+                        account_id,comment,enable , whole
                         FROM comment_master;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -138,8 +138,10 @@ FROM account_master;";
                             {
                                 Id = int.Parse(reader["id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
+                                AccountId = int.Parse(reader["account_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
+                                Whole = reader["whole"].ToString() == "1",
                             };
 
                             commentMasterList.Add(commentItem);
@@ -165,11 +167,13 @@ FROM account_master;";
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable 
-                        FROM comment_master;";
+                        account_id,comment,enable , whole
+                        FROM comment_master where id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
+                    command.Parameters.AddWithValue("@Id", commentId);
+
                     using (MySqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -178,8 +182,10 @@ FROM account_master;";
                             {
                                 Id = int.Parse(reader["id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
+                                AccountId = int.Parse(reader["account_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
+                                Whole = reader["whole"].ToString() == "1",
                             };
 
                             return commentItem;
@@ -251,8 +257,8 @@ FROM account_master;";
                     command.Parameters.AddWithValue("@UserId", commentMaster.UserId);
                     command.Parameters.AddWithValue("@AccountId", commentMaster.AccountId);
                     command.Parameters.AddWithValue("@Comment", commentMaster.Comment);
-                    command.Parameters.AddWithValue("@Whole", commentMaster.Comment);
                     command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Whole", commentMaster.Whole ? 1 : 0);
 
                     int insertedId = Convert.ToInt32(command.ExecuteScalar());
                     return insertedId;
