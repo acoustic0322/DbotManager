@@ -105,6 +105,27 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonコメント編集 = new System.Windows.Forms.Button();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.comboBox予約設定１_Start = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.comboBox予約設定１_End = new System.Windows.Forms.ComboBox();
+            this.checkBox予約設定1 = new System.Windows.Forms.CheckBox();
+            this.comboBox予約設定１_回数 = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.comboBox予約設定２_回数 = new System.Windows.Forms.ComboBox();
+            this.checkBox予約設定2 = new System.Windows.Forms.CheckBox();
+            this.comboBox予約設定２_End = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.comboBox予約設定２_Start = new System.Windows.Forms.ComboBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.comboBox予約設定３_回数 = new System.Windows.Forms.ComboBox();
+            this.checkBox予約設定3 = new System.Windows.Forms.CheckBox();
+            this.comboBox予約設定３_End = new System.Windows.Forms.ComboBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.comboBox予約設定３_Start = new System.Windows.Forms.ComboBox();
+            this.button予約保存 = new System.Windows.Forms.Button();
+            this.textBox予約_AccountId = new System.Windows.Forms.TextBox();
             this.tabControl.SuspendLayout();
             this.tabPageいいねブックマーク.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewいいねリスト)).BeginInit();
@@ -120,6 +141,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAccount)).BeginInit();
             this.tabPage履歴.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).BeginInit();
+            this.groupBox7.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl
@@ -129,11 +151,11 @@
             this.tabControl.Controls.Add(this.tabPageデバッグ);
             this.tabControl.Controls.Add(this.tabPage履歴);
             this.tabControl.Font = new System.Drawing.Font("Meiryo UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.tabControl.Location = new System.Drawing.Point(13, 51);
+            this.tabControl.Location = new System.Drawing.Point(13, 14);
             this.tabControl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new System.Drawing.Size(768, 637);
+            this.tabControl.Size = new System.Drawing.Size(768, 674);
             this.tabControl.TabIndex = 0;
             // 
             // tabPageいいねブックマーク
@@ -143,7 +165,7 @@
             this.tabPageいいねブックマーク.Controls.Add(this.groupBox3);
             this.tabPageいいねブックマーク.Location = new System.Drawing.Point(4, 28);
             this.tabPageいいねブックマーク.Name = "tabPageいいねブックマーク";
-            this.tabPageいいねブックマーク.Size = new System.Drawing.Size(760, 605);
+            this.tabPageいいねブックマーク.Size = new System.Drawing.Size(760, 642);
             this.tabPageいいねブックマーク.TabIndex = 2;
             this.tabPageいいねブックマーク.Text = "いいね・ブックマーク・リプライ";
             this.tabPageいいねブックマーク.UseVisualStyleBackColor = true;
@@ -417,7 +439,7 @@
             this.tabPageツイート.Controls.Add(this.groupBox1);
             this.tabPageツイート.Location = new System.Drawing.Point(4, 28);
             this.tabPageツイート.Name = "tabPageツイート";
-            this.tabPageツイート.Size = new System.Drawing.Size(760, 605);
+            this.tabPageツイート.Size = new System.Drawing.Size(760, 642);
             this.tabPageツイート.TabIndex = 3;
             this.tabPageツイート.Text = "ツイート";
             this.tabPageツイート.UseVisualStyleBackColor = true;
@@ -603,26 +625,23 @@
             // 
             // tabPageデバッグ
             // 
-            this.tabPageデバッグ.Controls.Add(this.button1);
-            this.tabPageデバッグ.Controls.Add(this.buttonDebugGetBearerToken);
-            this.tabPageデバッグ.Controls.Add(this.buttonDebugGetAccessToken);
+            this.tabPageデバッグ.Controls.Add(this.groupBox7);
             this.tabPageデバッグ.Controls.Add(this.groupBox2);
-            this.tabPageデバッグ.Controls.Add(this.dataGridViewAccount);
             this.tabPageデバッグ.Location = new System.Drawing.Point(4, 28);
             this.tabPageデバッグ.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPageデバッグ.Name = "tabPageデバッグ";
             this.tabPageデバッグ.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPageデバッグ.Size = new System.Drawing.Size(760, 605);
+            this.tabPageデバッグ.Size = new System.Drawing.Size(760, 642);
             this.tabPageデバッグ.TabIndex = 0;
-            this.tabPageデバッグ.Text = "デバッグ";
+            this.tabPageデバッグ.Text = "個別いいね・予約設定";
             this.tabPageデバッグ.UseVisualStyleBackColor = true;
             // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(228, 10);
+            this.button1.Location = new System.Drawing.Point(985, 16);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(139, 27);
+            this.button1.Size = new System.Drawing.Size(107, 27);
             this.button1.TabIndex = 9;
             this.button1.Text = "更新";
             this.button1.UseVisualStyleBackColor = true;
@@ -631,22 +650,22 @@
             // buttonDebugGetBearerToken
             // 
             this.buttonDebugGetBearerToken.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonDebugGetBearerToken.Location = new System.Drawing.Point(518, 9);
+            this.buttonDebugGetBearerToken.Location = new System.Drawing.Point(1243, 16);
             this.buttonDebugGetBearerToken.Name = "buttonDebugGetBearerToken";
-            this.buttonDebugGetBearerToken.Size = new System.Drawing.Size(229, 27);
+            this.buttonDebugGetBearerToken.Size = new System.Drawing.Size(204, 27);
             this.buttonDebugGetBearerToken.TabIndex = 8;
-            this.buttonDebugGetBearerToken.Text = "Bearer/RefreshToken取得";
+            this.buttonDebugGetBearerToken.Text = "Bearer/Refresh取得";
             this.buttonDebugGetBearerToken.UseVisualStyleBackColor = true;
             this.buttonDebugGetBearerToken.Click += new System.EventHandler(this.buttonDebugGetBearerToken_Click);
             // 
             // buttonDebugGetAccessToken
             // 
             this.buttonDebugGetAccessToken.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonDebugGetAccessToken.Location = new System.Drawing.Point(373, 9);
+            this.buttonDebugGetAccessToken.Location = new System.Drawing.Point(1098, 16);
             this.buttonDebugGetAccessToken.Name = "buttonDebugGetAccessToken";
             this.buttonDebugGetAccessToken.Size = new System.Drawing.Size(139, 27);
             this.buttonDebugGetAccessToken.TabIndex = 7;
-            this.buttonDebugGetAccessToken.Text = "AccessToken取得";
+            this.buttonDebugGetAccessToken.Text = "Access取得";
             this.buttonDebugGetAccessToken.UseVisualStyleBackColor = true;
             this.buttonDebugGetAccessToken.Click += new System.EventHandler(this.buttonDebugGetAccessToken_Click);
             // 
@@ -657,19 +676,19 @@
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.buttonブックマーク_Debug);
             this.groupBox2.Controls.Add(this.buttonいいね_Debug);
-            this.groupBox2.Location = new System.Drawing.Point(7, 451);
+            this.groupBox2.Location = new System.Drawing.Point(7, 8);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(624, 120);
+            this.groupBox2.Size = new System.Drawing.Size(731, 104);
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "いいね・ブックマーク";
+            this.groupBox2.Text = "個別いいね・ブックマーク";
             // 
             // buttonリプライ_Debug
             // 
             this.buttonリプライ_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonリプライ_Debug.Location = new System.Drawing.Point(265, 62);
+            this.buttonリプライ_Debug.Location = new System.Drawing.Point(267, 29);
             this.buttonリプライ_Debug.Name = "buttonリプライ_Debug";
-            this.buttonリプライ_Debug.Size = new System.Drawing.Size(106, 45);
+            this.buttonリプライ_Debug.Size = new System.Drawing.Size(106, 27);
             this.buttonリプライ_Debug.TabIndex = 4;
             this.buttonリプライ_Debug.Text = "リプライ";
             this.buttonリプライ_Debug.UseVisualStyleBackColor = true;
@@ -677,7 +696,7 @@
             // 
             // textBoxUrlTweetID_Debug
             // 
-            this.textBoxUrlTweetID_Debug.Location = new System.Drawing.Point(125, 29);
+            this.textBoxUrlTweetID_Debug.Location = new System.Drawing.Point(15, 62);
             this.textBoxUrlTweetID_Debug.Name = "textBoxUrlTweetID_Debug";
             this.textBoxUrlTweetID_Debug.Size = new System.Drawing.Size(470, 27);
             this.textBoxUrlTweetID_Debug.TabIndex = 1;
@@ -694,9 +713,9 @@
             // buttonブックマーク_Debug
             // 
             this.buttonブックマーク_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonブックマーク_Debug.Location = new System.Drawing.Point(377, 62);
+            this.buttonブックマーク_Debug.Location = new System.Drawing.Point(379, 29);
             this.buttonブックマーク_Debug.Name = "buttonブックマーク_Debug";
-            this.buttonブックマーク_Debug.Size = new System.Drawing.Size(106, 45);
+            this.buttonブックマーク_Debug.Size = new System.Drawing.Size(106, 27);
             this.buttonブックマーク_Debug.TabIndex = 3;
             this.buttonブックマーク_Debug.Text = "ブックマーク";
             this.buttonブックマーク_Debug.UseVisualStyleBackColor = true;
@@ -705,9 +724,9 @@
             // buttonいいね_Debug
             // 
             this.buttonいいね_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonいいね_Debug.Location = new System.Drawing.Point(489, 62);
+            this.buttonいいね_Debug.Location = new System.Drawing.Point(177, 29);
             this.buttonいいね_Debug.Name = "buttonいいね_Debug";
-            this.buttonいいね_Debug.Size = new System.Drawing.Size(106, 45);
+            this.buttonいいね_Debug.Size = new System.Drawing.Size(84, 27);
             this.buttonいいね_Debug.TabIndex = 2;
             this.buttonいいね_Debug.Text = "いいね";
             this.buttonいいね_Debug.UseVisualStyleBackColor = true;
@@ -730,14 +749,15 @@
             this.AccountMaster_BearerToken,
             this.AccountMaster_RefreshToken,
             this.AccountMaster_Enable});
-            this.dataGridViewAccount.Location = new System.Drawing.Point(22, 45);
+            this.dataGridViewAccount.Location = new System.Drawing.Point(798, 49);
             this.dataGridViewAccount.MultiSelect = false;
             this.dataGridViewAccount.Name = "dataGridViewAccount";
             this.dataGridViewAccount.RowHeadersVisible = false;
             this.dataGridViewAccount.RowTemplate.Height = 21;
             this.dataGridViewAccount.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewAccount.Size = new System.Drawing.Size(731, 400);
+            this.dataGridViewAccount.Size = new System.Drawing.Size(625, 359);
             this.dataGridViewAccount.TabIndex = 1;
+            this.dataGridViewAccount.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewAccount_CellDoubleClick);
             // 
             // AccountMaster_Id
             // 
@@ -814,7 +834,7 @@
             this.tabPage履歴.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage履歴.Name = "tabPage履歴";
             this.tabPage履歴.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPage履歴.Size = new System.Drawing.Size(760, 605);
+            this.tabPage履歴.Size = new System.Drawing.Size(760, 642);
             this.tabPage履歴.TabIndex = 1;
             this.tabPage履歴.Text = "履歴";
             this.tabPage履歴.UseVisualStyleBackColor = true;
@@ -838,7 +858,7 @@
             // 
             this.comboBoxUserMaster.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxUserMaster.FormattingEnabled = true;
-            this.comboBoxUserMaster.Location = new System.Drawing.Point(13, 14);
+            this.comboBoxUserMaster.Location = new System.Drawing.Point(798, 14);
             this.comboBoxUserMaster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comboBoxUserMaster.Name = "comboBoxUserMaster";
             this.comboBoxUserMaster.Size = new System.Drawing.Size(180, 27);
@@ -848,18 +868,18 @@
             // textBoxRenew
             // 
             this.textBoxRenew.Font = new System.Drawing.Font("Meiryo UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.textBoxRenew.Location = new System.Drawing.Point(798, 42);
+            this.textBoxRenew.Location = new System.Drawing.Point(798, 448);
             this.textBoxRenew.Multiline = true;
             this.textBoxRenew.Name = "textBoxRenew";
             this.textBoxRenew.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxRenew.Size = new System.Drawing.Size(606, 589);
+            this.textBoxRenew.Size = new System.Drawing.Size(625, 236);
             this.textBoxRenew.TabIndex = 1;
             // 
             // buttonクリアlog
             // 
-            this.buttonクリアlog.Location = new System.Drawing.Point(798, 637);
+            this.buttonクリアlog.Location = new System.Drawing.Point(798, 414);
             this.buttonクリアlog.Name = "buttonクリアlog";
-            this.buttonクリアlog.Size = new System.Drawing.Size(103, 44);
+            this.buttonクリアlog.Size = new System.Drawing.Size(103, 28);
             this.buttonクリアlog.TabIndex = 4;
             this.buttonクリアlog.Text = "クリア";
             this.buttonクリアlog.UseVisualStyleBackColor = true;
@@ -876,15 +896,444 @@
             this.buttonコメント編集.UseVisualStyleBackColor = true;
             this.buttonコメント編集.Click += new System.EventHandler(this.buttonコメント編集_Click);
             // 
+            // groupBox7
+            // 
+            this.groupBox7.Controls.Add(this.textBox予約_AccountId);
+            this.groupBox7.Controls.Add(this.button予約保存);
+            this.groupBox7.Controls.Add(this.label7);
+            this.groupBox7.Controls.Add(this.comboBox予約設定３_回数);
+            this.groupBox7.Controls.Add(this.checkBox予約設定3);
+            this.groupBox7.Controls.Add(this.comboBox予約設定３_End);
+            this.groupBox7.Controls.Add(this.label8);
+            this.groupBox7.Controls.Add(this.comboBox予約設定３_Start);
+            this.groupBox7.Controls.Add(this.label5);
+            this.groupBox7.Controls.Add(this.comboBox予約設定２_回数);
+            this.groupBox7.Controls.Add(this.checkBox予約設定2);
+            this.groupBox7.Controls.Add(this.comboBox予約設定２_End);
+            this.groupBox7.Controls.Add(this.label6);
+            this.groupBox7.Controls.Add(this.comboBox予約設定２_Start);
+            this.groupBox7.Controls.Add(this.label3);
+            this.groupBox7.Controls.Add(this.comboBox予約設定１_回数);
+            this.groupBox7.Controls.Add(this.checkBox予約設定1);
+            this.groupBox7.Controls.Add(this.comboBox予約設定１_End);
+            this.groupBox7.Controls.Add(this.label4);
+            this.groupBox7.Controls.Add(this.comboBox予約設定１_Start);
+            this.groupBox7.Location = new System.Drawing.Point(7, 118);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(731, 144);
+            this.groupBox7.TabIndex = 7;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "予約設定";
+            // 
+            // comboBox予約設定１_Start
+            // 
+            this.comboBox予約設定１_Start.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定１_Start.FormattingEnabled = true;
+            this.comboBox予約設定１_Start.Items.AddRange(new object[] {
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"});
+            this.comboBox予約設定１_Start.Location = new System.Drawing.Point(104, 35);
+            this.comboBox予約設定１_Start.Name = "comboBox予約設定１_Start";
+            this.comboBox予約設定１_Start.Size = new System.Drawing.Size(121, 27);
+            this.comboBox予約設定１_Start.TabIndex = 0;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(238, 38);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(24, 19);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "～";
+            // 
+            // comboBox予約設定１_End
+            // 
+            this.comboBox予約設定１_End.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定１_End.FormattingEnabled = true;
+            this.comboBox予約設定１_End.Items.AddRange(new object[] {
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"});
+            this.comboBox予約設定１_End.Location = new System.Drawing.Point(275, 35);
+            this.comboBox予約設定１_End.Name = "comboBox予約設定１_End";
+            this.comboBox予約設定１_End.Size = new System.Drawing.Size(121, 27);
+            this.comboBox予約設定１_End.TabIndex = 3;
+            // 
+            // checkBox予約設定1
+            // 
+            this.checkBox予約設定1.AutoSize = true;
+            this.checkBox予約設定1.Location = new System.Drawing.Point(15, 37);
+            this.checkBox予約設定1.Name = "checkBox予約設定1";
+            this.checkBox予約設定1.Size = new System.Drawing.Size(73, 23);
+            this.checkBox予約設定1.TabIndex = 4;
+            this.checkBox予約設定1.Text = "設定１";
+            this.checkBox予約設定1.UseVisualStyleBackColor = true;
+            // 
+            // comboBox予約設定１_回数
+            // 
+            this.comboBox予約設定１_回数.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定１_回数.FormattingEnabled = true;
+            this.comboBox予約設定１_回数.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"});
+            this.comboBox予約設定１_回数.Location = new System.Drawing.Point(416, 35);
+            this.comboBox予約設定１_回数.Name = "comboBox予約設定１_回数";
+            this.comboBox予約設定１_回数.Size = new System.Drawing.Size(89, 27);
+            this.comboBox予約設定１_回数.TabIndex = 5;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(511, 38);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(24, 19);
+            this.label3.TabIndex = 6;
+            this.label3.Text = "回";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(511, 71);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(24, 19);
+            this.label5.TabIndex = 12;
+            this.label5.Text = "回";
+            // 
+            // comboBox予約設定２_回数
+            // 
+            this.comboBox予約設定２_回数.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定２_回数.FormattingEnabled = true;
+            this.comboBox予約設定２_回数.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"});
+            this.comboBox予約設定２_回数.Location = new System.Drawing.Point(416, 68);
+            this.comboBox予約設定２_回数.Name = "comboBox予約設定２_回数";
+            this.comboBox予約設定２_回数.Size = new System.Drawing.Size(89, 27);
+            this.comboBox予約設定２_回数.TabIndex = 11;
+            // 
+            // checkBox予約設定2
+            // 
+            this.checkBox予約設定2.AutoSize = true;
+            this.checkBox予約設定2.Location = new System.Drawing.Point(15, 70);
+            this.checkBox予約設定2.Name = "checkBox予約設定2";
+            this.checkBox予約設定2.Size = new System.Drawing.Size(73, 23);
+            this.checkBox予約設定2.TabIndex = 10;
+            this.checkBox予約設定2.Text = "設定２";
+            this.checkBox予約設定2.UseVisualStyleBackColor = true;
+            // 
+            // comboBox予約設定２_End
+            // 
+            this.comboBox予約設定２_End.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定２_End.FormattingEnabled = true;
+            this.comboBox予約設定２_End.Items.AddRange(new object[] {
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"});
+            this.comboBox予約設定２_End.Location = new System.Drawing.Point(275, 68);
+            this.comboBox予約設定２_End.Name = "comboBox予約設定２_End";
+            this.comboBox予約設定２_End.Size = new System.Drawing.Size(121, 27);
+            this.comboBox予約設定２_End.TabIndex = 9;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(238, 71);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(24, 19);
+            this.label6.TabIndex = 8;
+            this.label6.Text = "～";
+            // 
+            // comboBox予約設定２_Start
+            // 
+            this.comboBox予約設定２_Start.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定２_Start.FormattingEnabled = true;
+            this.comboBox予約設定２_Start.Items.AddRange(new object[] {
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"});
+            this.comboBox予約設定２_Start.Location = new System.Drawing.Point(104, 68);
+            this.comboBox予約設定２_Start.Name = "comboBox予約設定２_Start";
+            this.comboBox予約設定２_Start.Size = new System.Drawing.Size(121, 27);
+            this.comboBox予約設定２_Start.TabIndex = 7;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(511, 104);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(24, 19);
+            this.label7.TabIndex = 18;
+            this.label7.Text = "回";
+            // 
+            // comboBox予約設定３_回数
+            // 
+            this.comboBox予約設定３_回数.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定３_回数.FormattingEnabled = true;
+            this.comboBox予約設定３_回数.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"});
+            this.comboBox予約設定３_回数.Location = new System.Drawing.Point(416, 101);
+            this.comboBox予約設定３_回数.Name = "comboBox予約設定３_回数";
+            this.comboBox予約設定３_回数.Size = new System.Drawing.Size(89, 27);
+            this.comboBox予約設定３_回数.TabIndex = 17;
+            // 
+            // checkBox予約設定3
+            // 
+            this.checkBox予約設定3.AutoSize = true;
+            this.checkBox予約設定3.Location = new System.Drawing.Point(15, 103);
+            this.checkBox予約設定3.Name = "checkBox予約設定3";
+            this.checkBox予約設定3.Size = new System.Drawing.Size(73, 23);
+            this.checkBox予約設定3.TabIndex = 16;
+            this.checkBox予約設定3.Text = "設定３";
+            this.checkBox予約設定3.UseVisualStyleBackColor = true;
+            // 
+            // comboBox予約設定３_End
+            // 
+            this.comboBox予約設定３_End.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定３_End.FormattingEnabled = true;
+            this.comboBox予約設定３_End.Items.AddRange(new object[] {
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"});
+            this.comboBox予約設定３_End.Location = new System.Drawing.Point(275, 101);
+            this.comboBox予約設定３_End.Name = "comboBox予約設定３_End";
+            this.comboBox予約設定３_End.Size = new System.Drawing.Size(121, 27);
+            this.comboBox予約設定３_End.TabIndex = 15;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(238, 104);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(24, 19);
+            this.label8.TabIndex = 14;
+            this.label8.Text = "～";
+            // 
+            // comboBox予約設定３_Start
+            // 
+            this.comboBox予約設定３_Start.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox予約設定３_Start.FormattingEnabled = true;
+            this.comboBox予約設定３_Start.Items.AddRange(new object[] {
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"});
+            this.comboBox予約設定３_Start.Location = new System.Drawing.Point(104, 101);
+            this.comboBox予約設定３_Start.Name = "comboBox予約設定３_Start";
+            this.comboBox予約設定３_Start.Size = new System.Drawing.Size(121, 27);
+            this.comboBox予約設定３_Start.TabIndex = 13;
+            // 
+            // button予約保存
+            // 
+            this.button予約保存.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button予約保存.Location = new System.Drawing.Point(619, 83);
+            this.button予約保存.Name = "button予約保存";
+            this.button予約保存.Size = new System.Drawing.Size(106, 45);
+            this.button予約保存.TabIndex = 19;
+            this.button予約保存.Text = "保存";
+            this.button予約保存.UseVisualStyleBackColor = true;
+            // 
+            // textBox予約_AccountId
+            // 
+            this.textBox予約_AccountId.Enabled = false;
+            this.textBox予約_AccountId.Location = new System.Drawing.Point(619, 26);
+            this.textBox予約_AccountId.Name = "textBox予約_AccountId";
+            this.textBox予約_AccountId.Size = new System.Drawing.Size(106, 27);
+            this.textBox予約_AccountId.TabIndex = 20;
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1416, 712);
+            this.ClientSize = new System.Drawing.Size(1468, 712);
             this.Controls.Add(this.buttonクリアlog);
             this.Controls.Add(this.textBoxRenew);
+            this.Controls.Add(this.buttonDebugGetBearerToken);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonDebugGetAccessToken);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.comboBoxUserMaster);
+            this.Controls.Add(this.dataGridViewAccount);
             this.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "Form";
@@ -910,6 +1359,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAccount)).EndInit();
             this.tabPage履歴.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).EndInit();
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox7.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -994,6 +1445,27 @@
         private System.Windows.Forms.TextBox textBoxコメント_AccountId;
         private System.Windows.Forms.TextBox textBoxコメント_UserID;
         private System.Windows.Forms.Button buttonコメント編集;
+        private System.Windows.Forms.GroupBox groupBox7;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.ComboBox comboBox予約設定３_回数;
+        private System.Windows.Forms.CheckBox checkBox予約設定3;
+        private System.Windows.Forms.ComboBox comboBox予約設定３_End;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox comboBox予約設定３_Start;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ComboBox comboBox予約設定２_回数;
+        private System.Windows.Forms.CheckBox checkBox予約設定2;
+        private System.Windows.Forms.ComboBox comboBox予約設定２_End;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ComboBox comboBox予約設定２_Start;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox comboBox予約設定１_回数;
+        private System.Windows.Forms.CheckBox checkBox予約設定1;
+        private System.Windows.Forms.ComboBox comboBox予約設定１_End;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ComboBox comboBox予約設定１_Start;
+        private System.Windows.Forms.TextBox textBox予約_AccountId;
+        private System.Windows.Forms.Button button予約保存;
     }
 }
 

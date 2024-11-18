@@ -437,5 +437,18 @@ namespace DbotManager
 
         #endregion
 
+        private void dataGridViewAccount_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // ヘッダー部分をダブルクリックした場合は無視
+            if (e.RowIndex < 0)
+                return;
+
+            // ダブルクリックされた行と列の値を取得
+            DataGridViewRow selectedRow = dataGridViewAccount.Rows[e.RowIndex];
+            string value = selectedRow.Cells["AccountMaster_Id"].Value?.ToString() ?? string.Empty;
+
+            // テキストボックスに値を設定
+            textBox予約_AccountId.Text = value;
+        }
     }
 }
