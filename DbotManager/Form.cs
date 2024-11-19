@@ -1,5 +1,6 @@
 ﻿using DbotManager.Table;
 using Google.Protobuf.WellKnownTypes;
+using Mysqlx.Session;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -497,10 +498,11 @@ namespace DbotManager
 
             // ダブルクリックされた行と列の値を取得
             DataGridViewRow selectedRow = dataGridViewAccount.Rows[e.RowIndex];
-            string value = selectedRow.Cells["AccountMaster_Id"].Value?.ToString() ?? string.Empty;
+            string accountId = selectedRow.Cells["AccountMaster_Id"].Value?.ToString() ?? string.Empty;
+            string userId = selectedRow.Cells["AccountMaster_UserId"].Value?.ToString() ?? string.Empty;
 
 
-            FillControlsReserveSetting(int.Parse(value));
+            FillControlsReserveSetting(int.Parse(userId) , int.Parse(accountId));
         }
 
         private void FillControls_Reserve()
@@ -538,10 +540,11 @@ namespace DbotManager
         }
 
 
-        private void FillControlsReserveSetting(int accountId)
+        private void FillControlsReserveSetting(int userId , int accountId)
         {
             // テキストボックスに値を設定
             textBox予約_AccountId.Text = accountId.ToString();
+            textBox予約_UserId.Text = userId.ToString();
 
             var reserveItem = dataAccess.GetReserveMaster(accountId);
 
@@ -588,9 +591,11 @@ namespace DbotManager
         {
             // テキストボックスに値を設定
             int accountId = int.Parse(textBox予約_AccountId.Text);
+            int userId = int.Parse(textBox予約_UserId.Text);
 
             ReserveMaster reservedItem = new ReserveMaster()
             {
+                UserId = userId,
                 AccountId = accountId,
                 Reserve1Enable = checkBox予約設定1.Checked,
                 Reserve2Enable = checkBox予約設定2.Checked,
@@ -609,5 +614,102 @@ namespace DbotManager
             dataAccess.UpdateReserveMaster(reservedItem);
 
         }
+
+        private void button予約作成_Click(object sender, EventArgs e)
+        {
+            var accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.TweetEnable);
+
+            List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
+            List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
+
+            foreach(var account in accountList)
+            {
+                reserveMasterList.Add(dataAccess.GetReserveMaster(account.Id));
+            }
+
+            List<ReserveSchedule> reserveScheduleList = new List<ReserveSchedule>();
+
+            foreach(var reserve in reserveMasterList)
+            {
+                var commentList = commentMasterList.Where(x => x.UserId == reserve.UserId).ToList();
+
+                if (reserve.Reserve1Enable)
+                {
+                    var scheduleWk = MakeSchedule(reserve.Reserve1Count , reserve.Reserve1StartHour , reserve.Reserve1EndHour , reserve.UserId , reserve.AccountId , commentList ,1);
+                    reserveScheduleList.AddRange(scheduleWk);
+                }
+
+                if (reserve.Reserve2Enable)
+                {
+                    var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentList, 2);
+                    reserveScheduleList.AddRange(scheduleWk);
+                }
+
+                if (reserve.Reserve3Enable)
+                {
+                    var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentList, 3);
+                    reserveScheduleList.AddRange(scheduleWk);
+                }
+            }
+
+            foreach(var item in reserveScheduleList)
+            {
+                dataAccess.InsertReserveSchedule(item);
+            }
+
+            dataGridViewReserveSchedule.DataSource = reserveScheduleList;
+
+        }
+
+        private List<ReserveSchedule> MakeSchedule(int count, int startHour, int endHour, int userId, int accountId, List<CommentMaster> commentList , int type)
+        {
+            var schedules = new List<ReserveSchedule>();
+            var random = new Random();
+
+            // 今日の日付
+            var today = DateTime.Today;
+
+            // 開始時刻と終了時刻
+            var startDateTime = startHour >= 24
+                ? today.AddDays(1).AddHours(startHour - 24) // 翌日の時間
+                : today.AddHours(startHour);
+
+            var endDateTime = endHour >= 24
+                ? today.AddDays(1).AddHours(endHour - 24) // 翌日の時間
+                : today.AddHours(endHour);                // 当日の時間
+
+            // ランダムな時間を生成する
+            for (int i = 0; i < count; i++)
+            {
+                DateTime randomTime;
+
+                do
+                {
+                    // ランダムな時刻を生成
+                    var totalMinutes = (int)(endDateTime - startDateTime).TotalMinutes;
+                    randomTime = startDateTime.AddMinutes(random.Next(totalMinutes));
+                }
+                // 直前のスケジュールと5分以上の間隔を設ける
+                while (schedules.Any(s => Math.Abs(((DateTime)s.ReserveTime - randomTime).TotalMinutes) < 5));
+
+                // CommentMaster からランダムに1つ選択
+                var randomComment = commentList[random.Next(commentList.Count)];
+
+                // スケジュールを追加
+                schedules.Add(new ReserveSchedule
+                {
+                    ReserveDate = today,
+                    ReserveTime = randomTime,
+                    UserId = userId,
+                    AccountId = accountId,
+                    CommentId = randomComment.Id,
+                    ReserveId = $"{type}-{(i+1)}",
+                    Result = ""
+                });
+            }
+
+            return schedules;
+        }
+
     }
 }

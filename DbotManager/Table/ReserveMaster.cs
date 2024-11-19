@@ -8,6 +8,7 @@ namespace DbotManager.Table
 {
     public class ReserveMaster
     {
+        public int UserId { get; set; }
         public int AccountId { get; set; }
         public bool Reserve1Enable { get; set; }
         public bool Reserve2Enable { get; set; }

@@ -4,6 +4,7 @@ using System.Data;
 using DbotManager.Table;
 using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
+using System.ComponentModel.Design;
 
 public class MySqlDataAccess
 {
@@ -60,7 +61,7 @@ public class MySqlDataAccess
         return tweetHistoryList;
     }
 
-    public List<AccountMaster> GetAccountMaster()
+    public List<AccountMaster> GetAccountMaster(bool userEnable = false)
     {
         List<AccountMaster> accountMasterList = new List<AccountMaster>();
 
@@ -70,15 +71,28 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = @"SELECT id,user_id,name,
-login_id,login_password,
-api_key,api_key_secret,
-access_token,access_token_secret,
-bearer_token,refresh_token,enable
-FROM account_master;";
+                string query = @"SELECT am.id,am.user_id,am.name,
+                    am.login_id,am.login_password,
+                    am.api_key,am.api_key_secret,
+                    am.access_token,am.access_token_secret,
+                    am.bearer_token,am.refresh_token,am.enable
+                    ,am.like_enable,am.bookmark_enable,am.retweet_enable,am.tweet_enable
+                    FROM account_master am
+                    left join user_master um on um.id = am.user_id
+                    ";
+
+                if (userEnable)
+                {
+                    query += "where um.enable = '1';";
+                }
+                else
+                {
+                    query += ";";
+                }
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
+
                     using (MySqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -96,6 +110,10 @@ FROM account_master;";
                                 BearerToken = reader["bearer_token"].ToString(),
                                 RefreshToken = reader["refresh_token"].ToString(),
                                 Enable = reader["enable"].ToString() == "1" ,
+                                LikeEnable = reader["like_enable"].ToString() == "1",
+                                BookMarkEnable = reader["bookmark_enable"].ToString() == "1",
+                                RetweetEnable = reader["retweet_enable"].ToString() == "1",
+                                TweetEnable = reader["tweet_enable"].ToString() == "1",
                             };
                 
                             accountMasterList.Add(accountItem);
@@ -342,7 +360,7 @@ FROM account_master;";
         return userList;
     }
 
-    #region Reserve
+    #region ReserveMaster
 
     public void InsertReserveMaster(ReserveMaster reserveMaster)
     {
@@ -354,18 +372,19 @@ FROM account_master;";
 
                 string query = @"
                 INSERT INTO reserve_master 
-                (account_id, reserve1_enable, reserve2_enable, reserve3_enable, 
+                (user_id,account_id, reserve1_enable, reserve2_enable, reserve3_enable, 
                  reserve1_start_hour, reserve2_start_hour, reserve3_start_hour, 
                  reserve1_end_hour, reserve2_end_hour, reserve3_end_hour, 
                  reserve1_count, reserve2_count, reserve3_count) 
                 VALUES 
-                (@AccountId, @Reserve1Enable, @Reserve2Enable, @Reserve3Enable, 
+                (@UserId, @AccountId, @Reserve1Enable, @Reserve2Enable, @Reserve3Enable, 
                  @Reserve1StartHour, @Reserve2StartHour, @Reserve3StartHour, 
                  @Reserve1EndHour, @Reserve2EndHour, @Reserve3EndHour, 
                  @Reserve1Count, @Reserve2Count, @Reserve3Count);";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
+                    command.Parameters.AddWithValue("@UserId", reserveMaster.UserId);
                     command.Parameters.AddWithValue("@AccountId", reserveMaster.AccountId);
                     command.Parameters.AddWithValue("@Reserve1Enable", reserveMaster.Reserve1Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve2Enable", reserveMaster.Reserve2Enable ? 1 : 0);
@@ -399,7 +418,7 @@ FROM account_master;";
             {
                 connection.Open();
 
-                string query = @"SELECT account_id,reserve1_enable,reserve2_enable,reserve3_enable,
+                string query = @"SELECT user_id , account_id,reserve1_enable,reserve2_enable,reserve3_enable,
                         reserve1_start_hour,reserve2_start_hour,reserve3_start_hour,
                         reserve1_end_hour,reserve2_end_hour,reserve3_end_hour,
                         reserve1_count,reserve2_count,reserve3_count
@@ -415,6 +434,7 @@ FROM account_master;";
                         {
                             ReserveMaster reserveItem = new ReserveMaster()
                             {
+                                UserId = int.Parse(reader["user_id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
                                 Reserve1Count = int.Parse(reader["reserve1_count"].ToString()),
                                 Reserve2Count = int.Parse(reader["reserve2_count"].ToString()),
@@ -456,6 +476,7 @@ FROM account_master;";
                 string query = @"
                 UPDATE reserve_master 
                 SET 
+                    user_id = @UserId,
                     reserve1_enable = @Reserve1Enable,
                     reserve2_enable = @Reserve2Enable,
                     reserve3_enable = @Reserve3Enable,
@@ -472,6 +493,7 @@ FROM account_master;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
+                    command.Parameters.AddWithValue("@UserId", reserveMaster.UserId);
                     command.Parameters.AddWithValue("@AccountId", reserveMaster.AccountId);
                     command.Parameters.AddWithValue("@Reserve1Enable", reserveMaster.Reserve1Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve2Enable", reserveMaster.Reserve2Enable ? 1 : 0);
@@ -495,7 +517,162 @@ FROM account_master;";
             }
         }
     }
+    #endregion
 
+
+    #region ReserveSchedule
+
+    public List<ReserveSchedule> GetReserveSchedules()
+    {
+        List<ReserveSchedule> reserveSchedules = new List<ReserveSchedule>();
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+                string query = @"SELECT reserve_date, reserve_time, account_id, comment_id, result, reserve_id 
+                             FROM reserve_schedule;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        reserveSchedules.Add(new ReserveSchedule
+                        {
+                            ReserveDate = reader["reserve_date"] as DateTime?,
+                            ReserveTime = reader["reserve_time"] as DateTime?,
+                            AccountId = reader["account_id"] as int?,
+                            CommentId = reader["comment_id"] as int?,
+                            Result = reader["result"]?.ToString(),
+                            ReserveId = reader["reserve_id"]?.ToString()
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラー: " + ex.Message);
+            }
+        }
+
+        return reserveSchedules;
+    }
+
+    public bool InsertReserveSchedule(ReserveSchedule schedule)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+                string query = @"INSERT INTO reserve_schedule 
+                             (reserve_date, reserve_time, account_id, comment_id, result, reserve_id) 
+                             VALUES (@ReserveDate, @ReserveTime, @AccountId, @CommentId, @Result, @ReserveId);";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@ReserveDate", schedule.ReserveDate);
+                    command.Parameters.AddWithValue("@ReserveTime", schedule.ReserveTime);
+                    command.Parameters.AddWithValue("@AccountId", schedule.AccountId);
+                    command.Parameters.AddWithValue("@CommentId", schedule.CommentId);
+                    command.Parameters.AddWithValue("@Result", schedule.Result);
+                    command.Parameters.AddWithValue("@ReserveId", schedule.ReserveId);
+
+                    return command.ExecuteNonQuery() > 0; // 挿入が成功した場合はtrueを返す
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラー: " + ex.Message);
+                return false;
+            }
+        }
+    }
+
+    public bool UpdateReserveSchedule(ReserveSchedule schedule)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+                string query = @"UPDATE reserve_schedule 
+                             SET reserve_date = @ReserveDate,
+                                 reserve_time = @ReserveTime,
+                                 comment_id = @CommentId,
+                                 result = @Result
+                             WHERE account_id = @AccountId 
+                               AND reserve_id = @ReserveId;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@ReserveDate", schedule.ReserveDate);
+                    command.Parameters.AddWithValue("@ReserveTime", schedule.ReserveTime);
+                    command.Parameters.AddWithValue("@CommentId", schedule.CommentId);
+                    command.Parameters.AddWithValue("@Result", schedule.Result);
+                    command.Parameters.AddWithValue("@AccountId", schedule.AccountId);
+                    command.Parameters.AddWithValue("@ReserveId", schedule.ReserveId);
+
+                    return command.ExecuteNonQuery() > 0; // 更新が成功した場合はtrueを返す
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラー: " + ex.Message);
+                return false;
+            }
+        }
+    }
+
+    public List<ReserveScheduleView> GetReserveScheduleView(DateTime date)
+    {
+        List<ReserveScheduleView> reserveScheduleViews = new List<ReserveScheduleView>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+                string query = @"
+                SELECT user_name, account_id, account_name, comment, 
+                       reserve_time, result, reserve_id
+                FROM reserve_schedule_view
+                WHERE DATE(reserve_time) = @Date;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    // パラメータを追加
+                    command.Parameters.AddWithValue("@Date", date.Date);
+
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ReserveScheduleView viewItem = new ReserveScheduleView
+                            {
+                                UserName = reader["user_name"]?.ToString(),
+                                AccountId = int.Parse(reader["account_id"].ToString()),
+                                AccountName = reader["account_name"]?.ToString(),
+                                Comment = reader["comment"]?.ToString(),
+                                ReserveTime = reader["reserve_time"] as DateTime?,
+                                Result = reader["result"]?.ToString(),
+                                ReserveId = reader["reserve_id"]?.ToString()
+                            };
+                            reserveScheduleViews.Add(viewItem);
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return reserveScheduleViews;
+    }
 
 
 

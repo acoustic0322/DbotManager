@@ -20,6 +20,10 @@ namespace DbotManager.Table
         public string BearerToken { get; set; }
         public string RefreshToken { get; set; }
         public bool Enable { get; set; }
+        public bool LikeEnable { get; set; }
+        public bool BookMarkEnable { get; set; }
+        public bool RetweetEnable { get; set; }
+        public bool TweetEnable { get; set; }
         public bool Paid { get; set; }
     }
 }
