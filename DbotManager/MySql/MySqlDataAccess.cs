@@ -341,4 +341,163 @@ FROM account_master;";
 
         return userList;
     }
+
+    #region Reserve
+
+    public void InsertReserveMaster(ReserveMaster reserveMaster)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                INSERT INTO reserve_master 
+                (account_id, reserve1_enable, reserve2_enable, reserve3_enable, 
+                 reserve1_start_hour, reserve2_start_hour, reserve3_start_hour, 
+                 reserve1_end_hour, reserve2_end_hour, reserve3_end_hour, 
+                 reserve1_count, reserve2_count, reserve3_count) 
+                VALUES 
+                (@AccountId, @Reserve1Enable, @Reserve2Enable, @Reserve3Enable, 
+                 @Reserve1StartHour, @Reserve2StartHour, @Reserve3StartHour, 
+                 @Reserve1EndHour, @Reserve2EndHour, @Reserve3EndHour, 
+                 @Reserve1Count, @Reserve2Count, @Reserve3Count);";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AccountId", reserveMaster.AccountId);
+                    command.Parameters.AddWithValue("@Reserve1Enable", reserveMaster.Reserve1Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve2Enable", reserveMaster.Reserve2Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve3Enable", reserveMaster.Reserve3Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve1StartHour", reserveMaster.Reserve1StartHour);
+                    command.Parameters.AddWithValue("@Reserve2StartHour", reserveMaster.Reserve2StartHour);
+                    command.Parameters.AddWithValue("@Reserve3StartHour", reserveMaster.Reserve3StartHour);
+                    command.Parameters.AddWithValue("@Reserve1EndHour", reserveMaster.Reserve1EndHour);
+                    command.Parameters.AddWithValue("@Reserve2EndHour", reserveMaster.Reserve2EndHour);
+                    command.Parameters.AddWithValue("@Reserve3EndHour", reserveMaster.Reserve3EndHour);
+                    command.Parameters.AddWithValue("@Reserve1Count", reserveMaster.Reserve1Count);
+                    command.Parameters.AddWithValue("@Reserve2Count", reserveMaster.Reserve2Count);
+                    command.Parameters.AddWithValue("@Reserve3Count", reserveMaster.Reserve3Count);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+
+    public ReserveMaster GetReserveMaster(int accountId)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"SELECT account_id,reserve1_enable,reserve2_enable,reserve3_enable,
+                        reserve1_start_hour,reserve2_start_hour,reserve3_start_hour,
+                        reserve1_end_hour,reserve2_end_hour,reserve3_end_hour,
+                        reserve1_count,reserve2_count,reserve3_count
+                        FROM reserve_master where account_id = @AccountId;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AccountId", accountId);
+
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ReserveMaster reserveItem = new ReserveMaster()
+                            {
+                                AccountId = int.Parse(reader["account_id"].ToString()),
+                                Reserve1Count = int.Parse(reader["reserve1_count"].ToString()),
+                                Reserve2Count = int.Parse(reader["reserve2_count"].ToString()),
+                                Reserve3Count = int.Parse(reader["reserve3_count"].ToString()),
+                                Reserve1StartHour = int.Parse(reader["reserve1_start_hour"].ToString()),
+                                Reserve2StartHour = int.Parse(reader["reserve2_start_hour"].ToString()),
+                                Reserve3StartHour = int.Parse(reader["reserve3_start_hour"].ToString()),
+                                Reserve1EndHour = int.Parse(reader["reserve1_end_hour"].ToString()),
+                                Reserve2EndHour = int.Parse(reader["reserve2_end_hour"].ToString()),
+                                Reserve3EndHour = int.Parse(reader["reserve3_end_hour"].ToString()),
+                                Reserve1Enable = reader["reserve1_enable"].ToString() == "1",
+                                Reserve2Enable = reader["reserve2_enable"].ToString() == "1",
+                                Reserve3Enable = reader["reserve3_enable"].ToString() == "1",
+                            };
+
+                            return reserveItem;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+
+        }
+
+        return null;
+    }
+
+    public void UpdateReserveMaster(ReserveMaster reserveMaster)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                UPDATE reserve_master 
+                SET 
+                    reserve1_enable = @Reserve1Enable,
+                    reserve2_enable = @Reserve2Enable,
+                    reserve3_enable = @Reserve3Enable,
+                    reserve1_start_hour = @Reserve1StartHour,
+                    reserve2_start_hour = @Reserve2StartHour,
+                    reserve3_start_hour = @Reserve3StartHour,
+                    reserve1_end_hour = @Reserve1EndHour,
+                    reserve2_end_hour = @Reserve2EndHour,
+                    reserve3_end_hour = @Reserve3EndHour,
+                    reserve1_count = @Reserve1Count,
+                    reserve2_count = @Reserve2Count,
+                    reserve3_count = @Reserve3Count
+                WHERE account_id = @AccountId;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AccountId", reserveMaster.AccountId);
+                    command.Parameters.AddWithValue("@Reserve1Enable", reserveMaster.Reserve1Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve2Enable", reserveMaster.Reserve2Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve3Enable", reserveMaster.Reserve3Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve1StartHour", reserveMaster.Reserve1StartHour);
+                    command.Parameters.AddWithValue("@Reserve2StartHour", reserveMaster.Reserve2StartHour);
+                    command.Parameters.AddWithValue("@Reserve3StartHour", reserveMaster.Reserve3StartHour);
+                    command.Parameters.AddWithValue("@Reserve1EndHour", reserveMaster.Reserve1EndHour);
+                    command.Parameters.AddWithValue("@Reserve2EndHour", reserveMaster.Reserve2EndHour);
+                    command.Parameters.AddWithValue("@Reserve3EndHour", reserveMaster.Reserve3EndHour);
+                    command.Parameters.AddWithValue("@Reserve1Count", reserveMaster.Reserve1Count);
+                    command.Parameters.AddWithValue("@Reserve2Count", reserveMaster.Reserve2Count);
+                    command.Parameters.AddWithValue("@Reserve3Count", reserveMaster.Reserve3Count);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+
+
+
+    #endregion
 }

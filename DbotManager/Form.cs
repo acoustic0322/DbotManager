@@ -1,4 +1,5 @@
 ﻿using DbotManager.Table;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,6 +29,53 @@ namespace DbotManager
         private string dbUser = "d_bot";
         private string dbRoot = "root";
         private string dbPass = "abcd1234";
+
+        List<KeyValuePair<int, string>> resereveCountList = new List<KeyValuePair<int, string>>()
+        {
+            new KeyValuePair<int, string>(1,"1"),
+            new KeyValuePair<int, string>(2,"2"),
+            new KeyValuePair<int, string>(3,"3"),
+            new KeyValuePair<int, string>(4,"4"),
+            new KeyValuePair<int, string>(5,"5"),
+            new KeyValuePair<int, string>(6,"6"),
+            new KeyValuePair<int, string>(7,"7"),
+            new KeyValuePair<int, string>(8,"8"),
+            new KeyValuePair<int, string>(9,"9"),
+            new KeyValuePair<int, string>(10,"10"),
+        };
+
+        List<KeyValuePair<int, string>> resereveHourList = new List<KeyValuePair<int, string>>()
+        {
+            new KeyValuePair<int, string>(0,"1"),
+            new KeyValuePair<int, string>(1,"1"),
+            new KeyValuePair<int, string>(2,"2"),
+            new KeyValuePair<int, string>(3,"3"),
+            new KeyValuePair<int, string>(4,"4"),
+            new KeyValuePair<int, string>(5,"5"),
+            new KeyValuePair<int, string>(6,"6"),
+            new KeyValuePair<int, string>(7,"7"),
+            new KeyValuePair<int, string>(8,"8"),
+            new KeyValuePair<int, string>(9,"9"),
+            new KeyValuePair<int, string>(10,"10"),
+            new KeyValuePair<int, string>(11,"11"),
+            new KeyValuePair<int, string>(12,"12"),
+            new KeyValuePair<int, string>(13,"13"),
+            new KeyValuePair<int, string>(14,"14"),
+            new KeyValuePair<int, string>(15,"15"),
+            new KeyValuePair<int, string>(16,"16"),
+            new KeyValuePair<int, string>(17,"17"),
+            new KeyValuePair<int, string>(18,"18"),
+            new KeyValuePair<int, string>(19,"19"),
+            new KeyValuePair<int, string>(20,"20"),
+            new KeyValuePair<int, string>(21,"21"),
+            new KeyValuePair<int, string>(22,"22"),
+            new KeyValuePair<int, string>(23,"23"),
+            new KeyValuePair<int, string>(24,"24"),
+            new KeyValuePair<int, string>(25,"25"),
+            new KeyValuePair<int, string>(26,"26"),
+            new KeyValuePair<int, string>(27,"27"),
+            new KeyValuePair<int, string>(28,"28"),
+        };
 
         public Form()
         {
@@ -59,7 +107,11 @@ namespace DbotManager
             FillDebugControls_UserName();
             FillDebugControls_AccountMaster();
             FillDebugControls_CommentMaster();
+
+            FillControls_Reserve();
+
         }
+
 
         private void FillDebugControls_TweetHistory()
         {
@@ -447,8 +499,115 @@ namespace DbotManager
             DataGridViewRow selectedRow = dataGridViewAccount.Rows[e.RowIndex];
             string value = selectedRow.Cells["AccountMaster_Id"].Value?.ToString() ?? string.Empty;
 
+
+            FillControlsReserveSetting(int.Parse(value));
+        }
+
+        private void FillControls_Reserve()
+        {
+            comboBox予約設定１_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList); 
+            comboBox予約設定１_回数.DisplayMember = "Value";
+            comboBox予約設定１_回数.ValueMember = "Key";
+
+            comboBox予約設定２_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList); 
+            comboBox予約設定２_回数.DisplayMember = "Value";
+            comboBox予約設定２_回数.ValueMember = "Key";
+
+            comboBox予約設定３_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList);
+            comboBox予約設定３_回数.DisplayMember = "Value";
+            comboBox予約設定３_回数.ValueMember = "Key";
+
+            comboBox予約設定１_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定１_Start.DisplayMember = "Value";
+            comboBox予約設定１_Start.ValueMember = "Key";
+            comboBox予約設定２_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定２_Start.DisplayMember = "Value";
+            comboBox予約設定２_Start.ValueMember = "Key";
+            comboBox予約設定３_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定３_Start.DisplayMember = "Value";
+            comboBox予約設定３_Start.ValueMember = "Key";
+            comboBox予約設定１_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定１_End.DisplayMember = "Value";
+            comboBox予約設定１_End.ValueMember = "Key";
+            comboBox予約設定２_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定２_End.DisplayMember = "Value";
+            comboBox予約設定２_End.ValueMember = "Key";
+            comboBox予約設定３_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定３_End.DisplayMember = "Value";
+            comboBox予約設定３_End.ValueMember = "Key";
+        }
+
+
+        private void FillControlsReserveSetting(int accountId)
+        {
             // テキストボックスに値を設定
-            textBox予約_AccountId.Text = value;
+            textBox予約_AccountId.Text = accountId.ToString();
+
+            var reserveItem = dataAccess.GetReserveMaster(accountId);
+
+            if(reserveItem == null)
+            {
+                reserveItem = new ReserveMaster()
+                {
+                    AccountId = accountId,
+                    Reserve1Count = 1,
+                    Reserve1StartHour = 8,
+                    Reserve1EndHour = 10,
+                    Reserve1Enable = false,
+                    Reserve2Count = 1,
+                    Reserve2StartHour = 8,
+                    Reserve2EndHour = 10,
+                    Reserve2Enable = false,
+                    Reserve3Count = 1,
+                    Reserve3StartHour = 8,
+                    Reserve3EndHour = 10,
+                    Reserve3Enable = false,
+                };
+                dataAccess.InsertReserveMaster(reserveItem);
+            }
+
+            checkBox予約設定1.Checked = reserveItem.Reserve1Enable;
+            checkBox予約設定2.Checked = reserveItem.Reserve2Enable;
+            checkBox予約設定3.Checked = reserveItem.Reserve3Enable;
+
+            comboBox予約設定１_Start.SelectedValue = reserveItem.Reserve1StartHour;
+            comboBox予約設定２_Start.SelectedValue = reserveItem.Reserve2StartHour;
+            comboBox予約設定３_Start.SelectedValue = reserveItem.Reserve3StartHour;
+
+            comboBox予約設定１_End.SelectedValue = reserveItem.Reserve1EndHour;
+            comboBox予約設定２_End.SelectedValue = reserveItem.Reserve2EndHour;
+            comboBox予約設定３_End.SelectedValue = reserveItem.Reserve3EndHour;
+
+            comboBox予約設定１_回数.SelectedValue = reserveItem.Reserve1Count;
+            comboBox予約設定２_回数.SelectedValue = reserveItem.Reserve2Count;
+            comboBox予約設定３_回数.SelectedValue = reserveItem.Reserve3Count;
+
+        }
+
+        private void button予約保存_Click(object sender, EventArgs e)
+        {
+            // テキストボックスに値を設定
+            int accountId = int.Parse(textBox予約_AccountId.Text);
+
+            ReserveMaster reservedItem = new ReserveMaster()
+            {
+                AccountId = accountId,
+                Reserve1Enable = checkBox予約設定1.Checked,
+                Reserve2Enable = checkBox予約設定2.Checked,
+                Reserve3Enable = checkBox予約設定3.Checked,
+                Reserve1StartHour = int.Parse(comboBox予約設定１_Start.SelectedValue.ToString()),
+                Reserve2StartHour = int.Parse(comboBox予約設定２_Start.SelectedValue.ToString()),
+                Reserve3StartHour = int.Parse(comboBox予約設定３_Start.SelectedValue.ToString()),
+                Reserve1EndHour = int.Parse(comboBox予約設定１_End.SelectedValue.ToString()),
+                Reserve2EndHour = int.Parse(comboBox予約設定２_End.SelectedValue.ToString()),
+                Reserve3EndHour = int.Parse(comboBox予約設定３_End.SelectedValue.ToString()),
+                Reserve1Count = int.Parse(comboBox予約設定１_回数.SelectedValue.ToString()),
+                Reserve2Count = int.Parse(comboBox予約設定２_回数.SelectedValue.ToString()),
+                Reserve3Count = int.Parse(comboBox予約設定３_回数.SelectedValue.ToString()),
+            };
+
+            dataAccess.UpdateReserveMaster(reservedItem);
+
         }
     }
 }
