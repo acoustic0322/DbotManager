@@ -652,12 +652,14 @@ namespace DbotManager
                 }
             }
 
-            foreach(var item in reserveScheduleList)
+            dataAccess.DeleteReserveSchedule(DateTime.Today);
+
+            foreach (var item in reserveScheduleList)
             {
                 dataAccess.InsertReserveSchedule(item);
             }
 
-            dataGridViewReserveSchedule.DataSource = reserveScheduleList;
+            dataGridViewReserveSchedule.DataSource = dataAccess.GetReserveScheduleView(DateTime.Today).OrderBy(x => x.ReserveTime).ToList();
 
         }
 
@@ -687,7 +689,7 @@ namespace DbotManager
                 {
                     // ランダムな時刻を生成
                     var totalMinutes = (int)(endDateTime - startDateTime).TotalMinutes;
-                    randomTime = startDateTime.AddMinutes(random.Next(totalMinutes));
+                    randomTime = startDateTime.AddMinutes(random.Next(totalMinutes)).AddSeconds(random.Next(60));
                 }
                 // 直前のスケジュールと5分以上の間隔を設ける
                 while (schedules.Any(s => Math.Abs(((DateTime)s.ReserveTime - randomTime).TotalMinutes) < 5));
@@ -703,8 +705,8 @@ namespace DbotManager
                     UserId = userId,
                     AccountId = accountId,
                     CommentId = randomComment.Id,
-                    ReserveId = $"{type}-{(i+1)}",
-                    Result = ""
+                    ReserveId = $"{accountId}-{type}-{(i+1)}",
+                    Result = false
                 });
             }
 

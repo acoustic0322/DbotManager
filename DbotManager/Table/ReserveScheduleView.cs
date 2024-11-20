@@ -13,7 +13,7 @@ namespace DbotManager.Table
         public string AccountName { get; set; }
         public string Comment { get; set; }
         public DateTime? ReserveTime { get; set; }
-        public string Result { get; set; }
+        public bool Result { get; set; }
         public string ReserveId { get; set; }
 
     }

@@ -544,7 +544,7 @@ public class MySqlDataAccess
                             ReserveTime = reader["reserve_time"] as DateTime?,
                             AccountId = reader["account_id"] as int?,
                             CommentId = reader["comment_id"] as int?,
-                            Result = reader["result"]?.ToString(),
+                            Result = reader["result"]?.ToString() == "1",
                             ReserveId = reader["reserve_id"]?.ToString()
                         });
                     }
@@ -576,7 +576,7 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@ReserveTime", schedule.ReserveTime);
                     command.Parameters.AddWithValue("@AccountId", schedule.AccountId);
                     command.Parameters.AddWithValue("@CommentId", schedule.CommentId);
-                    command.Parameters.AddWithValue("@Result", schedule.Result);
+                    command.Parameters.AddWithValue("@Result", schedule.Result ? "1" : "0");
                     command.Parameters.AddWithValue("@ReserveId", schedule.ReserveId);
 
                     return command.ExecuteNonQuery() > 0; // 挿入が成功した場合はtrueを返す
@@ -610,7 +610,7 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@ReserveDate", schedule.ReserveDate);
                     command.Parameters.AddWithValue("@ReserveTime", schedule.ReserveTime);
                     command.Parameters.AddWithValue("@CommentId", schedule.CommentId);
-                    command.Parameters.AddWithValue("@Result", schedule.Result);
+                    command.Parameters.AddWithValue("@Result", schedule.Result ? "1" : "0");
                     command.Parameters.AddWithValue("@AccountId", schedule.AccountId);
                     command.Parameters.AddWithValue("@ReserveId", schedule.ReserveId);
 
@@ -656,7 +656,7 @@ public class MySqlDataAccess
                                 AccountName = reader["account_name"]?.ToString(),
                                 Comment = reader["comment"]?.ToString(),
                                 ReserveTime = reader["reserve_time"] as DateTime?,
-                                Result = reader["result"]?.ToString(),
+                                Result = reader["result"]?.ToString() == "1",
                                 ReserveId = reader["reserve_id"]?.ToString()
                             };
                             reserveScheduleViews.Add(viewItem);
@@ -673,6 +673,39 @@ public class MySqlDataAccess
 
         return reserveScheduleViews;
     }
+
+    public bool DeleteReserveSchedule(DateTime dt , bool resultContain = false)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+                string query = @"DELETE FROM reserve_schedule 
+                             WHERE reserve_date = @ReserveDate";
+
+                if (resultContain)
+                {
+                    query += ";";
+                }
+                else
+                {
+                    query += "and result = '1';";
+                }
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    return command.ExecuteNonQuery() > 0; // 削除が成功した場合はtrueを返す
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラー: " + ex.Message);
+                return false;
+            }
+        }
+    }
+
 
 
 

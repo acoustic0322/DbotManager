@@ -13,7 +13,7 @@ namespace DbotManager.Table
         public int? UserId { get; set; }
         public int? AccountId { get; set; }
         public int? CommentId { get; set; }
-        public string Result { get; set; }
+        public bool Result { get; set; }
         public string ReserveId { get; set; }
     }
 
