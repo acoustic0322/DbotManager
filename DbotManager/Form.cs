@@ -1,4 +1,5 @@
-﻿using DbotManager.Table;
+﻿using DbotManager.MySql;
+using DbotManager.Table;
 using Google.Protobuf.WellKnownTypes;
 using Mysqlx.Session;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -16,20 +18,19 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace DbotManager
 {
     public partial class Form : System.Windows.Forms.Form
     {
         TweetTask _tweetTask;
+
+        public DbConnectionInfo DbConnection = new DbConnectionInfo();
+
         private MySqlDataAccess dataAccess;
 
         private bool _isLoading = true;
-
-        private string dbMachineName = "localhost";
-        private string dbUser = "d_bot";
-        private string dbRoot = "root";
-        private string dbPass = "abcd1234";
 
         List<KeyValuePair<int, string>> resereveCountList = new List<KeyValuePair<int, string>>()
         {
@@ -82,14 +83,20 @@ namespace DbotManager
         {
             InitializeComponent();
 
+
+            DbConnection.MachineName = "localhost";
+            DbConnection.User = "d_bot";
+            DbConnection.Root = "root";
+            DbConnection.Pass = "abcd1234";
+
             // MySQLデータアクセスの初期化
-            dataAccess = new MySqlDataAccess(dbMachineName, dbUser, dbRoot, dbPass);
+            dataAccess = new MySqlDataAccess(DbConnection);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
             MakeFolder("python");
-            _tweetTask = new TweetTask(AppendLog, dbMachineName, dbUser, dbRoot, dbPass);
+            _tweetTask = new TweetTask(DbConnection , AppendLog);
 
             FillControls();
             _isLoading = false;
@@ -107,7 +114,6 @@ namespace DbotManager
             FillDebugControls_TweetHistory();
             FillDebugControls_UserName();
             FillDebugControls_AccountMaster();
-            FillDebugControls_CommentMaster();
 
             FillControls_Reserve();
 
@@ -142,21 +148,6 @@ namespace DbotManager
             }
         }
 
-        private void FillDebugControls_CommentMaster()
-        {
-
-            List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster().Where(x => x.UserId == GetUserId()).ToList();
-
-            if (commentMasterList != null)
-            {
-                dataGridViewComment.DataSource = commentMasterList;
-            }
-            else
-            {
-                MessageBox.Show("データを取得できませんでした。");
-            }
-        }
-
         private void FillDebugControls_UserName()
         {
             List<UserMaster> userList = dataAccess.GetUserNames();
@@ -180,40 +171,27 @@ namespace DbotManager
         {
             int userId = GetUserId();
             int accountId = GetAccountId();
-            int commentId = GetCommentId();
             string tweetId = GetTweetId(true);
 
-            _tweetTask.TweetProc(TweetProcTypes.LIKE, userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(TweetProcTypes.LIKE, userId, accountId, 0, tweetId);
         }
 
         private void buttonブックマーク_Debug_Click(object sender, EventArgs e)
         {
             int userId = GetUserId();
             int accountId = GetAccountId();
-            int commentId = GetCommentId();
             string tweetId = GetTweetId(true);
 
-            _tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, 0, tweetId);
         }
 
         private void buttonリプライ_Debug_Click(object sender, EventArgs e)
         {
             int userId = GetUserId();
             int accountId = GetAccountId();
-            int commentId = GetCommentId();
             string tweetId = GetTweetId(true);
 
-            _tweetTask.TweetProc(TweetProcTypes.RETWEET, userId, accountId, commentId, tweetId);
-        }
-
-        private void buttonコメント_Debug_Click(object sender, EventArgs e)
-        {
-            int userId = GetUserId();
-            int accountId = GetAccountId();
-            int commentId = GetCommentId();
-            string tweetId = GetTweetId(true);
-
-            _tweetTask.TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(TweetProcTypes.RETWEET, userId, accountId, 0, tweetId);
         }
 
         private void buttonいいねリスト作成_Click(object sender, EventArgs e)
@@ -247,7 +225,7 @@ namespace DbotManager
 
         private void buttonDebugGetBearerToken_Click(object sender, EventArgs e)
         {
-            string command = _tweetTask.GetTweetCommand(TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+            string command = _tweetTask.GetTweetCommand(TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), GetAccountId(), 0, GetTweetId(true));
 
             // クリップボードに文字列を設定
             Clipboard.SetText(command);
@@ -258,7 +236,7 @@ namespace DbotManager
 
         private void buttonDebugGetAccessToken_Click(object sender, EventArgs e)
         {
-            string command = _tweetTask.GetTweetCommand(TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), GetAccountId(), GetCommentId(), GetTweetId(true));
+            string command = _tweetTask.GetTweetCommand(TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), GetAccountId(), 0, GetTweetId(true));
 
             // クリップボードに文字列を設定
             Clipboard.SetText(command);
@@ -281,7 +259,6 @@ namespace DbotManager
             if (_isLoading) return;
 
             FillDebugControls_AccountMaster();
-            FillDebugControls_CommentMaster();
         }
         #endregion
 
@@ -302,22 +279,6 @@ namespace DbotManager
 
                 // 特定の列（例: 列インデックスが2の列）の値を取得
                 var cellValue = selectedRow.Cells[AccountMaster_Id.Name].Value;
-
-                return int.Parse(cellValue.ToString());
-            }
-            return 0;
-        }
-
-        private int GetCommentId()
-        {
-            // 選択されている行があるか確認
-            if (dataGridViewComment.SelectedRows.Count > 0)
-            {
-                // 選択されている最初の行を取得
-                DataGridViewRow selectedRow = dataGridViewComment.SelectedRows[0];
-
-                // 特定の列（例: 列インデックスが2の列）の値を取得
-                var cellValue = selectedRow.Cells[CommentMaster_Id.Name].Value;
 
                 return int.Parse(cellValue.ToString());
             }
@@ -423,70 +384,24 @@ namespace DbotManager
         #endregion
 
         #region コメントタブ
-        private void dataGridViewComment_SelectionChanged(object sender, EventArgs e)
-        {
-        }
+
+        private CommentDialog _commentDialog;
 
         private void buttonコメント編集_Click(object sender, EventArgs e)
         {
-            FillDebugControls_コメント();
-        }
-
-
-        private void FillDebugControls_コメント()
-        {
-            int commentId = GetCommentId();
-
-            CommentMaster commentMaster = dataAccess.GetCommentMaster(commentId);
-
-            checkBoxコメント有効.Checked = commentMaster.Enable;
-            checkBoxコメント_全アカウント共通.Checked = commentMaster.Whole;
-            textBoxコメント.Text = commentMaster.Comment;
-            textBoxコメント_コメントID.Text = commentId.ToString();
-            textBoxコメント_UserID.Text = commentMaster.UserId.ToString();
-            textBoxコメント_AccountId.Text = commentMaster.AccountId.ToString();
-        }
-
-        private void buttonコメント削除_Click(object sender, EventArgs e)
-        {
-            dataAccess.DeleteCommentMaster(int.Parse(textBoxコメント_コメントID.Text));
-            FillDebugControls_CommentMaster();
-
-        }
-
-        private void buttonコメント追加_Click(object sender, EventArgs e)
-        {
-            CommentMaster commentMaster = new CommentMaster()
+            // ダイアログが未作成または破棄されている場合に新しいダイアログを作成
+            if (_commentDialog == null || _commentDialog.IsDisposed)
             {
-                Id = int.Parse(textBoxコメント_コメントID.Text),
-                UserId = int.Parse(textBoxコメント_UserID.Text),
-                AccountId = int.Parse(textBoxコメント_AccountId.Text),
-                Whole = checkBoxコメント_全アカウント共通.Checked,
-                Enable = checkBoxコメント有効.Checked,
-                Comment = textBoxコメント.Text,
-            };
-
-            dataAccess.InsertCommentMaster(commentMaster);
-            FillDebugControls_CommentMaster();
-
-        }
-
-        private void buttonコメント保存_Click(object sender, EventArgs e)
-        {
-            CommentMaster commentMaster = new CommentMaster()
+                _commentDialog = new CommentDialog(DbConnection);
+                _commentDialog.Show();
+                _commentDialog.UpdateInfo(GetAccountId());
+            }
+            else
             {
-                Id = int.Parse(textBoxコメント_コメントID.Text),
-                UserId = int.Parse(textBoxコメント_UserID.Text),
-                AccountId = int.Parse(textBoxコメント_AccountId.Text),
-                Whole = checkBoxコメント_全アカウント共通.Checked,
-                Enable = checkBoxコメント有効.Checked,
-                Comment = textBoxコメント.Text,
-            };
-
-            dataAccess.UpdateCommentMaster(commentMaster);
-            FillDebugControls_CommentMaster();
+                // 既に開いている場合はフォーカスを移動
+                _commentDialog.Focus();
+            }
         }
-
 
         #endregion
 
@@ -713,5 +628,36 @@ namespace DbotManager
             return schedules;
         }
 
+        private void dataGridViewAccount_SelectionChanged(object sender, EventArgs e)
+        {
+            // データグリッドビューの選択変更時にダイアログを更新
+            if (_commentDialog != null && !_commentDialog.IsDisposed)
+            {
+                var selectedRow = dataGridViewAccount.CurrentRow;
+                if (selectedRow != null)
+                {
+                    var accountId = int.Parse(selectedRow.Cells["AccountMaster_Id"].Value?.ToString());
+                    _commentDialog.UpdateInfo(accountId);
+                }
+            }
+        }
+
+        AccountDialog _accountDialog;
+
+        private void buttonアカウント設定_Click(object sender, EventArgs e)
+        {
+            // ダイアログが未作成または破棄されている場合に新しいダイアログを作成
+            if (_accountDialog == null || _accountDialog.IsDisposed)
+            {
+                _accountDialog = new AccountDialog(DbConnection);
+                _accountDialog.Show();
+                _accountDialog.UpdateInfo(GetUserId());
+            }
+            else
+            {
+                // 既に開いている場合はフォーカスを移動
+                _accountDialog.Focus();
+            }
+        }
     }
 }

@@ -5,15 +5,24 @@ using DbotManager.Table;
 using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using System.ComponentModel.Design;
+using DbotManager.MySql;
+
+public class DbConnectionInfo
+{
+    public string MachineName { get; set; }
+    public string User { get; set; }
+    public string Root { get; set; }
+    public string Pass { get; set; }
+}
 
 public class MySqlDataAccess
 {
     private string connectionString;
 
-    public MySqlDataAccess(string server, string database, string user, string password)
+    public MySqlDataAccess(DbConnectionInfo dbConnection)
     {
         // 接続文字列の構築
-        connectionString = $"Server={server};Database={database};Uid={user};Pwd={password};charset=utf8mb4;";
+        connectionString = $"Server={dbConnection.MachineName};Database={dbConnection.User};Uid={dbConnection.Root};Pwd={dbConnection.Pass};charset=utf8mb4;";
     }
 
     public List<TweetHistory> GetTweetHistoryView()
@@ -61,6 +70,82 @@ public class MySqlDataAccess
         return tweetHistoryList;
     }
 
+    #region AccountMaster
+
+    public void InsertAccountMaster(AccountMaster account)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                INSERT INTO account_master 
+                (user_id, name, login_id, login_password, api_key, api_key_secret, 
+                 client_id, client_secret, access_token, access_token_secret, 
+                 bearer_token, refresh_token, enable, like_enable, bookmark_enable, 
+                 reply_enable, tweet_enable, reserve1_enable, reserve1_start_hour, 
+                 reserve1_end_hour, reserve1_count, reserve2_enable, reserve2_start_hour, 
+                 reserve2_end_hour, reserve2_count, reserve3_enable, reserve3_start_hour, 
+                 reserve3_end_hour, reserve3_count, reserve4_enable, reserve4_start_hour, 
+                 reserve4_end_hour, reserve4_count)
+                VALUES 
+                (@UserId, @Name, @LoginId, @LoginPassword, @ApiKey, @ApiKeySecret, 
+                 @ClientId, @ClientSecret, @AccessToken, @AccessTokenSecret, 
+                 @BearerToken, @RefreshToken, @Enable, @LikeEnable, @BookmarkEnable, 
+                 @ReplyEnable, @TweetEnable, @Reserve1Enable, @Reserve1StartHour, 
+                 @Reserve1EndHour, @Reserve1Count, @Reserve2Enable, @Reserve2StartHour, 
+                 @Reserve2EndHour, @Reserve2Count, @Reserve3Enable, @Reserve3StartHour, 
+                 @Reserve3EndHour, @Reserve3Count, @Reserve4Enable, @Reserve4StartHour, 
+                 @Reserve4EndHour, @Reserve4Count);";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserId", account.UserId);
+                    command.Parameters.AddWithValue("@Name", account.Name);
+                    command.Parameters.AddWithValue("@LoginId", account.LoginId);
+                    command.Parameters.AddWithValue("@LoginPassword", account.LoginPass);
+                    command.Parameters.AddWithValue("@ApiKey", account.ApiKey);
+                    command.Parameters.AddWithValue("@ApiKeySecret", account.ApiKeySecret);
+                    command.Parameters.AddWithValue("@ClientId", account.ClientId);
+                    command.Parameters.AddWithValue("@ClientSecret", account.ClientSecret);
+                    command.Parameters.AddWithValue("@AccessToken", account.AccessToken);
+                    command.Parameters.AddWithValue("@AccessTokenSecret", account.AccessTokenSecret);
+                    command.Parameters.AddWithValue("@BearerToken", account.BearerToken);
+                    command.Parameters.AddWithValue("@RefreshToken", account.RefreshToken);
+                    command.Parameters.AddWithValue("@Enable", account.Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@LikeEnable", account.LikeEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@BookmarkEnable", account.BookMarkEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@ReplyEnable", account.ReplyEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@TweetEnable", account.TweetEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve1Enable", account.Reserve1Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve1StartHour", account.Reserve1StartHour);
+                    command.Parameters.AddWithValue("@Reserve1EndHour", account.Reserve1EndHour);
+                    command.Parameters.AddWithValue("@Reserve1Count", account.Reserve1Count);
+                    command.Parameters.AddWithValue("@Reserve2Enable", account.Reserve2Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve2StartHour", account.Reserve2StartHour);
+                    command.Parameters.AddWithValue("@Reserve2EndHour", account.Reserve2EndHour);
+                    command.Parameters.AddWithValue("@Reserve2Count", account.Reserve2Count);
+                    command.Parameters.AddWithValue("@Reserve3Enable", account.Reserve3Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve3StartHour", account.Reserve3StartHour);
+                    command.Parameters.AddWithValue("@Reserve3EndHour", account.Reserve3EndHour);
+                    command.Parameters.AddWithValue("@Reserve3Count", account.Reserve3Count);
+                    command.Parameters.AddWithValue("@Reserve4Enable", account.Reserve4Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve4StartHour", account.Reserve4StartHour);
+                    command.Parameters.AddWithValue("@Reserve4EndHour", account.Reserve4EndHour);
+                    command.Parameters.AddWithValue("@Reserve4Count", account.Reserve4Count);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
     public List<AccountMaster> GetAccountMaster(bool userEnable = false)
     {
         List<AccountMaster> accountMasterList = new List<AccountMaster>();
@@ -74,9 +159,14 @@ public class MySqlDataAccess
                 string query = @"SELECT am.id,am.user_id,am.name,
                     am.login_id,am.login_password,
                     am.api_key,am.api_key_secret,
+                    am.client_id,am.client_secret,
                     am.access_token,am.access_token_secret,
                     am.bearer_token,am.refresh_token,am.enable
-                    ,am.like_enable,am.bookmark_enable,am.retweet_enable,am.tweet_enable
+                    ,am.like_enable,am.bookmark_enable,am.reply_enable,am.tweet_enable,am.paid
+                    ,am.reserve1_enable,am.reserve1_start_hour,am.reserve1_end_hour,am.reserve1_count
+                    ,am.reserve2_enable,am.reserve2_start_hour,am.reserve2_end_hour,am.reserve2_count
+                    ,am.reserve3_enable,am.reserve3_start_hour,am.reserve3_end_hour,am.reserve3_count
+                    ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
                     ";
@@ -105,6 +195,8 @@ public class MySqlDataAccess
                                 LoginPass = reader["login_password"].ToString(),
                                 ApiKey = reader["api_key"].ToString(),
                                 ApiKeySecret = reader["api_key_secret"].ToString(),
+                                ClientId = reader["client_id"].ToString(),
+                                ClientSecret = reader["client_secret"].ToString(),
                                 AccessToken = reader["access_token"].ToString(),
                                 AccessTokenSecret = reader["access_token_secret"].ToString(),
                                 BearerToken = reader["bearer_token"].ToString(),
@@ -112,8 +204,26 @@ public class MySqlDataAccess
                                 Enable = reader["enable"].ToString() == "1" ,
                                 LikeEnable = reader["like_enable"].ToString() == "1",
                                 BookMarkEnable = reader["bookmark_enable"].ToString() == "1",
-                                RetweetEnable = reader["retweet_enable"].ToString() == "1",
+                                ReplyEnable = reader["reply_enable"].ToString() == "1",
                                 TweetEnable = reader["tweet_enable"].ToString() == "1",
+
+                                Reserve1Count= int.Parse(reader["reserve1_count"].ToString()),
+                                Reserve2Count = int.Parse(reader["reserve2_count"].ToString()),
+                                Reserve3Count = int.Parse(reader["reserve3_count"].ToString()),
+                                Reserve4Count = int.Parse(reader["reserve4_count"].ToString()),
+                                Reserve1StartHour = int.Parse(reader["reserve1_start_hour"].ToString()),
+                                Reserve2StartHour = int.Parse(reader["reserve2_start_hour"].ToString()),
+                                Reserve3StartHour = int.Parse(reader["reserve3_start_hour"].ToString()),
+                                Reserve4StartHour = int.Parse(reader["reserve4_start_hour"].ToString()),
+                                Reserve1EndHour = int.Parse(reader["reserve1_end_hour"].ToString()),
+                                Reserve2EndHour = int.Parse(reader["reserve2_end_hour"].ToString()),
+                                Reserve3EndHour = int.Parse(reader["reserve3_end_hour"].ToString()),
+                                Reserve4EndHour = int.Parse(reader["reserve4_end_hour"].ToString()),
+                                Reserve1Enable = reader["reserve1_enable"].ToString() == "1",
+                                Reserve2Enable = reader["reserve2_enable"].ToString() == "1",
+                                Reserve3Enable = reader["reserve3_enable"].ToString() == "1",
+                                Reserve4Enable = reader["reserve4_enable"].ToString() == "1",
+                                Paid = reader["paid"].ToString() == "1",
                             };
                 
                             accountMasterList.Add(accountItem);
@@ -130,6 +240,135 @@ public class MySqlDataAccess
         return accountMasterList;
     }
 
+    public void UpdateAccountMaster(AccountMaster account)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                UPDATE account_master 
+                SET user_id = @UserId, 
+                    name = @Name, 
+                    login_id = @LoginId, 
+                    login_password = @LoginPassword, 
+                    api_key = @ApiKey, 
+                    api_key_secret = @ApiKeySecret, 
+                    client_id = @ClientId, 
+                    client_secret = @ClientSecret, 
+                    access_token = @AccessToken, 
+                    access_token_secret = @AccessTokenSecret, 
+                    bearer_token = @BearerToken, 
+                    refresh_token = @RefreshToken, 
+                    enable = @Enable, 
+                    paid = @Paid, 
+                    like_enable = @LikeEnable, 
+                    bookmark_enable = @BookmarkEnable, 
+                    reply_enable = @ReplyEnable, 
+                    tweet_enable = @TweetEnable, 
+                    reserve1_enable = @Reserve1Enable, 
+                    reserve1_start_hour = @Reserve1StartHour, 
+                    reserve1_end_hour = @Reserve1EndHour, 
+                    reserve1_count = @Reserve1Count, 
+                    reserve2_enable = @Reserve2Enable, 
+                    reserve2_start_hour = @Reserve2StartHour, 
+                    reserve2_end_hour = @Reserve2EndHour, 
+                    reserve2_count = @Reserve2Count, 
+                    reserve3_enable = @Reserve3Enable, 
+                    reserve3_start_hour = @Reserve3StartHour, 
+                    reserve3_end_hour = @Reserve3EndHour, 
+                    reserve3_count = @Reserve3Count, 
+                    reserve4_enable = @Reserve4Enable, 
+                    reserve4_start_hour = @Reserve4StartHour, 
+                    reserve4_end_hour = @Reserve4EndHour, 
+                    reserve4_count = @Reserve4Count
+                WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", account.Id);
+                    command.Parameters.AddWithValue("@UserId", account.UserId);
+                    command.Parameters.AddWithValue("@Name", account.Name);
+                    command.Parameters.AddWithValue("@LoginId", account.LoginId);
+                    command.Parameters.AddWithValue("@LoginPassword", account.LoginPass);
+                    command.Parameters.AddWithValue("@ApiKey", account.ApiKey);
+                    command.Parameters.AddWithValue("@ApiKeySecret", account.ApiKeySecret);
+                    command.Parameters.AddWithValue("@ClientId", account.ClientId);
+                    command.Parameters.AddWithValue("@ClientSecret", account.ClientSecret);
+                    command.Parameters.AddWithValue("@AccessToken", account.AccessToken);
+                    command.Parameters.AddWithValue("@AccessTokenSecret", account.AccessTokenSecret);
+                    command.Parameters.AddWithValue("@BearerToken", account.BearerToken);
+                    command.Parameters.AddWithValue("@RefreshToken", account.RefreshToken);
+                    command.Parameters.AddWithValue("@Enable", account.Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Paid", account.Paid ? 1 : 0);
+                    command.Parameters.AddWithValue("@LikeEnable", account.LikeEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@BookmarkEnable", account.BookMarkEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@ReplyEnable", account.ReplyEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@TweetEnable", account.TweetEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve1Enable", account.Reserve1Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve1StartHour", account.Reserve1StartHour);
+                    command.Parameters.AddWithValue("@Reserve1EndHour", account.Reserve1EndHour);
+                    command.Parameters.AddWithValue("@Reserve1Count", account.Reserve1Count);
+                    command.Parameters.AddWithValue("@Reserve2Enable", account.Reserve2Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve2StartHour", account.Reserve2StartHour);
+                    command.Parameters.AddWithValue("@Reserve2EndHour", account.Reserve2EndHour);
+                    command.Parameters.AddWithValue("@Reserve2Count", account.Reserve2Count);
+                    command.Parameters.AddWithValue("@Reserve3Enable", account.Reserve3Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve3StartHour", account.Reserve3StartHour);
+                    command.Parameters.AddWithValue("@Reserve3EndHour", account.Reserve3EndHour);
+                    command.Parameters.AddWithValue("@Reserve3Count", account.Reserve3Count);
+                    command.Parameters.AddWithValue("@Reserve4Enable", account.Reserve4Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve4StartHour", account.Reserve4StartHour);
+                    command.Parameters.AddWithValue("@Reserve4EndHour", account.Reserve4EndHour);
+                    command.Parameters.AddWithValue("@Reserve4Count", account.Reserve4Count);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+    public bool DeleteAccountMaster(int accountId)
+    {
+        bool isDeleted = false;
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = "DELETE FROM account_master WHERE id = @AccountId;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AccountId", accountId);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    // 削除された行数が1以上で成功とみなす
+                    isDeleted = rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return isDeleted;
+    }
+
+
+
+    #endregion
+
     #region CommentMaster
 
     public List<CommentMaster> GetCommentMaster()
@@ -143,7 +382,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , whole
+                        account_id,comment,enable , chatgpt , mode
                         FROM comment_master;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -159,7 +398,8 @@ public class MySqlDataAccess
                                 AccountId = int.Parse(reader["account_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
-                                Whole = reader["whole"].ToString() == "1",
+                                ChatGpt = reader["chatgpt"].ToString() == "1",
+                                TweetModeType = reader["mode"].ToString() == "tweet" ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
                             };
 
                             commentMasterList.Add(commentItem);
@@ -176,6 +416,54 @@ public class MySqlDataAccess
         return commentMasterList;
     }
 
+    public List<CommentMaster> GetCommentMasterByAccountId(int accountId)
+    {
+        List<CommentMaster> retList = new List<CommentMaster>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"SELECT id,user_id,
+                        account_id,comment,enable , chatgpt , mode
+                        FROM comment_master where account_id = @AccountId;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AccountId", accountId);
+
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            CommentMaster commentItem = new CommentMaster()
+                            {
+                                Id = int.Parse(reader["id"].ToString()),
+                                UserId = int.Parse(reader["user_id"].ToString()),
+                                AccountId = int.Parse(reader["account_id"].ToString()),
+                                Comment = reader["comment"].ToString(),
+                                Enable = reader["enable"].ToString() == "1",
+                                ChatGpt = reader["chatgpt"].ToString() == "1",
+                                TweetModeType = reader["mode"].ToString() == "tweet" ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                            };
+
+                            retList.Add(commentItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+
+        }
+
+        return retList;
+    }
+
     public CommentMaster GetCommentMaster(int commentId)
     {
         using (MySqlConnection connection = new MySqlConnection(connectionString))
@@ -185,7 +473,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , whole
+                        account_id,comment,enable , chatgpt , mode
                         FROM comment_master where id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -203,7 +491,8 @@ public class MySqlDataAccess
                                 AccountId = int.Parse(reader["account_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
-                                Whole = reader["whole"].ToString() == "1",
+                                ChatGpt = reader["chatgpt"].ToString() == "1",
+                                TweetModeType = reader["mode"].ToString() == "tweet" ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
                             };
 
                             return commentItem;
@@ -233,7 +522,8 @@ public class MySqlDataAccess
                              SET user_id = @UserId,
                                  account_id = @AccountId,
                                  comment = @Comment,
-                                 whole = @Whole,
+                                 chatgpt = @Chatgpt,
+                                 mode = @Mode,
                                  enable = @Enable
                              WHERE id = @Id;";
 
@@ -242,9 +532,10 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@UserId", commentMaster.UserId);
                     command.Parameters.AddWithValue("@AccountId", commentMaster.AccountId);
                     command.Parameters.AddWithValue("@Comment", commentMaster.Comment);
-                    command.Parameters.AddWithValue("@Whole", commentMaster.Whole ? 1 : 0);
+                    command.Parameters.AddWithValue("@Chatgpt", commentMaster.ChatGpt ? 1 : 0);
                     command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Id", commentMaster.Id);
+                    command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Tweet ? "tweet" : "retweet");
 
                     int rowsAffected = command.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -266,8 +557,8 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = @"INSERT INTO comment_master (user_id, account_id, comment, enable, whole) 
-                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Whole);";
+                string query = @"INSERT INTO comment_master (user_id, account_id, comment, enable, chatgpt , mode) 
+                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Chatgpt, @Mode);";
 //                SELECT LAST_INSERT_ID(); ";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -276,7 +567,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@AccountId", commentMaster.AccountId);
                     command.Parameters.AddWithValue("@Comment", commentMaster.Comment);
                     command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
-                    command.Parameters.AddWithValue("@Whole", commentMaster.Whole ? 1 : 0);
+                    command.Parameters.AddWithValue("@Chatgpt", commentMaster.ChatGpt ? 1 : 0);
+                    command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Tweet ? "tweet" : "retweet");
 
                     int insertedId = Convert.ToInt32(command.ExecuteScalar());
                     return insertedId;

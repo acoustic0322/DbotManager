@@ -98,6 +98,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AccountDialog.Designer.cs">
+      <DependentUpon>AccountDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MySql\DbConnectionInfo.cs" />
+    <Compile Include="ReserveRegistrationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ReserveRegistrationDialog.Designer.cs">
+      <DependentUpon>ReserveRegistrationDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CommentDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CommentDialog.Designer.cs">
+      <DependentUpon>CommentDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -115,6 +134,12 @@
     <Compile Include="Table\TweetHistory.cs" />
     <Compile Include="Table\UserMaster.cs" />
     <Compile Include="TweetTask.cs" />
+    <EmbeddedResource Include="AccountDialog.resx">
+      <DependentUpon>AccountDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CommentDialog.resx">
+      <DependentUpon>CommentDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form.resx">
       <DependentUpon>Form.cs</DependentUpon>
     </EmbeddedResource>

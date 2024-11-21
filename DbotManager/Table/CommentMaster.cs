@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 
 namespace DbotManager.Table
 {
+    public enum TweetModeTypes
+    {
+        Tweet,
+        Replay
+    }
+
+
     public class CommentMaster
     {
         public int Id { get; set; }
@@ -13,6 +20,7 @@ namespace DbotManager.Table
         public int AccountId { get; set; }
         public string Comment { get; set; }
         public bool Enable { get; set; }
-        public bool Whole { get; set; }
+        public bool ChatGpt { get; set; }
+        public TweetModeTypes TweetModeType { get; set; }
     }
 }

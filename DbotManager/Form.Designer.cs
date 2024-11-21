@@ -69,27 +69,9 @@
             this.dataGridViewReserveSchedule_Result = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.button予約作成 = new System.Windows.Forms.Button();
             this.tabPageツイート = new System.Windows.Forms.TabPage();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.buttonコメント編集 = new System.Windows.Forms.Button();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.textBoxコメント_AccountId = new System.Windows.Forms.TextBox();
-            this.textBoxコメント_UserID = new System.Windows.Forms.TextBox();
-            this.textBoxコメント_コメントID = new System.Windows.Forms.TextBox();
-            this.buttonコメント保存 = new System.Windows.Forms.Button();
-            this.buttonコメント追加 = new System.Windows.Forms.Button();
-            this.buttonコメント削除 = new System.Windows.Forms.Button();
-            this.checkBoxコメント_全アカウント共通 = new System.Windows.Forms.CheckBox();
-            this.checkBoxコメント有効 = new System.Windows.Forms.CheckBox();
-            this.textBoxコメント = new System.Windows.Forms.TextBox();
-            this.dataGridViewComment = new System.Windows.Forms.DataGridView();
-            this.CommentMaster_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CommentMaster_UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CommentMaster_AccountId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CommentMaster_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CommentMaster_Enable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.buttonコメント_Debug = new System.Windows.Forms.Button();
             this.tabPageデバッグ = new System.Windows.Forms.TabPage();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.textBox予約_UserId = new System.Windows.Forms.TextBox();
             this.textBox予約_AccountId = new System.Windows.Forms.TextBox();
             this.button予約保存 = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
@@ -136,7 +118,8 @@
             this.comboBoxUserMaster = new System.Windows.Forms.ComboBox();
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
-            this.textBox予約_UserId = new System.Windows.Forms.TextBox();
+            this.buttonコメント編集 = new System.Windows.Forms.Button();
+            this.buttonアカウント設定 = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPageいいねブックマーク.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewいいねリスト)).BeginInit();
@@ -145,10 +128,6 @@
             this.groupBox4.SuspendLayout();
             this.tabPage予約.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewReserveSchedule)).BeginInit();
-            this.tabPageツイート.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            this.groupBox6.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).BeginInit();
             this.tabPageデバッグ.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -536,203 +515,12 @@
             // 
             // tabPageツイート
             // 
-            this.tabPageツイート.Controls.Add(this.groupBox1);
             this.tabPageツイート.Location = new System.Drawing.Point(4, 28);
             this.tabPageツイート.Name = "tabPageツイート";
             this.tabPageツイート.Size = new System.Drawing.Size(760, 642);
             this.tabPageツイート.TabIndex = 3;
             this.tabPageツイート.Text = "コメント設定";
             this.tabPageツイート.UseVisualStyleBackColor = true;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.buttonコメント編集);
-            this.groupBox1.Controls.Add(this.groupBox6);
-            this.groupBox1.Controls.Add(this.dataGridViewComment);
-            this.groupBox1.Controls.Add(this.buttonコメント_Debug);
-            this.groupBox1.Location = new System.Drawing.Point(13, 14);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(731, 572);
-            this.groupBox1.TabIndex = 5;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "コメント";
-            // 
-            // buttonコメント編集
-            // 
-            this.buttonコメント編集.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント編集.Location = new System.Drawing.Point(507, 302);
-            this.buttonコメント編集.Name = "buttonコメント編集";
-            this.buttonコメント編集.Size = new System.Drawing.Size(106, 45);
-            this.buttonコメント編集.TabIndex = 6;
-            this.buttonコメント編集.Text = "編集";
-            this.buttonコメント編集.UseVisualStyleBackColor = true;
-            this.buttonコメント編集.Click += new System.EventHandler(this.buttonコメント編集_Click);
-            // 
-            // groupBox6
-            // 
-            this.groupBox6.Controls.Add(this.textBoxコメント_AccountId);
-            this.groupBox6.Controls.Add(this.textBoxコメント_UserID);
-            this.groupBox6.Controls.Add(this.textBoxコメント_コメントID);
-            this.groupBox6.Controls.Add(this.buttonコメント保存);
-            this.groupBox6.Controls.Add(this.buttonコメント追加);
-            this.groupBox6.Controls.Add(this.buttonコメント削除);
-            this.groupBox6.Controls.Add(this.checkBoxコメント_全アカウント共通);
-            this.groupBox6.Controls.Add(this.checkBoxコメント有効);
-            this.groupBox6.Controls.Add(this.textBoxコメント);
-            this.groupBox6.Location = new System.Drawing.Point(6, 355);
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(719, 217);
-            this.groupBox6.TabIndex = 5;
-            this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "編集";
-            // 
-            // textBoxコメント_AccountId
-            // 
-            this.textBoxコメント_AccountId.Enabled = false;
-            this.textBoxコメント_AccountId.Location = new System.Drawing.Point(607, 22);
-            this.textBoxコメント_AccountId.Name = "textBoxコメント_AccountId";
-            this.textBoxコメント_AccountId.Size = new System.Drawing.Size(106, 27);
-            this.textBoxコメント_AccountId.TabIndex = 10;
-            // 
-            // textBoxコメント_UserID
-            // 
-            this.textBoxコメント_UserID.Enabled = false;
-            this.textBoxコメント_UserID.Location = new System.Drawing.Point(495, 22);
-            this.textBoxコメント_UserID.Name = "textBoxコメント_UserID";
-            this.textBoxコメント_UserID.Size = new System.Drawing.Size(106, 27);
-            this.textBoxコメント_UserID.TabIndex = 9;
-            // 
-            // textBoxコメント_コメントID
-            // 
-            this.textBoxコメント_コメントID.Enabled = false;
-            this.textBoxコメント_コメントID.Location = new System.Drawing.Point(383, 22);
-            this.textBoxコメント_コメントID.Name = "textBoxコメント_コメントID";
-            this.textBoxコメント_コメントID.Size = new System.Drawing.Size(106, 27);
-            this.textBoxコメント_コメントID.TabIndex = 8;
-            // 
-            // buttonコメント保存
-            // 
-            this.buttonコメント保存.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント保存.Location = new System.Drawing.Point(607, 157);
-            this.buttonコメント保存.Name = "buttonコメント保存";
-            this.buttonコメント保存.Size = new System.Drawing.Size(106, 45);
-            this.buttonコメント保存.TabIndex = 7;
-            this.buttonコメント保存.Text = "保存";
-            this.buttonコメント保存.UseVisualStyleBackColor = true;
-            this.buttonコメント保存.Click += new System.EventHandler(this.buttonコメント保存_Click);
-            // 
-            // buttonコメント追加
-            // 
-            this.buttonコメント追加.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント追加.Location = new System.Drawing.Point(607, 106);
-            this.buttonコメント追加.Name = "buttonコメント追加";
-            this.buttonコメント追加.Size = new System.Drawing.Size(106, 45);
-            this.buttonコメント追加.TabIndex = 6;
-            this.buttonコメント追加.Text = "追加";
-            this.buttonコメント追加.UseVisualStyleBackColor = true;
-            this.buttonコメント追加.Click += new System.EventHandler(this.buttonコメント追加_Click);
-            // 
-            // buttonコメント削除
-            // 
-            this.buttonコメント削除.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント削除.Location = new System.Drawing.Point(607, 55);
-            this.buttonコメント削除.Name = "buttonコメント削除";
-            this.buttonコメント削除.Size = new System.Drawing.Size(106, 45);
-            this.buttonコメント削除.TabIndex = 5;
-            this.buttonコメント削除.Text = "削除";
-            this.buttonコメント削除.UseVisualStyleBackColor = true;
-            this.buttonコメント削除.Click += new System.EventHandler(this.buttonコメント削除_Click);
-            // 
-            // checkBoxコメント_全アカウント共通
-            // 
-            this.checkBoxコメント_全アカウント共通.AutoSize = true;
-            this.checkBoxコメント_全アカウント共通.Location = new System.Drawing.Point(105, 26);
-            this.checkBoxコメント_全アカウント共通.Name = "checkBoxコメント_全アカウント共通";
-            this.checkBoxコメント_全アカウント共通.Size = new System.Drawing.Size(128, 23);
-            this.checkBoxコメント_全アカウント共通.TabIndex = 2;
-            this.checkBoxコメント_全アカウント共通.Text = "全アカウント共通";
-            this.checkBoxコメント_全アカウント共通.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxコメント有効
-            // 
-            this.checkBoxコメント有効.AutoSize = true;
-            this.checkBoxコメント有効.Location = new System.Drawing.Point(26, 26);
-            this.checkBoxコメント有効.Name = "checkBoxコメント有効";
-            this.checkBoxコメント有効.Size = new System.Drawing.Size(58, 23);
-            this.checkBoxコメント有効.TabIndex = 1;
-            this.checkBoxコメント有効.Text = "有効";
-            this.checkBoxコメント有効.UseVisualStyleBackColor = true;
-            // 
-            // textBoxコメント
-            // 
-            this.textBoxコメント.Location = new System.Drawing.Point(26, 55);
-            this.textBoxコメント.Multiline = true;
-            this.textBoxコメント.Name = "textBoxコメント";
-            this.textBoxコメント.Size = new System.Drawing.Size(575, 147);
-            this.textBoxコメント.TabIndex = 0;
-            // 
-            // dataGridViewComment
-            // 
-            this.dataGridViewComment.AllowUserToAddRows = false;
-            this.dataGridViewComment.AllowUserToDeleteRows = false;
-            this.dataGridViewComment.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewComment.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.CommentMaster_Id,
-            this.CommentMaster_UserId,
-            this.CommentMaster_AccountId,
-            this.CommentMaster_Comment,
-            this.CommentMaster_Enable});
-            this.dataGridViewComment.Location = new System.Drawing.Point(6, 26);
-            this.dataGridViewComment.Name = "dataGridViewComment";
-            this.dataGridViewComment.RowHeadersVisible = false;
-            this.dataGridViewComment.RowTemplate.Height = 21;
-            this.dataGridViewComment.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewComment.Size = new System.Drawing.Size(719, 270);
-            this.dataGridViewComment.TabIndex = 4;
-            this.dataGridViewComment.SelectionChanged += new System.EventHandler(this.dataGridViewComment_SelectionChanged);
-            // 
-            // CommentMaster_Id
-            // 
-            this.CommentMaster_Id.DataPropertyName = "Id";
-            this.CommentMaster_Id.HeaderText = "Id";
-            this.CommentMaster_Id.Name = "CommentMaster_Id";
-            // 
-            // CommentMaster_UserId
-            // 
-            this.CommentMaster_UserId.DataPropertyName = "UserId";
-            this.CommentMaster_UserId.HeaderText = "UserId";
-            this.CommentMaster_UserId.Name = "CommentMaster_UserId";
-            // 
-            // CommentMaster_AccountId
-            // 
-            this.CommentMaster_AccountId.DataPropertyName = "AccountId";
-            this.CommentMaster_AccountId.HeaderText = "AccountId";
-            this.CommentMaster_AccountId.Name = "CommentMaster_AccountId";
-            // 
-            // CommentMaster_Comment
-            // 
-            this.CommentMaster_Comment.DataPropertyName = "Comment";
-            this.CommentMaster_Comment.HeaderText = "コメント";
-            this.CommentMaster_Comment.Name = "CommentMaster_Comment";
-            // 
-            // CommentMaster_Enable
-            // 
-            this.CommentMaster_Enable.DataPropertyName = "Enable";
-            this.CommentMaster_Enable.FalseValue = "False";
-            this.CommentMaster_Enable.HeaderText = "有効";
-            this.CommentMaster_Enable.Name = "CommentMaster_Enable";
-            this.CommentMaster_Enable.TrueValue = "True";
-            // 
-            // buttonコメント_Debug
-            // 
-            this.buttonコメント_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント_Debug.Location = new System.Drawing.Point(619, 302);
-            this.buttonコメント_Debug.Name = "buttonコメント_Debug";
-            this.buttonコメント_Debug.Size = new System.Drawing.Size(106, 45);
-            this.buttonコメント_Debug.TabIndex = 4;
-            this.buttonコメント_Debug.Text = "コメント";
-            this.buttonコメント_Debug.UseVisualStyleBackColor = true;
-            this.buttonコメント_Debug.Click += new System.EventHandler(this.buttonコメント_Debug_Click);
             // 
             // tabPageデバッグ
             // 
@@ -776,6 +564,14 @@
             this.groupBox7.TabIndex = 7;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "予約設定";
+            // 
+            // textBox予約_UserId
+            // 
+            this.textBox予約_UserId.Enabled = false;
+            this.textBox予約_UserId.Location = new System.Drawing.Point(619, 17);
+            this.textBox予約_UserId.Name = "textBox予約_UserId";
+            this.textBox予約_UserId.Size = new System.Drawing.Size(106, 27);
+            this.textBox予約_UserId.TabIndex = 21;
             // 
             // textBox予約_AccountId
             // 
@@ -1312,6 +1108,7 @@
             this.dataGridViewAccount.Size = new System.Drawing.Size(625, 359);
             this.dataGridViewAccount.TabIndex = 1;
             this.dataGridViewAccount.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewAccount_CellDoubleClick);
+            this.dataGridViewAccount.SelectionChanged += new System.EventHandler(this.dataGridViewAccount_SelectionChanged);
             // 
             // AccountMaster_Id
             // 
@@ -1412,19 +1209,35 @@
             this.buttonクリアlog.UseVisualStyleBackColor = true;
             this.buttonクリアlog.Click += new System.EventHandler(this.buttonクリアlog_Click);
             // 
-            // textBox予約_UserId
+            // buttonコメント編集
             // 
-            this.textBox予約_UserId.Enabled = false;
-            this.textBox予約_UserId.Location = new System.Drawing.Point(619, 17);
-            this.textBox予約_UserId.Name = "textBox予約_UserId";
-            this.textBox予約_UserId.Size = new System.Drawing.Size(106, 27);
-            this.textBox予約_UserId.TabIndex = 21;
+            this.buttonコメント編集.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonコメント編集.Location = new System.Drawing.Point(933, 414);
+            this.buttonコメント編集.Name = "buttonコメント編集";
+            this.buttonコメント編集.Size = new System.Drawing.Size(106, 28);
+            this.buttonコメント編集.TabIndex = 6;
+            this.buttonコメント編集.Text = "コメント設定";
+            this.buttonコメント編集.UseVisualStyleBackColor = true;
+            this.buttonコメント編集.Click += new System.EventHandler(this.buttonコメント編集_Click);
+            // 
+            // buttonアカウント設定
+            // 
+            this.buttonアカウント設定.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonアカウント設定.Location = new System.Drawing.Point(1067, 414);
+            this.buttonアカウント設定.Name = "buttonアカウント設定";
+            this.buttonアカウント設定.Size = new System.Drawing.Size(106, 28);
+            this.buttonアカウント設定.TabIndex = 10;
+            this.buttonアカウント設定.Text = "アカウント設定";
+            this.buttonアカウント設定.UseVisualStyleBackColor = true;
+            this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1468, 712);
+            this.Controls.Add(this.buttonアカウント設定);
+            this.Controls.Add(this.buttonコメント編集);
             this.Controls.Add(this.buttonクリアlog);
             this.Controls.Add(this.textBoxRenew);
             this.Controls.Add(this.buttonDebugGetBearerToken);
@@ -1449,11 +1262,6 @@
             this.groupBox4.PerformLayout();
             this.tabPage予約.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewReserveSchedule)).EndInit();
-            this.tabPageツイート.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox6.ResumeLayout(false);
-            this.groupBox6.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).EndInit();
             this.tabPageデバッグ.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
@@ -1476,18 +1284,10 @@
         private System.Windows.Forms.Button buttonブックマーク_Debug;
         private System.Windows.Forms.Button buttonいいね_Debug;
         private System.Windows.Forms.DataGridView dataGridViewAccount;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.DataGridView dataGridViewComment;
-        private System.Windows.Forms.Button buttonコメント_Debug;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.TextBox textBoxUrlTweetID_Debug;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.DataGridView dataGridViewTweetHistory;
-        private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_Id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_UserId;
-        private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_AccountId;
-        private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_Comment;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn CommentMaster_Enable;
         private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_Id;
         private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_UserId;
         private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_Name;
@@ -1535,17 +1335,6 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button buttonリプライ_Debug;
         private System.Windows.Forms.TabPage tabPageツイート;
-        private System.Windows.Forms.GroupBox groupBox6;
-        private System.Windows.Forms.Button buttonコメント保存;
-        private System.Windows.Forms.Button buttonコメント追加;
-        private System.Windows.Forms.Button buttonコメント削除;
-        private System.Windows.Forms.CheckBox checkBoxコメント_全アカウント共通;
-        private System.Windows.Forms.CheckBox checkBoxコメント有効;
-        private System.Windows.Forms.TextBox textBoxコメント;
-        private System.Windows.Forms.TextBox textBoxコメント_コメントID;
-        private System.Windows.Forms.TextBox textBoxコメント_AccountId;
-        private System.Windows.Forms.TextBox textBoxコメント_UserID;
-        private System.Windows.Forms.Button buttonコメント編集;
         private System.Windows.Forms.GroupBox groupBox7;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox comboBox予約設定３_回数;
@@ -1578,6 +1367,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_ReserveTime;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_Result;
         private System.Windows.Forms.TextBox textBox予約_UserId;
+        private System.Windows.Forms.Button buttonコメント編集;
+        private System.Windows.Forms.Button buttonアカウント設定;
     }
 }
 

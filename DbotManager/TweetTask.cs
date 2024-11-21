@@ -24,18 +24,12 @@ namespace DbotManager
     {
         private readonly Action<string> logAction;
 
-        private string dbMachineName;
-        private string dbUser;
-        private string dbRoot;
-        private string dbPass;
+        private DbConnectionInfo dbConnectin;
 
-        public TweetTask(Action<string> logAction, string dbMachineName, string dbUser, string dbRoot, string dbPass)
+        public TweetTask(DbConnectionInfo dbConnection , Action<string> logAction = null)
         {
             this.logAction = logAction;
-            this.dbMachineName = dbMachineName;
-            this.dbUser = dbUser;
-            this.dbRoot = dbRoot;
-            this.dbPass = dbPass;
+            dbConnectin = dbConnection;
         }
 
 
@@ -65,7 +59,7 @@ namespace DbotManager
             List<AccountMaster> retList = new List<AccountMaster>();
 
             // MySQLデータアクセスの初期化
-            var dataAccess = new MySqlDataAccess(dbMachineName, dbUser, dbRoot, dbPass);
+            var dataAccess = new MySqlDataAccess(dbConnectin);
 
             // 過去TargetTweetID宛に処理済みだった場合は省くため、リスト抽出
             /*

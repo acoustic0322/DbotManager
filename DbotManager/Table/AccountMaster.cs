@@ -15,6 +15,8 @@ namespace DbotManager.Table
         public string LoginPass { get; set; }
         public string ApiKey { get; set; }
         public string ApiKeySecret { get; set; }
+        public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
         public string AccessToken { get; set; }
         public string AccessTokenSecret { get; set; }
         public string BearerToken { get; set; }
@@ -22,8 +24,24 @@ namespace DbotManager.Table
         public bool Enable { get; set; }
         public bool LikeEnable { get; set; }
         public bool BookMarkEnable { get; set; }
-        public bool RetweetEnable { get; set; }
+        public bool ReplyEnable { get; set; }
         public bool TweetEnable { get; set; }
         public bool Paid { get; set; }
+        public bool Reserve1Enable { get; set; }
+        public bool Reserve2Enable { get; set; }
+        public bool Reserve3Enable { get; set; }
+        public bool Reserve4Enable { get; set; }
+        public int Reserve1StartHour { get; set; }
+        public int Reserve2StartHour { get; set; }
+        public int Reserve3StartHour { get; set; }
+        public int Reserve4StartHour { get; set; }
+        public int Reserve1EndHour { get; set; }
+        public int Reserve2EndHour { get; set; }
+        public int Reserve3EndHour { get; set; }
+        public int Reserve4EndHour { get; set; }
+        public int Reserve1Count { get; set; }
+        public int Reserve2Count { get; set; }
+        public int Reserve3Count { get; set; }
+        public int Reserve4Count { get; set; }
     }
 }
