@@ -42,6 +42,40 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             dataAccess = new MySqlDataAccess(this.dbConnection);
 
+            /*
+                        comboBox予約設定１_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList); 
+            comboBox予約設定１_回数.DisplayMember = "Value";
+            comboBox予約設定１_回数.ValueMember = "Key";
+
+            comboBox予約設定２_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList); 
+            comboBox予約設定２_回数.DisplayMember = "Value";
+            comboBox予約設定２_回数.ValueMember = "Key";
+
+            comboBox予約設定３_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList);
+            comboBox予約設定３_回数.DisplayMember = "Value";
+            comboBox予約設定３_回数.ValueMember = "Key";
+
+            comboBox予約設定１_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定１_Start.DisplayMember = "Value";
+            comboBox予約設定１_Start.ValueMember = "Key";
+            comboBox予約設定２_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定２_Start.DisplayMember = "Value";
+            comboBox予約設定２_Start.ValueMember = "Key";
+            comboBox予約設定３_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定３_Start.DisplayMember = "Value";
+            comboBox予約設定３_Start.ValueMember = "Key";
+            comboBox予約設定１_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定１_End.DisplayMember = "Value";
+            comboBox予約設定１_End.ValueMember = "Key";
+            comboBox予約設定２_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定２_End.DisplayMember = "Value";
+            comboBox予約設定２_End.ValueMember = "Key";
+            comboBox予約設定３_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
+            comboBox予約設定３_End.DisplayMember = "Value";
+            comboBox予約設定３_End.ValueMember = "Key";
+             
+             * */
+
             FillDebugControls_UserName();
 
             _isLoading = false;
@@ -125,6 +159,16 @@ namespace DbotManager
                 if (tweet != null)
                 {
                     checkBoxツイート.Checked = Convert.ToBoolean(tweet.Value);
+                }
+
+                // データグリッドビューの選択変更時にダイアログを更新
+                if (_commentDialog != null && !_commentDialog.IsDisposed)
+                {
+                    var selectedRow = dataGridViewAccount.CurrentRow;
+                    if (selectedRow != null)
+                    {
+                        _commentDialog.UpdateInfo(_accountId);
+                    }
                 }
 
             }
@@ -326,6 +370,53 @@ namespace DbotManager
             return null;
         }
 
+        private void buttonいいね_Debug_Click(object sender, EventArgs e)
+        {
+            int userId = GetUserId();
+            int accountId = _accountId;
+            string tweetId = GetTweetId(true);
 
+            TweetTask tweetTask = new TweetTask(dbConnection);
+            tweetTask.TweetProc(TweetProcTypes.LIKE, userId, accountId, 0, tweetId);
+        }
+
+        private void buttonブックマーク_Debug_Click(object sender, EventArgs e)
+        {
+            int userId = GetUserId();
+            int accountId = _accountId;
+            string tweetId = GetTweetId(true);
+
+            TweetTask tweetTask = new TweetTask(dbConnection);
+            tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, 0, tweetId);
+        }
+
+        private void buttonリプライ_Debug_Click(object sender, EventArgs e)
+        {
+            int userId = GetUserId();
+            int accountId = _accountId;
+            string tweetId = GetTweetId(true);
+
+            TweetTask tweetTask = new TweetTask(dbConnection);
+            tweetTask.TweetProc(TweetProcTypes.RETWEET, userId, accountId, 0, tweetId);
+        }
+
+
+        private CommentDialog _commentDialog;
+
+        private void buttonコメント編集_Click(object sender, EventArgs e)
+        {
+            // ダイアログが未作成または破棄されている場合に新しいダイアログを作成
+            if (_commentDialog == null || _commentDialog.IsDisposed)
+            {
+                _commentDialog = new CommentDialog(dbConnection);
+                _commentDialog.Show();
+                _commentDialog.UpdateInfo(_accountId);
+            }
+            else
+            {
+                // 既に開いている場合はフォーカスを移動
+                _commentDialog.Focus();
+            }
+        }
     }
 }

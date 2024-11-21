@@ -112,10 +112,7 @@ namespace DbotManager
         private void FillControls()
         {
             FillDebugControls_TweetHistory();
-            FillDebugControls_UserName();
             FillDebugControls_AccountMaster();
-
-            FillControls_Reserve();
 
         }
 
@@ -136,63 +133,11 @@ namespace DbotManager
 
         private void FillDebugControls_AccountMaster()
         {
-            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == GetUserId()).ToList();
-
-            if (accountMasterList != null)
-            {
-                dataGridViewAccount.DataSource = accountMasterList;
-            }
-            else
-            {
-                MessageBox.Show("データを取得できませんでした。");
-            }
         }
 
-        private void FillDebugControls_UserName()
-        {
-            List<UserMaster> userList = dataAccess.GetUserNames();
-
-            if (userList != null)
-            {
-                comboBoxUserMaster.DataSource = userList;
-                comboBoxUserMaster.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
-                comboBoxUserMaster.ValueMember = "Id";     // 選択されたときに取得するプロパティ
-            }
-            else
-            {
-                MessageBox.Show("ユーザー名を取得できませんでした。");
-            }
-        }
         #endregion
 
         #region Button
-
-        private void buttonいいね_Debug_Click(object sender, EventArgs e)
-        {
-            int userId = GetUserId();
-            int accountId = GetAccountId();
-            string tweetId = GetTweetId(true);
-
-            _tweetTask.TweetProc(TweetProcTypes.LIKE, userId, accountId, 0, tweetId);
-        }
-
-        private void buttonブックマーク_Debug_Click(object sender, EventArgs e)
-        {
-            int userId = GetUserId();
-            int accountId = GetAccountId();
-            string tweetId = GetTweetId(true);
-
-            _tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, 0, tweetId);
-        }
-
-        private void buttonリプライ_Debug_Click(object sender, EventArgs e)
-        {
-            int userId = GetUserId();
-            int accountId = GetAccountId();
-            string tweetId = GetTweetId(true);
-
-            _tweetTask.TweetProc(TweetProcTypes.RETWEET, userId, accountId, 0, tweetId);
-        }
 
         private void buttonいいねリスト作成_Click(object sender, EventArgs e)
         {
@@ -223,33 +168,6 @@ namespace DbotManager
             textBoxRenew.Text = string.Empty;
         }
 
-        private void buttonDebugGetBearerToken_Click(object sender, EventArgs e)
-        {
-            string command = _tweetTask.GetTweetCommand(TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), GetAccountId(), 0, GetTweetId(true));
-
-            // クリップボードに文字列を設定
-            Clipboard.SetText(command);
-            MessageBox.Show("コマンドプロンプトに貼り付け操作を行って実行してください", "確認");
-            Process.Start("cmd.exe"); // "/k" はコマンド実行後もウィンドウを開いたままにする
-
-        }
-
-        private void buttonDebugGetAccessToken_Click(object sender, EventArgs e)
-        {
-            string command = _tweetTask.GetTweetCommand(TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), GetAccountId(), 0, GetTweetId(true));
-
-            // クリップボードに文字列を設定
-            Clipboard.SetText(command);
-            MessageBox.Show("コマンドプロンプトに貼り付け操作を行って実行してください", "確認");
-            Process.Start("cmd.exe"); // "/k" はコマンド実行後もウィンドウを開いたままにする
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            FillControls();
-        }
-
         #endregion
 
         #region その他イベント
@@ -264,30 +182,9 @@ namespace DbotManager
 
         #region その他処理
 
-        private int GetUserId()
+        private string GetTweetId()
         {
-            return (int)comboBoxUserMaster.SelectedValue;
-        }
-
-        private int GetAccountId()
-        {
-            // 選択されている行があるか確認
-            if (dataGridViewAccount.SelectedRows.Count > 0)
-            {
-                // 選択されている最初の行を取得
-                DataGridViewRow selectedRow = dataGridViewAccount.SelectedRows[0];
-
-                // 特定の列（例: 列インデックスが2の列）の値を取得
-                var cellValue = selectedRow.Cells[AccountMaster_Id.Name].Value;
-
-                return int.Parse(cellValue.ToString());
-            }
-            return 0;
-        }
-
-        private string GetTweetId(bool debug_mode = false)
-        {
-            string input = debug_mode ? textBoxUrlTweetID_Debug.Text : textBoxUrlTweetID.Text;
+            string input = textBoxUrlTweetID.Text;
             string extractedNumber = ExtractNumber(input);
 
             if (extractedNumber != null)
@@ -394,7 +291,7 @@ namespace DbotManager
             {
                 _commentDialog = new CommentDialog(DbConnection);
                 _commentDialog.Show();
-                _commentDialog.UpdateInfo(GetAccountId());
+//                _commentDialog.UpdateInfo(GetAccountId());
             }
             else
             {
@@ -404,131 +301,6 @@ namespace DbotManager
         }
 
         #endregion
-
-        private void dataGridViewAccount_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            // ヘッダー部分をダブルクリックした場合は無視
-            if (e.RowIndex < 0)
-                return;
-
-            // ダブルクリックされた行と列の値を取得
-            DataGridViewRow selectedRow = dataGridViewAccount.Rows[e.RowIndex];
-            string accountId = selectedRow.Cells["AccountMaster_Id"].Value?.ToString() ?? string.Empty;
-            string userId = selectedRow.Cells["AccountMaster_UserId"].Value?.ToString() ?? string.Empty;
-
-
-            FillControlsReserveSetting(int.Parse(userId) , int.Parse(accountId));
-        }
-
-        private void FillControls_Reserve()
-        {
-            comboBox予約設定１_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList); 
-            comboBox予約設定１_回数.DisplayMember = "Value";
-            comboBox予約設定１_回数.ValueMember = "Key";
-
-            comboBox予約設定２_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList); 
-            comboBox予約設定２_回数.DisplayMember = "Value";
-            comboBox予約設定２_回数.ValueMember = "Key";
-
-            comboBox予約設定３_回数.DataSource = new BindingList<KeyValuePair<int, string>>(resereveCountList);
-            comboBox予約設定３_回数.DisplayMember = "Value";
-            comboBox予約設定３_回数.ValueMember = "Key";
-
-            comboBox予約設定１_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
-            comboBox予約設定１_Start.DisplayMember = "Value";
-            comboBox予約設定１_Start.ValueMember = "Key";
-            comboBox予約設定２_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
-            comboBox予約設定２_Start.DisplayMember = "Value";
-            comboBox予約設定２_Start.ValueMember = "Key";
-            comboBox予約設定３_Start.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
-            comboBox予約設定３_Start.DisplayMember = "Value";
-            comboBox予約設定３_Start.ValueMember = "Key";
-            comboBox予約設定１_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
-            comboBox予約設定１_End.DisplayMember = "Value";
-            comboBox予約設定１_End.ValueMember = "Key";
-            comboBox予約設定２_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
-            comboBox予約設定２_End.DisplayMember = "Value";
-            comboBox予約設定２_End.ValueMember = "Key";
-            comboBox予約設定３_End.DataSource = new BindingList<KeyValuePair<int, string>>(resereveHourList);
-            comboBox予約設定３_End.DisplayMember = "Value";
-            comboBox予約設定３_End.ValueMember = "Key";
-        }
-
-
-        private void FillControlsReserveSetting(int userId , int accountId)
-        {
-            // テキストボックスに値を設定
-            textBox予約_AccountId.Text = accountId.ToString();
-            textBox予約_UserId.Text = userId.ToString();
-
-            var reserveItem = dataAccess.GetReserveMaster(accountId);
-
-            if(reserveItem == null)
-            {
-                reserveItem = new ReserveMaster()
-                {
-                    AccountId = accountId,
-                    Reserve1Count = 1,
-                    Reserve1StartHour = 8,
-                    Reserve1EndHour = 10,
-                    Reserve1Enable = false,
-                    Reserve2Count = 1,
-                    Reserve2StartHour = 8,
-                    Reserve2EndHour = 10,
-                    Reserve2Enable = false,
-                    Reserve3Count = 1,
-                    Reserve3StartHour = 8,
-                    Reserve3EndHour = 10,
-                    Reserve3Enable = false,
-                };
-                dataAccess.InsertReserveMaster(reserveItem);
-            }
-
-            checkBox予約設定1.Checked = reserveItem.Reserve1Enable;
-            checkBox予約設定2.Checked = reserveItem.Reserve2Enable;
-            checkBox予約設定3.Checked = reserveItem.Reserve3Enable;
-
-            comboBox予約設定１_Start.SelectedValue = reserveItem.Reserve1StartHour;
-            comboBox予約設定２_Start.SelectedValue = reserveItem.Reserve2StartHour;
-            comboBox予約設定３_Start.SelectedValue = reserveItem.Reserve3StartHour;
-
-            comboBox予約設定１_End.SelectedValue = reserveItem.Reserve1EndHour;
-            comboBox予約設定２_End.SelectedValue = reserveItem.Reserve2EndHour;
-            comboBox予約設定３_End.SelectedValue = reserveItem.Reserve3EndHour;
-
-            comboBox予約設定１_回数.SelectedValue = reserveItem.Reserve1Count;
-            comboBox予約設定２_回数.SelectedValue = reserveItem.Reserve2Count;
-            comboBox予約設定３_回数.SelectedValue = reserveItem.Reserve3Count;
-
-        }
-
-        private void button予約保存_Click(object sender, EventArgs e)
-        {
-            // テキストボックスに値を設定
-            int accountId = int.Parse(textBox予約_AccountId.Text);
-            int userId = int.Parse(textBox予約_UserId.Text);
-
-            ReserveMaster reservedItem = new ReserveMaster()
-            {
-                UserId = userId,
-                AccountId = accountId,
-                Reserve1Enable = checkBox予約設定1.Checked,
-                Reserve2Enable = checkBox予約設定2.Checked,
-                Reserve3Enable = checkBox予約設定3.Checked,
-                Reserve1StartHour = int.Parse(comboBox予約設定１_Start.SelectedValue.ToString()),
-                Reserve2StartHour = int.Parse(comboBox予約設定２_Start.SelectedValue.ToString()),
-                Reserve3StartHour = int.Parse(comboBox予約設定３_Start.SelectedValue.ToString()),
-                Reserve1EndHour = int.Parse(comboBox予約設定１_End.SelectedValue.ToString()),
-                Reserve2EndHour = int.Parse(comboBox予約設定２_End.SelectedValue.ToString()),
-                Reserve3EndHour = int.Parse(comboBox予約設定３_End.SelectedValue.ToString()),
-                Reserve1Count = int.Parse(comboBox予約設定１_回数.SelectedValue.ToString()),
-                Reserve2Count = int.Parse(comboBox予約設定２_回数.SelectedValue.ToString()),
-                Reserve3Count = int.Parse(comboBox予約設定３_回数.SelectedValue.ToString()),
-            };
-
-            dataAccess.UpdateReserveMaster(reservedItem);
-
-        }
 
         private void button予約作成_Click(object sender, EventArgs e)
         {
@@ -628,19 +400,6 @@ namespace DbotManager
             return schedules;
         }
 
-        private void dataGridViewAccount_SelectionChanged(object sender, EventArgs e)
-        {
-            // データグリッドビューの選択変更時にダイアログを更新
-            if (_commentDialog != null && !_commentDialog.IsDisposed)
-            {
-                var selectedRow = dataGridViewAccount.CurrentRow;
-                if (selectedRow != null)
-                {
-                    var accountId = int.Parse(selectedRow.Cells["AccountMaster_Id"].Value?.ToString());
-                    _commentDialog.UpdateInfo(accountId);
-                }
-            }
-        }
 
         AccountDialog _accountDialog;
 
@@ -651,7 +410,6 @@ namespace DbotManager
             {
                 _accountDialog = new AccountDialog(DbConnection);
                 _accountDialog.Show();
-                _accountDialog.UpdateInfo(GetUserId());
             }
             else
             {
