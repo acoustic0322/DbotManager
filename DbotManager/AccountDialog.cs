@@ -78,6 +78,10 @@ namespace DbotManager
 
             FillDebugControls_UserName();
 
+            UpdateInfo(GetUserId());
+
+            FillControl_AccountInfo();
+
             _isLoading = false;
         }
 
@@ -97,14 +101,8 @@ namespace DbotManager
             }
         }
 
-        #endregion
-
-        #region イベント
-
-        private void dataGridViewAccount_SelectionChanged(object sender, EventArgs e)
+        private void FillControl_AccountInfo()
         {
-            if (_isLoading) return;
-
             if (dataGridViewAccount.CurrentCell != null)
             {
                 var accountId = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Id.Name].Value.ToString();
@@ -128,7 +126,7 @@ namespace DbotManager
                 var enable = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Enable.Name] as DataGridViewCheckBoxCell;
                 if (enable != null)
                 {
-                    checkBoxいいね.Checked = Convert.ToBoolean(enable.Value);
+                    checkBox有効.Checked = Convert.ToBoolean(enable.Value);
                 }
 
                 var paid = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Paid.Name] as DataGridViewCheckBoxCell;
@@ -174,6 +172,20 @@ namespace DbotManager
             }
         }
 
+        #endregion
+
+        #region イベント
+
+
+        private void dataGridViewAccount_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            FillControl_AccountInfo();
+        }
+
+        private void dataGridViewAccount_SelectionChanged(object sender, EventArgs e)
+        {
+        }
+
 
         private void buttonアカウント削除_Click(object sender, EventArgs e)
         {
@@ -185,7 +197,7 @@ namespace DbotManager
         {
             AccountMaster accountMaster = new AccountMaster()
             {
-                Id = 0,
+                UserId = GetUserId(),
                 Name = textBoxName.Text,
                 LoginId = textBoxLogInId.Text,
                 LoginPass = textBoxLogInPass.Text,
@@ -202,6 +214,7 @@ namespace DbotManager
                 LikeEnable = checkBoxいいね.Checked,
                 BookMarkEnable = checkBoxブックマーク.Checked,
                 ReplyEnable = checkBoxリプライ.Checked,
+                TweetEnable = checkBoxツイート.Checked,
                 Reserve1Enable = false,
                 Reserve1Count = 0,
                 Reserve1StartHour = 0,
@@ -221,7 +234,27 @@ namespace DbotManager
             };
 
             dataAccess.InsertAccountMaster(accountMaster);
-            UpdateInfo(GetUserId());
+            UpdateInfo(GetUserId() , _accountId);
+
+
+
+//            dataGridViewAccount.Rows[1].Selected = true;
+
+            /*
+
+            foreach (DataGridViewRow row in dataGridViewAccount.Rows)
+            {
+                // 行が新規行ではない場合にのみチェック
+                if (!row.IsNewRow && row.Cells[AccountMaster_Id.Name].Value?.Equals(_accountId) == true)
+                {
+                    row.Selected = true; // 行を選択状態にする
+                }
+                else
+                {
+                    row.Selected = false; // 一致しない行は選択を解除
+                }
+            }
+            */
         }
 
         private void buttonアカウント保存_Click(object sender, EventArgs e)
@@ -246,6 +279,7 @@ namespace DbotManager
                 LikeEnable = checkBoxいいね.Checked,
                 BookMarkEnable = checkBoxブックマーク.Checked,
                 ReplyEnable = checkBoxリプライ.Checked,
+                TweetEnable = checkBoxツイート.Checked,
                 Reserve1Enable = false,
                 Reserve1Count = 0,
                 Reserve1StartHour = 0,
@@ -265,7 +299,9 @@ namespace DbotManager
             };
 
             dataAccess.UpdateAccountMaster(accountMaster);
-            UpdateInfo(GetUserId());
+            UpdateInfo(GetUserId() , _accountId);
+            SupportUtil.SelectRowsByColumnValue(dataGridViewAccount, AccountMaster_Id.Name, _accountId);
+
         }
 
         private void buttonExe_Click(object sender, EventArgs e)
@@ -288,7 +324,7 @@ namespace DbotManager
 
         private void buttonGetAccessToken_Click(object sender, EventArgs e)
         {
-            TweetTask tweetTask = new TweetTask(dbConnection);
+            TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
             string command = tweetTask.GetTweetCommand(TweetProcTypes.GET_ACCESSTOKEN, _userId, _accountId, 0, GetTweetId(true));
 
             // クリップボードに文字列を設定
@@ -299,7 +335,7 @@ namespace DbotManager
 
         private void buttonGetBearerToken_Click(object sender, EventArgs e)
         {
-            TweetTask tweetTask = new TweetTask(dbConnection);
+            TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
             string command = tweetTask.GetTweetCommand(TweetProcTypes.GET_REFRESHTOKEN, _userId, _accountId, 0, GetTweetId(true));
 
             // クリップボードに文字列を設定
@@ -314,26 +350,37 @@ namespace DbotManager
             UpdateInfo(GetUserId());
         }
 
+        private void button再取得_Click(object sender, EventArgs e)
+        {
+            UpdateInfo(GetUserId() , _accountId);
+//            FillControl_AccountInfo();
+        }
+
         #endregion
 
         #region 画面更新
-        public void UpdateInfo(int userId)
+        public void UpdateInfo(int userId , int account_id = 0)
         {
-            if (_isLoading) return;
-
             _userId = userId;
 
             var accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == userId).ToList();
             dataGridViewAccount.DataSource = accountMasterList;
 
+            if (account_id != 0)
+            {
+                SupportUtil.SelectRowsByColumnValue(dataGridViewAccount, AccountMaster_Id.Name, account_id);
+            }
+
             var name = dataAccess.GetUserNames().Where(x => x.Id == userId).FirstOrDefault().Name;
             this.Text = $"{name} の アカウント一覧";
+
         }
 
         private int GetUserId()
         {
             return (int)comboBoxUserMaster.SelectedValue;
         }
+
 
         #endregion
 
@@ -376,7 +423,7 @@ namespace DbotManager
             int accountId = _accountId;
             string tweetId = GetTweetId(true);
 
-            TweetTask tweetTask = new TweetTask(dbConnection);
+            TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
             tweetTask.TweetProc(TweetProcTypes.LIKE, userId, accountId, 0, tweetId);
         }
 
@@ -386,7 +433,7 @@ namespace DbotManager
             int accountId = _accountId;
             string tweetId = GetTweetId(true);
 
-            TweetTask tweetTask = new TweetTask(dbConnection);
+            TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
             tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, 0, tweetId);
         }
 
@@ -396,7 +443,7 @@ namespace DbotManager
             int accountId = _accountId;
             string tweetId = GetTweetId(true);
 
-            TweetTask tweetTask = new TweetTask(dbConnection);
+            TweetTask tweetTask = new TweetTask(dbConnection , AppendLog);
             tweetTask.TweetProc(TweetProcTypes.RETWEET, userId, accountId, 0, tweetId);
         }
 
@@ -417,6 +464,29 @@ namespace DbotManager
                 // 既に開いている場合はフォーカスを移動
                 _commentDialog.Focus();
             }
+        }
+
+        // TextBoxにログを表示するメソッド
+        private void AppendLog(string message)
+        {
+            if (message != null)
+            {
+                textBoxRenew.Invoke((MethodInvoker)(() =>
+                    textBoxRenew.AppendText(message + Environment.NewLine)
+                ));
+
+                // 必要に応じてログファイルにも書き込む
+                SupportUtil.SaveLogToFile(message, textBoxRenew);
+            }
+            /*
+            if (message != null)
+            {
+                textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText(message + Environment.NewLine)));
+
+                // ログファイルに書き込み
+                SaveLogToFile(message);
+            }
+            */
         }
     }
 }

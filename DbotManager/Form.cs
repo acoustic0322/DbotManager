@@ -95,7 +95,7 @@ namespace DbotManager
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            MakeFolder("python");
+            SupportUtil.MakeFolder("python");
             _tweetTask = new TweetTask(DbConnection , AppendLog);
 
             FillControls();
@@ -215,7 +215,7 @@ namespace DbotManager
 
         #endregion
 
-        #region ファイル処理関連
+#region ファイル処理関連
 
         // TextBoxにログを表示するメソッド
         private void AppendLog(string message)
@@ -227,18 +227,11 @@ namespace DbotManager
                 ));
 
                 // 必要に応じてログファイルにも書き込む
-                SaveLogToFile(message);
+                SupportUtil.SaveLogToFile(message , textBoxRenew);
             }
-            /*
-            if (message != null)
-            {
-                textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText(message + Environment.NewLine)));
-
-                // ログファイルに書き込み
-                SaveLogToFile(message);
-            }
-            */
         }
+
+        /*
 
         // ログメッセージを日付別のファイルに保存するメソッド
         private void SaveLogToFile(string message)
@@ -274,11 +267,8 @@ namespace DbotManager
                 Directory.CreateDirectory(folderPath);
             }
         }
-
-
-
-
-        #endregion
+        */
+#endregion
 
         #region コメントタブ
 

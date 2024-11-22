@@ -87,6 +87,13 @@
             this.checkBox有効 = new System.Windows.Forms.CheckBox();
             this.buttonClose = new System.Windows.Forms.Button();
             this.dataGridViewAccount = new System.Windows.Forms.DataGridView();
+            this.comboBoxUserMaster = new System.Windows.Forms.ComboBox();
+            this.buttonリプライ_Debug = new System.Windows.Forms.Button();
+            this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.buttonブックマーク_Debug = new System.Windows.Forms.Button();
+            this.buttonいいね_Debug = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.AccountMaster_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.AccountMaster_UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.AccountMaster_Name = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -106,13 +113,8 @@
             this.AccountMaster_Bookmark = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.AccountMaster_Reply = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.AccountMaster_Tweet = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.comboBoxUserMaster = new System.Windows.Forms.ComboBox();
-            this.buttonリプライ_Debug = new System.Windows.Forms.Button();
-            this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.buttonブックマーク_Debug = new System.Windows.Forms.Button();
-            this.buttonいいね_Debug = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.button再取得 = new System.Windows.Forms.Button();
+            this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.groupBox6.SuspendLayout();
             this.groupBox7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAccount)).BeginInit();
@@ -121,8 +123,8 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.button再取得);
             this.groupBox6.Controls.Add(this.buttonコメント編集);
-            this.groupBox6.Controls.Add(this.groupBox7);
             this.groupBox6.Controls.Add(this.buttonGetBearerToken);
             this.groupBox6.Controls.Add(this.buttonGetAccessToken);
             this.groupBox6.Controls.Add(this.checkBoxツイート);
@@ -160,17 +162,17 @@
             this.groupBox6.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox6.Size = new System.Drawing.Size(623, 569);
+            this.groupBox6.Size = new System.Drawing.Size(623, 505);
             this.groupBox6.TabIndex = 2;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "コメント設定";
             // 
             // buttonコメント編集
             // 
-            this.buttonコメント編集.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント編集.Location = new System.Drawing.Point(8, 457);
+            this.buttonコメント編集.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonコメント編集.Location = new System.Drawing.Point(8, 462);
             this.buttonコメント編集.Name = "buttonコメント編集";
-            this.buttonコメント編集.Size = new System.Drawing.Size(106, 28);
+            this.buttonコメント編集.Size = new System.Drawing.Size(106, 33);
             this.buttonコメント編集.TabIndex = 28;
             this.buttonコメント編集.Text = "コメント設定";
             this.buttonコメント編集.UseVisualStyleBackColor = true;
@@ -199,7 +201,7 @@
             this.groupBox7.Controls.Add(this.comboBox予約設定１_End);
             this.groupBox7.Controls.Add(this.label19);
             this.groupBox7.Controls.Add(this.comboBox予約設定１_Start);
-            this.groupBox7.Location = new System.Drawing.Point(435, 393);
+            this.groupBox7.Location = new System.Drawing.Point(823, 702);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(731, 125);
             this.groupBox7.TabIndex = 20;
@@ -603,9 +605,9 @@
             // buttonGetBearerToken
             // 
             this.buttonGetBearerToken.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonGetBearerToken.Location = new System.Drawing.Point(153, 491);
+            this.buttonGetBearerToken.Location = new System.Drawing.Point(188, 426);
             this.buttonGetBearerToken.Name = "buttonGetBearerToken";
-            this.buttonGetBearerToken.Size = new System.Drawing.Size(204, 27);
+            this.buttonGetBearerToken.Size = new System.Drawing.Size(174, 27);
             this.buttonGetBearerToken.TabIndex = 30;
             this.buttonGetBearerToken.Text = "Bearer/Refresh取得";
             this.buttonGetBearerToken.UseVisualStyleBackColor = true;
@@ -614,9 +616,9 @@
             // buttonGetAccessToken
             // 
             this.buttonGetAccessToken.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonGetAccessToken.Location = new System.Drawing.Point(8, 491);
+            this.buttonGetAccessToken.Location = new System.Drawing.Point(8, 426);
             this.buttonGetAccessToken.Name = "buttonGetAccessToken";
-            this.buttonGetAccessToken.Size = new System.Drawing.Size(139, 27);
+            this.buttonGetAccessToken.Size = new System.Drawing.Size(174, 27);
             this.buttonGetAccessToken.TabIndex = 29;
             this.buttonGetAccessToken.Text = "Access取得";
             this.buttonGetAccessToken.UseVisualStyleBackColor = true;
@@ -625,7 +627,7 @@
             // checkBoxツイート
             // 
             this.checkBoxツイート.AutoSize = true;
-            this.checkBoxツイート.Location = new System.Drawing.Point(279, 426);
+            this.checkBoxツイート.Location = new System.Drawing.Point(453, 393);
             this.checkBoxツイート.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.checkBoxツイート.Name = "checkBoxツイート";
             this.checkBoxツイート.Size = new System.Drawing.Size(73, 23);
@@ -636,7 +638,7 @@
             // checkBoxリプライ
             // 
             this.checkBoxリプライ.AutoSize = true;
-            this.checkBoxリプライ.Location = new System.Drawing.Point(202, 426);
+            this.checkBoxリプライ.Location = new System.Drawing.Point(376, 393);
             this.checkBoxリプライ.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.checkBoxリプライ.Name = "checkBoxリプライ";
             this.checkBoxリプライ.Size = new System.Drawing.Size(69, 23);
@@ -647,7 +649,7 @@
             // checkBoxブックマーク
             // 
             this.checkBoxブックマーク.AutoSize = true;
-            this.checkBoxブックマーク.Location = new System.Drawing.Point(103, 426);
+            this.checkBoxブックマーク.Location = new System.Drawing.Point(277, 393);
             this.checkBoxブックマーク.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.checkBoxブックマーク.Name = "checkBoxブックマーク";
             this.checkBoxブックマーク.Size = new System.Drawing.Size(91, 23);
@@ -658,7 +660,7 @@
             // checkBoxいいね
             // 
             this.checkBoxいいね.AutoSize = true;
-            this.checkBoxいいね.Location = new System.Drawing.Point(20, 426);
+            this.checkBoxいいね.Location = new System.Drawing.Point(206, 393);
             this.checkBoxいいね.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.checkBoxいいね.Name = "checkBoxいいね";
             this.checkBoxいいね.Size = new System.Drawing.Size(65, 23);
@@ -765,7 +767,7 @@
             // checkBox有料アカウント
             // 
             this.checkBox有料アカウント.AutoSize = true;
-            this.checkBox有料アカウント.Location = new System.Drawing.Point(103, 393);
+            this.checkBox有料アカウント.Location = new System.Drawing.Point(87, 393);
             this.checkBox有料アカウント.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.checkBox有料アカウント.Name = "checkBox有料アカウント";
             this.checkBox有料アカウント.Size = new System.Drawing.Size(113, 23);
@@ -856,31 +858,31 @@
             // buttonアカウント保存
             // 
             this.buttonアカウント保存.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonアカウント保存.Location = new System.Drawing.Point(524, 526);
+            this.buttonアカウント保存.Location = new System.Drawing.Point(524, 462);
             this.buttonアカウント保存.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonアカウント保存.Name = "buttonアカウント保存";
             this.buttonアカウント保存.Size = new System.Drawing.Size(92, 33);
             this.buttonアカウント保存.TabIndex = 7;
-            this.buttonアカウント保存.Text = "更新";
+            this.buttonアカウント保存.Text = "保存";
             this.buttonアカウント保存.UseVisualStyleBackColor = true;
             this.buttonアカウント保存.Click += new System.EventHandler(this.buttonアカウント保存_Click);
             // 
             // buttonアカウント追加
             // 
             this.buttonアカウント追加.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonアカウント追加.Location = new System.Drawing.Point(108, 526);
+            this.buttonアカウント追加.Location = new System.Drawing.Point(424, 462);
             this.buttonアカウント追加.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonアカウント追加.Name = "buttonアカウント追加";
             this.buttonアカウント追加.Size = new System.Drawing.Size(92, 33);
             this.buttonアカウント追加.TabIndex = 32;
-            this.buttonアカウント追加.Text = "複製・追加";
+            this.buttonアカウント追加.Text = "複製";
             this.buttonアカウント追加.UseVisualStyleBackColor = true;
             this.buttonアカウント追加.Click += new System.EventHandler(this.buttonアカウント追加_Click);
             // 
             // buttonアカウント削除
             // 
             this.buttonアカウント削除.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonアカウント削除.Location = new System.Drawing.Point(8, 526);
+            this.buttonアカウント削除.Location = new System.Drawing.Point(324, 462);
             this.buttonアカウント削除.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonアカウント削除.Name = "buttonアカウント削除";
             this.buttonアカウント削除.Size = new System.Drawing.Size(92, 33);
@@ -915,6 +917,7 @@
             // 
             this.dataGridViewAccount.AllowUserToAddRows = false;
             this.dataGridViewAccount.AllowUserToDeleteRows = false;
+            this.dataGridViewAccount.AllowUserToResizeRows = false;
             this.dataGridViewAccount.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewAccount.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.AccountMaster_Id,
@@ -944,24 +947,102 @@
             this.dataGridViewAccount.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewAccount.Size = new System.Drawing.Size(625, 670);
             this.dataGridViewAccount.TabIndex = 1;
+            this.dataGridViewAccount.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewAccount_CellClick);
             this.dataGridViewAccount.SelectionChanged += new System.EventHandler(this.dataGridViewAccount_SelectionChanged);
+            // 
+            // comboBoxUserMaster
+            // 
+            this.comboBoxUserMaster.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxUserMaster.FormattingEnabled = true;
+            this.comboBoxUserMaster.Location = new System.Drawing.Point(12, 14);
+            this.comboBoxUserMaster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.comboBoxUserMaster.Name = "comboBoxUserMaster";
+            this.comboBoxUserMaster.Size = new System.Drawing.Size(180, 27);
+            this.comboBoxUserMaster.TabIndex = 0;
+            this.comboBoxUserMaster.SelectedIndexChanged += new System.EventHandler(this.comboBoxUserMaster_SelectedIndexChanged);
+            // 
+            // buttonリプライ_Debug
+            // 
+            this.buttonリプライ_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonリプライ_Debug.Location = new System.Drawing.Point(405, 19);
+            this.buttonリプライ_Debug.Name = "buttonリプライ_Debug";
+            this.buttonリプライ_Debug.Size = new System.Drawing.Size(106, 27);
+            this.buttonリプライ_Debug.TabIndex = 2;
+            this.buttonリプライ_Debug.Text = "リプライ";
+            this.buttonリプライ_Debug.UseVisualStyleBackColor = true;
+            this.buttonリプライ_Debug.Click += new System.EventHandler(this.buttonリプライ_Debug_Click);
+            // 
+            // textBoxUrlTweetID
+            // 
+            this.textBoxUrlTweetID.Location = new System.Drawing.Point(20, 53);
+            this.textBoxUrlTweetID.Name = "textBoxUrlTweetID";
+            this.textBoxUrlTweetID.Size = new System.Drawing.Size(596, 27);
+            this.textBoxUrlTweetID.TabIndex = 4;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(16, 23);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(108, 19);
+            this.label13.TabIndex = 0;
+            this.label13.Text = "URL・TweetID";
+            // 
+            // buttonブックマーク_Debug
+            // 
+            this.buttonブックマーク_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonブックマーク_Debug.Location = new System.Drawing.Point(293, 20);
+            this.buttonブックマーク_Debug.Name = "buttonブックマーク_Debug";
+            this.buttonブックマーク_Debug.Size = new System.Drawing.Size(106, 27);
+            this.buttonブックマーク_Debug.TabIndex = 3;
+            this.buttonブックマーク_Debug.Text = "ブックマーク";
+            this.buttonブックマーク_Debug.UseVisualStyleBackColor = true;
+            this.buttonブックマーク_Debug.Click += new System.EventHandler(this.buttonブックマーク_Debug_Click);
+            // 
+            // buttonいいね_Debug
+            // 
+            this.buttonいいね_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonいいね_Debug.Location = new System.Drawing.Point(181, 20);
+            this.buttonいいね_Debug.Name = "buttonいいね_Debug";
+            this.buttonいいね_Debug.Size = new System.Drawing.Size(106, 27);
+            this.buttonいいね_Debug.TabIndex = 1;
+            this.buttonいいね_Debug.Text = "いいね";
+            this.buttonいいね_Debug.UseVisualStyleBackColor = true;
+            this.buttonいいね_Debug.Click += new System.EventHandler(this.buttonいいね_Debug_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.textBoxRenew);
+            this.groupBox1.Controls.Add(this.buttonブックマーク_Debug);
+            this.groupBox1.Controls.Add(this.buttonリプライ_Debug);
+            this.groupBox1.Controls.Add(this.label13);
+            this.groupBox1.Controls.Add(this.textBoxUrlTweetID);
+            this.groupBox1.Controls.Add(this.buttonいいね_Debug);
+            this.groupBox1.Location = new System.Drawing.Point(663, 527);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(623, 156);
+            this.groupBox1.TabIndex = 3;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "コメントテスト";
             // 
             // AccountMaster_Id
             // 
             this.AccountMaster_Id.DataPropertyName = "Id";
             this.AccountMaster_Id.HeaderText = "Id";
             this.AccountMaster_Id.Name = "AccountMaster_Id";
+            this.AccountMaster_Id.Visible = false;
             // 
             // AccountMaster_UserId
             // 
             this.AccountMaster_UserId.DataPropertyName = "UserId";
             this.AccountMaster_UserId.HeaderText = "UserId";
             this.AccountMaster_UserId.Name = "AccountMaster_UserId";
+            this.AccountMaster_UserId.Visible = false;
             // 
             // AccountMaster_Name
             // 
             this.AccountMaster_Name.DataPropertyName = "Name";
-            this.AccountMaster_Name.HeaderText = "Name";
+            this.AccountMaster_Name.HeaderText = "名前";
             this.AccountMaster_Name.Name = "AccountMaster_Name";
             // 
             // AccountMaster_LoginId
@@ -969,60 +1050,70 @@
             this.AccountMaster_LoginId.DataPropertyName = "LoginId";
             this.AccountMaster_LoginId.HeaderText = "ログインID";
             this.AccountMaster_LoginId.Name = "AccountMaster_LoginId";
+            this.AccountMaster_LoginId.Visible = false;
             // 
             // AccountMaster_LoginPass
             // 
             this.AccountMaster_LoginPass.DataPropertyName = "LoginPass";
             this.AccountMaster_LoginPass.HeaderText = "ログインパス";
             this.AccountMaster_LoginPass.Name = "AccountMaster_LoginPass";
+            this.AccountMaster_LoginPass.Visible = false;
             // 
             // AccountMaster_ApiKey
             // 
             this.AccountMaster_ApiKey.DataPropertyName = "ApiKey";
             this.AccountMaster_ApiKey.HeaderText = "ApiKey";
             this.AccountMaster_ApiKey.Name = "AccountMaster_ApiKey";
+            this.AccountMaster_ApiKey.Visible = false;
             // 
             // AccountMaster_ApiKeySecret
             // 
             this.AccountMaster_ApiKeySecret.DataPropertyName = "ApiKeySecret";
             this.AccountMaster_ApiKeySecret.HeaderText = "ApiKeySecret";
             this.AccountMaster_ApiKeySecret.Name = "AccountMaster_ApiKeySecret";
+            this.AccountMaster_ApiKeySecret.Visible = false;
             // 
             // AccountMaster_ClientId
             // 
             this.AccountMaster_ClientId.DataPropertyName = "ClientId";
             this.AccountMaster_ClientId.HeaderText = "ClientId";
             this.AccountMaster_ClientId.Name = "AccountMaster_ClientId";
+            this.AccountMaster_ClientId.Visible = false;
             // 
             // AccountMaster_ClientSecret
             // 
             this.AccountMaster_ClientSecret.DataPropertyName = "ClientSecret";
             this.AccountMaster_ClientSecret.HeaderText = "ClientSecret";
             this.AccountMaster_ClientSecret.Name = "AccountMaster_ClientSecret";
+            this.AccountMaster_ClientSecret.Visible = false;
             // 
             // AccountMaster_AccessToken
             // 
             this.AccountMaster_AccessToken.DataPropertyName = "AccessToken";
             this.AccountMaster_AccessToken.HeaderText = "AccessToken";
             this.AccountMaster_AccessToken.Name = "AccountMaster_AccessToken";
+            this.AccountMaster_AccessToken.Visible = false;
             // 
             // AccountMaster_AccessTokenSecret
             // 
             this.AccountMaster_AccessTokenSecret.DataPropertyName = "AccessTokenSecret";
             this.AccountMaster_AccessTokenSecret.HeaderText = "AccessTokenSecret";
             this.AccountMaster_AccessTokenSecret.Name = "AccountMaster_AccessTokenSecret";
+            this.AccountMaster_AccessTokenSecret.Visible = false;
             // 
             // AccountMaster_BearerToken
             // 
             this.AccountMaster_BearerToken.DataPropertyName = "BearerToken";
             this.AccountMaster_BearerToken.HeaderText = "BearerToken";
             this.AccountMaster_BearerToken.Name = "AccountMaster_BearerToken";
+            this.AccountMaster_BearerToken.Visible = false;
             // 
             // AccountMaster_RefreshToken
             // 
             this.AccountMaster_RefreshToken.DataPropertyName = "RefreshToken";
             this.AccountMaster_RefreshToken.HeaderText = "RefreshToken";
             this.AccountMaster_RefreshToken.Name = "AccountMaster_RefreshToken";
+            this.AccountMaster_RefreshToken.Visible = false;
             // 
             // AccountMaster_Enable
             // 
@@ -1050,7 +1141,7 @@
             // 
             // AccountMaster_Bookmark
             // 
-            this.AccountMaster_Bookmark.DataPropertyName = "Bookmark";
+            this.AccountMaster_Bookmark.DataPropertyName = "BookmarkEnable";
             this.AccountMaster_Bookmark.FalseValue = "False";
             this.AccountMaster_Bookmark.HeaderText = "ブックマーク";
             this.AccountMaster_Bookmark.Name = "AccountMaster_Bookmark";
@@ -1058,7 +1149,7 @@
             // 
             // AccountMaster_Reply
             // 
-            this.AccountMaster_Reply.DataPropertyName = "Reply";
+            this.AccountMaster_Reply.DataPropertyName = "ReplyEnable";
             this.AccountMaster_Reply.FalseValue = "False";
             this.AccountMaster_Reply.HeaderText = "リプライ";
             this.AccountMaster_Reply.Name = "AccountMaster_Reply";
@@ -1072,79 +1163,26 @@
             this.AccountMaster_Tweet.Name = "AccountMaster_Tweet";
             this.AccountMaster_Tweet.TrueValue = "True";
             // 
-            // comboBoxUserMaster
+            // button再取得
             // 
-            this.comboBoxUserMaster.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxUserMaster.FormattingEnabled = true;
-            this.comboBoxUserMaster.Location = new System.Drawing.Point(12, 14);
-            this.comboBoxUserMaster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.comboBoxUserMaster.Name = "comboBoxUserMaster";
-            this.comboBoxUserMaster.Size = new System.Drawing.Size(180, 27);
-            this.comboBoxUserMaster.TabIndex = 0;
-            this.comboBoxUserMaster.SelectedIndexChanged += new System.EventHandler(this.comboBoxUserMaster_SelectedIndexChanged);
+            this.button再取得.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button再取得.Location = new System.Drawing.Point(368, 426);
+            this.button再取得.Name = "button再取得";
+            this.button再取得.Size = new System.Drawing.Size(159, 27);
+            this.button再取得.TabIndex = 33;
+            this.button再取得.Text = "アカウント情報再取得";
+            this.button再取得.UseVisualStyleBackColor = true;
+            this.button再取得.Click += new System.EventHandler(this.button再取得_Click);
             // 
-            // buttonリプライ_Debug
+            // textBoxRenew
             // 
-            this.buttonリプライ_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonリプライ_Debug.Location = new System.Drawing.Point(277, 20);
-            this.buttonリプライ_Debug.Name = "buttonリプライ_Debug";
-            this.buttonリプライ_Debug.Size = new System.Drawing.Size(106, 27);
-            this.buttonリプライ_Debug.TabIndex = 2;
-            this.buttonリプライ_Debug.Text = "リプライ";
-            this.buttonリプライ_Debug.UseVisualStyleBackColor = true;
-            this.buttonリプライ_Debug.Click += new System.EventHandler(this.buttonリプライ_Debug_Click);
-            // 
-            // textBoxUrlTweetID
-            // 
-            this.textBoxUrlTweetID.Location = new System.Drawing.Point(20, 53);
-            this.textBoxUrlTweetID.Name = "textBoxUrlTweetID";
-            this.textBoxUrlTweetID.Size = new System.Drawing.Size(470, 27);
-            this.textBoxUrlTweetID.TabIndex = 4;
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(16, 23);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(108, 19);
-            this.label13.TabIndex = 0;
-            this.label13.Text = "URL・TweetID";
-            // 
-            // buttonブックマーク_Debug
-            // 
-            this.buttonブックマーク_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonブックマーク_Debug.Location = new System.Drawing.Point(389, 20);
-            this.buttonブックマーク_Debug.Name = "buttonブックマーク_Debug";
-            this.buttonブックマーク_Debug.Size = new System.Drawing.Size(106, 27);
-            this.buttonブックマーク_Debug.TabIndex = 3;
-            this.buttonブックマーク_Debug.Text = "ブックマーク";
-            this.buttonブックマーク_Debug.UseVisualStyleBackColor = true;
-            this.buttonブックマーク_Debug.Click += new System.EventHandler(this.buttonブックマーク_Debug_Click);
-            // 
-            // buttonいいね_Debug
-            // 
-            this.buttonいいね_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonいいね_Debug.Location = new System.Drawing.Point(187, 20);
-            this.buttonいいね_Debug.Name = "buttonいいね_Debug";
-            this.buttonいいね_Debug.Size = new System.Drawing.Size(84, 27);
-            this.buttonいいね_Debug.TabIndex = 1;
-            this.buttonいいね_Debug.Text = "いいね";
-            this.buttonいいね_Debug.UseVisualStyleBackColor = true;
-            this.buttonいいね_Debug.Click += new System.EventHandler(this.buttonいいね_Debug_Click);
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.buttonブックマーク_Debug);
-            this.groupBox1.Controls.Add(this.buttonリプライ_Debug);
-            this.groupBox1.Controls.Add(this.label13);
-            this.groupBox1.Controls.Add(this.textBoxUrlTweetID);
-            this.groupBox1.Controls.Add(this.buttonいいね_Debug);
-            this.groupBox1.Location = new System.Drawing.Point(663, 591);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(623, 92);
-            this.groupBox1.TabIndex = 3;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "コメントテスト";
+            this.textBoxRenew.Font = new System.Drawing.Font("Meiryo UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.textBoxRenew.Location = new System.Drawing.Point(20, 83);
+            this.textBoxRenew.Multiline = true;
+            this.textBoxRenew.Name = "textBoxRenew";
+            this.textBoxRenew.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBoxRenew.Size = new System.Drawing.Size(596, 67);
+            this.textBoxRenew.TabIndex = 21;
             // 
             // AccountDialog
             // 
@@ -1153,6 +1191,7 @@
             this.ClientSize = new System.Drawing.Size(1299, 731);
             this.Controls.Add(this.comboBoxUserMaster);
             this.Controls.Add(this.dataGridViewAccount);
+            this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox6);
@@ -1209,25 +1248,6 @@
         private System.Windows.Forms.CheckBox checkBoxツイート;
         private System.Windows.Forms.CheckBox checkBoxリプライ;
         private System.Windows.Forms.CheckBox checkBoxブックマーク;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_Id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_UserId;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_Name;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_LoginId;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_LoginPass;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ApiKey;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ApiKeySecret;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ClientId;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ClientSecret;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_AccessToken;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_AccessTokenSecret;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_BearerToken;
-        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_RefreshToken;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Enable;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Paid;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Like;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Bookmark;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Reply;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Tweet;
         private System.Windows.Forms.Button buttonGetBearerToken;
         private System.Windows.Forms.Button buttonGetAccessToken;
         private System.Windows.Forms.ComboBox comboBoxUserMaster;
@@ -1260,5 +1280,26 @@
         private System.Windows.Forms.ComboBox comboBox予約設定１_Start;
         private System.Windows.Forms.Button buttonコメント編集;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_Id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_UserId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_Name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_LoginId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_LoginPass;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ApiKey;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ApiKeySecret;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ClientId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_ClientSecret;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_AccessToken;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_AccessTokenSecret;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_BearerToken;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AccountMaster_RefreshToken;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Enable;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Paid;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Like;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Bookmark;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Reply;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Tweet;
+        private System.Windows.Forms.Button button再取得;
+        private System.Windows.Forms.TextBox textBoxRenew;
     }
 }

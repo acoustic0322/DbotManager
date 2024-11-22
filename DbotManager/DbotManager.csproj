@@ -126,6 +126,7 @@
     <Compile Include="MySql\MySqlDataAccess.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SupportUtil.cs" />
     <Compile Include="Table\AccountMaster.cs" />
     <Compile Include="Table\CommentMaster.cs" />
     <Compile Include="Table\ReserveSchedule.cs" />
