@@ -353,7 +353,7 @@ namespace DbotManager
         private void button再取得_Click(object sender, EventArgs e)
         {
             UpdateInfo(GetUserId() , _accountId);
-//            FillControl_AccountInfo();
+            FillControl_AccountInfo();
         }
 
         #endregion
