@@ -165,7 +165,7 @@
             this.groupBox6.Size = new System.Drawing.Size(623, 505);
             this.groupBox6.TabIndex = 2;
             this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "コメント設定";
+            this.groupBox6.Text = "アカウント設定";
             // 
             // buttonコメント編集
             // 
@@ -1023,7 +1023,7 @@
             this.groupBox1.Size = new System.Drawing.Size(623, 156);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "コメントテスト";
+            this.groupBox1.Text = "アカウント操作";
             // 
             // AccountMaster_Id
             // 
