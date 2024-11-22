@@ -20,12 +20,14 @@ namespace DbotManager
 
         private bool _isLoading = true;
 
+        private List<AccountMaster> _accountMasterList = new List<AccountMaster>();
+
         private MySqlDataAccess dataAccess;
 
         private DbConnectionInfo dbConnection;
 
-        private int _userId = 0;
-        private int _accountId = 0;
+        private CommentDialog _commentDialog;
+
 
         #endregion
 
@@ -77,13 +79,14 @@ namespace DbotManager
              * */
 
             FillDebugControls_UserName();
-
-            UpdateInfo(GetUserId());
-
-            FillControl_AccountInfo();
-
+            ReadAccountMaster(GetUserId());
             _isLoading = false;
+            dataGridViewAccount_SelectionChanged(sender, e);
         }
+
+        #endregion
+
+        #region 処理
 
         private void FillDebugControls_UserName()
         {
@@ -101,96 +104,143 @@ namespace DbotManager
             }
         }
 
-        private void FillControl_AccountInfo()
+        private void FillControl_AccountInfo(int accountId)
         {
-            if (dataGridViewAccount.CurrentCell != null)
+            var accountMaster = _accountMasterList.Where(x => x.Id == accountId).FirstOrDefault();
+            textBoxAccountID.Text = accountId.ToString();
+
+            textBoxName.Text = accountMaster.Name;
+            textBoxLogInId.Text = accountMaster.LoginId;
+            textBoxLogInPass.Text = accountMaster.LoginPass;
+            textBoxApiKey.Text = accountMaster.ApiKey;
+            textBoxApiKeySecret.Text = accountMaster.ApiKeySecret;
+            textBoxClientId.Text = accountMaster.ClientId;
+            textBoxClientSecret.Text = accountMaster.ClientSecret;
+            textBoxAccessToken.Text = accountMaster.AccessToken;
+            textBoxAccessTokenSecret.Text = accountMaster.AccessTokenSecret;
+            textBoxBearerToken.Text = accountMaster.BearerToken;
+            textBoxRefreshToken.Text = accountMaster.RefreshToken;
+            checkBox有効.Checked = accountMaster.Enable;
+            checkBox有料アカウント.Checked = accountMaster.Paid;
+            checkBoxいいね.Checked = accountMaster.LikeEnable;
+            checkBoxブックマーク.Checked = accountMaster.BookMarkEnable;
+            checkBoxリプライ.Checked = accountMaster.ReplyEnable;
+            checkBoxツイート.Checked = accountMaster.TweetEnable;
+        }
+
+        private void ReadAccountMaster(int userId, int accountId = 0)
+        {
+            _isLoading = true;
+            _accountMasterList = dataAccess.GetAccountMaster();
+            dataGridViewAccount.DataSource = _accountMasterList.Where(x => x.UserId == userId).ToList();
+            UpdateInfo(userId, accountId);
+            _isLoading = false;
+        }
+
+        public void UpdateInfo(int userId, int account_id = 0)
+        {
+            dataGridViewAccount.DataSource = _accountMasterList.Where(x => x.UserId == userId).ToList();
+
+            if (account_id != 0)
             {
-                var accountId = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Id.Name].Value.ToString();
-                _accountId = int.Parse(accountId);
-
-                var userId = dataGridViewAccount.CurrentRow.Cells[AccountMaster_UserId.Name].Value.ToString();
-                _userId = int.Parse(userId);
-
-                textBoxName.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Name.Name].Value.ToString();
-                textBoxLogInId.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_LoginId.Name].Value.ToString();
-                textBoxLogInPass.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_LoginPass.Name].Value.ToString();
-                textBoxApiKey.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_ApiKey.Name].Value.ToString();
-                textBoxApiKeySecret.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_ApiKeySecret.Name].Value.ToString();
-                textBoxClientId.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_ClientId.Name].Value.ToString();
-                textBoxClientSecret.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_ClientSecret.Name].Value.ToString();
-                textBoxAccessToken.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_AccessToken.Name].Value.ToString();
-                textBoxAccessTokenSecret.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_AccessTokenSecret.Name].Value.ToString();
-                textBoxBearerToken.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_BearerToken.Name].Value.ToString();
-                textBoxRefreshToken.Text = dataGridViewAccount.CurrentRow.Cells[AccountMaster_RefreshToken.Name].Value.ToString();
-
-                var enable = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Enable.Name] as DataGridViewCheckBoxCell;
-                if (enable != null)
-                {
-                    checkBox有効.Checked = Convert.ToBoolean(enable.Value);
-                }
-
-                var paid = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Paid.Name] as DataGridViewCheckBoxCell;
-                if (paid != null)
-                {
-                    checkBox有料アカウント.Checked = Convert.ToBoolean(paid.Value);
-                }
-
-                var like = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Like.Name] as DataGridViewCheckBoxCell;
-                if (like != null)
-                {
-                    checkBoxいいね.Checked = Convert.ToBoolean(like.Value);
-                }
-
-                var bookmark = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Bookmark.Name] as DataGridViewCheckBoxCell;
-                if (bookmark != null)
-                {
-                    checkBoxブックマーク.Checked = Convert.ToBoolean(bookmark.Value);
-                }
-
-                var reply = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Reply.Name] as DataGridViewCheckBoxCell;
-                if (reply != null)
-                {
-                    checkBoxリプライ.Checked = Convert.ToBoolean(reply.Value);
-                }
-
-                var tweet = dataGridViewAccount.CurrentRow.Cells[AccountMaster_Tweet.Name] as DataGridViewCheckBoxCell;
-                if (tweet != null)
-                {
-                    checkBoxツイート.Checked = Convert.ToBoolean(tweet.Value);
-                }
-
-                // データグリッドビューの選択変更時にダイアログを更新
-                if (_commentDialog != null && !_commentDialog.IsDisposed)
-                {
-                    var selectedRow = dataGridViewAccount.CurrentRow;
-                    if (selectedRow != null)
-                    {
-                        _commentDialog.UpdateInfo(_accountId);
-                    }
-                }
-
+                SupportUtil.SelectRowsByColumnValue(dataGridViewAccount, AccountMaster_Id.Name, account_id);
             }
+            else
+            {
+                // DataGridViewの先頭行を選択
+                dataGridViewAccount.ClearSelection(); // 一度選択をクリア
+                if (dataGridViewAccount.Rows.Count > 1)
+                    dataGridViewAccount.Rows[0].Selected = true; // 先頭行を選択
+            }
+
+            var name = dataAccess.GetUserNames().Where(x => x.Id == userId).FirstOrDefault().Name;
+            this.Text = $"{name} の アカウント一覧";
+
+        }
+
+        private int GetUserId()
+        {
+            return (int)comboBoxUserMaster.SelectedValue;
+        }
+
+
+        private string GetTweetId(bool debug_mode = false)
+        {
+            string input = textBoxUrlTweetID.Text;
+            string extractedNumber = ExtractNumber(input);
+
+            if (extractedNumber != null)
+            {
+                Console.WriteLine($"Extracted number: {extractedNumber}");
+            }
+            else
+            {
+                Console.WriteLine("No valid number found.");
+            }
+
+            return extractedNumber;
+        }
+
+        private string ExtractNumber(string input)
+        {
+            // URLの場合と単なる数値の場合を考慮
+            Match match = Regex.Match(input, @"(?:status/(\d+)|^(\d+))");
+
+            if (match.Success)
+            {
+                // マッチした部分のうち、最初にキャプチャされたグループ（数値部分）を返す
+                return match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+            }
+
+            return null;
+        }
+
+        // TextBoxにログを表示するメソッド
+        private void AppendLog(string message)
+        {
+            if (message != null)
+            {
+                textBoxRenew.Invoke((MethodInvoker)(() =>
+                    textBoxRenew.AppendText(message + Environment.NewLine)
+                ));
+
+                // 必要に応じてログファイルにも書き込む
+                SupportUtil.SaveLogToFile(message, textBoxRenew);
+            }
+            /*
+            if (message != null)
+            {
+                textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText(message + Environment.NewLine)));
+
+                // ログファイルに書き込み
+                SaveLogToFile(message);
+            }
+            */
         }
 
         #endregion
 
         #region イベント
 
-
-        private void dataGridViewAccount_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            FillControl_AccountInfo();
-        }
-
         private void dataGridViewAccount_SelectionChanged(object sender, EventArgs e)
         {
-        }
+            if (_isLoading) return;
 
+            if (dataGridViewAccount.CurrentCell != null)
+            {
+                var accountId = int.Parse(dataGridViewAccount.CurrentRow.Cells[AccountMaster_Id.Name].Value.ToString());
+                FillControl_AccountInfo(accountId);
+            }
 
-        private void buttonアカウント削除_Click(object sender, EventArgs e)
-        {
-            dataAccess.DeleteAccountMaster(_accountId);
-            UpdateInfo(GetUserId());
+            // データグリッドビューの選択変更時にダイアログを更新
+            if (_commentDialog != null && !_commentDialog.IsDisposed)
+            {
+                var selectedRow = dataGridViewAccount.CurrentRow;
+                if (selectedRow != null)
+                {
+                    _commentDialog.UpdateInfo(int.Parse(textBoxAccountID.Text));
+                }
+            }
         }
 
         private void buttonアカウント追加_Click(object sender, EventArgs e)
@@ -234,34 +284,14 @@ namespace DbotManager
             };
 
             dataAccess.InsertAccountMaster(accountMaster);
-            UpdateInfo(GetUserId() , _accountId);
-
-
-
-//            dataGridViewAccount.Rows[1].Selected = true;
-
-            /*
-
-            foreach (DataGridViewRow row in dataGridViewAccount.Rows)
-            {
-                // 行が新規行ではない場合にのみチェック
-                if (!row.IsNewRow && row.Cells[AccountMaster_Id.Name].Value?.Equals(_accountId) == true)
-                {
-                    row.Selected = true; // 行を選択状態にする
-                }
-                else
-                {
-                    row.Selected = false; // 一致しない行は選択を解除
-                }
-            }
-            */
+            ReadAccountMaster(GetUserId() , int.Parse(textBoxAccountID.Text));
         }
 
         private void buttonアカウント保存_Click(object sender, EventArgs e)
         {
             AccountMaster accountMaster = new AccountMaster()
             {
-                Id = _accountId,
+                Id = int.Parse(textBoxAccountID.Text),
                 UserId = GetUserId(),
                 Name = textBoxName.Text,
                 LoginId = textBoxLogInId.Text,
@@ -299,22 +329,13 @@ namespace DbotManager
             };
 
             dataAccess.UpdateAccountMaster(accountMaster);
-            UpdateInfo(GetUserId() , _accountId);
-            SupportUtil.SelectRowsByColumnValue(dataGridViewAccount, AccountMaster_Id.Name, _accountId);
-
+            ReadAccountMaster(GetUserId() , accountMaster.Id);
         }
 
-        private void buttonExe_Click(object sender, EventArgs e)
+        private void buttonアカウント削除_Click(object sender, EventArgs e)
         {
-            /*
-            int userId = _userId;
-            int accountId = _accountId;
-            int commentId = _commentId;
-            string tweetId = GetTweetId(true);
-
-            TweetTask _tweetTask = new TweetTask(dbConnection);
-            _tweetTask.TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, tweetId);
-            */
+            dataAccess.DeleteAccountMaster(int.Parse(textBoxAccountID.Text));
+            ReadAccountMaster(GetUserId());
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
@@ -325,7 +346,7 @@ namespace DbotManager
         private void buttonGetAccessToken_Click(object sender, EventArgs e)
         {
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
-            string command = tweetTask.GetTweetCommand(TweetProcTypes.GET_ACCESSTOKEN, _userId, _accountId, 0, GetTweetId(true));
+            string command = tweetTask.GetTweetCommand(TweetProcTypes.GET_ACCESSTOKEN, GetUserId(), int.Parse(textBoxAccountID.Text), 0, GetTweetId(true));
 
             // クリップボードに文字列を設定
             Clipboard.SetText(command);
@@ -336,7 +357,7 @@ namespace DbotManager
         private void buttonGetBearerToken_Click(object sender, EventArgs e)
         {
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
-            string command = tweetTask.GetTweetCommand(TweetProcTypes.GET_REFRESHTOKEN, _userId, _accountId, 0, GetTweetId(true));
+            string command = tweetTask.GetTweetCommand(TweetProcTypes.GET_REFRESHTOKEN, GetUserId(), int.Parse(textBoxAccountID.Text), 0, GetTweetId(true));
 
             // クリップボードに文字列を設定
             Clipboard.SetText(command);
@@ -352,75 +373,14 @@ namespace DbotManager
 
         private void button再取得_Click(object sender, EventArgs e)
         {
-            UpdateInfo(GetUserId() , _accountId);
-            FillControl_AccountInfo();
-        }
-
-        #endregion
-
-        #region 画面更新
-        public void UpdateInfo(int userId , int account_id = 0)
-        {
-            _userId = userId;
-
-            var accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == userId).ToList();
-            dataGridViewAccount.DataSource = accountMasterList;
-
-            if (account_id != 0)
-            {
-                SupportUtil.SelectRowsByColumnValue(dataGridViewAccount, AccountMaster_Id.Name, account_id);
-            }
-
-            var name = dataAccess.GetUserNames().Where(x => x.Id == userId).FirstOrDefault().Name;
-            this.Text = $"{name} の アカウント一覧";
-
-        }
-
-        private int GetUserId()
-        {
-            return (int)comboBoxUserMaster.SelectedValue;
-        }
-
-
-        #endregion
-
-
-
-        private string GetTweetId(bool debug_mode = false)
-        {
-            string input = textBoxUrlTweetID.Text;
-            string extractedNumber = ExtractNumber(input);
-
-            if (extractedNumber != null)
-            {
-                Console.WriteLine($"Extracted number: {extractedNumber}");
-            }
-            else
-            {
-                Console.WriteLine("No valid number found.");
-            }
-
-            return extractedNumber;
-        }
-
-        private string ExtractNumber(string input)
-        {
-            // URLの場合と単なる数値の場合を考慮
-            Match match = Regex.Match(input, @"(?:status/(\d+)|^(\d+))");
-
-            if (match.Success)
-            {
-                // マッチした部分のうち、最初にキャプチャされたグループ（数値部分）を返す
-                return match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
-            }
-
-            return null;
+            ReadAccountMaster(GetUserId(), int.Parse(textBoxAccountID.Text));
+            FillControl_AccountInfo(int.Parse(textBoxAccountID.Text));
         }
 
         private void buttonいいね_Debug_Click(object sender, EventArgs e)
         {
             int userId = GetUserId();
-            int accountId = _accountId;
+            int accountId = int.Parse(textBoxAccountID.Text);
             string tweetId = GetTweetId(true);
 
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
@@ -430,7 +390,7 @@ namespace DbotManager
         private void buttonブックマーク_Debug_Click(object sender, EventArgs e)
         {
             int userId = GetUserId();
-            int accountId = _accountId;
+            int accountId = int.Parse(textBoxAccountID.Text); ;
             string tweetId = GetTweetId(true);
 
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
@@ -440,15 +400,12 @@ namespace DbotManager
         private void buttonリプライ_Debug_Click(object sender, EventArgs e)
         {
             int userId = GetUserId();
-            int accountId = _accountId;
+            int accountId = int.Parse(textBoxAccountID.Text); ;
             string tweetId = GetTweetId(true);
 
-            TweetTask tweetTask = new TweetTask(dbConnection , AppendLog);
+            TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
             tweetTask.TweetProc(TweetProcTypes.RETWEET, userId, accountId, 0, tweetId);
         }
-
-
-        private CommentDialog _commentDialog;
 
         private void buttonコメント編集_Click(object sender, EventArgs e)
         {
@@ -457,7 +414,7 @@ namespace DbotManager
             {
                 _commentDialog = new CommentDialog(dbConnection);
                 _commentDialog.Show();
-                _commentDialog.UpdateInfo(_accountId);
+                _commentDialog.UpdateInfo(int.Parse(textBoxAccountID.Text));
             }
             else
             {
@@ -465,28 +422,6 @@ namespace DbotManager
                 _commentDialog.Focus();
             }
         }
-
-        // TextBoxにログを表示するメソッド
-        private void AppendLog(string message)
-        {
-            if (message != null)
-            {
-                textBoxRenew.Invoke((MethodInvoker)(() =>
-                    textBoxRenew.AppendText(message + Environment.NewLine)
-                ));
-
-                // 必要に応じてログファイルにも書き込む
-                SupportUtil.SaveLogToFile(message, textBoxRenew);
-            }
-            /*
-            if (message != null)
-            {
-                textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText(message + Environment.NewLine)));
-
-                // ログファイルに書き込み
-                SaveLogToFile(message);
-            }
-            */
-        }
+        #endregion
     }
 }
