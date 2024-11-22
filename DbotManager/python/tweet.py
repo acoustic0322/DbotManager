@@ -402,13 +402,17 @@ def proc_get_access_token(credentials , account_id):
 
             update_access_token(account_id , access_token , access_token_secret)
 
-            input("アクセストークン,アクセストークンシークレットを更新しました")
-            os.system('cls')
+#            input("アクセストークン,アクセストークンシークレットを更新しました")
+#            os.system('cls')
+            print("アクセストークン,アクセストークンシークレットを更新しました")
         except Exception as e:
             print(f"エラー: {e}")
             input()
     except Exception as e:
         print(f"エラー: {e}")
+
+    print("何かキーを押すと終了します...")  
+    input()  # ユーザーの入力を待機
 
 def proc_get_refresh_token(credentials , account_id):
     try:
@@ -458,14 +462,14 @@ def proc_get_refresh_token(credentials , account_id):
             # print(f"Expires In: {expires_in}")
 
 #            input("保存ができたらエンター")
-            input("BearerToken,RefreshTokenを更新しました")
+#            input("BearerToken,RefreshTokenを更新しました")
+            print("BearerToken,RefreshTokenを更新しました")
         except Exception as e:
             print(f"エラー: {e}")
             input()
     except Exception as e:
         print(f"エラー: {e}")
     
-
 def outputLog(message):
     # 現在時刻を取得してメッセージに追加
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -490,9 +494,10 @@ credentials = get_account_master(account_id)
 
 if credentials:
     # 認証を確認
-    verify_result , verify_message = verify_credentials(credentials)
+#    verify_result , verify_message = verify_credentials(credentials)
 
-    if verify_result:
+#    if verify_result:
+    if True:
         client = create_client(credentials)
         if client:
             error_log = ""
@@ -501,7 +506,7 @@ if credentials:
             elif tweet_mode == "retweet":
                 error_log = proc_retweet(credentials, tweet_id)
             elif tweet_mode == "like":  #動かない
-                error_log = proc_like_test2(credentials, tweet_id)
+                error_log = proc_like(credentials, tweet_id)
             elif tweet_mode == "bookmark":
                 error_log = proc_bookmark(credentials, tweet_id, account_id)
             elif tweet_mode == "get_refresh_token":
@@ -521,8 +526,8 @@ if credentials:
                 save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , False , error_log)
 #                print(f"エラーが発生しました: {result}", file=sys.stderr)
                 sys.exit(1)
-    else:
-        save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , False , verify_message)
+#    else:
+#        save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , False , verify_message)
 
 else:
     outputLog(f"エラーが発生しました: ID {credential_id} の認証情報が見つかりませんでした。", file=sys.stderr)
