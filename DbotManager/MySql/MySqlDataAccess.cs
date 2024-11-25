@@ -382,7 +382,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode
+                        account_id,comment,enable , chatgpt , mode , photo_id , movie_id
                         FROM comment_master;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -396,6 +396,8 @@ public class MySqlDataAccess
                                 Id = int.Parse(reader["id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
+                                MovieId = int.Parse(reader["movie_id"].ToString()),
+                                PhotoId = int.Parse(reader["photo_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
@@ -427,7 +429,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode
+                        account_id,comment,enable , chatgpt , mode , movie_id , photo_id
                         FROM comment_master where account_id = @AccountId;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -443,6 +445,8 @@ public class MySqlDataAccess
                                 Id = int.Parse(reader["id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
+                                MovieId = int.Parse(reader["movie_id"].ToString()),
+                                PhotoId = int.Parse(reader["photo_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
@@ -473,7 +477,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode
+                        account_id,comment,enable , chatgpt , mode , movie_id , photo_id 
                         FROM comment_master where id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -489,6 +493,8 @@ public class MySqlDataAccess
                                 Id = int.Parse(reader["id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
+                                MovieId = int.Parse(reader["movie_id"].ToString()),
+                                PhotoId = int.Parse(reader["photo_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
@@ -524,7 +530,9 @@ public class MySqlDataAccess
                                  comment = @Comment,
                                  chatgpt = @Chatgpt,
                                  mode = @Mode,
-                                 enable = @Enable
+                                 enable = @Enable,
+                                 photo_id = @PhotoId,
+                                 movie_id = @MovieId
                              WHERE id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -535,6 +543,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Chatgpt", commentMaster.ChatGpt ? 1 : 0);
                     command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Id", commentMaster.Id);
+                    command.Parameters.AddWithValue("@PhotoId", commentMaster.PhotoId);
+                    command.Parameters.AddWithValue("@MovieId", commentMaster.MovieId);
                     command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Tweet ? "tweet" : "retweet");
 
                     int rowsAffected = command.ExecuteNonQuery();
@@ -809,8 +819,144 @@ public class MySqlDataAccess
             }
         }
     }
+
+
+
+
     #endregion
 
+    #region MediaMaster
+
+    public List<MediaMaster> GetMediaMaster()
+    {
+        List<MediaMaster> commentMasterList = new List<MediaMaster>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"SELECT media_id, user_id,
+                        account_id, name, register_date , media_type
+                        FROM media_master;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            MediaMaster mediaMaster = new MediaMaster()
+                            {
+                                MediaId = int.Parse(reader["media_id"].ToString()),
+                                UserId = int.Parse(reader["user_id"].ToString()),
+                                AccountId = int.Parse(reader["account_id"].ToString()),
+                                Name = reader["name"].ToString(),
+                                MediaType = reader["media_type"].ToString() == "photo" ? MediaTypes.Photo : MediaTypes.Movie
+                            };
+
+                            commentMasterList.Add(mediaMaster);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return commentMasterList;
+    }
+
+    public void InsertMediaMaster(MediaMaster mediaMaster)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"INSERT INTO media_master (media_id, user_id, account_id, name, register_date, media_type) 
+                             VALUES (@MediaId, @UserId, @AccountId, @Name, @RegisterDate, @MediaType);";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@MediaId", mediaMaster.MediaId);
+                    command.Parameters.AddWithValue("@UserId", mediaMaster.UserId);
+                    command.Parameters.AddWithValue("@AccountId", mediaMaster.AccountId);
+                    command.Parameters.AddWithValue("@Name", mediaMaster.Name);
+                    command.Parameters.AddWithValue("@RegisterDate", mediaMaster.RegisterDate);
+                    command.Parameters.AddWithValue("@MediaType", mediaMaster.MediaType == MediaTypes.Photo ? "photo" : "movie");
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+    public void UpdateMediaMaster(MediaMaster mediaMaster)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"UPDATE media_master 
+                             SET user_id = @UserId, account_id = @AccountId, name = @Name, 
+                                 register_date = @RegisterDate, media_type = @MediaType
+                             WHERE media_id = @MediaId;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@MediaId", mediaMaster.MediaId);
+                    command.Parameters.AddWithValue("@UserId", mediaMaster.UserId);
+                    command.Parameters.AddWithValue("@AccountId", mediaMaster.AccountId);
+                    command.Parameters.AddWithValue("@Name", mediaMaster.Name);
+                    command.Parameters.AddWithValue("@RegisterDate", mediaMaster.RegisterDate);
+                    command.Parameters.AddWithValue("@MediaType", mediaMaster.MediaType == MediaTypes.Photo ? "photo" : "movie");
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+    public void DeleteMediaMaster(int mediaId)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"DELETE FROM media_master WHERE media_id = @MediaId;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@MediaId", mediaId);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+    #endregion
 
     #region ReserveSchedule
 

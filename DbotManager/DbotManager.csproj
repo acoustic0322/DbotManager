@@ -129,6 +129,7 @@
     <Compile Include="SupportUtil.cs" />
     <Compile Include="Table\AccountMaster.cs" />
     <Compile Include="Table\CommentMaster.cs" />
+    <Compile Include="Table\MediaMaster.cs" />
     <Compile Include="Table\ReserveSchedule.cs" />
     <Compile Include="Table\ReserveScheduleView.cs" />
     <Compile Include="Table\ReserveMaster.cs" />

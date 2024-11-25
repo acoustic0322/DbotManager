@@ -28,6 +28,9 @@ namespace DbotManager
 
         private List<CommentMaster> _commentMasterList = new List<CommentMaster>();
         private List<AccountMaster> _accountMasterList = new List<AccountMaster>();
+        private List<MediaMaster> _mediaMasterList = new List<MediaMaster>();
+
+        
 
         #endregion
 
@@ -54,6 +57,8 @@ namespace DbotManager
             _isLoading = true;
             _commentMasterList = dataAccess.GetCommentMaster();
             _accountMasterList = dataAccess.GetAccountMaster();
+            _mediaMasterList = dataAccess.GetMediaMaster();
+
             dataGridViewComment.DataSource = _commentMasterList.Where(x => x.AccountId == AccountId).ToList();
             UpdateInfo(commentId ,AccountId , UserId);
             _isLoading = false;
@@ -81,6 +86,13 @@ namespace DbotManager
             checkBox有効.Checked = commentMaster.Enable;
             checkBoxChatGpt.Checked = commentMaster.ChatGpt;
             textBoxコメント.Text = commentMaster.Comment;
+
+            if (commentMaster.MovieId != 0)
+                radioButton動画.Checked = true;
+            else if (commentMaster.PhotoId != 0)
+                radioButton画像.Checked = true;
+            else
+                radioButtonメディアなし.Checked = true;
         }
 
         private void buttonコメント削除_Click(object sender, EventArgs e)
@@ -100,7 +112,9 @@ namespace DbotManager
                 ChatGpt = checkBoxChatGpt.Checked,
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
-                TweetModeType = radioButtonツイート.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay
+                TweetModeType = radioButtonツイート.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
+                MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
             };
 
             dataAccess.InsertCommentMaster(commentMaster);
@@ -109,6 +123,9 @@ namespace DbotManager
 
         private void buttonコメント保存_Click(object sender, EventArgs e)
         {
+            var movie = comboBox動画.SelectedValue.ToString();
+            var photo = comboBox画像.SelectedValue.ToString();
+
             CommentMaster commentMaster = new CommentMaster()
             {
                 Id = int.Parse(textBoxCommentID.Text),
@@ -117,7 +134,9 @@ namespace DbotManager
                 ChatGpt = checkBoxChatGpt.Checked,
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
-                TweetModeType = radioButtonツイート.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay
+                TweetModeType = radioButtonツイート.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
+                MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
             };
 
             dataAccess.UpdateCommentMaster(commentMaster);
@@ -142,7 +161,7 @@ namespace DbotManager
             int accountId = AccountId;
             int commentId = int.Parse(textBoxCommentID.Text);
 
-            TweetTask _tweetTask = new TweetTask(dbConnection);
+            TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
             _tweetTask.TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, "");
         }
 
@@ -180,6 +199,17 @@ namespace DbotManager
                 this.Text = $"{accountName} の コメント設定";
 
                 AccountId = accountId;
+
+                if (_mediaMasterList != null && AccountId != 0)
+                {
+                    comboBox画像.DataSource = _mediaMasterList.Where(x => x.AccountId == AccountId && x.MediaType == MediaTypes.Photo).ToList();
+                    comboBox画像.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
+                    comboBox画像.ValueMember = "MediaId";     // 選択されたときに取得するプロパティ
+
+                    comboBox動画.DataSource = _mediaMasterList.Where(x => x.AccountId == AccountId && x.MediaType == MediaTypes.Movie).ToList();
+                    comboBox動画.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
+                    comboBox動画.ValueMember = "MediaId";     // 選択されたときに取得するプロパティ
+                }
             }
             else
             {
@@ -196,6 +226,30 @@ namespace DbotManager
         }
 
         #endregion
+
+        // TextBoxにログを表示するメソッド
+        private void AppendLog(string message)
+        {
+            if (message != null)
+            {
+                textBoxRenew.Invoke((MethodInvoker)(() =>
+                    textBoxRenew.AppendText(message + Environment.NewLine)
+                ));
+
+                // 必要に応じてログファイルにも書き込む
+                SupportUtil.SaveLogToFile(message, textBoxRenew);
+            }
+            /*
+            if (message != null)
+            {
+                textBoxLog.Invoke((MethodInvoker)(() => textBoxLog.AppendText(message + Environment.NewLine)));
+
+                // ログファイルに書き込み
+                SaveLogToFile(message);
+            }
+            */
+        }
+
 
     }
 }
