@@ -404,7 +404,7 @@ namespace DbotManager
             string tweetId = GetTweetId(true);
 
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
-            tweetTask.TweetProc(TweetProcTypes.RETWEET, userId, accountId, 0, tweetId);
+            tweetTask.TweetProc(TweetProcTypes.REPLY, userId, accountId, 0, tweetId);
         }
 
         private void buttonコメント編集_Click(object sender, EventArgs e)

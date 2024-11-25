@@ -15,7 +15,7 @@ namespace DbotManager
     {
         LIKE,
         BOOKMARK,
-        RETWEET,
+        REPLY,
         TWEET,
         GET_ACCESSTOKEN,
         GET_REFRESHTOKEN
@@ -39,7 +39,7 @@ namespace DbotManager
 
         public bool LikeEnable { get; set; }
         public bool BookmarkEnable { get; set; }
-        public bool RetweetEnable { get; set; }
+        public bool ReplyEnable { get; set; }
 
         public int 件数 { get; set; }
         public string TargetTweetID { get; set; }
@@ -80,7 +80,29 @@ namespace DbotManager
 
             if(制限時間以内に履歴ありの無料アカウントを排除)
             {
-                無料制限中アカウント = tweetHistoryList.Where(th => th.Paid == false && (now - th.UpdateTime).TotalMinutes <= 15 && th.Result).Select(x => x.AccountId).ToList();
+                if(LikeEnable)
+                {
+                    // 1日以内のいいね
+                    無料制限中アカウント.AddRange(
+                        tweetHistoryList.Where(th => th.Paid == false && (now - th.UpdateTime).TotalDays <= 1 && th.Result && th.TweetMode == "like")
+                        .Select(x => x.AccountId).ToList());
+                }
+
+                if(BookmarkEnable)
+                {
+                    // 1日以内のﾌﾞｯｸﾏｰｸ
+                    無料制限中アカウント.AddRange(
+                        tweetHistoryList.Where(th => th.Paid == false && (now - th.UpdateTime).TotalMinutes <= 15 && th.Result && th.TweetMode == "bookmark")
+                        .Select(x => x.AccountId).ToList());
+                }
+
+                if(ReplyEnable)
+                {
+                    // 1日以内のリプライ
+                    無料制限中アカウント.AddRange(
+                        tweetHistoryList.Where(th => th.Paid == false && (now - th.UpdateTime).TotalMinutes <= 15 && th.Result && th.TweetMode == "reply")
+                        .Select(x => x.AccountId).ToList());
+                }
             }
 
             List<string> ツイート済アカウント = new List<string>();
@@ -103,12 +125,12 @@ namespace DbotManager
                 .Select(x => x.AccountId)
                 .ToList());
             }
-            if (RetweetEnable)
+            if (ReplyEnable)
             {
                 ツイート済アカウント.AddRange(tweetHistoryList
                 .Where(x => x.TargetTweetID == TargetTweetID
                 && x.Result
-                && x.TweetMode == GetTweetMode(TweetProcTypes.RETWEET))
+                && x.TweetMode == GetTweetMode(TweetProcTypes.REPLY))
                 .Select(x => x.AccountId)
                 .ToList());
             }
@@ -141,7 +163,7 @@ namespace DbotManager
                 case TweetProcTypes.BOOKMARK:
                     return "bookmark";
                     break;
-                case TweetProcTypes.RETWEET:
+                case TweetProcTypes.REPLY:
                     return "retweet";
                     break;
                 case TweetProcTypes.TWEET:
@@ -167,9 +189,9 @@ namespace DbotManager
             {
                 TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, commentId, tweetId);
             }
-            if (RetweetEnable)
+            if (ReplyEnable)
             {
-                TweetProc(TweetProcTypes.RETWEET, userId, accountId, commentId, tweetId);
+                TweetProc(TweetProcTypes.REPLY, userId, accountId, commentId, tweetId);
             }
 
         }
@@ -188,7 +210,7 @@ namespace DbotManager
                     break;
                 case TweetProcTypes.LIKE:
                 case TweetProcTypes.BOOKMARK:
-                case TweetProcTypes.RETWEET:
+                case TweetProcTypes.REPLY:
                     pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
                 case TweetProcTypes.GET_ACCESSTOKEN:

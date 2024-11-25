@@ -150,7 +150,7 @@ namespace DbotManager
 
             _tweetTask.LikeEnable = checkBoxいいね.Checked;
             _tweetTask.BookmarkEnable = checkBoxブックマーク.Checked;
-            _tweetTask.RetweetEnable = checkBoxリプライ.Checked;
+            _tweetTask.ReplyEnable = checkBoxリプライ.Checked;
 
             _tweetTask.InitAccountList();
             dataGridViewいいねリスト.DataSource = _tweetTask.TweetAccountList;

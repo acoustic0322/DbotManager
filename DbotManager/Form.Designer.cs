@@ -304,9 +304,9 @@
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.Location = new System.Drawing.Point(10, 96);
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.Name = "checkBox_15分以内に履歴のある無料アカウントを除外する";
-            this.checkBox_15分以内に履歴のある無料アカウントを除外する.Size = new System.Drawing.Size(318, 23);
+            this.checkBox_15分以内に履歴のある無料アカウントを除外する.Size = new System.Drawing.Size(528, 23);
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.TabIndex = 2;
-            this.checkBox_15分以内に履歴のある無料アカウントを除外する.Text = "15分以内に履歴のある無料アカウントを除外する";
+            this.checkBox_15分以内に履歴のある無料アカウントを除外する.Text = "利用制限時間内の無料アカウントを除外する(いいね１日、ﾌﾞｯｸﾏｰｸ・ﾘﾌﾟﾗｲ 15分)";
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.UseVisualStyleBackColor = true;
             // 
             // groupBox4
@@ -490,7 +490,7 @@
             // textBoxRenew
             // 
             this.textBoxRenew.Font = new System.Drawing.Font("Meiryo UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.textBoxRenew.Location = new System.Drawing.Point(788, 46);
+            this.textBoxRenew.Location = new System.Drawing.Point(768, 112);
             this.textBoxRenew.Multiline = true;
             this.textBoxRenew.Name = "textBoxRenew";
             this.textBoxRenew.ScrollBars = System.Windows.Forms.ScrollBars.Both;
