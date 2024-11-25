@@ -490,7 +490,7 @@
             // textBoxRenew
             // 
             this.textBoxRenew.Font = new System.Drawing.Font("Meiryo UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.textBoxRenew.Location = new System.Drawing.Point(768, 112);
+            this.textBoxRenew.Location = new System.Drawing.Point(788, 46);
             this.textBoxRenew.Multiline = true;
             this.textBoxRenew.Name = "textBoxRenew";
             this.textBoxRenew.ScrollBars = System.Windows.Forms.ScrollBars.Both;

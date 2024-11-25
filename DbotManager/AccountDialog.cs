@@ -238,7 +238,7 @@ namespace DbotManager
                 var selectedRow = dataGridViewAccount.CurrentRow;
                 if (selectedRow != null)
                 {
-                    _commentDialog.UpdateInfo(int.Parse(textBoxAccountID.Text));
+                    _commentDialog.UpdateInfo(0, int.Parse(textBoxAccountID.Text) , GetUserId());
                 }
             }
         }
@@ -414,7 +414,7 @@ namespace DbotManager
             {
                 _commentDialog = new CommentDialog(dbConnection);
                 _commentDialog.Show();
-                _commentDialog.UpdateInfo(int.Parse(textBoxAccountID.Text));
+                _commentDialog.UpdateInfo(0 ,int.Parse(textBoxAccountID.Text) , GetUserId());
             }
             else
             {

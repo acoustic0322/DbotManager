@@ -23,9 +23,11 @@ namespace DbotManager
 
         private DbConnectionInfo dbConnection;
 
-        private int _userId = 0;
-        private int _accountId = 0;
-        private int _commentId = 0;
+        public int AccountId { get; set; }
+        public int UserId { get; set; }
+
+        private List<CommentMaster> _commentMasterList = new List<CommentMaster>();
+        private List<AccountMaster> _accountMasterList = new List<AccountMaster>();
 
         #endregion
 
@@ -42,6 +44,18 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             dataAccess = new MySqlDataAccess(this.dbConnection);
 
+            ReadCommentMaster();
+
+            _isLoading = false;
+        }
+
+        private void ReadCommentMaster(int commentId = 0)
+        {
+            _isLoading = true;
+            _commentMasterList = dataAccess.GetCommentMaster();
+            _accountMasterList = dataAccess.GetAccountMaster();
+            dataGridViewComment.DataSource = _commentMasterList.Where(x => x.AccountId == AccountId).ToList();
+            UpdateInfo(commentId ,AccountId , UserId);
             _isLoading = false;
         }
 
@@ -54,39 +68,35 @@ namespace DbotManager
 
             if (dataGridViewComment.CurrentCell != null)
             {
-                var commentId = dataGridViewComment.CurrentRow.Cells[CommentMaster_Id.Name].Value.ToString();
-                _commentId = int.Parse(commentId);
-
-                var comment = dataGridViewComment.CurrentRow.Cells[CommentMaster_Comment.Name].Value.ToString();
-                textBoxコメント.Text = comment;
-
-                var commentChatGpt = dataGridViewComment.CurrentRow.Cells[CommentMaster_ChatGpt.Name] as DataGridViewCheckBoxCell;
-                if (commentChatGpt != null)
-                {
-                    checkBoxChatGpt.Checked = Convert.ToBoolean(commentChatGpt.Value);
-                }
-
-                var commentEnable = dataGridViewComment.CurrentRow.Cells[CommentMaster_Enable.Name] as DataGridViewCheckBoxCell;
-                if (commentEnable != null)
-                {
-                    checkBox有効.Checked = Convert.ToBoolean(commentEnable.Value);
-                }
+                var commentId = int.Parse(dataGridViewComment.CurrentRow.Cells[CommentMaster_Id.Name].Value.ToString());
+                FillControl_CommentInfo(commentId);
             }
+        }
+
+        private void FillControl_CommentInfo(int commentId)
+        {
+            var commentMaster = _commentMasterList.Where(x => x.Id == commentId).FirstOrDefault();
+            textBoxCommentID.Text = commentId.ToString();
+
+            checkBox有効.Checked = commentMaster.Enable;
+            checkBoxChatGpt.Checked = commentMaster.ChatGpt;
+            textBoxコメント.Text = commentMaster.Comment;
         }
 
         private void buttonコメント削除_Click(object sender, EventArgs e)
         {
-            dataAccess.DeleteCommentMaster(_commentId);
-            UpdateInfo(_accountId);
+            dataAccess.DeleteCommentMaster(int.Parse(textBoxCommentID.Text));
+            ReadCommentMaster();
+            //            UpdateInfo(_accountId);
         }
 
         private void buttonコメント追加_Click(object sender, EventArgs e)
         {
             CommentMaster commentMaster = new CommentMaster()
             {
-                Id = _commentId,
-                UserId = _userId,
-                AccountId = _accountId,
+                Id = int.Parse(textBoxCommentID.Text),
+                UserId = UserId,
+                AccountId = AccountId,
                 ChatGpt = checkBoxChatGpt.Checked,
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
@@ -94,16 +104,16 @@ namespace DbotManager
             };
 
             dataAccess.InsertCommentMaster(commentMaster);
-            UpdateInfo(_accountId);
+            ReadCommentMaster(int.Parse(textBoxCommentID.Text));
         }
 
         private void buttonコメント保存_Click(object sender, EventArgs e)
         {
             CommentMaster commentMaster = new CommentMaster()
             {
-                Id = _commentId,
-                UserId = _userId,
-                AccountId = _accountId,
+                Id = int.Parse(textBoxCommentID.Text),
+                UserId = UserId,
+                AccountId = AccountId,
                 ChatGpt = checkBoxChatGpt.Checked,
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
@@ -111,30 +121,29 @@ namespace DbotManager
             };
 
             dataAccess.UpdateCommentMaster(commentMaster);
-            UpdateInfo(_accountId);
+            ReadCommentMaster(int.Parse(textBoxCommentID.Text));
         }
 
         private void radioButtonリプライ_CheckedChanged(object sender, EventArgs e)
         {
             if (_isLoading) return;
-            UpdateInfo(_accountId);
+            UpdateInfo();
         }
 
         private void radioButtonツイート_CheckedChanged(object sender, EventArgs e)
         {
             if (_isLoading) return;
-            UpdateInfo(_accountId);
+            UpdateInfo();
         }
 
         private void buttonExe_Click(object sender, EventArgs e)
         {
-            int userId = _userId;
-            int accountId = _accountId;
-            int commentId = _commentId;
-            string tweetId = GetTweetId(true);
+            int userId = UserId;
+            int accountId = AccountId;
+            int commentId = int.Parse(textBoxCommentID.Text);
 
             TweetTask _tweetTask = new TweetTask(dbConnection);
-            _tweetTask.TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, "");
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
@@ -145,65 +154,48 @@ namespace DbotManager
         #endregion
 
         #region 画面更新
-        public void UpdateInfo(int accountId)
+        public void UpdateInfo(int commentId = 0, int accountId = 0 , int userId = 0)
         {
-            if (_isLoading) return;
-
-            var accountMaster = dataAccess.GetAccountMaster().Where(x => x.Id == accountId).FirstOrDefault();
-            _userId = accountMaster.UserId;
-            _accountId = accountId;
-
-            var list = dataAccess.GetCommentMasterByAccountId(accountId);
-
-            if (radioButtonツイート.Checked)
+            if(accountId != 0)
             {
-                list = list.Where(x => x.TweetModeType == TweetModeTypes.Tweet).ToList();
+                var list = _commentMasterList.Where(x => x.AccountId == accountId).ToList();
+
+                if (radioButtonツイート.Checked)
+                {
+                    list = list.Where(x => x.TweetModeType == TweetModeTypes.Tweet).ToList();
+                }
+                else
+                {
+                    list = list.Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
+                }
+
+                dataGridViewComment.DataSource = list;
+
+                if(commentId != 0)
+                {
+                    SupportUtil.SelectRowsByColumnValue(dataGridViewComment, CommentMaster_Id.Name, commentId);
+                }
+
+                var accountName = _accountMasterList.Where(x => x.Id == accountId).FirstOrDefault().Name;
+                this.Text = $"{accountName} の コメント設定";
+
+                AccountId = accountId;
             }
             else
             {
-                list = list.Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
+                // DataGridViewの先頭行を選択
+                dataGridViewComment.ClearSelection(); // 一度選択をクリア
+                if (dataGridViewComment.Rows.Count > 1)
+                    dataGridViewComment.Rows[0].Selected = true; // 先頭行を選択
             }
 
-            dataGridViewComment.DataSource = list;
-
-            this.Text = $"{accountMaster.Name} の コメント設定";
+            if(userId != 0)
+            {
+                UserId = userId;
+            }
         }
 
         #endregion
-
-
-
-        private string GetTweetId(bool debug_mode = false)
-        {
-            string input = textBoxUrlTweetID.Text;
-            string extractedNumber = ExtractNumber(input);
-
-            if (extractedNumber != null)
-            {
-                Console.WriteLine($"Extracted number: {extractedNumber}");
-            }
-            else
-            {
-                Console.WriteLine("No valid number found.");
-            }
-
-            return extractedNumber;
-        }
-
-        private string ExtractNumber(string input)
-        {
-            // URLの場合と単なる数値の場合を考慮
-            Match match = Regex.Match(input, @"(?:status/(\d+)|^(\d+))");
-
-            if (match.Success)
-            {
-                // マッチした部分のうち、最初にキャプチャされたグループ（数値部分）を返す
-                return match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
-            }
-
-            return null;
-        }
-
 
     }
 }

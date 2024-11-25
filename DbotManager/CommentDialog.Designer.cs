@@ -36,6 +36,8 @@
             this.CommentMaster_ChatGpt = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.CommentMaster_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.textBoxCommentID = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.buttonコメント保存 = new System.Windows.Forms.Button();
             this.buttonコメント追加 = new System.Windows.Forms.Button();
             this.buttonコメント削除 = new System.Windows.Forms.Button();
@@ -44,20 +46,17 @@
             this.textBoxコメント = new System.Windows.Forms.TextBox();
             this.radioButtonツイート = new System.Windows.Forms.RadioButton();
             this.radioButtonリプライ = new System.Windows.Forms.RadioButton();
-            this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.buttonExe = new System.Windows.Forms.Button();
             this.buttonClose = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).BeginInit();
             this.groupBox6.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // dataGridViewComment
             // 
             this.dataGridViewComment.AllowUserToAddRows = false;
             this.dataGridViewComment.AllowUserToDeleteRows = false;
+            this.dataGridViewComment.AllowUserToResizeRows = false;
             this.dataGridViewComment.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewComment.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.CommentMaster_Id,
@@ -68,6 +67,7 @@
             this.CommentMaster_Comment});
             this.dataGridViewComment.Location = new System.Drawing.Point(13, 37);
             this.dataGridViewComment.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.dataGridViewComment.MultiSelect = false;
             this.dataGridViewComment.Name = "dataGridViewComment";
             this.dataGridViewComment.RowHeadersVisible = false;
             this.dataGridViewComment.RowTemplate.Height = 21;
@@ -126,6 +126,9 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.buttonExe);
+            this.groupBox6.Controls.Add(this.textBoxCommentID);
+            this.groupBox6.Controls.Add(this.label1);
             this.groupBox6.Controls.Add(this.buttonコメント保存);
             this.groupBox6.Controls.Add(this.buttonコメント追加);
             this.groupBox6.Controls.Add(this.buttonコメント削除);
@@ -141,6 +144,23 @@
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "コメント設定";
             // 
+            // textBoxCommentID
+            // 
+            this.textBoxCommentID.Enabled = false;
+            this.textBoxCommentID.Location = new System.Drawing.Point(516, 28);
+            this.textBoxCommentID.Name = "textBoxCommentID";
+            this.textBoxCommentID.Size = new System.Drawing.Size(70, 27);
+            this.textBoxCommentID.TabIndex = 37;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(484, 31);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(26, 19);
+            this.label1.TabIndex = 36;
+            this.label1.Text = "ID";
+            // 
             // buttonコメント保存
             // 
             this.buttonコメント保存.Location = new System.Drawing.Point(494, 174);
@@ -148,24 +168,24 @@
             this.buttonコメント保存.Name = "buttonコメント保存";
             this.buttonコメント保存.Size = new System.Drawing.Size(92, 33);
             this.buttonコメント保存.TabIndex = 7;
-            this.buttonコメント保存.Text = "更新";
+            this.buttonコメント保存.Text = "保存";
             this.buttonコメント保存.UseVisualStyleBackColor = true;
             this.buttonコメント保存.Click += new System.EventHandler(this.buttonコメント保存_Click);
             // 
             // buttonコメント追加
             // 
-            this.buttonコメント追加.Location = new System.Drawing.Point(124, 174);
+            this.buttonコメント追加.Location = new System.Drawing.Point(394, 174);
             this.buttonコメント追加.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonコメント追加.Name = "buttonコメント追加";
             this.buttonコメント追加.Size = new System.Drawing.Size(92, 33);
             this.buttonコメント追加.TabIndex = 6;
-            this.buttonコメント追加.Text = "複製・追加";
+            this.buttonコメント追加.Text = "複製";
             this.buttonコメント追加.UseVisualStyleBackColor = true;
             this.buttonコメント追加.Click += new System.EventHandler(this.buttonコメント追加_Click);
             // 
             // buttonコメント削除
             // 
-            this.buttonコメント削除.Location = new System.Drawing.Point(24, 174);
+            this.buttonコメント削除.Location = new System.Drawing.Point(294, 174);
             this.buttonコメント削除.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonコメント削除.Name = "buttonコメント削除";
             this.buttonコメント削除.Size = new System.Drawing.Size(92, 33);
@@ -231,42 +251,14 @@
             this.radioButtonリプライ.UseVisualStyleBackColor = true;
             this.radioButtonリプライ.CheckedChanged += new System.EventHandler(this.radioButtonリプライ_CheckedChanged);
             // 
-            // textBoxUrlTweetID
-            // 
-            this.textBoxUrlTweetID.Location = new System.Drawing.Point(121, 29);
-            this.textBoxUrlTweetID.Name = "textBoxUrlTweetID";
-            this.textBoxUrlTweetID.Size = new System.Drawing.Size(395, 27);
-            this.textBoxUrlTweetID.TabIndex = 10;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 32);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(108, 19);
-            this.label2.TabIndex = 9;
-            this.label2.Text = "URL・TweetID";
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.buttonExe);
-            this.groupBox1.Controls.Add(this.textBoxUrlTweetID);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Location = new System.Drawing.Point(12, 544);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(618, 70);
-            this.groupBox1.TabIndex = 11;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "コメントテスト";
-            // 
             // buttonExe
             // 
-            this.buttonExe.Location = new System.Drawing.Point(525, 28);
+            this.buttonExe.Location = new System.Drawing.Point(24, 177);
             this.buttonExe.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonExe.Name = "buttonExe";
-            this.buttonExe.Size = new System.Drawing.Size(84, 27);
+            this.buttonExe.Size = new System.Drawing.Size(109, 30);
             this.buttonExe.TabIndex = 11;
-            this.buttonExe.Text = "実行";
+            this.buttonExe.Text = "テストツイート";
             this.buttonExe.UseVisualStyleBackColor = true;
             this.buttonExe.Click += new System.EventHandler(this.buttonExe_Click);
             // 
@@ -287,7 +279,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(647, 681);
             this.Controls.Add(this.buttonClose);
-            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.radioButtonリプライ);
             this.Controls.Add(this.radioButtonツイート);
             this.Controls.Add(this.groupBox6);
@@ -302,8 +293,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).EndInit();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -327,10 +316,9 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_Comment;
         private System.Windows.Forms.RadioButton radioButtonツイート;
         private System.Windows.Forms.RadioButton radioButtonリプライ;
-        private System.Windows.Forms.TextBox textBoxUrlTweetID;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button buttonExe;
         private System.Windows.Forms.Button buttonClose;
+        private System.Windows.Forms.TextBox textBoxCommentID;
+        private System.Windows.Forms.Label label1;
     }
 }
