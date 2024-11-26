@@ -17,6 +17,7 @@ namespace DbotManager
         BOOKMARK,
         REPLY,
         TWEET,
+        RETWEET,
         GET_ACCESSTOKEN,
         GET_REFRESHTOKEN
     }
@@ -46,6 +47,12 @@ namespace DbotManager
         public bool 制限時間以内に履歴ありの無料アカウントを排除 { get; set; }
 
         public List<AccountMaster> TweetAccountList { get; set; }
+        public List<AccountMaster> LikeAccountList { get; set; }
+        public List<AccountMaster> BookmarkAccountList { get; set; }
+        public List<AccountMaster> ReplyAccountList { get; set; }
+        public int いいね件数 { get; set; }
+        public int ブックマーク件数 { get; set; }
+        public int リプライ件数 { get; set; }
 
         public void StartTask()
         {
@@ -62,81 +69,14 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            // 過去TargetTweetID宛に処理済みだった場合は省くため、リスト抽出
-            /*
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView()
-                .Where(x => x.TargetTweetID == TargetTweetID 
-                && x.Result
-                && x.TweetMode == GetTweetMode(TweetProcType))
-                .ToList();
-            */
-
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
-            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster().Where(x => x.Enable).ToList();
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result).ToList();
+            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();  // dataAccess.GetAccountMaster().Where(x => x.Enable).ToList();
 
-            DateTime now = DateTime.Now;
-            List<string> 無料制限中アカウント = new List<string>();
+            List<AccountMaster> likeList = FilterAccountList(accountMasterList , tweetHistoryList , TweetProcTypes.LIKE);
+            List<AccountMaster> bookMarkList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.BOOKMARK);
+            List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.REPLY);
 
-            if(制限時間以内に履歴ありの無料アカウントを排除)
-            {
-                if(LikeEnable)
-                {
-                    // 1日以内のいいね
-                    無料制限中アカウント.AddRange(
-                        tweetHistoryList.Where(th => th.Paid == false && (now - th.UpdateTime).TotalDays <= 1 && th.Result && th.TweetMode == "like")
-                        .Select(x => x.AccountId).ToList());
-                }
-
-                if(BookmarkEnable)
-                {
-                    // 1日以内のﾌﾞｯｸﾏｰｸ
-                    無料制限中アカウント.AddRange(
-                        tweetHistoryList.Where(th => th.Paid == false && (now - th.UpdateTime).TotalMinutes <= 15 && th.Result && th.TweetMode == "bookmark")
-                        .Select(x => x.AccountId).ToList());
-                }
-
-                if(ReplyEnable)
-                {
-                    // 1日以内のリプライ
-                    無料制限中アカウント.AddRange(
-                        tweetHistoryList.Where(th => th.Paid == false && (now - th.UpdateTime).TotalMinutes <= 15 && th.Result && th.TweetMode == "reply")
-                        .Select(x => x.AccountId).ToList());
-                }
-            }
-
-            List<string> ツイート済アカウント = new List<string>();
-
-            if(LikeEnable)
-            {
-                ツイート済アカウント.AddRange(tweetHistoryList
-                .Where(x => x.TargetTweetID == TargetTweetID
-                && x.Result
-                && x.TweetMode == GetTweetMode(TweetProcTypes.LIKE))
-                .Select(x => x.AccountId)
-                .ToList());
-            }
-            if (BookmarkEnable)
-            {
-                ツイート済アカウント.AddRange(tweetHistoryList
-                .Where(x => x.TargetTweetID == TargetTweetID
-                && x.Result
-                && x.TweetMode == GetTweetMode(TweetProcTypes.BOOKMARK))
-                .Select(x => x.AccountId)
-                .ToList());
-            }
-            if (ReplyEnable)
-            {
-                ツイート済アカウント.AddRange(tweetHistoryList
-                .Where(x => x.TargetTweetID == TargetTweetID
-                && x.Result
-                && x.TweetMode == GetTweetMode(TweetProcTypes.REPLY))
-                .Select(x => x.AccountId)
-                .ToList());
-            }
-
-            // AccountMaster から条件に合う AccountId を除外
-            var 除外対象アカウント = 無料制限中アカウント.Concat(ツイート済アカウント).Distinct().ToList();
 
             // 除外対象アカウントに含まれないアカウントをフィルタリング
             var フィルタ済アカウントリスト = accountMasterList
@@ -151,6 +91,69 @@ namespace DbotManager
 
             TweetAccountList = retList;
 
+        }
+
+        private List<AccountMaster> FilterAccountList(List<AccountMaster> accountMasterList, List<TweetHistory> tweetHistoryList, TweetProcTypes tweetProcType)
+        {
+            List<AccountMaster> retList = new List<AccountMaster>();
+
+            DateTime dateNow = DateTime.Now;
+
+            foreach (var account in accountMasterList)
+            {
+                // 無効アカウントはスルー
+                if (!account.Enable) continue;
+
+                // 処理無効アカウントはスルー
+                if (tweetProcType == TweetProcTypes.LIKE && !account.LikeEnable) continue;
+                else if (tweetProcType == TweetProcTypes.BOOKMARK && !account.BookMarkEnable) continue;
+                else if (tweetProcType == TweetProcTypes.REPLY && !account.ReplyEnable) continue;
+
+                var myHistory = tweetHistoryList.Where(x => x.AccountId == account.Id && x.Result == true).ToList();
+
+                // 対象ツイートIDで処理済みの場合はスルー
+                if (myHistory.Where(x => x.TargetTweetID == TargetTweetID).Count() > 0) continue;
+
+                var lastMyHistoryList = myHistory.OrderByDescending(x => x.UpdateTime).ToList();
+                if (lastMyHistoryList.Count() > 0)
+                {
+                    // 最期の処理が同じだった場合はスルー
+                    if (lastMyHistoryList.FirstOrDefault().TweetMode == tweetProcType)
+                    {
+                        continue;
+                    }
+
+                    // 無料アカウントは制限時間内の取引を中止
+                    if (制限時間以内に履歴ありの無料アカウントを排除 && account.Paid == false)
+                    {
+                        if (tweetProcType == TweetProcTypes.LIKE)
+                        {
+                            var lastHistory = lastMyHistoryList.Where(x => x.TweetMode == TweetProcTypes.LIKE).ToList();
+                            if(lastHistory.Count > 0)
+                            {
+                                if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalDays < 1) continue;
+                            }
+                        }
+                        else if (tweetProcType == TweetProcTypes.BOOKMARK || tweetProcType == TweetProcTypes.REPLY)
+                        {
+                            var lastHistory = lastMyHistoryList.Where(x => x.TweetMode == tweetProcType).ToList();
+                            if (lastHistory.Count > 0)
+                            {
+                                if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalMinutes < 15 ) continue;
+                            }
+                        }
+                    }
+
+                }
+
+
+
+
+
+                retList.Add(account);
+            }
+
+            return retList;
         }
 
         private string GetTweetMode(TweetProcTypes type)

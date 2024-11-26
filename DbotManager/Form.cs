@@ -139,12 +139,26 @@ namespace DbotManager
 
         #region Button
 
+        private class 処理アカウントInfo
+        {
+            public string UserName { get; set; }
+            public string AccountName { get; set; }
+        }
+
+
         private void buttonいいねリスト作成_Click(object sender, EventArgs e)
         {
+            /*
             if (radioButtonいいね件数50.Checked) _tweetTask.件数 = 50;
             else if (radioButtonいいね件数100.Checked) _tweetTask.件数 = 100;
             else if (radioButtonいいね件数200.Checked) _tweetTask.件数 = 200;
             else _tweetTask.件数 = int.Parse(textBoxいいね件数.Text);
+            */
+
+            _tweetTask.いいね件数 = checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0;
+            _tweetTask.ブックマーク件数 = checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク.Text) : 0 ;
+            _tweetTask.リプライ件数 = checkBoxリプライ.Checked ? int.Parse(textBoxリプライ.Text) : 0;
+
             _tweetTask.制限時間以内に履歴ありの無料アカウントを排除 = checkBox_15分以内に履歴のある無料アカウントを除外する.Checked;
             _tweetTask.TargetTweetID = GetTweetId();
 
@@ -154,6 +168,21 @@ namespace DbotManager
 
             _tweetTask.InitAccountList();
             dataGridViewいいねリスト.DataSource = _tweetTask.TweetAccountList;
+
+            List<処理アカウントInfo> list = new List<処理アカウントInfo>();
+
+            var userList = dataAccess.GetUserNames();
+
+            foreach(var item in _tweetTask.TweetAccountList)
+            {
+                list.Add(new 処理アカウントInfo()
+                {
+                    AccountName = item.Name,
+                    UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
+                });
+            }
+
+            dataGridViewいいね.DataSource = list;
 
         }
 

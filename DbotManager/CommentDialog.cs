@@ -146,13 +146,13 @@ namespace DbotManager
         private void radioButtonリプライ_CheckedChanged(object sender, EventArgs e)
         {
             if (_isLoading) return;
-            UpdateInfo();
+            ReadCommentMaster();
         }
 
         private void radioButtonツイート_CheckedChanged(object sender, EventArgs e)
         {
             if (_isLoading) return;
-            UpdateInfo();
+            ReadCommentMaster();
         }
 
         private void buttonExe_Click(object sender, EventArgs e)
