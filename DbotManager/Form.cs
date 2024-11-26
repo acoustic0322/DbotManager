@@ -465,5 +465,10 @@ namespace DbotManager
                 _accountDialog.Focus();
             }
         }
+
+        private void button履歴再取得_Click(object sender, EventArgs e)
+        {
+            FillDebugControls_TweetHistory();
+        }
     }
 }

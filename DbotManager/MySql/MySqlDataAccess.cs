@@ -36,7 +36,7 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = "SELECT user_name, account_id, account_name, paid ,comment, tweet_mode, target_tweet_id, result, error_log ,updatetime FROM tweet_history_view;";
+                string query = "SELECT user_name, account_id, account_name, paid ,comment, tweet_mode, target_tweet_id, result, error_log ,updatetime FROM tweet_history_view order by updatetime desc;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -78,8 +78,10 @@ public class MySqlDataAccess
         else if (value == "bookmark") return TweetProcTypes.BOOKMARK;
         else if (value == "tweet") return TweetProcTypes.TWEET;
         else if (value == "retweet") return TweetProcTypes.RETWEET;
+        else if (value == "get_access_token") return TweetProcTypes.GET_ACCESSTOKEN;
+        else if (value == "get_refresh_token") return TweetProcTypes.GET_REFRESHTOKEN;
 
-        return TweetProcTypes.LIKE;
+        return TweetProcTypes.NONE;
     }
 
     #region AccountMaster

@@ -19,7 +19,8 @@ namespace DbotManager
         TWEET,
         RETWEET,
         GET_ACCESSTOKEN,
-        GET_REFRESHTOKEN
+        GET_REFRESHTOKEN,
+        NONE
     }
 
     public class TweetTask

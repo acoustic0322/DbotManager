@@ -32,14 +32,23 @@
             this.tabPageいいねブックマーク = new System.Windows.Forms.TabPage();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.dataGridViewリプライ = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ReplyID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.textBoxリプライ = new System.Windows.Forms.TextBox();
             this.checkBoxリプライ = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.dataGridViewブックマーク = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.BookmarkID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.textBoxブックマーク = new System.Windows.Forms.TextBox();
             this.checkBoxブックマーク = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dataGridViewいいね = new System.Windows.Forms.DataGridView();
+            this.LikeUser = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.LikeID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.LikeAccount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.textBoxいいね件数 = new System.Windows.Forms.TextBox();
             this.checkBoxいいね = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -63,15 +72,7 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.LikeUser = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.LikeID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.LikeAccount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.BookmarkID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ReplyID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.button履歴再取得 = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPageいいねブックマーク.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -143,6 +144,24 @@
             this.dataGridViewリプライ.Size = new System.Drawing.Size(240, 442);
             this.dataGridViewリプライ.TabIndex = 9;
             // 
+            // dataGridViewTextBoxColumn13
+            // 
+            this.dataGridViewTextBoxColumn13.DataPropertyName = "UserName";
+            this.dataGridViewTextBoxColumn13.HeaderText = "ユーザー";
+            this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
+            // 
+            // ReplyID
+            // 
+            this.ReplyID.DataPropertyName = "ID";
+            this.ReplyID.HeaderText = "ID";
+            this.ReplyID.Name = "ReplyID";
+            // 
+            // dataGridViewTextBoxColumn14
+            // 
+            this.dataGridViewTextBoxColumn14.DataPropertyName = "AccountName";
+            this.dataGridViewTextBoxColumn14.HeaderText = "アカウント";
+            this.dataGridViewTextBoxColumn14.Name = "dataGridViewTextBoxColumn14";
+            // 
             // textBoxリプライ
             // 
             this.textBoxリプライ.Location = new System.Drawing.Point(70, 26);
@@ -193,6 +212,24 @@
             this.dataGridViewブックマーク.Size = new System.Drawing.Size(240, 442);
             this.dataGridViewブックマーク.TabIndex = 8;
             // 
+            // dataGridViewTextBoxColumn11
+            // 
+            this.dataGridViewTextBoxColumn11.DataPropertyName = "UserName";
+            this.dataGridViewTextBoxColumn11.HeaderText = "ユーザー";
+            this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
+            // 
+            // BookmarkID
+            // 
+            this.BookmarkID.DataPropertyName = "ID";
+            this.BookmarkID.HeaderText = "ID";
+            this.BookmarkID.Name = "BookmarkID";
+            // 
+            // dataGridViewTextBoxColumn12
+            // 
+            this.dataGridViewTextBoxColumn12.DataPropertyName = "AccountName";
+            this.dataGridViewTextBoxColumn12.HeaderText = "アカウント";
+            this.dataGridViewTextBoxColumn12.Name = "dataGridViewTextBoxColumn12";
+            // 
             // textBoxブックマーク
             // 
             this.textBoxブックマーク.Location = new System.Drawing.Point(70, 26);
@@ -242,6 +279,24 @@
             this.dataGridViewいいね.RowTemplate.Height = 21;
             this.dataGridViewいいね.Size = new System.Drawing.Size(240, 442);
             this.dataGridViewいいね.TabIndex = 0;
+            // 
+            // LikeUser
+            // 
+            this.LikeUser.DataPropertyName = "UserName";
+            this.LikeUser.HeaderText = "ユーザー";
+            this.LikeUser.Name = "LikeUser";
+            // 
+            // LikeID
+            // 
+            this.LikeID.DataPropertyName = "ID";
+            this.LikeID.HeaderText = "ID";
+            this.LikeID.Name = "LikeID";
+            // 
+            // LikeAccount
+            // 
+            this.LikeAccount.DataPropertyName = "AccountName";
+            this.LikeAccount.HeaderText = "アカウント";
+            this.LikeAccount.Name = "LikeAccount";
             // 
             // textBoxいいね件数
             // 
@@ -413,6 +468,7 @@
             // 
             // tabPage履歴
             // 
+            this.tabPage履歴.Controls.Add(this.button履歴再取得);
             this.tabPage履歴.Controls.Add(this.dataGridViewTweetHistory);
             this.tabPage履歴.Location = new System.Drawing.Point(4, 28);
             this.tabPage履歴.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -430,12 +486,12 @@
             this.dataGridViewTweetHistory.AllowUserToResizeRows = false;
             this.dataGridViewTweetHistory.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.dataGridViewTweetHistory.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewTweetHistory.Location = new System.Drawing.Point(7, 8);
+            this.dataGridViewTweetHistory.Location = new System.Drawing.Point(7, 43);
             this.dataGridViewTweetHistory.Name = "dataGridViewTweetHistory";
             this.dataGridViewTweetHistory.RowHeadersVisible = false;
             this.dataGridViewTweetHistory.RowTemplate.Height = 21;
             this.dataGridViewTweetHistory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewTweetHistory.Size = new System.Drawing.Size(631, 626);
+            this.dataGridViewTweetHistory.Size = new System.Drawing.Size(746, 591);
             this.dataGridViewTweetHistory.TabIndex = 0;
             // 
             // textBoxRenew
@@ -469,59 +525,15 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // LikeUser
+            // button履歴再取得
             // 
-            this.LikeUser.DataPropertyName = "UserName";
-            this.LikeUser.HeaderText = "ユーザー";
-            this.LikeUser.Name = "LikeUser";
-            // 
-            // LikeID
-            // 
-            this.LikeID.DataPropertyName = "ID";
-            this.LikeID.HeaderText = "ID";
-            this.LikeID.Name = "LikeID";
-            // 
-            // LikeAccount
-            // 
-            this.LikeAccount.DataPropertyName = "AccountName";
-            this.LikeAccount.HeaderText = "アカウント";
-            this.LikeAccount.Name = "LikeAccount";
-            // 
-            // dataGridViewTextBoxColumn11
-            // 
-            this.dataGridViewTextBoxColumn11.DataPropertyName = "UserName";
-            this.dataGridViewTextBoxColumn11.HeaderText = "ユーザー";
-            this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
-            // 
-            // BookmarkID
-            // 
-            this.BookmarkID.DataPropertyName = "ID";
-            this.BookmarkID.HeaderText = "ID";
-            this.BookmarkID.Name = "BookmarkID";
-            // 
-            // dataGridViewTextBoxColumn12
-            // 
-            this.dataGridViewTextBoxColumn12.DataPropertyName = "AccountName";
-            this.dataGridViewTextBoxColumn12.HeaderText = "アカウント";
-            this.dataGridViewTextBoxColumn12.Name = "dataGridViewTextBoxColumn12";
-            // 
-            // dataGridViewTextBoxColumn13
-            // 
-            this.dataGridViewTextBoxColumn13.DataPropertyName = "UserName";
-            this.dataGridViewTextBoxColumn13.HeaderText = "ユーザー";
-            this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
-            // 
-            // ReplyID
-            // 
-            this.ReplyID.DataPropertyName = "ID";
-            this.ReplyID.HeaderText = "ID";
-            this.ReplyID.Name = "ReplyID";
-            // 
-            // dataGridViewTextBoxColumn14
-            // 
-            this.dataGridViewTextBoxColumn14.DataPropertyName = "AccountName";
-            this.dataGridViewTextBoxColumn14.HeaderText = "アカウント";
-            this.dataGridViewTextBoxColumn14.Name = "dataGridViewTextBoxColumn14";
+            this.button履歴再取得.Location = new System.Drawing.Point(7, 9);
+            this.button履歴再取得.Name = "button履歴再取得";
+            this.button履歴再取得.Size = new System.Drawing.Size(103, 28);
+            this.button履歴再取得.TabIndex = 5;
+            this.button履歴再取得.Text = "再取得";
+            this.button履歴再取得.UseVisualStyleBackColor = true;
+            this.button履歴再取得.Click += new System.EventHandler(this.button履歴再取得_Click);
             // 
             // Form
             // 
@@ -605,6 +617,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn LikeUser;
         private System.Windows.Forms.DataGridViewTextBoxColumn LikeID;
         private System.Windows.Forms.DataGridViewTextBoxColumn LikeAccount;
+        private System.Windows.Forms.Button button履歴再取得;
     }
 }
 
