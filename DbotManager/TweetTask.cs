@@ -46,7 +46,6 @@ namespace DbotManager
         public string TargetTweetID { get; set; }
         public bool 制限時間以内に履歴ありの無料アカウントを排除 { get; set; }
 
-        public List<AccountMaster> TweetAccountList { get; set; }
         public List<AccountMaster> LikeAccountList { get; set; }
         public List<AccountMaster> BookmarkAccountList { get; set; }
         public List<AccountMaster> ReplyAccountList { get; set; }
@@ -56,9 +55,19 @@ namespace DbotManager
 
         public void StartTask()
         {
-            foreach(var item in TweetAccountList)
+            foreach(var item in LikeAccountList)
             {
-                TweetProc(item.UserId , item.Id, 1 ,TargetTweetID);
+                TweetProc(TweetProcTypes.LIKE,  item.UserId , item.Id, 1 ,TargetTweetID );
+            }
+
+            foreach (var item in BookmarkAccountList)
+            {
+                TweetProc(TweetProcTypes.BOOKMARK, item.UserId, item.Id, 1, TargetTweetID);
+            }
+
+            foreach (var item in ReplyAccountList)
+            {
+                TweetProc(TweetProcTypes.REPLY, item.UserId, item.Id, 1, TargetTweetID);
             }
         }
 
@@ -77,20 +86,94 @@ namespace DbotManager
             List<AccountMaster> bookMarkList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.BOOKMARK);
             List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.REPLY);
 
+            var selectedItems = SelectBalancedItems(likeList, bookMarkList, replyList, いいね件数, ブックマーク件数, リプライ件数);
 
-            // 除外対象アカウントに含まれないアカウントをフィルタリング
-            var フィルタ済アカウントリスト = accountMasterList
-                .Where(am => !除外対象アカウント.Contains(am.Id.ToString()))
-                .ToList();
+            LikeAccountList = selectedItems.Item1;
+            BookmarkAccountList = selectedItems.Item2;
+            ReplyAccountList = selectedItems.Item3;
+        }
 
-            // リストをシャッフルし、上限数を設定
+        static (List<AccountMaster>, List<AccountMaster>, List<AccountMaster>) SelectBalancedItems(
+            List<AccountMaster> test1,
+            List<AccountMaster> test2,
+            List<AccountMaster> test3,
+            int count1,
+            int count2,
+            int count3)
+        {
+            var selected1 = new List<AccountMaster>();
+            var selected2 = new List<AccountMaster>();
+            var selected3 = new List<AccountMaster>();
+
+            var excludedIds = new HashSet<int>(); // 除外対象の Id を追跡
             var random = new Random();
-            var shuffledList = フィルタ済アカウントリスト.OrderBy(x => random.Next()).Take(件数).ToList();
 
-            retList.AddRange(shuffledList);
+            // 最大回数ループ（test1, test2, test3 の中で最も多く選ぶ件数）
+            int maxCount = Math.Max(count1, Math.Max(count2, count3));
 
-            TweetAccountList = retList;
+            for (int i = 0; i < maxCount; i++)
+            {
+                if (selected1.Count < count1)
+                {
+                    var candidate = SelectRandomNonExcluded(test1, excludedIds, random);
+                    if (candidate != null) // 候補が見つかれば追加
+                    {
+                        selected1.Add(candidate);
+                        excludedIds.Add(candidate.Id); // Id を除外リストに追加
+                    }
+                }
 
+                if (selected2.Count < count2)
+                {
+                    var candidate = SelectRandomNonExcluded(test2, excludedIds, random);
+                    if (candidate != null)
+                    {
+                        selected2.Add(candidate);
+                        excludedIds.Add(candidate.Id);
+                    }
+                }
+
+                if (selected3.Count < count3)
+                {
+                    var candidate = SelectRandomNonExcluded(test3, excludedIds, random);
+                    if (candidate != null)
+                    {
+                        selected3.Add(candidate);
+                        excludedIds.Add(candidate.Id);
+                    }
+                }
+            }
+
+            return (selected1, selected2, selected3);
+        }
+        static AccountMaster SelectRandomNonExcluded(List<AccountMaster> source, HashSet<int> excludedIds, Random random)
+        {
+            // Id が excludedIds に含まれない候補を取得
+            var candidates = source.Where(x => !excludedIds.Contains(x.Id)).ToList();
+
+            if (candidates.Count == 0)
+                return null; // 候補が無ければ null を返す
+
+            // ランダムに選択して返す
+            return candidates[random.Next(candidates.Count)];
+        }
+
+        static List<int> SelectFixedCountFromList(List<int> source, HashSet<int> excluded, int count)
+        {
+            Random random = new Random();
+            // 除外された要素を取り除いたリストを作成
+            var filteredSource = source.Where(x => !excluded.Contains(x)).ToList();
+
+            if (filteredSource.Count < count)
+            {
+                throw new InvalidOperationException("Not enough unique items to select the required count.");
+            }
+
+            // ランダムに要素を選ぶ
+            var selected = filteredSource.OrderBy(x => random.Next()).Take(count).ToList();
+            // 選択済みの要素を追跡
+            excluded.UnionWith(selected);
+            return selected;
         }
 
         private List<AccountMaster> FilterAccountList(List<AccountMaster> accountMasterList, List<TweetHistory> tweetHistoryList, TweetProcTypes tweetProcType)
@@ -180,23 +263,6 @@ namespace DbotManager
                     break;
             }
             return string.Empty;
-        }
-
-        private void TweetProc(int userId, int accountId, int commentId, string tweetId)
-        {
-            if (LikeEnable)
-            {
-                TweetProc(TweetProcTypes.LIKE, userId, accountId, commentId, tweetId);
-            }
-            if (BookmarkEnable)
-            {
-                TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, commentId, tweetId);
-            }
-            if (ReplyEnable)
-            {
-                TweetProc(TweetProcTypes.REPLY, userId, accountId, commentId, tweetId);
-            }
-
         }
 
         public void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)

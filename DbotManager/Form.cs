@@ -141,6 +141,7 @@ namespace DbotManager
 
         private class 処理アカウントInfo
         {
+            public int ID { get; set; }
             public string UserName { get; set; }
             public string AccountName { get; set; }
         }
@@ -167,22 +168,50 @@ namespace DbotManager
             _tweetTask.ReplyEnable = checkBoxリプライ.Checked;
 
             _tweetTask.InitAccountList();
-            dataGridViewいいねリスト.DataSource = _tweetTask.TweetAccountList;
-
-            List<処理アカウントInfo> list = new List<処理アカウントInfo>();
 
             var userList = dataAccess.GetUserNames();
 
-            foreach(var item in _tweetTask.TweetAccountList)
             {
-                list.Add(new 処理アカウントInfo()
+                List<処理アカウントInfo> list = new List<処理アカウントInfo>();
+                foreach (var item in _tweetTask.LikeAccountList)
                 {
-                    AccountName = item.Name,
-                    UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
-                });
+                    list.Add(new 処理アカウントInfo()
+                    {
+                        ID = item.Id,
+                        AccountName = item.Name,
+                        UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
+                    });
+                }
+                dataGridViewいいね.DataSource = list;
             }
 
-            dataGridViewいいね.DataSource = list;
+            {
+                List<処理アカウントInfo> list = new List<処理アカウントInfo>();
+                foreach (var item in _tweetTask.BookmarkAccountList)
+                {
+                    list.Add(new 処理アカウントInfo()
+                    {
+                        ID = item.Id,
+                        AccountName = item.Name,
+                        UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
+                    });
+                }
+                dataGridViewブックマーク.DataSource = list;
+            }
+
+            {
+                List<処理アカウントInfo> list = new List<処理アカウントInfo>();
+                foreach (var item in _tweetTask.ReplyAccountList)
+                {
+                    list.Add(new 処理アカウントInfo()
+                    {
+                        ID = item.Id,
+                        AccountName = item.Name,
+                        UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
+                    });
+                }
+                dataGridViewリプライ.DataSource = list;
+            }
 
         }
 
