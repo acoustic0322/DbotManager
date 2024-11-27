@@ -21,7 +21,7 @@ def get_account_master(id):
     try:
         with connection.cursor() as cursor:
             # 認証情報を格納しているテーブルからデータを取得
-            sql = "SELECT api_key, api_key_secret, access_token, access_token_secret , bearer_token , client_id , client_secret , refresh_token FROM account_master WHERE id = %s"
+            sql = "SELECT api_key, api_key_secret, access_token, access_token_secret , bearer_token , client_id , client_secret , refresh_token , login_id FROM account_master WHERE id = %s"
             cursor.execute(sql, (id,))
             credentials = cursor.fetchone()
             return credentials
@@ -320,7 +320,7 @@ def is_video_file(file_path):
     _, ext = os.path.splitext(file_path)
     return ext.lower() in video_extensions
 
-def proc_post(credentials ,comment_id, photo_id , video_id):
+def proc_post(credentials ,comment_id, photo_id , video_id, tweet_id):
 
     try:
 
@@ -341,6 +341,9 @@ def proc_post(credentials ,comment_id, photo_id , video_id):
         parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
         print(parent_dir)
 
+        print(photo_id)
+        print(value)
+
         if photo_id != '':
             # media/video/1.mp4 のパスを指定
             photo_path = os.path.join(parent_dir, "media", "photo", "1",f"{photo_id}.jpg")
@@ -357,10 +360,19 @@ def proc_post(credentials ,comment_id, photo_id , video_id):
                 media_ids.append(media.media_id)           
 
                 client = create_client(credentials)
-                response = client.create_tweet(
-                    text=value,
-                    media_ids=media_ids
-                )            
+
+                if tweet_id == '0':
+                    response = client.create_tweet(
+                        text=value,
+                        media_ids=media_ids
+                        )
+                else:
+                    response = client.create_tweet(
+                        text=value,
+                        in_reply_to_tweet_id=tweet_id,
+                        media_ids=media_ids
+                    )                
+
                 print(f"https://twitter.com/user/status/{response.data['id']}")   
 
                 return True , ""  
@@ -382,20 +394,34 @@ def proc_post(credentials ,comment_id, photo_id , video_id):
                 media_ids.append(media.media_id)           
 
                 client = create_client(credentials)
-                response = client.create_tweet(
-                    text=value,
-                    media_ids=media_ids
-                )
+
+                if tweet_id == '0':
+                    response = client.create_tweet(
+                        text=value,
+                        media_ids=media_ids
+                        )
+                else:
+                    response = client.create_tweet(
+                        text=value,
+                        in_reply_to_tweet_id=tweet_id,
+                        media_ids=media_ids
+                    )                
                 print(f"https://twitter.com/user/status/{response.data['id']}") 
 
                 return True , ""  
 
         else :
             client = create_client(credentials)
- 
-            response = client.create_tweet(
-                text=value
-            )
+
+            if tweet_id == '0':
+                response = client.create_tweet(
+                    text=value
+                )
+            else:
+                response = client.create_tweet(
+                    text=value,
+                    in_reply_to_tweet_id=tweet_id
+                )
             print(f"https://twitter.com/user/status/{response.data['id']}")   
 
             return True , ""  
@@ -522,7 +548,79 @@ def outputLog(message):
     # 標準出力にメッセージを出力
     print(full_message)
 
+def proc_monomane(credentials , account_id):
 
+    client_id = credentials['client_id']
+    client_secret = credentials['client_secret']
+    refresh_token = credentials['refresh_token']
+
+    new_bearer_token,new_refresh_token = refresh_access_token(client_id,client_secret,refresh_token)
+    outputLog(f"new_bearer_token= {new_bearer_token}")
+    outputLog(f"new_refresh_token= {new_refresh_token}")
+    update_refresh_token(account_id, new_bearer_token , new_refresh_token)
+
+    client = tweepy.Client(
+        bearer_token=new_bearer_token,
+        consumer_key=credentials['api_key'],
+        consumer_secret=credentials['api_key_secret'],
+        access_token=credentials['access_token'],
+        access_token_secret=credentials['access_token_secret']             
+    )    
+    username = "Profile 5"
+    print(credentials['login_id'])
+    user = client.get_user(username=credentials['login_id'].replace("@",""))
+#    user = client.get_user(username=username.replace("@",""))
+    print("user=")
+    print(user)
+
+    for screen_name in screen_names:
+        tmp_screen_name = screen_name.replace("@","")
+
+        since_id=""
+        path_tmp_screen_name = sanitize_filename(tmp_screen_name)
+        if os.path.exists(os.path.join(folder, f"{path_tmp_screen_name}_sinceid3.txt")):            
+            with open(os.path.join(folder, f"{path_tmp_screen_name}_sinceid3.txt"), 'r', encoding='utf-8') as file:  # UTF-8エンコーディングを使用
+                since_id = file.read().strip().replace("\r\n","\n").split("\n")[0]
+    
+        tweeted = []
+        if os.path.exists(os.path.join(folder, f"{path_tmp_screen_name}_tweeted3.csv")):            
+            with open(os.path.join(folder, f"{path_tmp_screen_name}_tweeted3.csv"), 'r', encoding='utf-8') as file:
+                reader = csv.reader(file)
+                for line in reader:
+                    tweeted.append(line)
+
+        result_data = None
+        if since_id!="":
+            try:
+                tweets = client.search_recent_tweets(
+                    f'from:{tmp_screen_name} -is:retweet',
+                    since_id=since_id,
+                    max_results=100,
+                    tweet_fields=["id","text", "author_id", "created_at","attachments","referenced_tweets","in_reply_to_user_id"],
+                    expansions = ['attachments.media_keys'],
+                    media_fields = ['url', 'type', 'variants']
+                )
+            except:
+                tweets = client.search_recent_tweets(
+                    f'from:{tmp_screen_name} -is:retweet',
+                    max_results=100,
+                    tweet_fields=["id","text", "author_id", "created_at","attachments","referenced_tweets","in_reply_to_user_id"],
+                    expansions = ['attachments.media_keys'],
+                    media_fields = ['url', 'type', 'variants']
+                )
+            if tweets is None or len(tweets) == 0 or tweets.data is None:
+                sys.exit()
+            result_data = sorted(tweets.data, key=itemgetter('created_at'))
+        else:
+            tweets = client.search_recent_tweets(
+                f'from:{tmp_screen_name} -is:retweet',
+                tweet_fields=["id","text", "author_id", "created_at","attachments","referenced_tweets","in_reply_to_user_id"],
+                expansions = ['attachments.media_keys'],
+                media_fields = ['url', 'type','variants']
+            )
+            if tweets is None or len(tweets) == 0 or tweets.data is None:
+                sys.exit()
+            result_data = tweets.data
 
 args = parse_arguments(sys.argv[1:])
 account_id = int(args.get("account_id","0"))
@@ -548,9 +646,11 @@ if credentials:
         if client:
             error_log = ""
             if mode == "post":
-                error_log = proc_post(credentials, comment_id, photo_id , video_id)
+                error_log = proc_post(credentials, comment_id, photo_id , video_id , 0)
 #                error_log = proc_post(credentials, comment_id, "1" , "")
 #                error_log = proc_post(credentials, comment_id, "" , "1")
+            elif mode == "reply":
+                success , error_log = proc_post(credentials, comment_id , photo_id, video_id, tweet_id)
             elif mode == "repost":
                 success , error_log = proc_repost(credentials, tweet_id)
             elif mode == "like":
@@ -558,9 +658,11 @@ if credentials:
             elif mode == "bookmark":
                 success , error_log = proc_bookmark(credentials, tweet_id, account_id)
             elif mode == "get_refresh_token":
-                error_log = proc_get_refresh_token(credentials , account_id )
+                success , error_log = proc_get_refresh_token(credentials , account_id )
             elif mode == "get_access_token":
                 success , error_log = proc_get_access_token(credentials , account_id )
+            elif mode == "monomane":
+                success , error_log = proc_monomane(credentials , account_id )
             else:
                 # エラーメッセージを標準エラーに出力
                 outputLog(f"サポートされていないmode: {mode}")

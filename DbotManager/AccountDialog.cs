@@ -123,8 +123,9 @@ namespace DbotManager
             checkBox有効.Checked = accountMaster.Enable;
             checkBox有料アカウント.Checked = accountMaster.Paid;
             checkBoxいいね.Checked = accountMaster.LikeEnable;
+            checkBoxリプライ.Checked = accountMaster.ReplyEnable;
             checkBoxブックマーク.Checked = accountMaster.BookMarkEnable;
-            checkBoxリプライ.Checked = accountMaster.RepostEnable;
+            checkBoxリポスト.Checked = accountMaster.RepostEnable;
             checkBoxツイート.Checked = accountMaster.PostEnable;
         }
 
@@ -262,8 +263,9 @@ namespace DbotManager
                 Enable = checkBox有効.Checked,
                 Paid = checkBox有料アカウント.Checked,
                 LikeEnable = checkBoxいいね.Checked,
+                ReplyEnable = checkBoxリプライ.Checked,
                 BookMarkEnable = checkBoxブックマーク.Checked,
-                RepostEnable = checkBoxリプライ.Checked,
+                RepostEnable = checkBoxリポスト.Checked,
                 PostEnable = checkBoxツイート.Checked,
                 Reserve1Enable = false,
                 Reserve1Count = 0,
@@ -307,8 +309,9 @@ namespace DbotManager
                 Enable = checkBox有効.Checked,
                 Paid = checkBox有料アカウント.Checked,
                 LikeEnable = checkBoxいいね.Checked,
+                ReplyEnable = checkBoxリプライ.Checked,
                 BookMarkEnable = checkBoxブックマーク.Checked,
-                RepostEnable = checkBoxリプライ.Checked,
+                RepostEnable = checkBoxリポスト.Checked,
                 PostEnable = checkBoxツイート.Checked,
                 Reserve1Enable = false,
                 Reserve1Count = 0,

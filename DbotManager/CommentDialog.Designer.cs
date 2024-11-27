@@ -42,7 +42,6 @@
             this.radioButton動画 = new System.Windows.Forms.RadioButton();
             this.radioButton画像 = new System.Windows.Forms.RadioButton();
             this.radioButtonメディアなし = new System.Windows.Forms.RadioButton();
-            this.buttonExe = new System.Windows.Forms.Button();
             this.textBoxCommentID = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.buttonコメント保存 = new System.Windows.Forms.Button();
@@ -51,10 +50,13 @@
             this.checkBoxChatGpt = new System.Windows.Forms.CheckBox();
             this.checkBox有効 = new System.Windows.Forms.CheckBox();
             this.textBoxコメント = new System.Windows.Forms.TextBox();
-            this.radioButtonツイート = new System.Windows.Forms.RadioButton();
+            this.buttonExe = new System.Windows.Forms.Button();
+            this.radioButtonポスト = new System.Windows.Forms.RadioButton();
             this.radioButtonリプライ = new System.Windows.Forms.RadioButton();
             this.buttonClose = new System.Windows.Forms.Button();
             this.textBoxRenew = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).BeginInit();
             this.groupBox6.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -217,17 +219,6 @@
             this.radioButtonメディアなし.Text = "なし";
             this.radioButtonメディアなし.UseVisualStyleBackColor = true;
             // 
-            // buttonExe
-            // 
-            this.buttonExe.Location = new System.Drawing.Point(13, 695);
-            this.buttonExe.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.buttonExe.Name = "buttonExe";
-            this.buttonExe.Size = new System.Drawing.Size(109, 30);
-            this.buttonExe.TabIndex = 11;
-            this.buttonExe.Text = "テストツイート";
-            this.buttonExe.UseVisualStyleBackColor = true;
-            this.buttonExe.Click += new System.EventHandler(this.buttonExe_Click);
-            // 
             // textBoxCommentID
             // 
             this.textBoxCommentID.Enabled = false;
@@ -312,19 +303,30 @@
             this.textBoxコメント.Size = new System.Drawing.Size(562, 100);
             this.textBoxコメント.TabIndex = 0;
             // 
-            // radioButtonツイート
+            // buttonExe
             // 
-            this.radioButtonツイート.AutoSize = true;
-            this.radioButtonツイート.Checked = true;
-            this.radioButtonツイート.Location = new System.Drawing.Point(13, 8);
-            this.radioButtonツイート.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.radioButtonツイート.Name = "radioButtonツイート";
-            this.radioButtonツイート.Size = new System.Drawing.Size(72, 23);
-            this.radioButtonツイート.TabIndex = 7;
-            this.radioButtonツイート.TabStop = true;
-            this.radioButtonツイート.Text = "ツイート";
-            this.radioButtonツイート.UseVisualStyleBackColor = true;
-            this.radioButtonツイート.CheckedChanged += new System.EventHandler(this.radioButtonツイート_CheckedChanged);
+            this.buttonExe.Location = new System.Drawing.Point(13, 730);
+            this.buttonExe.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.buttonExe.Name = "buttonExe";
+            this.buttonExe.Size = new System.Drawing.Size(109, 30);
+            this.buttonExe.TabIndex = 11;
+            this.buttonExe.Text = "テストツイート";
+            this.buttonExe.UseVisualStyleBackColor = true;
+            this.buttonExe.Click += new System.EventHandler(this.buttonExe_Click);
+            // 
+            // radioButtonポスト
+            // 
+            this.radioButtonポスト.AutoSize = true;
+            this.radioButtonポスト.Checked = true;
+            this.radioButtonポスト.Location = new System.Drawing.Point(13, 8);
+            this.radioButtonポスト.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.radioButtonポスト.Name = "radioButtonポスト";
+            this.radioButtonポスト.Size = new System.Drawing.Size(61, 23);
+            this.radioButtonポスト.TabIndex = 7;
+            this.radioButtonポスト.TabStop = true;
+            this.radioButtonポスト.Text = "ポスト";
+            this.radioButtonポスト.UseVisualStyleBackColor = true;
+            this.radioButtonポスト.CheckedChanged += new System.EventHandler(this.radioButtonツイート_CheckedChanged);
             // 
             // radioButtonリプライ
             // 
@@ -340,10 +342,10 @@
             // 
             // buttonClose
             // 
-            this.buttonClose.Location = new System.Drawing.Point(538, 695);
+            this.buttonClose.Location = new System.Drawing.Point(538, 730);
             this.buttonClose.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonClose.Name = "buttonClose";
-            this.buttonClose.Size = new System.Drawing.Size(92, 33);
+            this.buttonClose.Size = new System.Drawing.Size(92, 30);
             this.buttonClose.TabIndex = 12;
             this.buttonClose.Text = "閉じる";
             this.buttonClose.UseVisualStyleBackColor = true;
@@ -352,23 +354,41 @@
             // textBoxRenew
             // 
             this.textBoxRenew.Font = new System.Drawing.Font("Meiryo UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.textBoxRenew.Location = new System.Drawing.Point(13, 620);
+            this.textBoxRenew.Location = new System.Drawing.Point(13, 655);
             this.textBoxRenew.Multiline = true;
             this.textBoxRenew.Name = "textBoxRenew";
             this.textBoxRenew.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.textBoxRenew.Size = new System.Drawing.Size(617, 67);
             this.textBoxRenew.TabIndex = 22;
             // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(14, 625);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(108, 19);
+            this.label13.TabIndex = 23;
+            this.label13.Text = "URL・TweetID";
+            // 
+            // textBoxUrlTweetID
+            // 
+            this.textBoxUrlTweetID.Location = new System.Drawing.Point(128, 622);
+            this.textBoxUrlTweetID.Name = "textBoxUrlTweetID";
+            this.textBoxUrlTweetID.Size = new System.Drawing.Size(502, 27);
+            this.textBoxUrlTweetID.TabIndex = 24;
+            // 
             // CommentDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(647, 757);
+            this.ClientSize = new System.Drawing.Size(647, 765);
+            this.Controls.Add(this.label13);
+            this.Controls.Add(this.textBoxUrlTweetID);
             this.Controls.Add(this.textBoxRenew);
             this.Controls.Add(this.buttonExe);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.radioButtonリプライ);
-            this.Controls.Add(this.radioButtonツイート);
+            this.Controls.Add(this.radioButtonポスト);
             this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.dataGridViewComment);
             this.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
@@ -404,7 +424,7 @@
         private System.Windows.Forms.DataGridViewCheckBoxColumn CommentMaster_Enable;
         private System.Windows.Forms.DataGridViewCheckBoxColumn CommentMaster_ChatGpt;
         private System.Windows.Forms.DataGridViewTextBoxColumn CommentMaster_Comment;
-        private System.Windows.Forms.RadioButton radioButtonツイート;
+        private System.Windows.Forms.RadioButton radioButtonポスト;
         private System.Windows.Forms.RadioButton radioButtonリプライ;
         private System.Windows.Forms.Button buttonExe;
         private System.Windows.Forms.Button buttonClose;
@@ -417,5 +437,7 @@
         private System.Windows.Forms.ComboBox comboBox動画;
         private System.Windows.Forms.ComboBox comboBox画像;
         private System.Windows.Forms.TextBox textBoxRenew;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.TextBox textBoxUrlTweetID;
     }
 }

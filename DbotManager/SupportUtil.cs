@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -27,6 +28,32 @@ namespace DbotManager
                     dataGridView.Rows[row.Index].Selected = true;
                 }
             }
+        }
+
+        public static T GetRandomItem<T>(List<T> list)
+        {
+            if (list == null || list.Count == 0)
+            {
+                throw new ArgumentException("リストが空またはnullです。");
+            }
+
+            Random random = new Random();
+            int index = random.Next(list.Count); // 0からlist.Count-1までのランダムなインデックスを取得
+            return list[index];
+        }
+
+        public static string ExtractNumber(string input)
+        {
+            // URLの場合と単なる数値の場合を考慮
+            Match match = Regex.Match(input, @"(?:status/(\d+)|^(\d+))");
+
+            if (match.Success)
+            {
+                // マッチした部分のうち、最初にキャプチャされたグループ（数値部分）を返す
+                return match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+            }
+
+            return null;
         }
 
         #region ファイル処理関連

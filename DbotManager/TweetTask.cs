@@ -20,6 +20,7 @@ namespace DbotManager
         REPLY,
         GET_ACCESSTOKEN,
         GET_REFRESHTOKEN,
+        MONOMANE,
         NONE
     }
 
@@ -41,6 +42,7 @@ namespace DbotManager
 
         public bool LikeEnable { get; set; }
         public bool BookmarkEnable { get; set; }
+        public bool RepostEnable { get; set; }
         public bool ReplyEnable { get; set; }
 
         public int 件数 { get; set; }
@@ -49,15 +51,18 @@ namespace DbotManager
 
         public List<AccountMaster> LikeAccountList { get; set; }
         public List<AccountMaster> BookmarkAccountList { get; set; }
+        public List<AccountMaster> RepostAccountList { get; set; }
         public List<AccountMaster> ReplyAccountList { get; set; }
         public int いいね件数 { get; set; }
         public int ブックマーク件数 { get; set; }
+        public int リポスト件数 { get; set; }
         public int リプライ件数 { get; set; }
 
         public void StartTask()
         {
-            int maxLength = Math.Max(LikeAccountList.Count,
-                             Math.Max(BookmarkAccountList.Count, ReplyAccountList.Count));
+            int maxLength = Math.Max(ReplyAccountList.Count,
+                            Math.Max(LikeAccountList.Count,
+                             Math.Max(BookmarkAccountList.Count, RepostAccountList.Count)));
 
             for (int i = 0; i < maxLength; i++)
             {
@@ -68,6 +73,13 @@ namespace DbotManager
                     TweetProc(TweetProcTypes.LIKE, likeItem.UserId, likeItem.Id, 1, TargetTweetID);
                 }
 
+                // REPLY処理
+                if (i < ReplyAccountList.Count)
+                {
+                    var replyItem = ReplyAccountList[i];
+                    TweetProc(TweetProcTypes.REPLY, replyItem.UserId, replyItem.Id, replyItem.CommentId, TargetTweetID);
+                }
+
                 // BOOKMARK処理
                 if (i < BookmarkAccountList.Count)
                 {
@@ -76,9 +88,9 @@ namespace DbotManager
                 }
 
                 // REPOST処理
-                if (i < ReplyAccountList.Count)
+                if (i < RepostAccountList.Count)
                 {
-                    var replyItem = ReplyAccountList[i];
+                    var replyItem = RepostAccountList[i];
                     TweetProc(TweetProcTypes.REPOST, replyItem.UserId, replyItem.Id, 1, TargetTweetID);
                 }
             }
@@ -87,78 +99,92 @@ namespace DbotManager
 
         public void InitAccountList()
         {
-            List<AccountMaster> retList = new List<AccountMaster>();
-
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
             List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result).ToList();
-            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();  // dataAccess.GetAccountMaster().Where(x => x.Enable).ToList();
+            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
+            List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
 
-            List<AccountMaster> likeList = FilterAccountList(accountMasterList , tweetHistoryList , TweetProcTypes.LIKE);
-            List<AccountMaster> bookMarkList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.BOOKMARK);
-            List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.REPOST);
+            List<AccountMaster> likeList = FilterAccountList(accountMasterList , tweetHistoryList , commenttMasterList, TweetProcTypes.LIKE);
+            List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList,TweetProcTypes.REPLY);
+            List<AccountMaster> bookMarkList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList,TweetProcTypes.BOOKMARK);
+            List<AccountMaster> repostList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList,TweetProcTypes.REPOST);
 
-            var selectedItems = SelectBalancedItems(likeList, bookMarkList, replyList, いいね件数, ブックマーク件数, リプライ件数);
+            var selectedItems = SelectBalancedItems(likeList, replyList , bookMarkList, repostList, いいね件数, リプライ件数 , ブックマーク件数, リポスト件数);
 
             LikeAccountList = selectedItems.Item1;
-            BookmarkAccountList = selectedItems.Item2;
-            ReplyAccountList = selectedItems.Item3;
+            ReplyAccountList = selectedItems.Item2;
+            BookmarkAccountList = selectedItems.Item3;
+            RepostAccountList = selectedItems.Item4;
         }
 
-        static (List<AccountMaster>, List<AccountMaster>, List<AccountMaster>) SelectBalancedItems(
-            List<AccountMaster> test1,
-            List<AccountMaster> test2,
-            List<AccountMaster> test3,
-            int count1,
-            int count2,
-            int count3)
+        static (List<AccountMaster>, List<AccountMaster>, List<AccountMaster>, List<AccountMaster>) SelectBalancedItems(
+            List<AccountMaster> likeList,
+            List<AccountMaster> replyList,
+            List<AccountMaster> bookmarkList,
+            List<AccountMaster> repostList,
+            int likeCount,
+            int replyCount,
+            int bookmarkCount,
+            int repostCount)
         {
-            var selected1 = new List<AccountMaster>();
-            var selected2 = new List<AccountMaster>();
-            var selected3 = new List<AccountMaster>();
+            var selectedLike = new List<AccountMaster>();
+            var selectedReply = new List<AccountMaster>();
+            var selectedBookmark = new List<AccountMaster>();
+            var selectedRepost = new List<AccountMaster>();
 
             var excludedIds = new HashSet<int>(); // 除外対象の Id を追跡
             var random = new Random();
 
             // 最大回数ループ（test1, test2, test3 の中で最も多く選ぶ件数）
-            int maxCount = Math.Max(count1, Math.Max(count2, count3));
+            int maxCount = Math.Max(likeCount, Math.Max(replyCount, Math.Max(bookmarkCount, repostCount)));
 
             for (int i = 0; i < maxCount; i++)
             {
-                if (selected1.Count < count1)
+                if (selectedLike.Count < likeCount)
                 {
-                    var candidate = SelectRandomNonExcluded(test1, excludedIds, random);
+                    var candidate = SelectRandomNonExcluded(likeList, excludedIds, random);
                     if (candidate != null) // 候補が見つかれば追加
                     {
-                        selected1.Add(candidate);
+                        selectedLike.Add(candidate);
                         excludedIds.Add(candidate.Id); // Id を除外リストに追加
                     }
                 }
 
-                if (selected2.Count < count2)
+                if (selectedReply.Count < replyCount)
                 {
-                    var candidate = SelectRandomNonExcluded(test2, excludedIds, random);
+                    var candidate = SelectRandomNonExcluded(replyList, excludedIds, random);
+                    if (candidate != null) // 候補が見つかれば追加
+                    {
+                        selectedReply.Add(candidate);
+                        excludedIds.Add(candidate.Id); // Id を除外リストに追加
+                    }
+                }
+
+                if (selectedBookmark.Count < bookmarkCount)
+                {
+                    var candidate = SelectRandomNonExcluded(bookmarkList, excludedIds, random);
                     if (candidate != null)
                     {
-                        selected2.Add(candidate);
+                        selectedBookmark.Add(candidate);
                         excludedIds.Add(candidate.Id);
                     }
                 }
 
-                if (selected3.Count < count3)
+                if (selectedRepost.Count < repostCount)
                 {
-                    var candidate = SelectRandomNonExcluded(test3, excludedIds, random);
+                    var candidate = SelectRandomNonExcluded(repostList, excludedIds, random);
                     if (candidate != null)
                     {
-                        selected3.Add(candidate);
+                        selectedRepost.Add(candidate);
                         excludedIds.Add(candidate.Id);
                     }
                 }
             }
 
-            return (selected1, selected2, selected3);
+            return (selectedLike, selectedReply , selectedBookmark, selectedRepost);
         }
         static AccountMaster SelectRandomNonExcluded(List<AccountMaster> source, HashSet<int> excludedIds, Random random)
         {
@@ -190,7 +216,7 @@ namespace DbotManager
             return selected;
         }
 
-        private List<AccountMaster> FilterAccountList(List<AccountMaster> accountMasterList, List<TweetHistory> tweetHistoryList, TweetProcTypes tweetProcType)
+        private List<AccountMaster> FilterAccountList(List<AccountMaster> accountMasterList, List<TweetHistory> tweetHistoryList, List<CommentMaster> commentMasterList , TweetProcTypes tweetProcType)
         {
             List<AccountMaster> retList = new List<AccountMaster>();
 
@@ -205,6 +231,7 @@ namespace DbotManager
                 if (tweetProcType == TweetProcTypes.LIKE && !account.LikeEnable) continue;
                 else if (tweetProcType == TweetProcTypes.BOOKMARK && !account.BookMarkEnable) continue;
                 else if (tweetProcType == TweetProcTypes.REPOST && !account.RepostEnable) continue;
+                else if (tweetProcType == TweetProcTypes.REPLY && !account.ReplyEnable) continue;
 
                 var myHistory = tweetHistoryList.Where(x => x.AccountId == account.Id && x.Result == true).ToList();
 
@@ -231,7 +258,7 @@ namespace DbotManager
                                 if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalDays < 1) continue;
                             }
                         }
-                        else if (tweetProcType == TweetProcTypes.BOOKMARK || tweetProcType == TweetProcTypes.REPOST)
+                        else if (tweetProcType == TweetProcTypes.BOOKMARK || tweetProcType == TweetProcTypes.REPOST || tweetProcType == TweetProcTypes.REPLY)
                         {
                             var lastHistory = lastMyHistoryList.Where(x => x.Mode == tweetProcType).ToList();
                             if (lastHistory.Count > 0)
@@ -241,6 +268,13 @@ namespace DbotManager
                         }
                     }
 
+                }
+
+                if(tweetProcType == TweetProcTypes.REPLY)
+                {
+                    var commentMasterListWk = commentMasterList.Where(x => x.AccountId == account.Id && x.TweetModeType == TweetModeTypes.Replay).ToList();
+                    if (commentMasterListWk.Count == 0) continue;
+                    account.CommentId = SupportUtil.GetRandomItem(commentMasterListWk).Id;
                 }
 
                 retList.Add(account);
@@ -256,6 +290,9 @@ namespace DbotManager
                 case TweetProcTypes.LIKE:
                     return "like";
                     break;
+                case TweetProcTypes.REPLY:
+                    return "reply";
+                    break;
                 case TweetProcTypes.BOOKMARK:
                     return "bookmark";
                     break;
@@ -270,6 +307,9 @@ namespace DbotManager
                     break;
                 case TweetProcTypes.GET_REFRESHTOKEN:
                     return "get_refresh_token";
+                    break;
+                case TweetProcTypes.MONOMANE:
+                    return "monomane";
                     break;
             }
             return string.Empty;
@@ -287,11 +327,18 @@ namespace DbotManager
                 case TweetProcTypes.POST:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
                     break;
+
                 case TweetProcTypes.LIKE:
                 case TweetProcTypes.BOOKMARK:
                 case TweetProcTypes.REPOST:
+                case TweetProcTypes.MONOMANE:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
+
+                case TweetProcTypes.REPLY:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId} tweet_id={tweetId}";
+                    break;
+
                 case TweetProcTypes.GET_ACCESSTOKEN:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId}";
                     break;
@@ -323,7 +370,6 @@ namespace DbotManager
                 process.OutputDataReceived += (s, ea) => logAction?.Invoke(ea.Data);
                 process.ErrorDataReceived += (s, ea) => logAction?.Invoke("ERROR: " + ea.Data);
 
-
                 process.Start();
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
@@ -351,19 +397,19 @@ namespace DbotManager
             switch (tweetProcType)
             {
                 case TweetProcTypes.POST:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
                     break;
                 case TweetProcTypes.LIKE:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
                 case TweetProcTypes.BOOKMARK:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
                 case TweetProcTypes.GET_ACCESSTOKEN:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId}";
                     break;
                 case TweetProcTypes.GET_REFRESHTOKEN:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId}";
                     break;
             }
 

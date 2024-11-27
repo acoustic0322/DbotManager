@@ -23,6 +23,7 @@ namespace DbotManager.Table
         public string RefreshToken { get; set; }
         public bool Enable { get; set; }
         public bool LikeEnable { get; set; }
+        public bool ReplyEnable { get; set; }
         public bool BookMarkEnable { get; set; }
         public bool RepostEnable { get; set; }
         public bool PostEnable { get; set; }
@@ -43,5 +44,8 @@ namespace DbotManager.Table
         public int Reserve2Count { get; set; }
         public int Reserve3Count { get; set; }
         public int Reserve4Count { get; set; }
+
+        // TweetTask用
+        public int CommentId { get; set; }
     }
 }

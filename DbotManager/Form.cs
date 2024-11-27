@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Data;
 using System.Data.Common;
+using System.Data.Odbc;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -144,32 +145,29 @@ namespace DbotManager
             public int ID { get; set; }
             public string UserName { get; set; }
             public string AccountName { get; set; }
+            public string Comment { get; set; }
         }
 
 
         private void buttonいいねリスト作成_Click(object sender, EventArgs e)
         {
-            /*
-            if (radioButtonいいね件数50.Checked) _tweetTask.件数 = 50;
-            else if (radioButtonいいね件数100.Checked) _tweetTask.件数 = 100;
-            else if (radioButtonいいね件数200.Checked) _tweetTask.件数 = 200;
-            else _tweetTask.件数 = int.Parse(textBoxいいね件数.Text);
-            */
-
             _tweetTask.いいね件数 = checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0;
-            _tweetTask.ブックマーク件数 = checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク.Text) : 0 ;
-            _tweetTask.リプライ件数 = checkBoxリプライ.Checked ? int.Parse(textBoxリプライ.Text) : 0;
+            _tweetTask.リプライ件数 = checkBoxリプライ.Checked ? int.Parse(textBoxリプライ件数.Text) : 0;
+            _tweetTask.ブックマーク件数 = checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク件数.Text) : 0 ;
+            _tweetTask.リポスト件数 = checkBoxリポスト.Checked ? int.Parse(textBoxリポスト件数.Text) : 0;
 
             _tweetTask.制限時間以内に履歴ありの無料アカウントを排除 = checkBox_15分以内に履歴のある無料アカウントを除外する.Checked;
             _tweetTask.TargetTweetID = GetTweetId();
 
             _tweetTask.LikeEnable = checkBoxいいね.Checked;
-            _tweetTask.BookmarkEnable = checkBoxブックマーク.Checked;
             _tweetTask.ReplyEnable = checkBoxリプライ.Checked;
+            _tweetTask.BookmarkEnable = checkBoxブックマーク.Checked;
+            _tweetTask.RepostEnable = checkBoxリポスト.Checked;
 
             _tweetTask.InitAccountList();
 
             var userList = dataAccess.GetUserNames();
+            var commentList = dataAccess.GetCommentMaster();
 
             {
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
@@ -184,6 +182,22 @@ namespace DbotManager
                 }
                 dataGridViewいいね.DataSource = list;
                 labelいいね件数.Text = $"({list.Count}件)";
+            }
+
+            {
+                List<処理アカウントInfo> list = new List<処理アカウントInfo>();
+                foreach (var item in _tweetTask.ReplyAccountList)
+                {
+                    list.Add(new 処理アカウントInfo()
+                    {
+                        ID = item.Id,
+                        AccountName = item.Name,
+                        UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name,
+                        Comment = commentList.Where(x => x.Id == item.CommentId).FirstOrDefault().Comment
+                    });
+                }
+                dataGridViewリプライ.DataSource = list;
+                labelリプライ.Text = $"({list.Count}件)";
             }
 
             {
@@ -203,7 +217,7 @@ namespace DbotManager
 
             {
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
-                foreach (var item in _tweetTask.ReplyAccountList)
+                foreach (var item in _tweetTask.RepostAccountList)
                 {
                     list.Add(new 処理アカウントInfo()
                     {
@@ -212,7 +226,7 @@ namespace DbotManager
                         UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
                     });
                 }
-                dataGridViewリプライ.DataSource = list;
+                dataGridViewリポスト.DataSource = list;
                 labelリポスト件数.Text = $"({list.Count}件)";
             }
 
@@ -472,6 +486,53 @@ namespace DbotManager
         private void button履歴再取得_Click(object sender, EventArgs e)
         {
             FillDebugControls_TweetHistory();
+        }
+
+        private void buttonものまね_Click(object sender, EventArgs e)
+        {
+            /*
+            //            string path_tmp_account = SanitizeFilename(s.Replace("@", "").Trim());
+            string path_tmp_account = "test";
+
+            // search_tweet3.exe プロセスを開始
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                CreateNoWindow = true,  // ウィンドウを表示しない
+                UseShellExecute = false,  // シェルを使用しない
+                FileName = "python\search_tweet3.exe",
+                RedirectStandardError = true,
+                Arguments = $"\"{path_tmp_account}\" \"C:\Users\sound\Desktop\test\" \"{item.プロキシURL}\" \"{item.DMMID}\""
+            };
+
+            using (Process process = new Process { StartInfo = startInfo })
+            {
+                process.Start();  // プロセスを開始
+                string error = process.StandardError.ReadToEnd();
+                process.WaitForExit();  // プロセスの終了を待つ
+                int exitCode = process.ExitCode;
+                if (exitCode != 0)
+                {
+                    try
+                    {
+                        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                        string filePath = Path.Combine(desktopPath, "Twitter投稿errorlog.txt");
+
+                        // ファイルにテキストを書き込む
+                        using (var writer = File.AppendText(filePath))
+                        {
+                            writer.Write(DateTime.Now.ToString("g") + "：" + item.アカウント名 + "のモノマネ投稿でエラーです。" + error);
+                        }
+                    }
+                    catch { }
+                }
+            }
+
+
+            TweetTask tweetTask = new TweetTask(DbConnection, AppendLog);
+            tweetTask.TweetProc(TweetProcTypes.MONOMANE, 0, 1, 0, GetTweetId());
+
+//            _tweetTask.TweetProc()
+            */
         }
     }
 }

@@ -98,7 +98,7 @@ public class MySqlDataAccess
                 INSERT INTO account_master 
                 (user_id, name, login_id, login_password, api_key, api_key_secret, 
                  client_id, client_secret, access_token, access_token_secret, 
-                 bearer_token, refresh_token, enable, like_enable, bookmark_enable, 
+                 bearer_token, refresh_token, enable, like_enable, reply_enable, bookmark_enable, 
                  repost_enable, post_enable, reserve1_enable, reserve1_start_hour, 
                  reserve1_end_hour, reserve1_count, reserve2_enable, reserve2_start_hour, 
                  reserve2_end_hour, reserve2_count, reserve3_enable, reserve3_start_hour, 
@@ -107,8 +107,8 @@ public class MySqlDataAccess
                 VALUES 
                 (@UserId, @Name, @LoginId, @LoginPassword, @ApiKey, @ApiKeySecret, 
                  @ClientId, @ClientSecret, @AccessToken, @AccessTokenSecret, 
-                 @BearerToken, @RefreshToken, @Enable, @LikeEnable, @BookmarkEnable, 
-                 @ReplyEnable, @TweetEnable, @Reserve1Enable, @Reserve1StartHour, 
+                 @BearerToken, @RefreshToken, @Enable, @LikeEnable, @ReplyEnable, @BookmarkEnable, 
+                 @RepostEnable, @TweetEnable, @Reserve1Enable, @Reserve1StartHour, 
                  @Reserve1EndHour, @Reserve1Count, @Reserve2Enable, @Reserve2StartHour, 
                  @Reserve2EndHour, @Reserve2Count, @Reserve3Enable, @Reserve3StartHour, 
                  @Reserve3EndHour, @Reserve3Count, @Reserve4Enable, @Reserve4StartHour, 
@@ -130,8 +130,9 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@RefreshToken", account.RefreshToken);
                     command.Parameters.AddWithValue("@Enable", account.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@LikeEnable", account.LikeEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@ReplyEnable", account.ReplyEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@BookmarkEnable", account.BookMarkEnable ? 1 : 0);
-                    command.Parameters.AddWithValue("@ReplyEnable", account.RepostEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@RepostEnable", account.RepostEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@TweetEnable", account.PostEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1Enable", account.Reserve1Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1StartHour", account.Reserve1StartHour);
@@ -176,7 +177,7 @@ public class MySqlDataAccess
                     am.client_id,am.client_secret,
                     am.access_token,am.access_token_secret,
                     am.bearer_token,am.refresh_token,am.enable
-                    ,am.like_enable,am.bookmark_enable,am.repost_enable,am.post_enable,am.paid
+                    ,am.like_enable,am.reply_enable,am.bookmark_enable,am.repost_enable,am.post_enable,am.paid
                     ,am.reserve1_enable,am.reserve1_start_hour,am.reserve1_end_hour,am.reserve1_count
                     ,am.reserve2_enable,am.reserve2_start_hour,am.reserve2_end_hour,am.reserve2_count
                     ,am.reserve3_enable,am.reserve3_start_hour,am.reserve3_end_hour,am.reserve3_count
@@ -217,6 +218,7 @@ public class MySqlDataAccess
                                 RefreshToken = reader["refresh_token"].ToString(),
                                 Enable = reader["enable"].ToString() == "1" ,
                                 LikeEnable = reader["like_enable"].ToString() == "1",
+                                ReplyEnable = reader["reply_enable"].ToString() == "1",
                                 BookMarkEnable = reader["bookmark_enable"].ToString() == "1",
                                 RepostEnable = reader["repost_enable"].ToString() == "1",
                                 PostEnable = reader["post_enable"].ToString() == "1",
@@ -279,8 +281,9 @@ public class MySqlDataAccess
                     enable = @Enable, 
                     paid = @Paid, 
                     like_enable = @LikeEnable, 
+                    reply_enable = @ReplyEnable, 
                     bookmark_enable = @BookmarkEnable, 
-                    repost_enable = @ReplyEnable, 
+                    repost_enable = @RepostEnable, 
                     post_enable = @TweetEnable, 
                     reserve1_enable = @Reserve1Enable, 
                     reserve1_start_hour = @Reserve1StartHour, 
@@ -318,8 +321,9 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Enable", account.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Paid", account.Paid ? 1 : 0);
                     command.Parameters.AddWithValue("@LikeEnable", account.LikeEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@ReplyEnable", account.ReplyEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@BookmarkEnable", account.BookMarkEnable ? 1 : 0);
-                    command.Parameters.AddWithValue("@ReplyEnable", account.RepostEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@RepostEnable", account.RepostEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@TweetEnable", account.PostEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1Enable", account.Reserve1Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1StartHour", account.Reserve1StartHour);

@@ -112,7 +112,7 @@ namespace DbotManager
                 ChatGpt = checkBoxChatGpt.Checked,
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
-                TweetModeType = radioButtonツイート.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                TweetModeType = radioButtonポスト.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
                 PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
                 MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
             };
@@ -134,7 +134,7 @@ namespace DbotManager
                 ChatGpt = checkBoxChatGpt.Checked,
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
-                TweetModeType = radioButtonツイート.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                TweetModeType = radioButtonポスト.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
                 PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
                 MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
             };
@@ -160,9 +160,10 @@ namespace DbotManager
             int userId = UserId;
             int accountId = AccountId;
             int commentId = int.Parse(textBoxCommentID.Text);
+            string tweetId = GetTweetId(true);
 
             TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
-            _tweetTask.TweetProc(TweetProcTypes.POST, userId, accountId, commentId, "");
+            _tweetTask.TweetProc(radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY, userId, accountId, commentId, tweetId);
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
@@ -179,7 +180,7 @@ namespace DbotManager
             {
                 var list = _commentMasterList.Where(x => x.AccountId == accountId).ToList();
 
-                if (radioButtonツイート.Checked)
+                if (radioButtonポスト.Checked)
                 {
                     list = list.Where(x => x.TweetModeType == TweetModeTypes.Tweet).ToList();
                 }
@@ -226,6 +227,23 @@ namespace DbotManager
         }
 
         #endregion
+
+        private string GetTweetId(bool debug_mode = false)
+        {
+            string input = textBoxUrlTweetID.Text;
+            string extractedNumber = SupportUtil.ExtractNumber(input);
+
+            if (extractedNumber != null)
+            {
+                Console.WriteLine($"Extracted number: {extractedNumber}");
+            }
+            else
+            {
+                Console.WriteLine("No valid number found.");
+            }
+
+            return extractedNumber;
+        }
 
         // TextBoxにログを表示するメソッド
         private void AppendLog(string message)
