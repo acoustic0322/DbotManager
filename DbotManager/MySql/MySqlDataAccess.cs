@@ -36,7 +36,7 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = "SELECT user_name, account_id, account_name, paid ,comment, tweet_mode, target_tweet_id, result, error_log ,updatetime FROM tweet_history_view order by updatetime desc;";
+                string query = "SELECT user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime FROM tweet_history_view order by updatetime desc;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -50,7 +50,7 @@ public class MySqlDataAccess
                                 AccountName = reader["account_name"].ToString(),
                                 Paid = reader["paid"].ToString() == "1",
                                 Comment = reader["comment"].ToString(),
-                                TweetMode = GetTweetProcType(reader["tweet_mode"].ToString()),
+                                Mode = GetTweetProcType(reader["mode"].ToString()),
                                 TargetTweetID = reader["target_tweet_id"].ToString(),
                                 Result = reader["result"].ToString() == "1",
                                 ErrorLog = reader["error_log"].ToString(),
@@ -74,10 +74,10 @@ public class MySqlDataAccess
     private TweetProcTypes GetTweetProcType(string value)
     {
         if (value == "like") return TweetProcTypes.LIKE;
-        else if (value == "reply") return TweetProcTypes.REPLY;
+        else if (value == "repost") return TweetProcTypes.REPOST;
         else if (value == "bookmark") return TweetProcTypes.BOOKMARK;
-        else if (value == "tweet") return TweetProcTypes.TWEET;
-        else if (value == "retweet") return TweetProcTypes.RETWEET;
+        else if (value == "post") return TweetProcTypes.POST;
+        else if (value == "reply") return TweetProcTypes.REPLY;
         else if (value == "get_access_token") return TweetProcTypes.GET_ACCESSTOKEN;
         else if (value == "get_refresh_token") return TweetProcTypes.GET_REFRESHTOKEN;
 
@@ -99,7 +99,7 @@ public class MySqlDataAccess
                 (user_id, name, login_id, login_password, api_key, api_key_secret, 
                  client_id, client_secret, access_token, access_token_secret, 
                  bearer_token, refresh_token, enable, like_enable, bookmark_enable, 
-                 reply_enable, tweet_enable, reserve1_enable, reserve1_start_hour, 
+                 repost_enable, post_enable, reserve1_enable, reserve1_start_hour, 
                  reserve1_end_hour, reserve1_count, reserve2_enable, reserve2_start_hour, 
                  reserve2_end_hour, reserve2_count, reserve3_enable, reserve3_start_hour, 
                  reserve3_end_hour, reserve3_count, reserve4_enable, reserve4_start_hour, 
@@ -131,8 +131,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Enable", account.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@LikeEnable", account.LikeEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@BookmarkEnable", account.BookMarkEnable ? 1 : 0);
-                    command.Parameters.AddWithValue("@ReplyEnable", account.ReplyEnable ? 1 : 0);
-                    command.Parameters.AddWithValue("@TweetEnable", account.TweetEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@ReplyEnable", account.RepostEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@TweetEnable", account.PostEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1Enable", account.Reserve1Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1StartHour", account.Reserve1StartHour);
                     command.Parameters.AddWithValue("@Reserve1EndHour", account.Reserve1EndHour);
@@ -176,7 +176,7 @@ public class MySqlDataAccess
                     am.client_id,am.client_secret,
                     am.access_token,am.access_token_secret,
                     am.bearer_token,am.refresh_token,am.enable
-                    ,am.like_enable,am.bookmark_enable,am.reply_enable,am.tweet_enable,am.paid
+                    ,am.like_enable,am.bookmark_enable,am.repost_enable,am.post_enable,am.paid
                     ,am.reserve1_enable,am.reserve1_start_hour,am.reserve1_end_hour,am.reserve1_count
                     ,am.reserve2_enable,am.reserve2_start_hour,am.reserve2_end_hour,am.reserve2_count
                     ,am.reserve3_enable,am.reserve3_start_hour,am.reserve3_end_hour,am.reserve3_count
@@ -218,8 +218,8 @@ public class MySqlDataAccess
                                 Enable = reader["enable"].ToString() == "1" ,
                                 LikeEnable = reader["like_enable"].ToString() == "1",
                                 BookMarkEnable = reader["bookmark_enable"].ToString() == "1",
-                                ReplyEnable = reader["reply_enable"].ToString() == "1",
-                                TweetEnable = reader["tweet_enable"].ToString() == "1",
+                                RepostEnable = reader["repost_enable"].ToString() == "1",
+                                PostEnable = reader["post_enable"].ToString() == "1",
 
                                 Reserve1Count= int.Parse(reader["reserve1_count"].ToString()),
                                 Reserve2Count = int.Parse(reader["reserve2_count"].ToString()),
@@ -280,8 +280,8 @@ public class MySqlDataAccess
                     paid = @Paid, 
                     like_enable = @LikeEnable, 
                     bookmark_enable = @BookmarkEnable, 
-                    reply_enable = @ReplyEnable, 
-                    tweet_enable = @TweetEnable, 
+                    repost_enable = @ReplyEnable, 
+                    post_enable = @TweetEnable, 
                     reserve1_enable = @Reserve1Enable, 
                     reserve1_start_hour = @Reserve1StartHour, 
                     reserve1_end_hour = @Reserve1EndHour, 
@@ -319,8 +319,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Paid", account.Paid ? 1 : 0);
                     command.Parameters.AddWithValue("@LikeEnable", account.LikeEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@BookmarkEnable", account.BookMarkEnable ? 1 : 0);
-                    command.Parameters.AddWithValue("@ReplyEnable", account.ReplyEnable ? 1 : 0);
-                    command.Parameters.AddWithValue("@TweetEnable", account.TweetEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@ReplyEnable", account.RepostEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@TweetEnable", account.PostEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1Enable", account.Reserve1Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1StartHour", account.Reserve1StartHour);
                     command.Parameters.AddWithValue("@Reserve1EndHour", account.Reserve1EndHour);

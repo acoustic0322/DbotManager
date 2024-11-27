@@ -15,9 +15,9 @@ namespace DbotManager
     {
         LIKE,
         BOOKMARK,
+        REPOST,
+        POST,
         REPLY,
-        TWEET,
-        RETWEET,
         GET_ACCESSTOKEN,
         GET_REFRESHTOKEN,
         NONE
@@ -56,21 +56,34 @@ namespace DbotManager
 
         public void StartTask()
         {
-            foreach(var item in LikeAccountList)
-            {
-                TweetProc(TweetProcTypes.LIKE,  item.UserId , item.Id, 1 ,TargetTweetID );
-            }
+            int maxLength = Math.Max(LikeAccountList.Count,
+                             Math.Max(BookmarkAccountList.Count, ReplyAccountList.Count));
 
-            foreach (var item in BookmarkAccountList)
+            for (int i = 0; i < maxLength; i++)
             {
-                TweetProc(TweetProcTypes.BOOKMARK, item.UserId, item.Id, 1, TargetTweetID);
-            }
+                // LIKE処理
+                if (i < LikeAccountList.Count)
+                {
+                    var likeItem = LikeAccountList[i];
+                    TweetProc(TweetProcTypes.LIKE, likeItem.UserId, likeItem.Id, 1, TargetTweetID);
+                }
 
-            foreach (var item in ReplyAccountList)
-            {
-                TweetProc(TweetProcTypes.REPLY, item.UserId, item.Id, 1, TargetTweetID);
+                // BOOKMARK処理
+                if (i < BookmarkAccountList.Count)
+                {
+                    var bookmarkItem = BookmarkAccountList[i];
+                    TweetProc(TweetProcTypes.BOOKMARK, bookmarkItem.UserId, bookmarkItem.Id, 1, TargetTweetID);
+                }
+
+                // REPOST処理
+                if (i < ReplyAccountList.Count)
+                {
+                    var replyItem = ReplyAccountList[i];
+                    TweetProc(TweetProcTypes.REPOST, replyItem.UserId, replyItem.Id, 1, TargetTweetID);
+                }
             }
         }
+
 
         public void InitAccountList()
         {
@@ -85,7 +98,7 @@ namespace DbotManager
 
             List<AccountMaster> likeList = FilterAccountList(accountMasterList , tweetHistoryList , TweetProcTypes.LIKE);
             List<AccountMaster> bookMarkList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.BOOKMARK);
-            List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.REPLY);
+            List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, TweetProcTypes.REPOST);
 
             var selectedItems = SelectBalancedItems(likeList, bookMarkList, replyList, いいね件数, ブックマーク件数, リプライ件数);
 
@@ -191,7 +204,7 @@ namespace DbotManager
                 // 処理無効アカウントはスルー
                 if (tweetProcType == TweetProcTypes.LIKE && !account.LikeEnable) continue;
                 else if (tweetProcType == TweetProcTypes.BOOKMARK && !account.BookMarkEnable) continue;
-                else if (tweetProcType == TweetProcTypes.REPLY && !account.ReplyEnable) continue;
+                else if (tweetProcType == TweetProcTypes.REPOST && !account.RepostEnable) continue;
 
                 var myHistory = tweetHistoryList.Where(x => x.AccountId == account.Id && x.Result == true).ToList();
 
@@ -202,7 +215,7 @@ namespace DbotManager
                 if (lastMyHistoryList.Count() > 0)
                 {
                     // 最期の処理が同じだった場合はスルー
-                    if (lastMyHistoryList.FirstOrDefault().TweetMode == tweetProcType)
+                    if (lastMyHistoryList.FirstOrDefault().Mode == tweetProcType)
                     {
                         continue;
                     }
@@ -212,15 +225,15 @@ namespace DbotManager
                     {
                         if (tweetProcType == TweetProcTypes.LIKE)
                         {
-                            var lastHistory = lastMyHistoryList.Where(x => x.TweetMode == TweetProcTypes.LIKE).ToList();
+                            var lastHistory = lastMyHistoryList.Where(x => x.Mode == TweetProcTypes.LIKE).ToList();
                             if(lastHistory.Count > 0)
                             {
                                 if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalDays < 1) continue;
                             }
                         }
-                        else if (tweetProcType == TweetProcTypes.BOOKMARK || tweetProcType == TweetProcTypes.REPLY)
+                        else if (tweetProcType == TweetProcTypes.BOOKMARK || tweetProcType == TweetProcTypes.REPOST)
                         {
-                            var lastHistory = lastMyHistoryList.Where(x => x.TweetMode == tweetProcType).ToList();
+                            var lastHistory = lastMyHistoryList.Where(x => x.Mode == tweetProcType).ToList();
                             if (lastHistory.Count > 0)
                             {
                                 if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalMinutes < 15 ) continue;
@@ -229,10 +242,6 @@ namespace DbotManager
                     }
 
                 }
-
-
-
-
 
                 retList.Add(account);
             }
@@ -250,11 +259,11 @@ namespace DbotManager
                 case TweetProcTypes.BOOKMARK:
                     return "bookmark";
                     break;
-                case TweetProcTypes.REPLY:
-                    return "retweet";
+                case TweetProcTypes.REPOST:
+                    return "repost";
                     break;
-                case TweetProcTypes.TWEET:
-                    return "tweet";
+                case TweetProcTypes.POST:
+                    return "post";
                     break;
                 case TweetProcTypes.GET_ACCESSTOKEN:
                     return "get_access_token";
@@ -275,19 +284,19 @@ namespace DbotManager
 
             switch (tweetProcType)
             {
-                case TweetProcTypes.TWEET:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
+                case TweetProcTypes.POST:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
                     break;
                 case TweetProcTypes.LIKE:
                 case TweetProcTypes.BOOKMARK:
-                case TweetProcTypes.REPLY:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
+                case TweetProcTypes.REPOST:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
                 case TweetProcTypes.GET_ACCESSTOKEN:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId}";
                     break;
                 case TweetProcTypes.GET_REFRESHTOKEN:
-                    pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId}";
                     break;
             }
 
@@ -341,7 +350,7 @@ namespace DbotManager
 
             switch (tweetProcType)
             {
-                case TweetProcTypes.TWEET:
+                case TweetProcTypes.POST:
                     pythonScriptPath += $" tweet_mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
                     break;
                 case TweetProcTypes.LIKE:

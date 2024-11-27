@@ -12,7 +12,7 @@ namespace DbotManager.Table
         public int AccountId { get; set; }
         public string AccountName { get; set; }
         public bool Paid { get; set; }
-        public TweetProcTypes TweetMode { get; set; }
+        public TweetProcTypes Mode { get; set; }
         public string TargetTweetID { get; set; }
         public string Comment { get; set; }
         public DateTime UpdateTime { get; set; }

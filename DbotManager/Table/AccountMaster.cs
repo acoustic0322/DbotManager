@@ -24,8 +24,8 @@ namespace DbotManager.Table
         public bool Enable { get; set; }
         public bool LikeEnable { get; set; }
         public bool BookMarkEnable { get; set; }
-        public bool ReplyEnable { get; set; }
-        public bool TweetEnable { get; set; }
+        public bool RepostEnable { get; set; }
+        public bool PostEnable { get; set; }
         public bool Paid { get; set; }
         public bool Reserve1Enable { get; set; }
         public bool Reserve2Enable { get; set; }

@@ -183,6 +183,7 @@ namespace DbotManager
                     });
                 }
                 dataGridViewいいね.DataSource = list;
+                labelいいね件数.Text = $"({list.Count}件)";
             }
 
             {
@@ -197,6 +198,7 @@ namespace DbotManager
                     });
                 }
                 dataGridViewブックマーク.DataSource = list;
+                labelブックマーク件数.Text = $"({list.Count}件)";
             }
 
             {
@@ -211,6 +213,7 @@ namespace DbotManager
                     });
                 }
                 dataGridViewリプライ.DataSource = list;
+                labelリポスト件数.Text = $"({list.Count}件)";
             }
 
         }
@@ -352,7 +355,7 @@ namespace DbotManager
 
         private void button予約作成_Click(object sender, EventArgs e)
         {
-            var accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.TweetEnable);
+            var accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable);
 
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();

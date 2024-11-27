@@ -162,7 +162,7 @@ namespace DbotManager
             int commentId = int.Parse(textBoxCommentID.Text);
 
             TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
-            _tweetTask.TweetProc(TweetProcTypes.TWEET, userId, accountId, commentId, "");
+            _tweetTask.TweetProc(TweetProcTypes.POST, userId, accountId, commentId, "");
         }
 
         private void buttonClose_Click(object sender, EventArgs e)

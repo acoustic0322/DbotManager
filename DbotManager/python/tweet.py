@@ -29,7 +29,7 @@ def get_account_master(id):
         connection.close()
 
 # ツイート履歴をデータベースに保存する関数
-def save_tweet_history(account_id, comment_id, tweet_mode, target_tweet_id , result , error_log):
+def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , error_log):
     connection = pymysql.connect(
         host='localhost',
         user='root',
@@ -41,10 +41,10 @@ def save_tweet_history(account_id, comment_id, tweet_mode, target_tweet_id , res
     try:
         with connection.cursor() as cursor:
             sql = """
-                INSERT INTO tweet_history (account_id, comment_id, tweet_mode, target_tweet_id, updatetime , result , error_log)
+                INSERT INTO tweet_history (account_id, comment_id, mode, target_tweet_id, updatetime , result , error_log)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql, (account_id, comment_id, tweet_mode, target_tweet_id, datetime.now(), result , error_log))
+            cursor.execute(sql, (account_id, comment_id, mode, target_tweet_id, datetime.now(), result , error_log))
             connection.commit()
     finally:
         connection.close()        
@@ -198,46 +198,18 @@ def proc_like(credentials, tweet_id):
         # 実行したい操作 (例: 特定のツイートにいいねをつける)
         client.like(tweet_id)
         outputLog("いいねをつけました")
+        return True , ""
     except tweepy.errors.TooManyRequests as e:
         # レート制限に引っかかった場合
         reset_time = int(e.response.headers.get("x-rate-limit-reset"))
         reset_datetime = datetime.fromtimestamp(reset_time)
         wait_time = (reset_datetime - datetime.now()).total_seconds()
-        return outputLog(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
+        outputLog(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
+        return False , f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）"
     except tweepy.errors.TweepyException as e:
-        return outputLog(f"その他エラー({e})")
+        outputLog(f"その他エラー({e})")
+        return False , f"その他エラー({e})"
 
-def proc_like_test(credentials, tweet_id):
-    try:
-        client_id = credentials['client_id']
-        client_secret = credentials['client_secret']
-        refresh_token = credentials['refresh_token']
-
-        new_bearer_token,new_refresh_token = refresh_access_token(client_id,client_secret,refresh_token)
-        outputLog(f"new_bearer_token= {new_bearer_token}")
-        outputLog(f"new_refresh_token= {new_refresh_token}")
-        update_refresh_token(account_id, new_bearer_token , new_refresh_token)
-
-        client = tweepy.Client(
-            bearer_token=new_bearer_token,
-            consumer_key=credentials['api_key'],
-            consumer_secret=credentials['api_key_secret'],
-            access_token=credentials['access_token'],
-            access_token_secret=credentials['access_token_secret']             
-        )
-
-#        client = create_client(credentials)
-        # 実行したい操作 (例: 特定のツイートにいいねをつける)
-        client.like(tweet_id)
-        outputLog("いいねをつけました")
-    except tweepy.errors.TooManyRequests as e:
-        # レート制限に引っかかった場合
-        reset_time = int(e.response.headers.get("x-rate-limit-reset"))
-        reset_datetime = datetime.fromtimestamp(reset_time)
-        wait_time = (reset_datetime - datetime.now()).total_seconds()
-        return outputLog(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
-    except tweepy.errors.TweepyException as e:
-        return outputLog(f"その他エラー({e})")
 
 # 認証
 def authenticate_twitter(credentials):
@@ -253,34 +225,25 @@ def authenticate_twitter2(credentials):
     api = tweepy.API(auth, wait_on_rate_limit=True)
     return api
 
-# 特定のツイートにいいねをする
-def proc_like_test2(credentials, tweet_id):
-    api = authenticate_twitter(credentials)
-    try:
-        api.create_favorite(tweet_id)
-        print(f"ツイートID {tweet_id} にいいねしました！")
-    except tweepy.errors.Forbidden as e:
-        print(f"権限エラー: {e}")
-    except tweepy.errors.HTTPException as e:
-        print(f"HTTPエラー: {e}")
-    except Exception as e:
-        print(f"その他のエラー: {e}")
 
-# ツイートにリプライをする関数
-def proc_retweet(credentials, tweet_id):
+# ツイートにリポストをする関数
+def proc_repost(credentials, tweet_id):
     try:
         client = create_client(credentials)
         # 実行したい操作 (例: 特定のツイートにいいねをつける)
         client.retweet(tweet_id)
-        outputLog("リプライしました")
+        outputLog("リポストしました")
+        return True , ""
     except tweepy.errors.TooManyRequests as e:
         # レート制限に引っかかった場合
         reset_time = int(e.response.headers.get("x-rate-limit-reset"))
         reset_datetime = datetime.fromtimestamp(reset_time)
         wait_time = (reset_datetime - datetime.now()).total_seconds()
-        return outputLog(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
+        outputLog(f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）")
+        return False , f"レート制限に達しました。制限解除まで {wait_time // 60} 分待機します（解除時間: {reset_datetime}）"
     except tweepy.errors.TweepyException as e:
-        return outputLog(f"その他エラー({e})")
+        outputLog(f"その他エラー({e})")
+        return False , f"その他エラー({e})"
 
 # ツイートをブックマークに追加する関数
 def proc_bookmark(credentials, tweet_id, account_id):
@@ -303,8 +266,11 @@ def proc_bookmark(credentials, tweet_id, account_id):
         )
         client.bookmark(tweet_id=tweet_id)
         outputLog("ツイートをブックマークに追加しました。")
+        return True , ""
     except Exception as e:
-        return outputLog(f"ブックマークエラー: {e}")
+#        return outputLog(f"ブックマークエラー: {e}")
+        outputLog(f"ブックマークエラー: {e}")
+        return False , f"{e}"
 
 
 # リフレッシュトークンで新たなベアラトークンを取得
@@ -344,8 +310,17 @@ def refresh_access_token(client_id, client_secret, refresh_token):
     
     return response_json.get('access_token'), response_json.get('refresh_token')
 
+def is_image_file(file_path):
+    image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".svg"}
+    _, ext = os.path.splitext(file_path)
+    return ext.lower() in image_extensions
 
-def proc_tweet(credentials ,comment_id):
+def is_video_file(file_path):
+    video_extensions = {".mp4", ".avi", ".mov", ".mkv", ".flv", ".wmv", ".webm"}
+    _, ext = os.path.splitext(file_path)
+    return ext.lower() in video_extensions
+
+def proc_post(credentials ,comment_id, photo_id , video_id):
 
     try:
 
@@ -354,20 +329,83 @@ def proc_tweet(credentials ,comment_id):
 
         # コメントが取得できなかった場合、処理を終了
         if value is None:
-            return False        
+            return False     
 
-        client = create_client(credentials)
-        response = client.create_tweet(
-            text=value
-        )
-        print(f"https://twitter.com/user/status/{response.data['id']}")   
+        media_ids =[]
+
+        # 現在のスクリプトがあるディレクトリのパスを取得
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        print(current_dir)
+
+        # 一つ上の階層に移動
+        parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
+        print(parent_dir)
+
+        if photo_id != '':
+            # media/video/1.mp4 のパスを指定
+            photo_path = os.path.join(parent_dir, "media", "photo", "1",f"{photo_id}.jpg")
+            print(photo_path)
+            if os.path.exists(photo_path) and is_image_file(photo_path):
+
+                # 認証オブジェクトの作成
+                auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])                
+                auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
+                api = tweepy.API(auth)
+
+                # 画像をアップロード
+                media = api.media_upload(filename=photo_path)
+                media_ids.append(media.media_id)           
+
+                client = create_client(credentials)
+                response = client.create_tweet(
+                    text=value,
+                    media_ids=media_ids
+                )            
+                print(f"https://twitter.com/user/status/{response.data['id']}")   
+
+                return True , ""  
+
+
+        elif video_id != '':
+            # media/video/1.mp4 のパスを指定
+            video_path = os.path.join(parent_dir, "media", "video", "1",f"{video_id}.mp4")
+            print(video_path)
+            if os.path.exists(video_path) and is_video_file(video_path):
+
+                # 認証オブジェクトの作成
+                auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])                
+                auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
+                api = tweepy.API(auth)
+
+                # 動画をアップロード
+                media = api.media_upload(video_path, media_category='tweet_video')
+                media_ids.append(media.media_id)           
+
+                client = create_client(credentials)
+                response = client.create_tweet(
+                    text=value,
+                    media_ids=media_ids
+                )
+                print(f"https://twitter.com/user/status/{response.data['id']}") 
+
+                return True , ""  
+
+        else :
+            client = create_client(credentials)
+ 
+            response = client.create_tweet(
+                text=value
+            )
+            print(f"https://twitter.com/user/status/{response.data['id']}")   
+
+            return True , ""  
 
     except tweepy.errors.Forbidden as e:
         if "You are not allowed to create a Tweet with duplicate content." in str(e):
-            return outputLog("重複ツイート")
+            return False , outputLog("重複ツイート")
         else:
-            return outputLog(f"その他エラー({e})")
-    return ""  # 空文字列を返すことで成功を示す
+            return False , outputLog(f"その他エラー({e})")
+    return False , ""  # 空文字列を返すことで成功を示す
 
 def proc_get_access_token(credentials , account_id):
     try:
@@ -405,6 +443,8 @@ def proc_get_access_token(credentials , account_id):
 #            input("アクセストークン,アクセストークンシークレットを更新しました")
 #            os.system('cls')
             print("アクセストークン,アクセストークンシークレットを更新しました")
+            
+
         except Exception as e:
             print(f"エラー: {e}")
             input()
@@ -413,6 +453,8 @@ def proc_get_access_token(credentials , account_id):
 
     print("何かキーを押すと終了します...")  
     input()  # ユーザーの入力を待機
+
+    return True , ""
 
 def proc_get_refresh_token(credentials , account_id):
     try:
@@ -469,6 +511,8 @@ def proc_get_refresh_token(credentials , account_id):
             input()
     except Exception as e:
         print(f"エラー: {e}")
+
+    return True , ""
     
 def outputLog(message):
     # 現在時刻を取得してメッセージに追加
@@ -483,9 +527,11 @@ def outputLog(message):
 args = parse_arguments(sys.argv[1:])
 account_id = int(args.get("account_id","0"))
 tweet_id = args.get("tweet_id","")
-tweet_mode = args.get("tweet_mode","")
+mode = args.get("mode","")
 #tweet_text = args.get("text")
 comment_id = args.get("comment_id","")
+photo_id = args.get("photo_id","")
+video_id = args.get("video_id","")
 outputLog(args)
 
 
@@ -501,33 +547,37 @@ if credentials:
         client = create_client(credentials)
         if client:
             error_log = ""
-            if tweet_mode == "tweet":
-                error_log = proc_tweet(credentials, comment_id)
-            elif tweet_mode == "retweet":
-                error_log = proc_retweet(credentials, tweet_id)
-            elif tweet_mode == "like":  #動かない
-                error_log = proc_like(credentials, tweet_id)
-            elif tweet_mode == "bookmark":
-                error_log = proc_bookmark(credentials, tweet_id, account_id)
-            elif tweet_mode == "get_refresh_token":
+            if mode == "post":
+                error_log = proc_post(credentials, comment_id, photo_id , video_id)
+#                error_log = proc_post(credentials, comment_id, "1" , "")
+#                error_log = proc_post(credentials, comment_id, "" , "1")
+            elif mode == "repost":
+                success , error_log = proc_repost(credentials, tweet_id)
+            elif mode == "like":
+                success , error_log = proc_like(credentials, tweet_id)
+            elif mode == "bookmark":
+                success , error_log = proc_bookmark(credentials, tweet_id, account_id)
+            elif mode == "get_refresh_token":
                 error_log = proc_get_refresh_token(credentials , account_id )
-            elif tweet_mode == "get_access_token":
-                error_log = proc_get_access_token(credentials , account_id )
+            elif mode == "get_access_token":
+                success , error_log = proc_get_access_token(credentials , account_id )
             else:
                 # エラーメッセージを標準エラーに出力
-                outputLog(f"サポートされていないtweet_mode: {tweet_mode}")
+                outputLog(f"サポートされていないmode: {mode}")
                 # 終了コードを1にして異常終了を示す
                 sys.exit(1)
 
-            if error_log == None:
-                save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , True , "")
+            outputLog(success)
+
+            if success == True:
+                save_tweet_history(account_id, comment_id , mode , tweet_id , True , error_log)
                 sys.exit(0)
             else:
-                save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , False , error_log)
-#                print(f"エラーが発生しました: {result}", file=sys.stderr)
+#                outputLog(f"エラーが発生しました: {result}", file=sys.stderr)
+                save_tweet_history(account_id, comment_id , mode , tweet_id , False , error_log)
                 sys.exit(1)
 #    else:
-#        save_tweet_history(account_id, comment_id , tweet_mode , tweet_id , False , verify_message)
+#        save_tweet_history(account_id, comment_id , mode , tweet_id , False , verify_message)
 
 else:
     outputLog(f"エラーが発生しました: ID {credential_id} の認証情報が見つかりませんでした。", file=sys.stderr)

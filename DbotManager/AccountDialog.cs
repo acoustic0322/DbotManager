@@ -124,8 +124,8 @@ namespace DbotManager
             checkBox有料アカウント.Checked = accountMaster.Paid;
             checkBoxいいね.Checked = accountMaster.LikeEnable;
             checkBoxブックマーク.Checked = accountMaster.BookMarkEnable;
-            checkBoxリプライ.Checked = accountMaster.ReplyEnable;
-            checkBoxツイート.Checked = accountMaster.TweetEnable;
+            checkBoxリプライ.Checked = accountMaster.RepostEnable;
+            checkBoxツイート.Checked = accountMaster.PostEnable;
         }
 
         private void ReadAccountMaster(int userId, int accountId = 0)
@@ -263,8 +263,8 @@ namespace DbotManager
                 Paid = checkBox有料アカウント.Checked,
                 LikeEnable = checkBoxいいね.Checked,
                 BookMarkEnable = checkBoxブックマーク.Checked,
-                ReplyEnable = checkBoxリプライ.Checked,
-                TweetEnable = checkBoxツイート.Checked,
+                RepostEnable = checkBoxリプライ.Checked,
+                PostEnable = checkBoxツイート.Checked,
                 Reserve1Enable = false,
                 Reserve1Count = 0,
                 Reserve1StartHour = 0,
@@ -308,8 +308,8 @@ namespace DbotManager
                 Paid = checkBox有料アカウント.Checked,
                 LikeEnable = checkBoxいいね.Checked,
                 BookMarkEnable = checkBoxブックマーク.Checked,
-                ReplyEnable = checkBoxリプライ.Checked,
-                TweetEnable = checkBoxツイート.Checked,
+                RepostEnable = checkBoxリプライ.Checked,
+                PostEnable = checkBoxツイート.Checked,
                 Reserve1Enable = false,
                 Reserve1Count = 0,
                 Reserve1StartHour = 0,
@@ -404,7 +404,7 @@ namespace DbotManager
             string tweetId = GetTweetId(true);
 
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
-            tweetTask.TweetProc(TweetProcTypes.REPLY, userId, accountId, 0, tweetId);
+            tweetTask.TweetProc(TweetProcTypes.REPOST, userId, accountId, 0, tweetId);
         }
 
         private void buttonコメント編集_Click(object sender, EventArgs e)
