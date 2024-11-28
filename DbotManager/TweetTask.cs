@@ -103,7 +103,7 @@ namespace DbotManager
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result).ToList();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result && x.Mode != TweetProcTypes.GET_ACCESSTOKEN && x.Mode == TweetProcTypes.GET_REFRESHTOKEN).ToList();
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
 
@@ -244,26 +244,38 @@ namespace DbotManager
                     // 最期の処理が同じだった場合はスルー
                     if (lastMyHistoryList.FirstOrDefault().Mode == tweetProcType)
                     {
-                        continue;
+                        // 3時間以上時間が空いている場合は許可
+                        if ((dateNow - lastMyHistoryList.FirstOrDefault().UpdateTime).TotalHours < 3)
+                        {
+                            continue;
+                        }
                     }
 
                     // 無料アカウントは制限時間内の取引を中止
-                    if (制限時間以内に履歴ありの無料アカウントを排除 && account.Paid == false)
+                    if (制限時間以内に履歴ありの無料アカウントを排除)
                     {
                         if (tweetProcType == TweetProcTypes.LIKE)
                         {
-                            var lastHistory = lastMyHistoryList.Where(x => x.Mode == TweetProcTypes.LIKE).ToList();
-                            if(lastHistory.Count > 0)
+                            // 無料アカウント or 有料アカウントの無料いいね
+                            if(!account.Paid || !account.PaidLike)
                             {
-                                if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalDays < 1) continue;
+                                var lastHistory = lastMyHistoryList.Where(x => x.Mode == TweetProcTypes.LIKE).ToList();
+                                if (lastHistory.Count > 0)
+                                {
+                                    if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalDays < 1) continue;
+                                }
                             }
                         }
                         else if (tweetProcType == TweetProcTypes.BOOKMARK || tweetProcType == TweetProcTypes.REPOST || tweetProcType == TweetProcTypes.REPLY)
                         {
-                            var lastHistory = lastMyHistoryList.Where(x => x.Mode == tweetProcType).ToList();
-                            if (lastHistory.Count > 0)
+                            // 無料アカウント or 有料アカウントの無料ブックマーク
+                            if (!account.Paid || !account.PaidBookmark)
                             {
-                                if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalMinutes < 15 ) continue;
+                                var lastHistory = lastMyHistoryList.Where(x => x.Mode == tweetProcType).ToList();
+                                if (lastHistory.Count > 0)
+                                {
+                                    if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalMinutes < 15) continue;
+                                }
                             }
                         }
                     }

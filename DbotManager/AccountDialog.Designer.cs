@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.checkBoxリプライ = new System.Windows.Forms.CheckBox();
             this.textBoxAccountID = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.button再取得 = new System.Windows.Forms.Button();
@@ -51,7 +52,6 @@
             this.textBoxClientSecret = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.textBoxClientId = new System.Windows.Forms.TextBox();
-            this.checkBox有料アカウント = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.textBoxApiKeySecret = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -117,7 +117,9 @@
             this.buttonいいね_Debug = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBoxRenew = new System.Windows.Forms.TextBox();
-            this.checkBoxリプライ = new System.Windows.Forms.CheckBox();
+            this.checkBox有料 = new System.Windows.Forms.CheckBox();
+            this.checkBox有料APIいいね = new System.Windows.Forms.CheckBox();
+            this.checkBox有料APIブックマーク = new System.Windows.Forms.CheckBox();
             this.groupBox6.SuspendLayout();
             this.groupBox7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAccount)).BeginInit();
@@ -126,6 +128,8 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.checkBox有料APIブックマーク);
+            this.groupBox6.Controls.Add(this.checkBox有料APIいいね);
             this.groupBox6.Controls.Add(this.checkBoxリプライ);
             this.groupBox6.Controls.Add(this.textBoxAccountID);
             this.groupBox6.Controls.Add(this.label2);
@@ -149,7 +153,7 @@
             this.groupBox6.Controls.Add(this.textBoxClientSecret);
             this.groupBox6.Controls.Add(this.label8);
             this.groupBox6.Controls.Add(this.textBoxClientId);
-            this.groupBox6.Controls.Add(this.checkBox有料アカウント);
+            this.groupBox6.Controls.Add(this.checkBox有料);
             this.groupBox6.Controls.Add(this.label6);
             this.groupBox6.Controls.Add(this.textBoxApiKeySecret);
             this.groupBox6.Controls.Add(this.label5);
@@ -168,10 +172,21 @@
             this.groupBox6.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox6.Size = new System.Drawing.Size(623, 505);
+            this.groupBox6.Size = new System.Drawing.Size(623, 541);
             this.groupBox6.TabIndex = 2;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "アカウント設定";
+            // 
+            // checkBoxリプライ
+            // 
+            this.checkBoxリプライ.AutoSize = true;
+            this.checkBoxリプライ.Location = new System.Drawing.Point(279, 393);
+            this.checkBoxリプライ.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBoxリプライ.Name = "checkBoxリプライ";
+            this.checkBoxリプライ.Size = new System.Drawing.Size(69, 23);
+            this.checkBoxリプライ.TabIndex = 36;
+            this.checkBoxリプライ.Text = "リプライ";
+            this.checkBoxリプライ.UseVisualStyleBackColor = true;
             // 
             // textBoxAccountID
             // 
@@ -193,7 +208,7 @@
             // button再取得
             // 
             this.button再取得.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button再取得.Location = new System.Drawing.Point(368, 426);
+            this.button再取得.Location = new System.Drawing.Point(368, 465);
             this.button再取得.Name = "button再取得";
             this.button再取得.Size = new System.Drawing.Size(159, 27);
             this.button再取得.TabIndex = 33;
@@ -204,7 +219,7 @@
             // buttonコメント編集
             // 
             this.buttonコメント編集.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonコメント編集.Location = new System.Drawing.Point(8, 462);
+            this.buttonコメント編集.Location = new System.Drawing.Point(8, 498);
             this.buttonコメント編集.Name = "buttonコメント編集";
             this.buttonコメント編集.Size = new System.Drawing.Size(106, 33);
             this.buttonコメント編集.TabIndex = 28;
@@ -215,7 +230,7 @@
             // buttonGetBearerToken
             // 
             this.buttonGetBearerToken.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonGetBearerToken.Location = new System.Drawing.Point(188, 426);
+            this.buttonGetBearerToken.Location = new System.Drawing.Point(188, 465);
             this.buttonGetBearerToken.Name = "buttonGetBearerToken";
             this.buttonGetBearerToken.Size = new System.Drawing.Size(174, 27);
             this.buttonGetBearerToken.TabIndex = 30;
@@ -226,7 +241,7 @@
             // buttonGetAccessToken
             // 
             this.buttonGetAccessToken.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonGetAccessToken.Location = new System.Drawing.Point(8, 426);
+            this.buttonGetAccessToken.Location = new System.Drawing.Point(8, 465);
             this.buttonGetAccessToken.Name = "buttonGetAccessToken";
             this.buttonGetAccessToken.Size = new System.Drawing.Size(174, 27);
             this.buttonGetAccessToken.TabIndex = 29;
@@ -374,17 +389,6 @@
             this.textBoxClientId.Size = new System.Drawing.Size(486, 27);
             this.textBoxClientId.TabIndex = 11;
             // 
-            // checkBox有料アカウント
-            // 
-            this.checkBox有料アカウント.AutoSize = true;
-            this.checkBox有料アカウント.Location = new System.Drawing.Point(87, 393);
-            this.checkBox有料アカウント.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBox有料アカウント.Name = "checkBox有料アカウント";
-            this.checkBox有料アカウント.Size = new System.Drawing.Size(113, 23);
-            this.checkBox有料アカウント.TabIndex = 23;
-            this.checkBox有料アカウント.Text = "有料アカウント";
-            this.checkBox有料アカウント.UseVisualStyleBackColor = true;
-            // 
             // label6
             // 
             this.label6.AutoSize = true;
@@ -468,7 +472,7 @@
             // buttonアカウント保存
             // 
             this.buttonアカウント保存.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonアカウント保存.Location = new System.Drawing.Point(524, 462);
+            this.buttonアカウント保存.Location = new System.Drawing.Point(524, 498);
             this.buttonアカウント保存.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonアカウント保存.Name = "buttonアカウント保存";
             this.buttonアカウント保存.Size = new System.Drawing.Size(92, 33);
@@ -480,7 +484,7 @@
             // buttonアカウント追加
             // 
             this.buttonアカウント追加.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonアカウント追加.Location = new System.Drawing.Point(424, 462);
+            this.buttonアカウント追加.Location = new System.Drawing.Point(424, 498);
             this.buttonアカウント追加.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonアカウント追加.Name = "buttonアカウント追加";
             this.buttonアカウント追加.Size = new System.Drawing.Size(92, 33);
@@ -492,7 +496,7 @@
             // buttonアカウント削除
             // 
             this.buttonアカウント削除.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonアカウント削除.Location = new System.Drawing.Point(324, 462);
+            this.buttonアカウント削除.Location = new System.Drawing.Point(324, 498);
             this.buttonアカウント削除.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonアカウント削除.Name = "buttonアカウント削除";
             this.buttonアカウント削除.Size = new System.Drawing.Size(92, 33);
@@ -1189,7 +1193,7 @@
             this.groupBox1.Controls.Add(this.label13);
             this.groupBox1.Controls.Add(this.textBoxUrlTweetID);
             this.groupBox1.Controls.Add(this.buttonいいね_Debug);
-            this.groupBox1.Location = new System.Drawing.Point(663, 527);
+            this.groupBox1.Location = new System.Drawing.Point(664, 563);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(623, 156);
             this.groupBox1.TabIndex = 3;
@@ -1206,16 +1210,38 @@
             this.textBoxRenew.Size = new System.Drawing.Size(596, 67);
             this.textBoxRenew.TabIndex = 21;
             // 
-            // checkBoxリプライ
+            // checkBox有料
             // 
-            this.checkBoxリプライ.AutoSize = true;
-            this.checkBoxリプライ.Location = new System.Drawing.Point(279, 393);
-            this.checkBoxリプライ.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBoxリプライ.Name = "checkBoxリプライ";
-            this.checkBoxリプライ.Size = new System.Drawing.Size(69, 23);
-            this.checkBoxリプライ.TabIndex = 36;
-            this.checkBoxリプライ.Text = "リプライ";
-            this.checkBoxリプライ.UseVisualStyleBackColor = true;
+            this.checkBox有料.AutoSize = true;
+            this.checkBox有料.Location = new System.Drawing.Point(87, 393);
+            this.checkBox有料.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBox有料.Name = "checkBox有料";
+            this.checkBox有料.Size = new System.Drawing.Size(113, 23);
+            this.checkBox有料.TabIndex = 23;
+            this.checkBox有料.Text = "有料アカウント";
+            this.checkBox有料.UseVisualStyleBackColor = true;
+            // 
+            // checkBox有料APIいいね
+            // 
+            this.checkBox有料APIいいね.AutoSize = true;
+            this.checkBox有料APIいいね.Location = new System.Drawing.Point(22, 426);
+            this.checkBox有料APIいいね.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBox有料APIいいね.Name = "checkBox有料APIいいね";
+            this.checkBox有料APIいいね.Size = new System.Drawing.Size(134, 23);
+            this.checkBox有料APIいいね.TabIndex = 37;
+            this.checkBox有料APIいいね.Text = "有料API(いいね)";
+            this.checkBox有料APIいいね.UseVisualStyleBackColor = true;
+            // 
+            // checkBox有料APIブックマーク
+            // 
+            this.checkBox有料APIブックマーク.AutoSize = true;
+            this.checkBox有料APIブックマーク.Location = new System.Drawing.Point(164, 426);
+            this.checkBox有料APIブックマーク.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBox有料APIブックマーク.Name = "checkBox有料APIブックマーク";
+            this.checkBox有料APIブックマーク.Size = new System.Drawing.Size(160, 23);
+            this.checkBox有料APIブックマーク.TabIndex = 38;
+            this.checkBox有料APIブックマーク.Text = "有料API(ブックマーク)";
+            this.checkBox有料APIブックマーク.UseVisualStyleBackColor = true;
             // 
             // AccountDialog
             // 
@@ -1266,7 +1292,6 @@
         private System.Windows.Forms.TextBox textBoxClientSecret;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox textBoxClientId;
-        private System.Windows.Forms.CheckBox checkBox有料アカウント;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox textBoxApiKeySecret;
         private System.Windows.Forms.Label label5;
@@ -1337,5 +1362,8 @@
         private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Reply;
         private System.Windows.Forms.DataGridViewCheckBoxColumn AccountMaster_Post;
         private System.Windows.Forms.CheckBox checkBoxリプライ;
+        private System.Windows.Forms.CheckBox checkBox有料APIブックマーク;
+        private System.Windows.Forms.CheckBox checkBox有料APIいいね;
+        private System.Windows.Forms.CheckBox checkBox有料;
     }
 }

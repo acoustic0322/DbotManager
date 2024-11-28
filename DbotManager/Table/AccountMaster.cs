@@ -28,6 +28,8 @@ namespace DbotManager.Table
         public bool RepostEnable { get; set; }
         public bool PostEnable { get; set; }
         public bool Paid { get; set; }
+        public bool PaidLike { get; set; }
+        public bool PaidBookmark { get; set; }
         public bool Reserve1Enable { get; set; }
         public bool Reserve2Enable { get; set; }
         public bool Reserve3Enable { get; set; }

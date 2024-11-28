@@ -103,7 +103,9 @@ public class MySqlDataAccess
                  reserve1_end_hour, reserve1_count, reserve2_enable, reserve2_start_hour, 
                  reserve2_end_hour, reserve2_count, reserve3_enable, reserve3_start_hour, 
                  reserve3_end_hour, reserve3_count, reserve4_enable, reserve4_start_hour, 
-                 reserve4_end_hour, reserve4_count)
+                 reserve4_end_hour, reserve4_count
+                 , paid_like , paid_bookmark
+                )
                 VALUES 
                 (@UserId, @Name, @LoginId, @LoginPassword, @ApiKey, @ApiKeySecret, 
                  @ClientId, @ClientSecret, @AccessToken, @AccessTokenSecret, 
@@ -112,7 +114,9 @@ public class MySqlDataAccess
                  @Reserve1EndHour, @Reserve1Count, @Reserve2Enable, @Reserve2StartHour, 
                  @Reserve2EndHour, @Reserve2Count, @Reserve3Enable, @Reserve3StartHour, 
                  @Reserve3EndHour, @Reserve3Count, @Reserve4Enable, @Reserve4StartHour, 
-                 @Reserve4EndHour, @Reserve4Count);";
+                 @Reserve4EndHour, @Reserve4Count
+                 ,@PaidLike, @PaidBookmark
+                );";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -150,6 +154,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Reserve4StartHour", account.Reserve4StartHour);
                     command.Parameters.AddWithValue("@Reserve4EndHour", account.Reserve4EndHour);
                     command.Parameters.AddWithValue("@Reserve4Count", account.Reserve4Count);
+                    command.Parameters.AddWithValue("@PaidLike", account.PaidLike ? 1 : 0);
+                    command.Parameters.AddWithValue("@PaidBookmark", account.PaidBookmark ? 1 : 0);
 
                     command.ExecuteNonQuery();
                 }
@@ -182,6 +188,7 @@ public class MySqlDataAccess
                     ,am.reserve2_enable,am.reserve2_start_hour,am.reserve2_end_hour,am.reserve2_count
                     ,am.reserve3_enable,am.reserve3_start_hour,am.reserve3_end_hour,am.reserve3_count
                     ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
+                    ,am.paid_like,am.paid_bookmark
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
                     ";
@@ -240,6 +247,8 @@ public class MySqlDataAccess
                                 Reserve3Enable = reader["reserve3_enable"].ToString() == "1",
                                 Reserve4Enable = reader["reserve4_enable"].ToString() == "1",
                                 Paid = reader["paid"].ToString() == "1",
+                                PaidLike = reader["paid_like"].ToString() == "1",
+                                PaidBookmark = reader["paid_bookmark"].ToString() == "1",
                             };
                 
                             accountMasterList.Add(accountItem);
@@ -301,6 +310,8 @@ public class MySqlDataAccess
                     reserve4_start_hour = @Reserve4StartHour, 
                     reserve4_end_hour = @Reserve4EndHour, 
                     reserve4_count = @Reserve4Count
+                    ,paid_like = @PaidLike
+                    ,paid_bookmark = @PaidBookmark
                 WHERE id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -320,6 +331,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@RefreshToken", account.RefreshToken);
                     command.Parameters.AddWithValue("@Enable", account.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Paid", account.Paid ? 1 : 0);
+                    command.Parameters.AddWithValue("@PaidLike", account.PaidLike ? 1 : 0);
+                    command.Parameters.AddWithValue("@PaidBookmark", account.PaidBookmark ? 1 : 0);
                     command.Parameters.AddWithValue("@LikeEnable", account.LikeEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@ReplyEnable", account.ReplyEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@BookmarkEnable", account.BookMarkEnable ? 1 : 0);

@@ -121,12 +121,15 @@ namespace DbotManager
             textBoxBearerToken.Text = accountMaster.BearerToken;
             textBoxRefreshToken.Text = accountMaster.RefreshToken;
             checkBox有効.Checked = accountMaster.Enable;
-            checkBox有料アカウント.Checked = accountMaster.Paid;
+            checkBox有料.Checked = accountMaster.Paid;
             checkBoxいいね.Checked = accountMaster.LikeEnable;
             checkBoxリプライ.Checked = accountMaster.ReplyEnable;
             checkBoxブックマーク.Checked = accountMaster.BookMarkEnable;
             checkBoxリポスト.Checked = accountMaster.RepostEnable;
             checkBoxツイート.Checked = accountMaster.PostEnable;
+
+            checkBox有料APIいいね.Checked = accountMaster.PaidLike;
+            checkBox有料APIブックマーク.Checked = accountMaster.PaidBookmark;
         }
 
         private void ReadAccountMaster(int userId, int accountId = 0)
@@ -261,7 +264,7 @@ namespace DbotManager
                 BearerToken = textBoxBearerToken.Text,
                 RefreshToken = textBoxRefreshToken.Text,
                 Enable = checkBox有効.Checked,
-                Paid = checkBox有料アカウント.Checked,
+                Paid = checkBox有料.Checked,
                 LikeEnable = checkBoxいいね.Checked,
                 ReplyEnable = checkBoxリプライ.Checked,
                 BookMarkEnable = checkBoxブックマーク.Checked,
@@ -283,6 +286,8 @@ namespace DbotManager
                 Reserve4Count = 0,
                 Reserve4StartHour = 0,
                 Reserve4EndHour = 0,
+                PaidLike = checkBox有料APIいいね.Checked,
+                PaidBookmark = checkBox有料APIブックマーク.Checked,
             };
 
             dataAccess.InsertAccountMaster(accountMaster);
@@ -307,7 +312,7 @@ namespace DbotManager
                 BearerToken = textBoxBearerToken.Text,
                 RefreshToken = textBoxRefreshToken.Text,
                 Enable = checkBox有効.Checked,
-                Paid = checkBox有料アカウント.Checked,
+                Paid = checkBox有料.Checked,
                 LikeEnable = checkBoxいいね.Checked,
                 ReplyEnable = checkBoxリプライ.Checked,
                 BookMarkEnable = checkBoxブックマーク.Checked,
@@ -329,6 +334,8 @@ namespace DbotManager
                 Reserve4Count = 0,
                 Reserve4StartHour = 0,
                 Reserve4EndHour = 0,
+                PaidLike = checkBox有料APIいいね.Checked,
+                PaidBookmark = checkBox有料APIブックマーク.Checked,
             };
 
             dataAccess.UpdateAccountMaster(accountMaster);
