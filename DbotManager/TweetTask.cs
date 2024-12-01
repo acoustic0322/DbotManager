@@ -39,6 +39,7 @@ namespace DbotManager
 
 
         public TweetProcTypes TweetProcType { get; set; }
+        public int UserId { get; set; }
 
         public bool LikeEnable { get; set; }
         public bool BookmarkEnable { get; set; }
@@ -106,6 +107,11 @@ namespace DbotManager
             List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result).ToList();
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
+
+            if(UserId != 0)
+            {
+                accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
+            }
 
             List<AccountMaster> likeList = FilterAccountList(accountMasterList , tweetHistoryList , commenttMasterList, TweetProcTypes.LIKE);
             List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList,TweetProcTypes.REPLY);
