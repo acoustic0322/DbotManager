@@ -30,6 +30,14 @@
         {
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPage一括処理 = new System.Windows.Forms.TabPage();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.labelリプライ = new System.Windows.Forms.Label();
+            this.dataGridViewリプライ = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.textBoxリプライ件数 = new System.Windows.Forms.TextBox();
+            this.checkBoxリプライ = new System.Windows.Forms.CheckBox();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.labelリポスト件数 = new System.Windows.Forms.Label();
             this.dataGridViewリポスト = new System.Windows.Forms.DataGridView();
@@ -56,9 +64,9 @@
             this.checkBoxいいね = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
-            this.buttonいいねブックマーク実行 = new System.Windows.Forms.Button();
+            this.buttonExeList = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
-            this.buttonいいねリスト作成 = new System.Windows.Forms.Button();
+            this.buttonMakeList = new System.Windows.Forms.Button();
             this.checkBox_15分以内に履歴のある無料アカウントを除外する = new System.Windows.Forms.CheckBox();
             this.tabPage予約 = new System.Windows.Forms.TabPage();
             this.dataGridViewReserveSchedule = new System.Windows.Forms.DataGridView();
@@ -78,16 +86,12 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.labelリプライ = new System.Windows.Forms.Label();
-            this.dataGridViewリプライ = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.textBoxリプライ件数 = new System.Windows.Forms.TextBox();
-            this.checkBoxリプライ = new System.Windows.Forms.CheckBox();
+            this.checkBoxUserID = new System.Windows.Forms.CheckBox();
+            this.comboBoxUserMaster = new System.Windows.Forms.ComboBox();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
+            this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewリプライ)).BeginInit();
             this.groupBox6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewリポスト)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -100,8 +104,6 @@
             this.tabPage履歴.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).BeginInit();
             this.tabPage1.SuspendLayout();
-            this.groupBox4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewリプライ)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl
@@ -131,6 +133,85 @@
             this.tabPage一括処理.TabIndex = 2;
             this.tabPage一括処理.Text = "一括処理";
             this.tabPage一括処理.UseVisualStyleBackColor = true;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.labelリプライ);
+            this.groupBox4.Controls.Add(this.dataGridViewリプライ);
+            this.groupBox4.Controls.Add(this.textBoxリプライ件数);
+            this.groupBox4.Controls.Add(this.checkBoxリプライ);
+            this.groupBox4.Location = new System.Drawing.Point(194, 134);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(190, 505);
+            this.groupBox4.TabIndex = 7;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "リプライ";
+            // 
+            // labelリプライ
+            // 
+            this.labelリプライ.AutoSize = true;
+            this.labelリプライ.Location = new System.Drawing.Point(137, 30);
+            this.labelリプライ.Name = "labelリプライ";
+            this.labelリプライ.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.labelリプライ.Size = new System.Drawing.Size(47, 19);
+            this.labelリプライ.TabIndex = 9;
+            this.labelリプライ.Text = "(0件)";
+            // 
+            // dataGridViewリプライ
+            // 
+            this.dataGridViewリプライ.AllowUserToAddRows = false;
+            this.dataGridViewリプライ.AllowUserToDeleteRows = false;
+            this.dataGridViewリプライ.AllowUserToResizeColumns = false;
+            this.dataGridViewリプライ.AllowUserToResizeRows = false;
+            this.dataGridViewリプライ.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewリプライ.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.dataGridViewTextBoxColumn2,
+            this.dataGridViewTextBoxColumn3});
+            this.dataGridViewリプライ.Location = new System.Drawing.Point(5, 57);
+            this.dataGridViewリプライ.Name = "dataGridViewリプライ";
+            this.dataGridViewリプライ.RowHeadersVisible = false;
+            this.dataGridViewリプライ.RowTemplate.Height = 21;
+            this.dataGridViewリプライ.Size = new System.Drawing.Size(179, 442);
+            this.dataGridViewリプライ.TabIndex = 0;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.DataPropertyName = "UserName";
+            this.dataGridViewTextBoxColumn1.HeaderText = "ユーザー";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.Visible = false;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.DataPropertyName = "ID";
+            this.dataGridViewTextBoxColumn2.HeaderText = "ID";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            this.dataGridViewTextBoxColumn3.DataPropertyName = "AccountName";
+            this.dataGridViewTextBoxColumn3.HeaderText = "アカウント";
+            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            // 
+            // textBoxリプライ件数
+            // 
+            this.textBoxリプライ件数.Location = new System.Drawing.Point(43, 22);
+            this.textBoxリプライ件数.Name = "textBoxリプライ件数";
+            this.textBoxリプライ件数.Size = new System.Drawing.Size(71, 27);
+            this.textBoxリプライ件数.TabIndex = 0;
+            this.textBoxリプライ件数.Text = "110";
+            // 
+            // checkBoxリプライ
+            // 
+            this.checkBoxリプライ.AutoSize = true;
+            this.checkBoxリプライ.Checked = true;
+            this.checkBoxリプライ.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxリプライ.Location = new System.Drawing.Point(6, 28);
+            this.checkBoxリプライ.Name = "checkBoxリプライ";
+            this.checkBoxリプライ.Size = new System.Drawing.Size(15, 14);
+            this.checkBoxリプライ.TabIndex = 5;
+            this.checkBoxリプライ.UseVisualStyleBackColor = true;
             // 
             // groupBox6
             // 
@@ -371,10 +452,12 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.comboBoxUserMaster);
+            this.groupBox3.Controls.Add(this.checkBoxUserID);
             this.groupBox3.Controls.Add(this.textBoxUrlTweetID);
-            this.groupBox3.Controls.Add(this.buttonいいねブックマーク実行);
+            this.groupBox3.Controls.Add(this.buttonExeList);
             this.groupBox3.Controls.Add(this.label2);
-            this.groupBox3.Controls.Add(this.buttonいいねリスト作成);
+            this.groupBox3.Controls.Add(this.buttonMakeList);
             this.groupBox3.Controls.Add(this.checkBox_15分以内に履歴のある無料アカウントを除外する);
             this.groupBox3.Location = new System.Drawing.Point(3, 3);
             this.groupBox3.Name = "groupBox3";
@@ -390,15 +473,15 @@
             this.textBoxUrlTweetID.Size = new System.Drawing.Size(470, 27);
             this.textBoxUrlTweetID.TabIndex = 5;
             // 
-            // buttonいいねブックマーク実行
+            // buttonExeList
             // 
-            this.buttonいいねブックマーク実行.Location = new System.Drawing.Point(633, 71);
-            this.buttonいいねブックマーク実行.Name = "buttonいいねブックマーク実行";
-            this.buttonいいねブックマーク実行.Size = new System.Drawing.Size(103, 44);
-            this.buttonいいねブックマーク実行.TabIndex = 3;
-            this.buttonいいねブックマーク実行.Text = "実行";
-            this.buttonいいねブックマーク実行.UseVisualStyleBackColor = true;
-            this.buttonいいねブックマーク実行.Click += new System.EventHandler(this.buttonいいねブックマーク実行_Click);
+            this.buttonExeList.Location = new System.Drawing.Point(633, 71);
+            this.buttonExeList.Name = "buttonExeList";
+            this.buttonExeList.Size = new System.Drawing.Size(103, 44);
+            this.buttonExeList.TabIndex = 3;
+            this.buttonExeList.Text = "実行";
+            this.buttonExeList.UseVisualStyleBackColor = true;
+            this.buttonExeList.Click += new System.EventHandler(this.buttonExeList_Click);
             // 
             // label2
             // 
@@ -409,22 +492,22 @@
             this.label2.TabIndex = 4;
             this.label2.Text = "URL・TweetID";
             // 
-            // buttonいいねリスト作成
+            // buttonMakeList
             // 
-            this.buttonいいねリスト作成.Location = new System.Drawing.Point(633, 18);
-            this.buttonいいねリスト作成.Name = "buttonいいねリスト作成";
-            this.buttonいいねリスト作成.Size = new System.Drawing.Size(103, 44);
-            this.buttonいいねリスト作成.TabIndex = 1;
-            this.buttonいいねリスト作成.Text = "リスト作成";
-            this.buttonいいねリスト作成.UseVisualStyleBackColor = true;
-            this.buttonいいねリスト作成.Click += new System.EventHandler(this.buttonいいねリスト作成_Click);
+            this.buttonMakeList.Location = new System.Drawing.Point(633, 18);
+            this.buttonMakeList.Name = "buttonMakeList";
+            this.buttonMakeList.Size = new System.Drawing.Size(103, 44);
+            this.buttonMakeList.TabIndex = 1;
+            this.buttonMakeList.Text = "リスト作成";
+            this.buttonMakeList.UseVisualStyleBackColor = true;
+            this.buttonMakeList.Click += new System.EventHandler(this.buttonMakeList_Click);
             // 
             // checkBox_15分以内に履歴のある無料アカウントを除外する
             // 
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.AutoSize = true;
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.Checked = true;
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_15分以内に履歴のある無料アカウントを除外する.Location = new System.Drawing.Point(10, 71);
+            this.checkBox_15分以内に履歴のある無料アカウントを除外する.Location = new System.Drawing.Point(10, 61);
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.Name = "checkBox_15分以内に履歴のある無料アカウントを除外する";
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.Size = new System.Drawing.Size(523, 23);
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.TabIndex = 2;
@@ -437,7 +520,7 @@
             this.tabPage予約.Controls.Add(this.button予約作成);
             this.tabPage予約.Location = new System.Drawing.Point(4, 28);
             this.tabPage予約.Name = "tabPage予約";
-            this.tabPage予約.Size = new System.Drawing.Size(778, 642);
+            this.tabPage予約.Size = new System.Drawing.Size(781, 642);
             this.tabPage予約.TabIndex = 4;
             this.tabPage予約.Text = "予約機能";
             this.tabPage予約.UseVisualStyleBackColor = true;
@@ -560,7 +643,7 @@
             this.tabPage1.Controls.Add(this.buttonものまね);
             this.tabPage1.Location = new System.Drawing.Point(4, 28);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Size = new System.Drawing.Size(778, 642);
+            this.tabPage1.Size = new System.Drawing.Size(781, 642);
             this.tabPage1.TabIndex = 5;
             this.tabPage1.Text = "開発中";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -606,84 +689,25 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // groupBox4
+            // checkBoxUserID
             // 
-            this.groupBox4.Controls.Add(this.labelリプライ);
-            this.groupBox4.Controls.Add(this.dataGridViewリプライ);
-            this.groupBox4.Controls.Add(this.textBoxリプライ件数);
-            this.groupBox4.Controls.Add(this.checkBoxリプライ);
-            this.groupBox4.Location = new System.Drawing.Point(194, 134);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(190, 505);
-            this.groupBox4.TabIndex = 7;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "リプライ";
+            this.checkBoxUserID.AutoSize = true;
+            this.checkBoxUserID.Location = new System.Drawing.Point(10, 90);
+            this.checkBoxUserID.Name = "checkBoxUserID";
+            this.checkBoxUserID.Size = new System.Drawing.Size(136, 23);
+            this.checkBoxUserID.TabIndex = 6;
+            this.checkBoxUserID.Text = "対象ユーザー絞込";
+            this.checkBoxUserID.UseVisualStyleBackColor = true;
             // 
-            // labelリプライ
+            // comboBoxUserMaster
             // 
-            this.labelリプライ.AutoSize = true;
-            this.labelリプライ.Location = new System.Drawing.Point(137, 30);
-            this.labelリプライ.Name = "labelリプライ";
-            this.labelリプライ.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.labelリプライ.Size = new System.Drawing.Size(47, 19);
-            this.labelリプライ.TabIndex = 9;
-            this.labelリプライ.Text = "(0件)";
-            // 
-            // dataGridViewリプライ
-            // 
-            this.dataGridViewリプライ.AllowUserToAddRows = false;
-            this.dataGridViewリプライ.AllowUserToDeleteRows = false;
-            this.dataGridViewリプライ.AllowUserToResizeColumns = false;
-            this.dataGridViewリプライ.AllowUserToResizeRows = false;
-            this.dataGridViewリプライ.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewリプライ.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn1,
-            this.dataGridViewTextBoxColumn2,
-            this.dataGridViewTextBoxColumn3});
-            this.dataGridViewリプライ.Location = new System.Drawing.Point(5, 57);
-            this.dataGridViewリプライ.Name = "dataGridViewリプライ";
-            this.dataGridViewリプライ.RowHeadersVisible = false;
-            this.dataGridViewリプライ.RowTemplate.Height = 21;
-            this.dataGridViewリプライ.Size = new System.Drawing.Size(179, 442);
-            this.dataGridViewリプライ.TabIndex = 0;
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            this.dataGridViewTextBoxColumn1.DataPropertyName = "UserName";
-            this.dataGridViewTextBoxColumn1.HeaderText = "ユーザー";
-            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            this.dataGridViewTextBoxColumn1.Visible = false;
-            // 
-            // dataGridViewTextBoxColumn2
-            // 
-            this.dataGridViewTextBoxColumn2.DataPropertyName = "ID";
-            this.dataGridViewTextBoxColumn2.HeaderText = "ID";
-            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            // 
-            // dataGridViewTextBoxColumn3
-            // 
-            this.dataGridViewTextBoxColumn3.DataPropertyName = "AccountName";
-            this.dataGridViewTextBoxColumn3.HeaderText = "アカウント";
-            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            // 
-            // textBoxリプライ件数
-            // 
-            this.textBoxリプライ件数.Location = new System.Drawing.Point(43, 22);
-            this.textBoxリプライ件数.Name = "textBoxリプライ件数";
-            this.textBoxリプライ件数.Size = new System.Drawing.Size(71, 27);
-            this.textBoxリプライ件数.TabIndex = 0;
-            this.textBoxリプライ件数.Text = "110";
-            // 
-            // checkBoxリプライ
-            // 
-            this.checkBoxリプライ.AutoSize = true;
-            this.checkBoxリプライ.Checked = true;
-            this.checkBoxリプライ.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxリプライ.Location = new System.Drawing.Point(6, 28);
-            this.checkBoxリプライ.Name = "checkBoxリプライ";
-            this.checkBoxリプライ.Size = new System.Drawing.Size(15, 14);
-            this.checkBoxリプライ.TabIndex = 5;
-            this.checkBoxリプライ.UseVisualStyleBackColor = true;
+            this.comboBoxUserMaster.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxUserMaster.FormattingEnabled = true;
+            this.comboBoxUserMaster.Location = new System.Drawing.Point(153, 88);
+            this.comboBoxUserMaster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.comboBoxUserMaster.Name = "comboBoxUserMaster";
+            this.comboBoxUserMaster.Size = new System.Drawing.Size(180, 27);
+            this.comboBoxUserMaster.TabIndex = 8;
             // 
             // Form
             // 
@@ -701,6 +725,9 @@
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.tabControl.ResumeLayout(false);
             this.tabPage一括処理.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewリプライ)).EndInit();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewリポスト)).EndInit();
@@ -717,9 +744,6 @@
             this.tabPage履歴.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).EndInit();
             this.tabPage1.ResumeLayout(false);
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewリプライ)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -733,11 +757,11 @@
         private System.Windows.Forms.TextBox textBoxRenew;
         private System.Windows.Forms.TabPage tabPage一括処理;
         private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.Button buttonいいねリスト作成;
+        private System.Windows.Forms.Button buttonMakeList;
         private System.Windows.Forms.CheckBox checkBox_15分以内に履歴のある無料アカウントを除外する;
         private System.Windows.Forms.TextBox textBoxUrlTweetID;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button buttonいいねブックマーク実行;
+        private System.Windows.Forms.Button buttonExeList;
         private System.Windows.Forms.Button buttonクリアlog;
         private System.Windows.Forms.CheckBox checkBoxブックマーク;
         private System.Windows.Forms.CheckBox checkBoxいいね;
@@ -785,6 +809,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private System.Windows.Forms.TextBox textBoxリプライ件数;
         private System.Windows.Forms.CheckBox checkBoxリプライ;
+        private System.Windows.Forms.CheckBox checkBoxUserID;
+        private System.Windows.Forms.ComboBox comboBoxUserMaster;
     }
 }
 

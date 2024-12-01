@@ -1,5 +1,6 @@
 ﻿using DbotManager.MySql;
 using DbotManager.Table;
+using DbotManager.Entity;
 using Google.Protobuf.WellKnownTypes;
 using Mysqlx.Session;
 using System;
@@ -23,6 +24,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace DbotManager
 {
+
     public partial class Form : System.Windows.Forms.Form
     {
         TweetTask _tweetTask;
@@ -33,54 +35,12 @@ namespace DbotManager
 
         private bool _isLoading = true;
 
-        List<KeyValuePair<int, string>> resereveCountList = new List<KeyValuePair<int, string>>()
-        {
-            new KeyValuePair<int, string>(1,"1"),
-            new KeyValuePair<int, string>(2,"2"),
-            new KeyValuePair<int, string>(3,"3"),
-            new KeyValuePair<int, string>(4,"4"),
-            new KeyValuePair<int, string>(5,"5"),
-            new KeyValuePair<int, string>(6,"6"),
-            new KeyValuePair<int, string>(7,"7"),
-            new KeyValuePair<int, string>(8,"8"),
-            new KeyValuePair<int, string>(9,"9"),
-            new KeyValuePair<int, string>(10,"10"),
-        };
+        private WebCommand _webCommand;
 
-        List<KeyValuePair<int, string>> resereveHourList = new List<KeyValuePair<int, string>>()
-        {
-            new KeyValuePair<int, string>(0,"1"),
-            new KeyValuePair<int, string>(1,"1"),
-            new KeyValuePair<int, string>(2,"2"),
-            new KeyValuePair<int, string>(3,"3"),
-            new KeyValuePair<int, string>(4,"4"),
-            new KeyValuePair<int, string>(5,"5"),
-            new KeyValuePair<int, string>(6,"6"),
-            new KeyValuePair<int, string>(7,"7"),
-            new KeyValuePair<int, string>(8,"8"),
-            new KeyValuePair<int, string>(9,"9"),
-            new KeyValuePair<int, string>(10,"10"),
-            new KeyValuePair<int, string>(11,"11"),
-            new KeyValuePair<int, string>(12,"12"),
-            new KeyValuePair<int, string>(13,"13"),
-            new KeyValuePair<int, string>(14,"14"),
-            new KeyValuePair<int, string>(15,"15"),
-            new KeyValuePair<int, string>(16,"16"),
-            new KeyValuePair<int, string>(17,"17"),
-            new KeyValuePair<int, string>(18,"18"),
-            new KeyValuePair<int, string>(19,"19"),
-            new KeyValuePair<int, string>(20,"20"),
-            new KeyValuePair<int, string>(21,"21"),
-            new KeyValuePair<int, string>(22,"22"),
-            new KeyValuePair<int, string>(23,"23"),
-            new KeyValuePair<int, string>(24,"24"),
-            new KeyValuePair<int, string>(25,"25"),
-            new KeyValuePair<int, string>(26,"26"),
-            new KeyValuePair<int, string>(27,"27"),
-            new KeyValuePair<int, string>(28,"28"),
-        };
 
-        public Form()
+
+
+        public Form(string[] args)
         {
             InitializeComponent();
 
@@ -92,6 +52,84 @@ namespace DbotManager
 
             // MySQLデータアクセスの初期化
             dataAccess = new MySqlDataAccess(DbConnection);
+
+            _webCommand = InitWebCommand(args);
+        }
+
+        private WebCommand InitWebCommand(string[] args)
+        {
+            WebCommand ret = new WebCommand() 
+            {
+                 Enable = false,
+                 UserId = 0,
+                 Like=false,
+                 Bookmark=false,
+                 Reply=false,
+                 Repost=false
+            };
+
+            if (args.Length > 0)
+            {
+                // 引数の解析
+                Dictionary<string, string> parameters = ParseArguments(args);
+
+                string receivedArgs = string.Join(", ", args);
+
+                ret.Enable = true;
+
+                // パラメータの処理例
+                if (parameters.TryGetValue("UserId", out string userId))
+                {
+                    ret.UserId = int.Parse(userId);
+                }
+
+                if (parameters.TryGetValue("TweetId", out string tweetId))
+                {
+                    ret.TargetTweetId = tweetId;
+                }
+
+                if (parameters.TryGetValue("Like", out string likeValue) && bool.TryParse(likeValue, out bool like))
+                {
+                    ret.Like = like;
+                }
+
+                if (parameters.TryGetValue("Bookmark", out string bookmarkValue) && bool.TryParse(bookmarkValue, out bool bookmark))
+                {
+                    ret.Bookmark = bookmark;
+                }
+
+                if (parameters.TryGetValue("Reply", out string replyValue) && bool.TryParse(replyValue, out bool reply))
+                {
+                    ret.Reply = reply;
+                }
+
+                if (parameters.TryGetValue("Repost", out string repostValue) && bool.TryParse(repostValue, out bool repost))
+                {
+                    ret.Repost = repost;
+                }
+            }
+
+
+            return ret;
+        }
+
+        // 引数をキーと値のペアに変換するメソッド
+        private Dictionary<string, string> ParseArguments(string[] args)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var arg in args)
+            {
+                var parts = arg.Split('=');
+                if (parts.Length == 2)
+                {
+                    string key = parts[0].Trim();
+                    string value = parts[1].Trim();
+                    result[key] = value;
+                }
+            }
+
+            return result;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -114,9 +152,30 @@ namespace DbotManager
         {
             FillDebugControls_TweetHistory();
             FillDebugControls_AccountMaster();
-
+            FillDebugControls_UserName();
+            FillControls_WebCommand();
         }
 
+        private void FillControls_WebCommand()
+        {
+            if(_webCommand.Enable)
+            {
+                checkBox_15分以内に履歴のある無料アカウントを除外する.Checked = true;
+                checkBoxいいね.Checked = _webCommand.Like;
+                checkBoxブックマーク.Checked = _webCommand.Bookmark;
+                checkBoxリプライ.Checked = _webCommand.Reply;
+                checkBoxリポスト.Checked = _webCommand.Repost;
+                checkBoxUserID.Checked = true;
+                comboBoxUserMaster.SelectedValue = _webCommand.UserId;
+
+                textBoxUrlTweetID.Text = _webCommand.TargetTweetId;
+
+                MakeList();
+                ExeList();
+
+                this.Close();
+            }
+        }
 
         private void FillDebugControls_TweetHistory()
         {
@@ -136,6 +195,22 @@ namespace DbotManager
         {
         }
 
+        private void FillDebugControls_UserName()
+        {
+            List<UserMaster> userList = dataAccess.GetUserNames();
+
+            if (userList != null)
+            {
+                comboBoxUserMaster.DataSource = userList;
+                comboBoxUserMaster.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
+                comboBoxUserMaster.ValueMember = "Id";     // 選択されたときに取得するプロパティ
+            }
+            else
+            {
+                MessageBox.Show("ユーザー名を取得できませんでした。");
+            }
+        }
+
         #endregion
 
         #region Button
@@ -149,11 +224,74 @@ namespace DbotManager
         }
 
 
-        private void buttonいいねリスト作成_Click(object sender, EventArgs e)
+        private void buttonMakeList_Click(object sender, EventArgs e)
+        {
+            MakeList();
+        }
+
+        private void buttonExeList_Click(object sender, EventArgs e)
+        {
+            ExeList();
+        }
+
+        private void buttonクリアlog_Click(object sender, EventArgs e)
+        {
+            textBoxRenew.Text = string.Empty;
+        }
+
+        #endregion
+
+        #region その他イベント
+
+        private void comboBoxUserMaster_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+        #endregion
+
+        #region その他処理
+
+        private string GetTweetId()
+        {
+            string input = textBoxUrlTweetID.Text;
+            string extractedNumber = ExtractNumber(input);
+
+            if (extractedNumber != null)
+            {
+                Console.WriteLine($"Extracted number: {extractedNumber}");
+            }
+            else
+            {
+                Console.WriteLine("No valid number found.");
+            }
+
+            return extractedNumber;
+        }
+
+        private string ExtractNumber(string input)
+        {
+            // URLの場合と単なる数値の場合を考慮
+            Match match = Regex.Match(input, @"(?:status/(\d+)|^(\d+))");
+
+            if (match.Success)
+            {
+                // マッチした部分のうち、最初にキャプチャされたグループ（数値部分）を返す
+                return match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region TweetTask関連
+
+
+        private void MakeList()
         {
             _tweetTask.いいね件数 = checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0;
             _tweetTask.リプライ件数 = checkBoxリプライ.Checked ? int.Parse(textBoxリプライ件数.Text) : 0;
-            _tweetTask.ブックマーク件数 = checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク件数.Text) : 0 ;
+            _tweetTask.ブックマーク件数 = checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク件数.Text) : 0;
             _tweetTask.リポスト件数 = checkBoxリポスト.Checked ? int.Parse(textBoxリポスト件数.Text) : 0;
 
             _tweetTask.制限時間以内に履歴ありの無料アカウントを排除 = checkBox_15分以内に履歴のある無料アカウントを除外する.Checked;
@@ -163,6 +301,8 @@ namespace DbotManager
             _tweetTask.ReplyEnable = checkBoxリプライ.Checked;
             _tweetTask.BookmarkEnable = checkBoxブックマーク.Checked;
             _tweetTask.RepostEnable = checkBoxリポスト.Checked;
+
+            _tweetTask.UserId = checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0;
 
             _tweetTask.InitAccountList();
 
@@ -229,68 +369,15 @@ namespace DbotManager
                 dataGridViewリポスト.DataSource = list;
                 labelリポスト件数.Text = $"({list.Count}件)";
             }
-
         }
 
-        private void buttonいいねブックマーク実行_Click(object sender, EventArgs e)
+        private void ExeList()
         {
             _tweetTask.StartTask();
         }
-
-
-        private void buttonクリアlog_Click(object sender, EventArgs e)
-        {
-            textBoxRenew.Text = string.Empty;
-        }
-
         #endregion
 
-        #region その他イベント
-
-        private void comboBoxUserMaster_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (_isLoading) return;
-
-            FillDebugControls_AccountMaster();
-        }
-        #endregion
-
-        #region その他処理
-
-        private string GetTweetId()
-        {
-            string input = textBoxUrlTweetID.Text;
-            string extractedNumber = ExtractNumber(input);
-
-            if (extractedNumber != null)
-            {
-                Console.WriteLine($"Extracted number: {extractedNumber}");
-            }
-            else
-            {
-                Console.WriteLine("No valid number found.");
-            }
-
-            return extractedNumber;
-        }
-
-        private string ExtractNumber(string input)
-        {
-            // URLの場合と単なる数値の場合を考慮
-            Match match = Regex.Match(input, @"(?:status/(\d+)|^(\d+))");
-
-            if (match.Success)
-            {
-                // マッチした部分のうち、最初にキャプチャされたグループ（数値部分）を返す
-                return match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
-            }
-
-            return null;
-        }
-
-        #endregion
-
-#region ファイル処理関連
+        #region ファイル処理関連
 
         // TextBoxにログを表示するメソッド
         private void AppendLog(string message)

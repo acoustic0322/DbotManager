@@ -104,6 +104,7 @@
     <Compile Include="AccountDialog.Designer.cs">
       <DependentUpon>AccountDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entity\WebCommand.cs" />
     <Compile Include="MySql\DbConnectionInfo.cs" />
     <Compile Include="ReserveRegistrationDialog.cs">
       <SubType>Form</SubType>
