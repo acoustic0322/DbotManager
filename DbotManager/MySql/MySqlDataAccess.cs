@@ -413,7 +413,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode , photo_id , movie_id
+                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable
                         FROM comment_master;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -427,8 +427,10 @@ public class MySqlDataAccess
                                 Id = int.Parse(reader["id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
-                                MovieId = int.Parse(reader["movie_id"].ToString()),
-                                PhotoId = int.Parse(reader["photo_id"].ToString()),
+                                PhotoEnable = reader["photo_enable"].ToString() == "1",
+                                MovieEnable = reader["movie_enable"].ToString() == "1",
+//                                MovieId = int.Parse(reader["movie_id"].ToString()),
+//                                PhotoId = int.Parse(reader["photo_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
@@ -460,7 +462,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode , movie_id , photo_id
+                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable
                         FROM comment_master where account_id = @AccountId;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -476,8 +478,10 @@ public class MySqlDataAccess
                                 Id = int.Parse(reader["id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
-                                MovieId = int.Parse(reader["movie_id"].ToString()),
-                                PhotoId = int.Parse(reader["photo_id"].ToString()),
+                                PhotoEnable = reader["photo_enable"].ToString() == "1",
+                                MovieEnable = reader["movie_enable"].ToString() == "1",
+//                                MovieId = int.Parse(reader["movie_id"].ToString()),
+//                                PhotoId = int.Parse(reader["photo_id"].ToString()),
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
@@ -508,7 +512,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode , movie_id , photo_id 
+                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable
                         FROM comment_master where id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -524,8 +528,8 @@ public class MySqlDataAccess
                                 Id = int.Parse(reader["id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
-                                MovieId = int.Parse(reader["movie_id"].ToString()),
-                                PhotoId = int.Parse(reader["photo_id"].ToString()),
+                                PhotoEnable = reader["photo_enable"].ToString() == "1",
+                                MovieEnable = reader["movie_enable"].ToString() == "1",
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
@@ -562,8 +566,8 @@ public class MySqlDataAccess
                                  chatgpt = @Chatgpt,
                                  mode = @Mode,
                                  enable = @Enable,
-                                 photo_id = @PhotoId,
-                                 movie_id = @MovieId
+                                 photo_enable = @PhotoEnable,
+                                 movie_enable = @MovieEnable
                              WHERE id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -574,8 +578,10 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Chatgpt", commentMaster.ChatGpt ? 1 : 0);
                     command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Id", commentMaster.Id);
-                    command.Parameters.AddWithValue("@PhotoId", commentMaster.PhotoId);
-                    command.Parameters.AddWithValue("@MovieId", commentMaster.MovieId);
+                    command.Parameters.AddWithValue("@PhotoEnable", commentMaster.PhotoEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@MovieEnable", commentMaster.MovieEnable ? 1 : 0);
+                    //                    command.Parameters.AddWithValue("@PhotoId", commentMaster.PhotoId);
+                    //                    command.Parameters.AddWithValue("@MovieId", commentMaster.MovieId);
                     command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Tweet ? "tweet" : "retweet");
 
                     int rowsAffected = command.ExecuteNonQuery();
@@ -598,8 +604,8 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = @"INSERT INTO comment_master (user_id, account_id, comment, enable, chatgpt , mode) 
-                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Chatgpt, @Mode);";
+                string query = @"INSERT INTO comment_master (user_id, account_id, comment, enable, chatgpt , mode , photo_enable , movie_enable) 
+                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Chatgpt, @Mode , @PhotoEnable , @MovieEnable);";
 //                SELECT LAST_INSERT_ID(); ";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -610,6 +616,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Chatgpt", commentMaster.ChatGpt ? 1 : 0);
                     command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Tweet ? "tweet" : "retweet");
+                    command.Parameters.AddWithValue("@PhotoEnable", commentMaster.PhotoEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@MovieEnable", commentMaster.MovieEnable ? 1 : 0);
 
                     int insertedId = Convert.ToInt32(command.ExecuteScalar());
                     return insertedId;
@@ -868,7 +876,7 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = @"SELECT media_id, user_id,
+                string query = @"SELECT comment_id , media_id, user_id,
                         account_id, name, register_date , media_type
                         FROM media_master;";
 
@@ -880,6 +888,7 @@ public class MySqlDataAccess
                         {
                             MediaMaster mediaMaster = new MediaMaster()
                             {
+                                CommentId = int.Parse(reader["comment_id"].ToString()),
                                 MediaId = int.Parse(reader["media_id"].ToString()),
                                 UserId = int.Parse(reader["user_id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
@@ -909,11 +918,12 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = @"INSERT INTO media_master (media_id, user_id, account_id, name, register_date, media_type) 
-                             VALUES (@MediaId, @UserId, @AccountId, @Name, @RegisterDate, @MediaType);";
+                string query = @"INSERT INTO media_master (comment_id , media_id, user_id, account_id, name, register_date, media_type) 
+                             VALUES (@CommentId , @MediaId, @UserId, @AccountId, @Name, @RegisterDate, @MediaType);";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
+                    command.Parameters.AddWithValue("@CommentId", mediaMaster.CommentId);
                     command.Parameters.AddWithValue("@MediaId", mediaMaster.MediaId);
                     command.Parameters.AddWithValue("@UserId", mediaMaster.UserId);
                     command.Parameters.AddWithValue("@AccountId", mediaMaster.AccountId);
@@ -940,12 +950,13 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"UPDATE media_master 
-                             SET user_id = @UserId, account_id = @AccountId, name = @Name, 
+                             SET comment_id = @CommentId , user_id = @UserId, account_id = @AccountId, name = @Name, 
                                  register_date = @RegisterDate, media_type = @MediaType
                              WHERE media_id = @MediaId;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
+                    command.Parameters.AddWithValue("@CommentId", mediaMaster.CommentId);
                     command.Parameters.AddWithValue("@MediaId", mediaMaster.MediaId);
                     command.Parameters.AddWithValue("@UserId", mediaMaster.UserId);
                     command.Parameters.AddWithValue("@AccountId", mediaMaster.AccountId);

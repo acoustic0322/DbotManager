@@ -22,7 +22,9 @@ namespace DbotManager.Table
         public bool Enable { get; set; }
         public bool ChatGpt { get; set; }
         public TweetModeTypes TweetModeType { get; set; }
-        public int PhotoId { get; set; }
-        public int MovieId { get; set; }
+        //        public int PhotoId { get; set; }
+        //        public int MovieId { get; set; }
+        public bool PhotoEnable { get; set; }
+        public bool MovieEnable { get; set; }
     }
 }

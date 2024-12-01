@@ -18,6 +18,7 @@ namespace DbotManager.Table
         public int MediaId {get; set; }
         public int UserId { get; set; }
         public int AccountId { get; set; }
+        public int CommentId { get; set; }
         public string Name { get; set; }
         public DateTime RegisterDate { get; set; }
         public MediaTypes MediaType { get; set; }

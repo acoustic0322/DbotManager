@@ -221,6 +221,7 @@ namespace DbotManager
             public string UserName { get; set; }
             public string AccountName { get; set; }
             public string Comment { get; set; }
+            public string Media { get; set; }
         }
 
 
@@ -308,6 +309,7 @@ namespace DbotManager
 
             var userList = dataAccess.GetUserNames();
             var commentList = dataAccess.GetCommentMaster();
+            var mediaList = dataAccess.GetMediaMaster();
 
             {
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
@@ -328,13 +330,25 @@ namespace DbotManager
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.ReplyAccountList)
                 {
+                    var photoName = string.Empty;
+                    if(item.PhotoId != 0)
+                    {
+                        photoName = mediaList.Where(x => x.MediaId == item.PhotoId).FirstOrDefault().Name + "(P)";
+                    }
+                    var movieName = string.Empty;
+                    if (item.MovieId != 0)
+                    {
+                        movieName = mediaList.Where(x => x.MediaId == item.MovieId).FirstOrDefault().Name + "(M)";
+                    }
+
                     list.Add(new 処理アカウントInfo()
                     {
                         ID = item.Id,
                         AccountName = item.Name,
                         UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name,
-                        Comment = commentList.Where(x => x.Id == item.CommentId).FirstOrDefault().Comment
-                    });
+                        Comment = commentList.Where(x => x.Id == item.CommentId).FirstOrDefault().Comment,
+                        Media = photoName + movieName
+                    }) ;
                 }
                 dataGridViewリプライ.DataSource = list;
                 labelリプライ.Text = $"({list.Count}件)";

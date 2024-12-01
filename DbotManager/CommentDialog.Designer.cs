@@ -57,6 +57,8 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
+            this.checkBoxPhoto = new System.Windows.Forms.CheckBox();
+            this.checkBoxMovie = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).BeginInit();
             this.groupBox6.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -136,6 +138,8 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.checkBoxMovie);
+            this.groupBox6.Controls.Add(this.checkBoxPhoto);
             this.groupBox6.Controls.Add(this.groupBox1);
             this.groupBox6.Controls.Add(this.textBoxCommentID);
             this.groupBox6.Controls.Add(this.label1);
@@ -149,7 +153,7 @@
             this.groupBox6.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox6.Size = new System.Drawing.Size(617, 293);
+            this.groupBox6.Size = new System.Drawing.Size(617, 218);
             this.groupBox6.TabIndex = 6;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "コメント設定";
@@ -161,12 +165,13 @@
             this.groupBox1.Controls.Add(this.radioButton動画);
             this.groupBox1.Controls.Add(this.radioButton画像);
             this.groupBox1.Controls.Add(this.radioButtonメディアなし);
-            this.groupBox1.Location = new System.Drawing.Point(25, 172);
+            this.groupBox1.Location = new System.Drawing.Point(488, 94);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(562, 70);
             this.groupBox1.TabIndex = 39;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "メディア選択";
+            this.groupBox1.Visible = false;
             // 
             // comboBox動画
             // 
@@ -239,7 +244,7 @@
             // buttonコメント保存
             // 
             this.buttonコメント保存.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント保存.Location = new System.Drawing.Point(516, 250);
+            this.buttonコメント保存.Location = new System.Drawing.Point(516, 175);
             this.buttonコメント保存.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonコメント保存.Name = "buttonコメント保存";
             this.buttonコメント保存.Size = new System.Drawing.Size(92, 33);
@@ -251,7 +256,7 @@
             // buttonコメント追加
             // 
             this.buttonコメント追加.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント追加.Location = new System.Drawing.Point(416, 250);
+            this.buttonコメント追加.Location = new System.Drawing.Point(416, 175);
             this.buttonコメント追加.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonコメント追加.Name = "buttonコメント追加";
             this.buttonコメント追加.Size = new System.Drawing.Size(92, 33);
@@ -263,7 +268,7 @@
             // buttonコメント削除
             // 
             this.buttonコメント削除.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonコメント削除.Location = new System.Drawing.Point(316, 250);
+            this.buttonコメント削除.Location = new System.Drawing.Point(316, 175);
             this.buttonコメント削除.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonコメント削除.Name = "buttonコメント削除";
             this.buttonコメント削除.Size = new System.Drawing.Size(92, 33);
@@ -305,7 +310,7 @@
             // 
             // buttonExe
             // 
-            this.buttonExe.Location = new System.Drawing.Point(13, 730);
+            this.buttonExe.Location = new System.Drawing.Point(13, 653);
             this.buttonExe.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonExe.Name = "buttonExe";
             this.buttonExe.Size = new System.Drawing.Size(109, 30);
@@ -342,7 +347,7 @@
             // 
             // buttonClose
             // 
-            this.buttonClose.Location = new System.Drawing.Point(538, 730);
+            this.buttonClose.Location = new System.Drawing.Point(538, 653);
             this.buttonClose.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonClose.Name = "buttonClose";
             this.buttonClose.Size = new System.Drawing.Size(92, 30);
@@ -354,7 +359,7 @@
             // textBoxRenew
             // 
             this.textBoxRenew.Font = new System.Drawing.Font("Meiryo UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.textBoxRenew.Location = new System.Drawing.Point(13, 655);
+            this.textBoxRenew.Location = new System.Drawing.Point(13, 578);
             this.textBoxRenew.Multiline = true;
             this.textBoxRenew.Name = "textBoxRenew";
             this.textBoxRenew.ScrollBars = System.Windows.Forms.ScrollBars.Both;
@@ -364,7 +369,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(14, 625);
+            this.label13.Location = new System.Drawing.Point(14, 548);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(108, 19);
             this.label13.TabIndex = 23;
@@ -372,16 +377,38 @@
             // 
             // textBoxUrlTweetID
             // 
-            this.textBoxUrlTweetID.Location = new System.Drawing.Point(128, 622);
+            this.textBoxUrlTweetID.Location = new System.Drawing.Point(128, 545);
             this.textBoxUrlTweetID.Name = "textBoxUrlTweetID";
             this.textBoxUrlTweetID.Size = new System.Drawing.Size(502, 27);
             this.textBoxUrlTweetID.TabIndex = 24;
+            // 
+            // checkBoxPhoto
+            // 
+            this.checkBoxPhoto.AutoSize = true;
+            this.checkBoxPhoto.Location = new System.Drawing.Point(196, 32);
+            this.checkBoxPhoto.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBoxPhoto.Name = "checkBoxPhoto";
+            this.checkBoxPhoto.Size = new System.Drawing.Size(58, 23);
+            this.checkBoxPhoto.TabIndex = 40;
+            this.checkBoxPhoto.Text = "画像";
+            this.checkBoxPhoto.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxMovie
+            // 
+            this.checkBoxMovie.AutoSize = true;
+            this.checkBoxMovie.Location = new System.Drawing.Point(265, 32);
+            this.checkBoxMovie.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBoxMovie.Name = "checkBoxMovie";
+            this.checkBoxMovie.Size = new System.Drawing.Size(58, 23);
+            this.checkBoxMovie.TabIndex = 41;
+            this.checkBoxMovie.Text = "動画";
+            this.checkBoxMovie.UseVisualStyleBackColor = true;
             // 
             // CommentDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(647, 765);
+            this.ClientSize = new System.Drawing.Size(647, 686);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.textBoxUrlTweetID);
             this.Controls.Add(this.textBoxRenew);
@@ -439,5 +466,7 @@
         private System.Windows.Forms.TextBox textBoxRenew;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.TextBox textBoxUrlTweetID;
+        private System.Windows.Forms.CheckBox checkBoxMovie;
+        private System.Windows.Forms.CheckBox checkBoxPhoto;
     }
 }

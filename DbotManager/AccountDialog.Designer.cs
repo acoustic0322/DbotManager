@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.checkBox有料APIブックマーク = new System.Windows.Forms.CheckBox();
+            this.checkBox有料APIいいね = new System.Windows.Forms.CheckBox();
             this.checkBoxリプライ = new System.Windows.Forms.CheckBox();
             this.textBoxAccountID = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -52,6 +54,7 @@
             this.textBoxClientSecret = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.textBoxClientId = new System.Windows.Forms.TextBox();
+            this.checkBox有料 = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.textBoxApiKeySecret = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -117,9 +120,6 @@
             this.buttonいいね_Debug = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBoxRenew = new System.Windows.Forms.TextBox();
-            this.checkBox有料 = new System.Windows.Forms.CheckBox();
-            this.checkBox有料APIいいね = new System.Windows.Forms.CheckBox();
-            this.checkBox有料APIブックマーク = new System.Windows.Forms.CheckBox();
             this.groupBox6.SuspendLayout();
             this.groupBox7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAccount)).BeginInit();
@@ -176,6 +176,28 @@
             this.groupBox6.TabIndex = 2;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "アカウント設定";
+            // 
+            // checkBox有料APIブックマーク
+            // 
+            this.checkBox有料APIブックマーク.AutoSize = true;
+            this.checkBox有料APIブックマーク.Location = new System.Drawing.Point(164, 426);
+            this.checkBox有料APIブックマーク.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBox有料APIブックマーク.Name = "checkBox有料APIブックマーク";
+            this.checkBox有料APIブックマーク.Size = new System.Drawing.Size(160, 23);
+            this.checkBox有料APIブックマーク.TabIndex = 38;
+            this.checkBox有料APIブックマーク.Text = "有料API(ブックマーク)";
+            this.checkBox有料APIブックマーク.UseVisualStyleBackColor = true;
+            // 
+            // checkBox有料APIいいね
+            // 
+            this.checkBox有料APIいいね.AutoSize = true;
+            this.checkBox有料APIいいね.Location = new System.Drawing.Point(22, 426);
+            this.checkBox有料APIいいね.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBox有料APIいいね.Name = "checkBox有料APIいいね";
+            this.checkBox有料APIいいね.Size = new System.Drawing.Size(134, 23);
+            this.checkBox有料APIいいね.TabIndex = 37;
+            this.checkBox有料APIいいね.Text = "有料API(いいね)";
+            this.checkBox有料APIいいね.UseVisualStyleBackColor = true;
             // 
             // checkBoxリプライ
             // 
@@ -389,6 +411,17 @@
             this.textBoxClientId.Size = new System.Drawing.Size(486, 27);
             this.textBoxClientId.TabIndex = 11;
             // 
+            // checkBox有料
+            // 
+            this.checkBox有料.AutoSize = true;
+            this.checkBox有料.Location = new System.Drawing.Point(87, 393);
+            this.checkBox有料.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBox有料.Name = "checkBox有料";
+            this.checkBox有料.Size = new System.Drawing.Size(113, 23);
+            this.checkBox有料.TabIndex = 23;
+            this.checkBox有料.Text = "有料アカウント";
+            this.checkBox有料.UseVisualStyleBackColor = true;
+            // 
             // label6
             // 
             this.label6.AutoSize = true;
@@ -539,7 +572,7 @@
             this.groupBox7.Controls.Add(this.comboBox予約設定１_End);
             this.groupBox7.Controls.Add(this.label19);
             this.groupBox7.Controls.Add(this.comboBox予約設定１_Start);
-            this.groupBox7.Location = new System.Drawing.Point(823, 702);
+            this.groupBox7.Location = new System.Drawing.Point(611, 58);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(731, 125);
             this.groupBox7.TabIndex = 20;
@@ -942,7 +975,7 @@
             // 
             // buttonClose
             // 
-            this.buttonClose.Location = new System.Drawing.Point(1194, 691);
+            this.buttonClose.Location = new System.Drawing.Point(1194, 721);
             this.buttonClose.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonClose.Name = "buttonClose";
             this.buttonClose.Size = new System.Drawing.Size(92, 33);
@@ -983,7 +1016,7 @@
             this.dataGridViewAccount.RowHeadersVisible = false;
             this.dataGridViewAccount.RowTemplate.Height = 21;
             this.dataGridViewAccount.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewAccount.Size = new System.Drawing.Size(625, 670);
+            this.dataGridViewAccount.Size = new System.Drawing.Size(625, 705);
             this.dataGridViewAccount.TabIndex = 1;
             this.dataGridViewAccount.SelectionChanged += new System.EventHandler(this.dataGridViewAccount_SelectionChanged);
             // 
@@ -1189,6 +1222,7 @@
             // 
             this.groupBox1.Controls.Add(this.textBoxRenew);
             this.groupBox1.Controls.Add(this.buttonブックマーク_Debug);
+            this.groupBox1.Controls.Add(this.groupBox7);
             this.groupBox1.Controls.Add(this.buttonリプライ_Debug);
             this.groupBox1.Controls.Add(this.label13);
             this.groupBox1.Controls.Add(this.textBoxUrlTweetID);
@@ -1210,47 +1244,13 @@
             this.textBoxRenew.Size = new System.Drawing.Size(596, 67);
             this.textBoxRenew.TabIndex = 21;
             // 
-            // checkBox有料
-            // 
-            this.checkBox有料.AutoSize = true;
-            this.checkBox有料.Location = new System.Drawing.Point(87, 393);
-            this.checkBox有料.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBox有料.Name = "checkBox有料";
-            this.checkBox有料.Size = new System.Drawing.Size(113, 23);
-            this.checkBox有料.TabIndex = 23;
-            this.checkBox有料.Text = "有料アカウント";
-            this.checkBox有料.UseVisualStyleBackColor = true;
-            // 
-            // checkBox有料APIいいね
-            // 
-            this.checkBox有料APIいいね.AutoSize = true;
-            this.checkBox有料APIいいね.Location = new System.Drawing.Point(22, 426);
-            this.checkBox有料APIいいね.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBox有料APIいいね.Name = "checkBox有料APIいいね";
-            this.checkBox有料APIいいね.Size = new System.Drawing.Size(134, 23);
-            this.checkBox有料APIいいね.TabIndex = 37;
-            this.checkBox有料APIいいね.Text = "有料API(いいね)";
-            this.checkBox有料APIいいね.UseVisualStyleBackColor = true;
-            // 
-            // checkBox有料APIブックマーク
-            // 
-            this.checkBox有料APIブックマーク.AutoSize = true;
-            this.checkBox有料APIブックマーク.Location = new System.Drawing.Point(164, 426);
-            this.checkBox有料APIブックマーク.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBox有料APIブックマーク.Name = "checkBox有料APIブックマーク";
-            this.checkBox有料APIブックマーク.Size = new System.Drawing.Size(160, 23);
-            this.checkBox有料APIブックマーク.TabIndex = 38;
-            this.checkBox有料APIブックマーク.Text = "有料API(ブックマーク)";
-            this.checkBox有料APIブックマーク.UseVisualStyleBackColor = true;
-            // 
             // AccountDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1299, 731);
+            this.ClientSize = new System.Drawing.Size(1299, 758);
             this.Controls.Add(this.comboBoxUserMaster);
             this.Controls.Add(this.dataGridViewAccount);
-            this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox6);

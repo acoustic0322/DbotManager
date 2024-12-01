@@ -87,12 +87,17 @@ namespace DbotManager
             checkBoxChatGpt.Checked = commentMaster.ChatGpt;
             textBoxコメント.Text = commentMaster.Comment;
 
+            checkBoxMovie.Checked = commentMaster.MovieEnable;
+            checkBoxPhoto.Checked = commentMaster.PhotoEnable;
+
+            /*
             if (commentMaster.MovieId != 0)
                 radioButton動画.Checked = true;
             else if (commentMaster.PhotoId != 0)
                 radioButton画像.Checked = true;
             else
                 radioButtonメディアなし.Checked = true;
+            */
         }
 
         private void buttonコメント削除_Click(object sender, EventArgs e)
@@ -113,8 +118,10 @@ namespace DbotManager
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
                 TweetModeType = radioButtonポスト.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
-                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
-                MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
+//                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
+//                MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
+                PhotoEnable = checkBoxPhoto.Checked,
+                MovieEnable = checkBoxMovie.Checked
             };
 
             dataAccess.InsertCommentMaster(commentMaster);
@@ -135,8 +142,10 @@ namespace DbotManager
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
                 TweetModeType = radioButtonポスト.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
-                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
-                MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
+                PhotoEnable = checkBoxPhoto.Checked,
+                MovieEnable = checkBoxMovie.Checked
+//                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
+//                MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
             };
 
             dataAccess.UpdateCommentMaster(commentMaster);

@@ -107,16 +107,17 @@ namespace DbotManager
             List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result && x.Mode != TweetProcTypes.GET_ACCESSTOKEN && x.Mode == TweetProcTypes.GET_REFRESHTOKEN).ToList();
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
+            List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
 
             if(UserId != 0)
             {
                 accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
             }
 
-            List<AccountMaster> likeList = FilterAccountList(accountMasterList , tweetHistoryList , commenttMasterList, TweetProcTypes.LIKE);
-            List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList,TweetProcTypes.REPLY);
-            List<AccountMaster> bookMarkList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList,TweetProcTypes.BOOKMARK);
-            List<AccountMaster> repostList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList,TweetProcTypes.REPOST);
+            List<AccountMaster> likeList = FilterAccountList(accountMasterList , tweetHistoryList , commenttMasterList, mediaMasterList, TweetProcTypes.LIKE);
+            List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList,TweetProcTypes.REPLY);
+            List<AccountMaster> bookMarkList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK);
+            List<AccountMaster> repostList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList,TweetProcTypes.REPOST);
 
             var selectedItems = SelectBalancedItems(likeList, replyList , bookMarkList, repostList, いいね件数, リプライ件数 , ブックマーク件数, リポスト件数);
 
@@ -222,7 +223,12 @@ namespace DbotManager
             return selected;
         }
 
-        private List<AccountMaster> FilterAccountList(List<AccountMaster> accountMasterList, List<TweetHistory> tweetHistoryList, List<CommentMaster> commentMasterList , TweetProcTypes tweetProcType)
+        private List<AccountMaster> FilterAccountList(
+            List<AccountMaster> accountMasterList,
+            List<TweetHistory> tweetHistoryList,
+            List<CommentMaster> commentMasterList ,
+            List<MediaMaster> mediaMasterList,
+            TweetProcTypes tweetProcType)
         {
             List<AccountMaster> retList = new List<AccountMaster>();
 
@@ -292,7 +298,29 @@ namespace DbotManager
                 {
                     var commentMasterListWk = commentMasterList.Where(x => x.AccountId == account.Id && x.TweetModeType == TweetModeTypes.Replay).ToList();
                     if (commentMasterListWk.Count == 0) continue;
-                    account.CommentId = SupportUtil.GetRandomItem(commentMasterListWk).Id;
+
+                    var commentItem = SupportUtil.GetRandomItem(commentMasterListWk.Where(x => x.AccountId == account.Id).ToList());
+                    account.CommentId = commentItem.Id;
+
+                    if(commentItem.PhotoEnable)
+                    {
+                        var photoItem = SupportUtil.GetRandomItem(mediaMasterList.Where(x => x.CommentId == commentItem.Id && x.MediaType == MediaTypes.Photo).ToList());
+                        account.PhotoId = photoItem.MediaId;
+                    }
+                    else
+                    {
+                        account.PhotoId = 0;
+                    }
+
+                    if (commentItem.MovieEnable)
+                    {
+                        var movieItem = SupportUtil.GetRandomItem(mediaMasterList.Where(x => x.CommentId == commentItem.Id && x.MediaType == MediaTypes.Movie).ToList());
+                        account.MovieId = movieItem.MediaId;
+                    }
+                    else
+                    {
+                        account.MovieId = 0;
+                    }
                 }
 
                 retList.Add(account);
