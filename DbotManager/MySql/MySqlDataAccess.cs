@@ -86,7 +86,7 @@ public class MySqlDataAccess
 
     #region AccountMaster
 
-    public void InsertAccountMaster(AccountMaster account)
+    public int InsertAccountMaster(AccountMaster account)
     {
         using (MySqlConnection connection = new MySqlConnection(connectionString))
         {
@@ -116,7 +116,8 @@ public class MySqlDataAccess
                  @Reserve3EndHour, @Reserve3Count, @Reserve4Enable, @Reserve4StartHour, 
                  @Reserve4EndHour, @Reserve4Count
                  ,@PaidLike, @PaidBookmark
-                );";
+                );
+                SELECT LAST_INSERT_ID(); ";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -157,13 +158,17 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@PaidLike", account.PaidLike ? 1 : 0);
                     command.Parameters.AddWithValue("@PaidBookmark", account.PaidBookmark ? 1 : 0);
 
-                    command.ExecuteNonQuery();
+//                    command.ExecuteNonQuery();
+                    int insertedId = Convert.ToInt32(command.ExecuteScalar());
+                    return insertedId;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("エラーが発生しました: " + ex.Message);
             }
+
+            return -1;
         }
     }
 
@@ -605,8 +610,8 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"INSERT INTO comment_master (user_id, account_id, comment, enable, chatgpt , mode , photo_enable , movie_enable) 
-                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Chatgpt, @Mode , @PhotoEnable , @MovieEnable);";
-//                SELECT LAST_INSERT_ID(); ";
+                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Chatgpt, @Mode , @PhotoEnable , @MovieEnable);
+                            SELECT LAST_INSERT_ID(); ";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1039,7 +1044,7 @@ public class MySqlDataAccess
         return reserveSchedules;
     }
 
-    public bool InsertReserveSchedule(ReserveSchedule schedule)
+    public int InsertReserveSchedule(ReserveSchedule schedule)
     {
         using (MySqlConnection connection = new MySqlConnection(connectionString))
         {
@@ -1048,7 +1053,8 @@ public class MySqlDataAccess
                 connection.Open();
                 string query = @"INSERT INTO reserve_schedule 
                              (reserve_date, reserve_time, account_id, comment_id, result, reserve_id) 
-                             VALUES (@ReserveDate, @ReserveTime, @AccountId, @CommentId, @Result, @ReserveId);";
+                             VALUES (@ReserveDate, @ReserveTime, @AccountId, @CommentId, @Result, @ReserveId);
+                            SELECT LAST_INSERT_ID(); ";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1059,14 +1065,17 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Result", schedule.Result ? "1" : "0");
                     command.Parameters.AddWithValue("@ReserveId", schedule.ReserveId);
 
-                    return command.ExecuteNonQuery() > 0; // 挿入が成功した場合はtrueを返す
+                    int insertedId = Convert.ToInt32(command.ExecuteScalar());
+                    return insertedId;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("エラー: " + ex.Message);
-                return false;
+                return -1;
             }
+
+            return -1;
         }
     }
 

@@ -111,7 +111,7 @@ namespace DbotManager
         {
             CommentMaster commentMaster = new CommentMaster()
             {
-                Id = int.Parse(textBoxCommentID.Text),
+//                Id = int.Parse(textBoxCommentID.Text),
                 UserId = UserId,
                 AccountId = AccountId,
                 ChatGpt = checkBoxChatGpt.Checked,
@@ -124,14 +124,15 @@ namespace DbotManager
                 MovieEnable = checkBoxMovie.Checked
             };
 
-            dataAccess.InsertCommentMaster(commentMaster);
-            ReadCommentMaster(int.Parse(textBoxCommentID.Text));
+            int newId = dataAccess.InsertCommentMaster(commentMaster);
+            textBoxCommentID.Text = newId.ToString();
+            ReadCommentMaster(newId);
         }
 
         private void buttonコメント保存_Click(object sender, EventArgs e)
         {
-            var movie = comboBox動画.SelectedValue.ToString();
-            var photo = comboBox画像.SelectedValue.ToString();
+//            var movie = comboBox動画.SelectedValue.ToString();
+//            var photo = comboBox画像.SelectedValue.ToString();
 
             CommentMaster commentMaster = new CommentMaster()
             {
@@ -210,6 +211,7 @@ namespace DbotManager
 
                 AccountId = accountId;
 
+                /*
                 if (_mediaMasterList != null && AccountId != 0)
                 {
                     comboBox画像.DataSource = _mediaMasterList.Where(x => x.AccountId == AccountId && x.MediaType == MediaTypes.Photo).ToList();
@@ -220,6 +222,7 @@ namespace DbotManager
                     comboBox動画.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
                     comboBox動画.ValueMember = "MediaId";     // 選択されたときに取得するプロパティ
                 }
+                */
             }
             else
             {

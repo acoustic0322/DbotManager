@@ -290,8 +290,9 @@ namespace DbotManager
                 PaidBookmark = checkBox有料APIブックマーク.Checked,
             };
 
-            dataAccess.InsertAccountMaster(accountMaster);
-            ReadAccountMaster(GetUserId() , int.Parse(textBoxAccountID.Text));
+            int newId = dataAccess.InsertAccountMaster(accountMaster);
+            textBoxAccountID.Text = newId.ToString();
+            ReadAccountMaster(GetUserId() , newId);
         }
 
         private void buttonアカウント保存_Click(object sender, EventArgs e)
