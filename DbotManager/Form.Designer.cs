@@ -730,6 +730,8 @@
             // checkBoxDuplicate
             // 
             this.checkBoxDuplicate.AutoSize = true;
+            this.checkBoxDuplicate.Checked = true;
+            this.checkBoxDuplicate.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBoxDuplicate.Location = new System.Drawing.Point(344, 90);
             this.checkBoxDuplicate.Name = "checkBoxDuplicate";
             this.checkBoxDuplicate.Size = new System.Drawing.Size(157, 23);

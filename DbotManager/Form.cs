@@ -70,7 +70,7 @@ namespace DbotManager
                 BookmarkCount = 110,
                 ReplyCount = 260,
                 RepostCount = 260,
-                Duplicate = false
+                Duplicate = true
             };
 
             if (args.Length > 0)
