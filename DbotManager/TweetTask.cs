@@ -105,7 +105,7 @@ namespace DbotManager
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result && x.Mode != TweetProcTypes.GET_ACCESSTOKEN && x.Mode == TweetProcTypes.GET_REFRESHTOKEN).ToList();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result && x.Mode != TweetProcTypes.GET_ACCESSTOKEN && x.Mode != TweetProcTypes.GET_REFRESHTOKEN).ToList();
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
             List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
@@ -247,6 +247,13 @@ namespace DbotManager
 
             foreach (var account in accountMasterList)
             {
+                /*
+                if(account.Id == 76)
+                {
+                    int a = 1;
+                }
+                */
+
                 // 無効アカウントはスルー
                 if (!account.Enable) continue;
 
