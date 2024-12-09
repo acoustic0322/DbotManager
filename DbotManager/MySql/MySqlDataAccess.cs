@@ -665,7 +665,7 @@ public class MySqlDataAccess
 
     #endregion
 
-    public List<UserMaster> GetUserNames()
+    public List<UserMaster> GetUserMaster()
     {
         List<UserMaster> userList = new List<UserMaster>();
 
@@ -675,7 +675,9 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = "SELECT id, username , password , admin , enable ,memo FROM user_master;";
+                string query = "SELECT id, username , password , admin , enable ,memo , " +
+                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,photo_enable,movie_enable" +
+                    " FROM user_master;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -689,7 +691,16 @@ public class MySqlDataAccess
                                 Password = reader["password"].ToString(),
                                 Admin = reader["admin"].ToString() == "1",
                                 Enable = reader["enable"].ToString() == "1",
-                                Memo = reader["memo"].ToString()
+                                Memo = reader["memo"].ToString(),
+                                LikeEnable = reader["like_enable"].ToString() == "1",
+                                BookmarkEnable = reader["bookmark_enable"].ToString() == "1",
+                                ReplyEnable = reader["reply_enable"].ToString() == "1",
+                                RepostEnable = reader["repost_enable"].ToString() == "1",
+                                SensyukenEnable = reader["sensyuken_enable"].ToString() == "1",
+                                PostEnable = reader["post_enable"].ToString() == "1",
+                                ReserveEnable = reader["reserve_enable"].ToString() == "1",
+                                PhotoEnable = reader["photo_enable"].ToString() == "1",
+                                MovieEnable = reader["movie_enable"].ToString() == "1",
                             };
 
                             userList.Add(user);

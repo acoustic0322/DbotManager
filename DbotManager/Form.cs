@@ -237,7 +237,7 @@ namespace DbotManager
 
         private void FillDebugControls_UserName()
         {
-            List<UserMaster> userList = dataAccess.GetUserNames();
+            List<UserMaster> userList = dataAccess.GetUserMaster();
 
             if (userList != null)
             {
@@ -348,7 +348,7 @@ namespace DbotManager
 
             _tweetTask.InitAccountList();
 
-            var userList = dataAccess.GetUserNames();
+            var userList = dataAccess.GetUserMaster();
             var commentList = dataAccess.GetCommentMaster();
             var mediaList = dataAccess.GetMediaMaster();
 

@@ -14,5 +14,17 @@ namespace DbotManager.Table
         public bool Admin { get; set; }
         public bool Enable { get; set; }
         public string Memo { get; set; }
+        public bool LikeEnable { get; set; }
+        public bool BookmarkEnable { get; set; }
+        public bool ReplyEnable { get; set; }
+        public bool RepostEnable { get; set; }
+        public bool SensyukenEnable { get; set; }
+        public bool PostEnable { get; set; }
+        public bool ReserveEnable { get; set; }
+        public bool PhotoEnable { get; set; }
+
+        public bool MovieEnable { get; set; }
+
+
     }
 }

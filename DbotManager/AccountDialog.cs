@@ -90,7 +90,7 @@ namespace DbotManager
 
         private void FillDebugControls_UserName()
         {
-            List<UserMaster> userList = dataAccess.GetUserNames();
+            List<UserMaster> userList = dataAccess.GetUserMaster();
 
             if (userList != null)
             {
@@ -157,7 +157,7 @@ namespace DbotManager
                     dataGridViewAccount.Rows[0].Selected = true; // 先頭行を選択
             }
 
-            var name = dataAccess.GetUserNames().Where(x => x.Id == userId).FirstOrDefault().Name;
+            var name = dataAccess.GetUserMaster().Where(x => x.Id == userId).FirstOrDefault().Name;
             this.Text = $"{name} の アカウント一覧";
 
         }

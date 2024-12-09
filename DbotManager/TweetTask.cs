@@ -109,16 +109,17 @@ namespace DbotManager
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
             List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
+            List<UserMaster> userMasterList = dataAccess.GetUserMaster();
 
             if(UserId != 0)
             {
                 accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
             }
 
-            List<AccountMaster> likeList = FilterAccountList(accountMasterList , tweetHistoryList , commenttMasterList, mediaMasterList, TweetProcTypes.LIKE);
-            List<AccountMaster> replyList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList,TweetProcTypes.REPLY);
-            List<AccountMaster> bookMarkList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK);
-            List<AccountMaster> repostList = FilterAccountList(accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList,TweetProcTypes.REPOST);
+            List<AccountMaster> likeList = FilterAccountList(userMasterList,accountMasterList, tweetHistoryList , commenttMasterList, mediaMasterList, TweetProcTypes.LIKE);
+            List<AccountMaster> replyList = FilterAccountList(userMasterList,accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList,TweetProcTypes.REPLY);
+            List<AccountMaster> bookMarkList = FilterAccountList(userMasterList,accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK);
+            List<AccountMaster> repostList = FilterAccountList(userMasterList,accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList,TweetProcTypes.REPOST);
 
             var selectedItems = SelectBalancedItems(likeList, replyList , bookMarkList, repostList, いいね件数, リプライ件数 , ブックマーク件数, リポスト件数);
 
@@ -233,6 +234,7 @@ namespace DbotManager
         }
 
         private List<AccountMaster> FilterAccountList(
+            List<UserMaster> userMasterList,
             List<AccountMaster> accountMasterList,
             List<TweetHistory> tweetHistoryList,
             List<CommentMaster> commentMasterList ,
@@ -247,6 +249,16 @@ namespace DbotManager
             {
                 // 無効アカウントはスルー
                 if (!account.Enable) continue;
+
+                if (userMasterList.Where(x => x.Id == account.UserId).Count() != 1) continue;
+
+                var userMasterRow = userMasterList.Where(x => x.Id == account.UserId).FirstOrDefault();
+
+                if (userMasterRow.Enable == false) continue;
+                if (tweetProcType == TweetProcTypes.LIKE && !userMasterRow.LikeEnable) continue;
+                else if (tweetProcType == TweetProcTypes.BOOKMARK && !userMasterRow.BookmarkEnable) continue;
+                else if (tweetProcType == TweetProcTypes.REPOST && !userMasterRow.RepostEnable) continue;
+                else if (tweetProcType == TweetProcTypes.REPLY && !userMasterRow.ReplyEnable) continue;
 
                 // 処理無効アカウントはスルー
                 if (tweetProcType == TweetProcTypes.LIKE && !account.LikeEnable) continue;
@@ -311,7 +323,7 @@ namespace DbotManager
                     var commentItem = SupportUtil.GetRandomItem(commentMasterListWk.Where(x => x.AccountId == account.Id).ToList());
                     account.CommentId = commentItem.Id;
 
-                    if(commentItem.PhotoEnable)
+                    if(commentItem.PhotoEnable && userMasterRow.PhotoEnable)
                     {
                         var photoItem = SupportUtil.GetRandomItem(mediaMasterList.Where(x => x.CommentId == commentItem.Id && x.MediaType == MediaTypes.Photo).ToList());
                         account.PhotoId = photoItem.MediaId;
@@ -321,7 +333,7 @@ namespace DbotManager
                         account.PhotoId = 0;
                     }
 
-                    if (commentItem.MovieEnable)
+                    if (commentItem.MovieEnable && userMasterRow.MovieEnable)
                     {
                         var movieItem = SupportUtil.GetRandomItem(mediaMasterList.Where(x => x.CommentId == commentItem.Id && x.MediaType == MediaTypes.Movie).ToList());
                         account.MovieId = movieItem.MediaId;
