@@ -15,5 +15,11 @@ namespace DbotManager.Entity
         public bool Bookmark { get; set; }
         public bool Reply { get; set; }
         public bool Repost { get; set; }
+        public int LikeCount { get; set; }
+        public int BookmarkCount { get; set; }
+        public int ReplyCount { get; set; }
+        public int RepostCount { get; set; }
+        public bool Duplicate { get; set; }
+
     }
 }

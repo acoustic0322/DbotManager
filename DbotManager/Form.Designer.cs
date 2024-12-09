@@ -33,6 +33,11 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.labelリプライ = new System.Windows.Forms.Label();
             this.dataGridViewリプライ = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.textBoxリプライ件数 = new System.Windows.Forms.TextBox();
             this.checkBoxリプライ = new System.Windows.Forms.CheckBox();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
@@ -85,11 +90,7 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.checkBoxDuplicate = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -178,6 +179,37 @@
             this.dataGridViewリプライ.RowTemplate.Height = 21;
             this.dataGridViewリプライ.Size = new System.Drawing.Size(179, 442);
             this.dataGridViewリプライ.TabIndex = 0;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.DataPropertyName = "UserName";
+            this.dataGridViewTextBoxColumn1.HeaderText = "ユーザー";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.Visible = false;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.DataPropertyName = "ID";
+            this.dataGridViewTextBoxColumn2.HeaderText = "ID";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            this.dataGridViewTextBoxColumn3.DataPropertyName = "AccountName";
+            this.dataGridViewTextBoxColumn3.HeaderText = "アカウント";
+            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            // 
+            // Column1
+            // 
+            this.Column1.DataPropertyName = "Comment";
+            this.Column1.HeaderText = "コメント";
+            this.Column1.Name = "Column1";
+            // 
+            // Column2
+            // 
+            this.Column2.DataPropertyName = "Media";
+            this.Column2.HeaderText = "メディア";
+            this.Column2.Name = "Column2";
             // 
             // textBoxリプライ件数
             // 
@@ -437,6 +469,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.checkBoxDuplicate);
             this.groupBox3.Controls.Add(this.comboBoxUserMaster);
             this.groupBox3.Controls.Add(this.checkBoxUserID);
             this.groupBox3.Controls.Add(this.textBoxUrlTweetID);
@@ -694,36 +727,15 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // dataGridViewTextBoxColumn1
+            // checkBoxDuplicate
             // 
-            this.dataGridViewTextBoxColumn1.DataPropertyName = "UserName";
-            this.dataGridViewTextBoxColumn1.HeaderText = "ユーザー";
-            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            this.dataGridViewTextBoxColumn1.Visible = false;
-            // 
-            // dataGridViewTextBoxColumn2
-            // 
-            this.dataGridViewTextBoxColumn2.DataPropertyName = "ID";
-            this.dataGridViewTextBoxColumn2.HeaderText = "ID";
-            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            // 
-            // dataGridViewTextBoxColumn3
-            // 
-            this.dataGridViewTextBoxColumn3.DataPropertyName = "AccountName";
-            this.dataGridViewTextBoxColumn3.HeaderText = "アカウント";
-            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            // 
-            // Column1
-            // 
-            this.Column1.DataPropertyName = "Comment";
-            this.Column1.HeaderText = "コメント";
-            this.Column1.Name = "Column1";
-            // 
-            // Column2
-            // 
-            this.Column2.DataPropertyName = "Media";
-            this.Column2.HeaderText = "メディア";
-            this.Column2.Name = "Column2";
+            this.checkBoxDuplicate.AutoSize = true;
+            this.checkBoxDuplicate.Location = new System.Drawing.Point(344, 90);
+            this.checkBoxDuplicate.Name = "checkBoxDuplicate";
+            this.checkBoxDuplicate.Size = new System.Drawing.Size(157, 23);
+            this.checkBoxDuplicate.TabIndex = 9;
+            this.checkBoxDuplicate.Text = "モード重複を許容する";
+            this.checkBoxDuplicate.UseVisualStyleBackColor = true;
             // 
             // Form
             // 
@@ -829,6 +841,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
+        private System.Windows.Forms.CheckBox checkBoxDuplicate;
     }
 }
 

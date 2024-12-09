@@ -60,12 +60,17 @@ namespace DbotManager
         {
             WebCommand ret = new WebCommand() 
             {
-                 Enable = false,
-                 UserId = 0,
-                 Like=false,
-                 Bookmark=false,
-                 Reply=false,
-                 Repost=false
+                Enable = false,
+                UserId = 0,
+                Like=false,
+                Bookmark=false,
+                Reply=false,
+                Repost=false,
+                LikeCount = 110,
+                BookmarkCount = 110,
+                ReplyCount = 260,
+                RepostCount = 260,
+                Duplicate = false
             };
 
             if (args.Length > 0)
@@ -107,8 +112,33 @@ namespace DbotManager
                 {
                     ret.Repost = repost;
                 }
-            }
 
+                if (parameters.TryGetValue("LikeCount", out string likeCount))
+                {
+                    ret.LikeCount = int.Parse(likeCount);
+                }
+
+                if (parameters.TryGetValue("BookmarkCount", out string bookmarkCount))
+                {
+                    ret.BookmarkCount = int.Parse(bookmarkCount);
+                }
+
+                if (parameters.TryGetValue("RepostCount", out string repostCount))
+                {
+                    ret.RepostCount = int.Parse(repostCount);
+                }
+
+                if (parameters.TryGetValue("ReplyCount", out string replyCount))
+                {
+                    ret.ReplyCount = int.Parse(replyCount);
+                }
+
+
+                if (parameters.TryGetValue("Duplicate", out string duplicateValue) && bool.TryParse(duplicateValue, out bool duplicate))
+                {
+                    ret.Duplicate = duplicate;
+                }
+            }
 
             return ret;
         }
@@ -170,10 +200,20 @@ namespace DbotManager
 
                 textBoxUrlTweetID.Text = _webCommand.TargetTweetId;
 
-                MakeList();
-                ExeList();
+                textBoxいいね件数.Text = _webCommand.LikeCount.ToString();
+                textBoxブックマーク件数.Text = _webCommand.BookmarkCount.ToString();
+                textBoxリプライ件数.Text = _webCommand.ReplyCount.ToString();
+                textBoxリポスト件数.Text = _webCommand.RepostCount.ToString();
 
+                checkBoxDuplicate.Checked = _webCommand.Duplicate;
+
+                MakeList();
+
+#if DEBUG
+#else
+                ExeList();
                 this.Close();
+#endif
             }
         }
 
@@ -302,6 +342,7 @@ namespace DbotManager
             _tweetTask.ReplyEnable = checkBoxリプライ.Checked;
             _tweetTask.BookmarkEnable = checkBoxブックマーク.Checked;
             _tweetTask.RepostEnable = checkBoxリポスト.Checked;
+            _tweetTask.DuplicateEnable = checkBoxDuplicate.Checked;
 
             _tweetTask.UserId = checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0;
 

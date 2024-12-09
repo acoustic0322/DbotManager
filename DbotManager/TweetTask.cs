@@ -45,6 +45,7 @@ namespace DbotManager
         public bool BookmarkEnable { get; set; }
         public bool RepostEnable { get; set; }
         public bool ReplyEnable { get; set; }
+        public bool DuplicateEnable { get; set; }
 
         public int 件数 { get; set; }
         public string TargetTweetID { get; set; }
@@ -127,7 +128,7 @@ namespace DbotManager
             RepostAccountList = selectedItems.Item4;
         }
 
-        static (List<AccountMaster>, List<AccountMaster>, List<AccountMaster>, List<AccountMaster>) SelectBalancedItems(
+        private (List<AccountMaster>, List<AccountMaster>, List<AccountMaster>, List<AccountMaster>) SelectBalancedItems(
             List<AccountMaster> likeList,
             List<AccountMaster> replyList,
             List<AccountMaster> bookmarkList,
@@ -152,7 +153,7 @@ namespace DbotManager
             {
                 if (selectedLike.Count < likeCount)
                 {
-                    var candidate = SelectRandomNonExcluded(likeList, excludedIds, random);
+                    var candidate = SelectRandomNonExcluded(likeList, selectedLike, excludedIds, random);
                     if (candidate != null) // 候補が見つかれば追加
                     {
                         selectedLike.Add(candidate);
@@ -162,7 +163,7 @@ namespace DbotManager
 
                 if (selectedReply.Count < replyCount)
                 {
-                    var candidate = SelectRandomNonExcluded(replyList, excludedIds, random);
+                    var candidate = SelectRandomNonExcluded(replyList, selectedReply, excludedIds, random);
                     if (candidate != null) // 候補が見つかれば追加
                     {
                         selectedReply.Add(candidate);
@@ -172,7 +173,7 @@ namespace DbotManager
 
                 if (selectedBookmark.Count < bookmarkCount)
                 {
-                    var candidate = SelectRandomNonExcluded(bookmarkList, excludedIds, random);
+                    var candidate = SelectRandomNonExcluded(bookmarkList, selectedBookmark, excludedIds, random);
                     if (candidate != null)
                     {
                         selectedBookmark.Add(candidate);
@@ -182,7 +183,7 @@ namespace DbotManager
 
                 if (selectedRepost.Count < repostCount)
                 {
-                    var candidate = SelectRandomNonExcluded(repostList, excludedIds, random);
+                    var candidate = SelectRandomNonExcluded(repostList, selectedRepost, excludedIds, random);
                     if (candidate != null)
                     {
                         selectedRepost.Add(candidate);
@@ -193,10 +194,18 @@ namespace DbotManager
 
             return (selectedLike, selectedReply , selectedBookmark, selectedRepost);
         }
-        static AccountMaster SelectRandomNonExcluded(List<AccountMaster> source, HashSet<int> excludedIds, Random random)
+        private AccountMaster SelectRandomNonExcluded(List<AccountMaster> source, List<AccountMaster> 除外list , HashSet<int> excludedIds, Random random)
         {
+            // 除外list から除外する Id の集合を作成
+            HashSet<int> 除外Ids = new HashSet<int>(除外list.Select(x => x.Id));
+            var list = source.Where(x => !除外Ids.Contains(x.Id)).ToList();
+
             // Id が excludedIds に含まれない候補を取得
-            var candidates = source.Where(x => !excludedIds.Contains(x.Id)).ToList();
+            List<AccountMaster> candidates;
+            if (DuplicateEnable) 
+                candidates = list.ToList();
+            else
+                candidates = list.Where(x => !excludedIds.Contains(x.Id)).ToList();
 
             if (candidates.Count == 0)
                 return null; // 候補が無ければ null を返す

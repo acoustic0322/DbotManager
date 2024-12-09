@@ -8,10 +8,15 @@ if (!current_user($conn)) {
     exit;
 }
 
+/*
 if (!isset($_SESSION['admin']) && $_SESSION['admin'] == 1){
     echo '権限が足りません';
     exit;
 }
+    */
+
+// アカウントリストを取得
+$current_userid = $_SESSION['user_id'];
 
 // 新規ユーザー登録処理
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -41,16 +46,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->close();
 
         // 登録後にリダイレクト
-        header("Location: user_list.php");
+        header("Location: account_list.php");
         exit;        
     }else{
-        $new_username = $_POST['new_username'];
-        $new_password = $_POST['new_password'];
-        $is_admin = isset($_POST['is_admin']) ? 1 : 0;
+
+        $new_name = $_POST['new_name'];
+        $new_login_id = $_POST['new_login_id'];
+        $new_login_pass = $_POST['new_login_pass'];
+        $new_client_id = $_POST['new_client_id'];
+        $new_client_secret = $_POST['new_client_secret'];
+        $new_api_key = $_POST['new_api_key'];
+        $new_api_key_secret = $_POST['new_api_key_secret'];
+        $new_access_token = $_POST['new_access_token'];
+        $new_access_secret = $_POST['new_access_secret'];
+        $new_bearer_token = $_POST['new_bearer_token'];
+        $new_refresh_token = $_POST['new_refresh_token'];
+        $new_paid = $_POST['new_paid'];
 
         // 既存のユーザー名を確認
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM user_master WHERE username = ?");
-        $stmt->bind_param("s", $new_username);
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM account_master WHERE user_id = ? and login_id = ?");
+        $stmt->bind_param("ss", $current_userid, $new_login_id);
         $stmt->execute();
         $stmt->bind_result($count);
         $stmt->fetch();
@@ -58,29 +73,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 重複している場合の処理
         if ($count > 0) {
-            echo "<script>alert('このユーザー名は既に存在します。別のユーザー名を使用してください。');</script>";
+            echo "<script>alert('このログインIDは既に存在します。別のログインIDを使用してください。');</script>";
         } else {
             // ユーザーをデータベースに登録
-            $stmt = $conn->prepare("INSERT INTO user_master (username, password, admin) VALUES (?, ?, ?)");
-            $stmt->bind_param("ssi", $new_username, $new_password, $is_admin);
+            $stmt = $conn->prepare("INSERT INTO account_master (user_id, name, login_id, login_password, client_id, client_secret, api_key, api_key_secret, access_token,  access_token_secret, bearer_token, refresh_token, paid ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssssssssss", $current_userid, $new_name, $new_login_id, $new_login_pass, $new_client_id, $new_client_secret, $new_api_key, $new_api_key_secret, $new_access_token, $new_access_secret, $new_bearer_token, $new_refresh_token ,$new_pad);
             $stmt->execute();
             $stmt->close();
             $conn->close();
 
             // 登録後にリダイレクト
-            header("Location: user_list.php");
+            header("Location: account_list.php");
             exit;        
         }
 
     }
 }
 
-// ユーザーリストを取得（自分のユーザーを除外）
-$current_userid = $_SESSION['user_id'];
 
-//$stmt = $conn->prepare("SELECT * FROM user_master WHERE id != ?");
-//$stmt->bind_param("s", $current_userid);
-$stmt = $conn->prepare("SELECT * FROM user_master");
+
+$stmt = $conn->prepare("SELECT * FROM account_master WHERE user_id = ?");
+$stmt->bind_param("s", $current_userid);
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -89,7 +102,7 @@ $result = $stmt->get_result();
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>ユーザー一覧</title>
+    <title>Xアカウント一覧</title>
     <link rel="stylesheet" type="text/css" href="./main.css">
     <style>
         .registration-form {
@@ -97,7 +110,8 @@ $result = $stmt->get_result();
             margin-bottom: 20px;
         }
         .registration-form input {
-            margin-right: 10px; /* 各入力欄の間にスペースを設ける */
+            width: 100%; /* 幅を調整 */
+            margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
             padding: 8px;
             font-size: 16px;
         }
@@ -130,17 +144,38 @@ $result = $stmt->get_result();
 
     <!-- コンテンツエリア -->
     <div class="content" id="content">
-   <h2>新規ユーザー登録</h2>
+   <h2>新規Xアカウント登録</h2>
     <form method="POST" action="?" class="registration-form">
-        <input type="text" name="new_username" placeholder="ユーザー名" required>
-        <input type="text" name="new_password" placeholder="パスワード" required>
+    <div class="input-group">
+        <input type="text" name="new_name" placeholder="名前" required>
         <label>
-            <input type="checkbox" name="is_admin"> 管理者
+            <input type="checkbox" name="new_paid"  required>有料アカウント
         </label>
+    </div>
+    <div class="input-group">
+        <input type="text" name="new_login_id" placeholder="ログインID" required>
+        <input type="text" name="new_login_pass" placeholder="ログインパス" required>
+    </div>
+    <div class="input-group">
+        <input type="text" name="new_client_id" placeholder="ClientID" required>
+        <input type="text" name="new_client_secret" placeholder="ClientSecret" required>
+    </div>
+    <div class="input-group">
+        <input type="text" name="new_api_key" placeholder="ApiKey" required>
+        <input type="text" name="new_api_key_secret" placeholder="ApiKeySecret" required>
+    </div>
+    <div class="input-group">
+        <input type="text" name="new_access_token" placeholder="AccessToken" required>
+        <input type="text" name="new_access_secret" placeholder="AccessSecret" required>
+    </div>
+    <div class="input-group">
+        <input type="text" name="new_bearer_token" placeholder="BearerToken" required>
+        <input type="text" name="new_refresh_token" placeholder="RefreshToken" required>
+    </div>
         <button type="submit">登録</button>
     </form>
 
-    <h2>ユーザー一覧</h2>
+    <h2>Xアカウント一覧</h2>
     <form method="GET" style="margin-bottom: 20px;">
         <input type="text" name="search" placeholder="ユーザー名で絞り込み" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
         <button type="submit">検索</button>
@@ -149,25 +184,42 @@ $result = $stmt->get_result();
     <table>
         <thead>
             <tr>
-                <th>ID</th>
-                <th>ユーザー名</th>
-                <th>パスワード</th> <!-- パスワード列 -->
-                <th>管理者</th>
+                <th>名前</th>
+                <th>ログインID</th>
+                <!--
+                <th>ログインパス</th>
+                <th>ClientID</th>
+                <th>ClientSecret</th>
+                <th>ApiKey</th>
+                <th>ApiKeySecret</th>
+                <th>AccessToken</th>
+                <th>AccessTokenSecret</th>
+                <th>BearerToken</th>
+                <th>RefreshToken</th> -->
                 <th>操作</th>
             </tr>
         </thead>
         <tbody>
             <?php while ($row = $result->fetch_assoc()): ?>
             <tr>
-                <td><?php echo htmlspecialchars($row['id']); ?></td>
-                <td><?php echo htmlspecialchars($row['username']); ?></td>
-                <td><?php echo htmlspecialchars($row['password']); ?></td> <!-- プレーンテキストのパスワードを表示 -->
-                <td><?php echo $row['admin'] ? 'はい' : 'いいえ'; ?></td>
+                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                <td><?php echo htmlspecialchars($row['login_id']); ?></td>
+                <!--
+                <td><?php echo htmlspecialchars($row['login_password']); ?></td>
+                <td><?php echo htmlspecialchars($row['client_id']); ?></td>
+                <td><?php echo htmlspecialchars($row['client_secret']); ?></td>
+                <td><?php echo htmlspecialchars($row['api_key']); ?></td>
+                <td><?php echo htmlspecialchars($row['api_key_secret']); ?></td>
+                <td><?php echo htmlspecialchars($row['access_token']); ?></td>
+                <td><?php echo htmlspecialchars($row['access_token_secret']); ?></td>
+                <td><?php echo htmlspecialchars($row['bearer_token']); ?></td>
+                <td><?php echo htmlspecialchars($row['refresh_token']); ?></td> 
+            -->
                 <td>
                     <button onclick="editUser(<?php echo $row['id']; ?>)">編集</button>
                     <form class="button_form" method="POST" action="?">
                     <input type="hidden" name="type" value="user_del">
-                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']) ?>">
+                    <input type="hidden" name="login_id" value="<?php echo htmlspecialchars($row['id']) ?>">
                     <button type="button" onclick="deleteUser(this,<?php echo htmlspecialchars($row['id']) ?>)">削除</button>
                     </form>
                 </td>
@@ -182,8 +234,9 @@ $result = $stmt->get_result();
     <script>
         function editUser(id) {
             // 編集機能の実装（必要に応じて）
-            alert("ユーザー ID " + id + " を編集します。");
-            window.location.href = './user_edit.php?user_id='+id;
+            alert("アカウント ID " + id + " を編集します。");
+//            window.location.href = './user_edit.php?account_id='+id;
+            window.location.href = './account_edit.php?id='+id;
         }
 
         function deleteUser(button,id) {

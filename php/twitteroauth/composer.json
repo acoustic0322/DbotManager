@@ -1,0 +1,11 @@
+{
+    "name": "winserverroot/twitteroauth",
+    "autoload": {
+        "psr-4": {
+            "Winserverroot\\Twitteroauth\\": "src/"
+        }
+    },
+    "require": {
+        "abraham/twitteroauth": "^7.0"
+    }
+}
