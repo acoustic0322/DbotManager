@@ -37,7 +37,7 @@ namespace DbotManager
 
         private WebCommand _webCommand;
 
-
+        List<TweetHistory> _tweetHistoryList;
 
 
         public Form(string[] args)
@@ -219,16 +219,32 @@ namespace DbotManager
 
         private void FillDebugControls_TweetHistory()
         {
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView();
+            _tweetHistoryList = dataAccess.GetTweetHistoryView();
+            UpdateTweetHistoryFilter();
 
-            if (tweetHistoryList != null)
+        }
+
+        private void UpdateTweetHistoryFilter()
+        {
+            if (_tweetHistoryList != null)
             {
-                dataGridViewTweetHistory.DataSource = tweetHistoryList;
+                if (string.IsNullOrEmpty(textBoxSearchHistoryAccountId.Text))
+                {
+                    dataGridViewTweetHistory.DataSource = _tweetHistoryList;
+                }
+                else
+                {
+                    int historyAccountId;
+                    int.TryParse(textBoxSearchHistoryAccountId.Text, out historyAccountId);
+                    dataGridViewTweetHistory.DataSource = _tweetHistoryList.Where(x => x.AccountId == historyAccountId).ToList();
+                }
+
             }
             else
             {
                 MessageBox.Show("データを取得できませんでした。");
             }
+
         }
 
         private void FillDebugControls_AccountMaster()
@@ -630,6 +646,12 @@ namespace DbotManager
             FillDebugControls_TweetHistory();
         }
 
+        private void textBoxSearchHistoryAccountId_TextChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            UpdateTweetHistoryFilter();
+        }
+
         private void buttonものまね_Click(object sender, EventArgs e)
         {
             /*
@@ -676,5 +698,7 @@ namespace DbotManager
 //            _tweetTask.TweetProc()
             */
         }
+
+
     }
 }

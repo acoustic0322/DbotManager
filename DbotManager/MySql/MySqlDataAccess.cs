@@ -43,21 +43,28 @@ public class MySqlDataAccess
                     {
                         while (reader.Read())
                         {
-                            TweetHistory tweetHistory = new TweetHistory
+                            try
                             {
-                                UserName = reader["user_name"].ToString(),
-                                AccountId = int.Parse(reader["account_id"].ToString()),
-                                AccountName = reader["account_name"].ToString(),
-                                Paid = reader["paid"].ToString() == "1",
-                                Comment = reader["comment"].ToString(),
-                                Mode = GetTweetProcType(reader["mode"].ToString()),
-                                TargetTweetID = reader["target_tweet_id"].ToString(),
-                                Result = reader["result"].ToString() == "1",
-                                ErrorLog = reader["error_log"].ToString(),
-                                UpdateTime = Convert.ToDateTime(reader["updatetime"])
-                            };
+                                TweetHistory tweetHistory = new TweetHistory
+                                {
+                                    UserName = reader["user_name"].ToString(),
+                                    AccountId = int.Parse(reader["account_id"].ToString()),
+                                    AccountName = reader["account_name"].ToString(),
+                                    Paid = reader["paid"].ToString() == "1",
+                                    Comment = reader["comment"].ToString(),
+                                    Mode = GetTweetProcType(reader["mode"].ToString()),
+                                    TargetTweetID = reader["target_tweet_id"].ToString(),
+                                    Result = reader["result"].ToString() == "1",
+                                    ErrorLog = reader["error_log"].ToString(),
+                                    UpdateTime = Convert.ToDateTime(reader["updatetime"])
+                                };
 
-                            tweetHistoryList.Add(tweetHistory);
+                                tweetHistoryList.Add(tweetHistory);
+                            }
+                            catch(Exception ex)
+                            {
+                                Console.WriteLine("エラーが発生しました: " + ex.Message);
+                            }
                         }
                     }
                 }

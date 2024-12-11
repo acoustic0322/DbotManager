@@ -65,6 +65,7 @@
             this.textBoxいいね件数 = new System.Windows.Forms.TextBox();
             this.checkBoxいいね = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.checkBoxDuplicate = new System.Windows.Forms.CheckBox();
             this.comboBoxUserMaster = new System.Windows.Forms.ComboBox();
             this.checkBoxUserID = new System.Windows.Forms.CheckBox();
             this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
@@ -90,7 +91,8 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.checkBoxDuplicate = new System.Windows.Forms.CheckBox();
+            this.textBoxSearchHistoryAccountId = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -484,6 +486,18 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "基本設定";
             // 
+            // checkBoxDuplicate
+            // 
+            this.checkBoxDuplicate.AutoSize = true;
+            this.checkBoxDuplicate.Checked = true;
+            this.checkBoxDuplicate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxDuplicate.Location = new System.Drawing.Point(344, 90);
+            this.checkBoxDuplicate.Name = "checkBoxDuplicate";
+            this.checkBoxDuplicate.Size = new System.Drawing.Size(157, 23);
+            this.checkBoxDuplicate.TabIndex = 9;
+            this.checkBoxDuplicate.Text = "モード重複を許容する";
+            this.checkBoxDuplicate.UseVisualStyleBackColor = true;
+            // 
             // comboBoxUserMaster
             // 
             this.comboBoxUserMaster.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -640,6 +654,8 @@
             // 
             // tabPage履歴
             // 
+            this.tabPage履歴.Controls.Add(this.label1);
+            this.tabPage履歴.Controls.Add(this.textBoxSearchHistoryAccountId);
             this.tabPage履歴.Controls.Add(this.button履歴再取得);
             this.tabPage履歴.Controls.Add(this.dataGridViewTweetHistory);
             this.tabPage履歴.Location = new System.Drawing.Point(4, 28);
@@ -698,6 +714,9 @@
             // 
             // textBoxRenew
             // 
+            this.textBoxRenew.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxRenew.Font = new System.Drawing.Font("Meiryo UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.textBoxRenew.Location = new System.Drawing.Point(804, 42);
             this.textBoxRenew.Multiline = true;
@@ -708,7 +727,7 @@
             // 
             // buttonクリアlog
             // 
-            this.buttonクリアlog.Location = new System.Drawing.Point(804, 12);
+            this.buttonクリアlog.Location = new System.Drawing.Point(804, 8);
             this.buttonクリアlog.Name = "buttonクリアlog";
             this.buttonクリアlog.Size = new System.Drawing.Size(103, 28);
             this.buttonクリアlog.TabIndex = 4;
@@ -719,7 +738,7 @@
             // buttonアカウント設定
             // 
             this.buttonアカウント設定.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonアカウント設定.Location = new System.Drawing.Point(1317, 12);
+            this.buttonアカウント設定.Location = new System.Drawing.Point(1333, 8);
             this.buttonアカウント設定.Name = "buttonアカウント設定";
             this.buttonアカウント設定.Size = new System.Drawing.Size(106, 28);
             this.buttonアカウント設定.TabIndex = 10;
@@ -727,17 +746,22 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // checkBoxDuplicate
+            // textBoxSearchHistoryAccountId
             // 
-            this.checkBoxDuplicate.AutoSize = true;
-            this.checkBoxDuplicate.Checked = true;
-            this.checkBoxDuplicate.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxDuplicate.Location = new System.Drawing.Point(344, 90);
-            this.checkBoxDuplicate.Name = "checkBoxDuplicate";
-            this.checkBoxDuplicate.Size = new System.Drawing.Size(157, 23);
-            this.checkBoxDuplicate.TabIndex = 9;
-            this.checkBoxDuplicate.Text = "モード重複を許容する";
-            this.checkBoxDuplicate.UseVisualStyleBackColor = true;
+            this.textBoxSearchHistoryAccountId.Location = new System.Drawing.Point(692, 11);
+            this.textBoxSearchHistoryAccountId.Name = "textBoxSearchHistoryAccountId";
+            this.textBoxSearchHistoryAccountId.Size = new System.Drawing.Size(61, 27);
+            this.textBoxSearchHistoryAccountId.TabIndex = 6;
+            this.textBoxSearchHistoryAccountId.TextChanged += new System.EventHandler(this.textBoxSearchHistoryAccountId_TextChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(571, 14);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(115, 19);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "AccountID絞込";
             // 
             // Form
             // 
@@ -772,6 +796,7 @@
             this.tabPage予約.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewReserveSchedule)).EndInit();
             this.tabPage履歴.ResumeLayout(false);
+            this.tabPage履歴.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).EndInit();
             this.tabPage1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -844,6 +869,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.CheckBox checkBoxDuplicate;
+        private System.Windows.Forms.TextBox textBoxSearchHistoryAccountId;
+        private System.Windows.Forms.Label label1;
     }
 }
 
