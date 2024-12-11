@@ -1,6 +1,7 @@
 ﻿using DbotManager.Table;
 using MySqlX.XDevAPI.Common;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -154,7 +155,11 @@ namespace DbotManager
             {
                 if (selectedLike.Count < likeCount)
                 {
-                    var candidate = SelectRandomNonExcluded(likeList, selectedLike, excludedIds, random);
+                    List<AccountMaster> 除外list = new List<AccountMaster>();
+                    除外list.AddRange(selectedLike);           // 自モードに追加済のアカウントを除外
+                    除外list.AddRange(selectedReply);          // リプライといいねモードの共存は不可
+
+                    var candidate = SelectRandomNonExcluded(likeList, 除外list, excludedIds, random);
                     if (candidate != null) // 候補が見つかれば追加
                     {
                         selectedLike.Add(candidate);
@@ -164,7 +169,12 @@ namespace DbotManager
 
                 if (selectedReply.Count < replyCount)
                 {
-                    var candidate = SelectRandomNonExcluded(replyList, selectedReply, excludedIds, random);
+                    List<AccountMaster> 除外list = new List<AccountMaster>();
+                    除外list.AddRange(selectedReply);         // 自モードに追加済のアカウントを除外
+                    除外list.AddRange(selectedLike);          // リプライといいねモードの共存は不可
+                    除外list.AddRange(selectedBookmark);      // リプライとブックマークモードの共存は不可
+
+                    var candidate = SelectRandomNonExcluded(replyList, 除外list, excludedIds, random);
                     if (candidate != null) // 候補が見つかれば追加
                     {
                         selectedReply.Add(candidate);
@@ -174,7 +184,11 @@ namespace DbotManager
 
                 if (selectedBookmark.Count < bookmarkCount)
                 {
-                    var candidate = SelectRandomNonExcluded(bookmarkList, selectedBookmark, excludedIds, random);
+                    List<AccountMaster> 除外list = new List<AccountMaster>();
+                    除外list.AddRange(selectedBookmark);           // 自モードに追加済のアカウントを除外
+                    除外list.AddRange(selectedReply);          // リプライといいねモードの共存は不可
+
+                    var candidate = SelectRandomNonExcluded(bookmarkList, 除外list, excludedIds, random);
                     if (candidate != null)
                     {
                         selectedBookmark.Add(candidate);

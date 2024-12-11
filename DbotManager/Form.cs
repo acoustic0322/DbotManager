@@ -379,7 +379,7 @@ namespace DbotManager
                         UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
                     });
                 }
-                dataGridViewいいね.DataSource = list;
+                dataGridViewいいね.DataSource = list.OrderBy(x => x.ID).ToList();
                 labelいいね件数.Text = $"({list.Count}件)";
             }
 
@@ -407,7 +407,7 @@ namespace DbotManager
                         Media = photoName + movieName
                     }) ;
                 }
-                dataGridViewリプライ.DataSource = list;
+                dataGridViewリプライ.DataSource = list.OrderBy(x => x.ID).ToList();
                 labelリプライ.Text = $"({list.Count}件)";
             }
 
@@ -422,7 +422,7 @@ namespace DbotManager
                         UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
                     });
                 }
-                dataGridViewブックマーク.DataSource = list;
+                dataGridViewブックマーク.DataSource = list.OrderBy(x => x.ID).ToList();
                 labelブックマーク件数.Text = $"({list.Count}件)";
             }
 
@@ -437,7 +437,7 @@ namespace DbotManager
                         UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
                     });
                 }
-                dataGridViewリポスト.DataSource = list;
+                dataGridViewリポスト.DataSource = list.OrderBy(x => x.ID).ToList();
                 labelリポスト件数.Text = $"({list.Count}件)";
             }
         }
