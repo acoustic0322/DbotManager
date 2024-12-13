@@ -261,13 +261,6 @@ namespace DbotManager
 
             foreach (var account in accountMasterList)
             {
-                /*
-                if(account.Id == 76)
-                {
-                    int a = 1;
-                }
-                */
-
                 // 無効アカウントはスルー
                 if (!account.Enable) continue;
 
@@ -292,9 +285,10 @@ namespace DbotManager
                 // 対象ツイートIDで処理済みの場合はスルー
                 if (myHistory.Where(x => x.TargetTweetID == TargetTweetID).Count() > 0) continue;
 
-                var lastMyHistoryList = myHistory.OrderByDescending(x => x.UpdateTime).ToList();
+                var lastMyHistoryList = myHistory.Where(x => x.AccountId == account.Id).OrderByDescending(x => x.UpdateTime).ToList();
                 if (lastMyHistoryList.Count() > 0)
                 {
+#if false           // 最期と同じ処理に制限かけるのを保留
                     // 最期の処理が同じだった場合はスルー
                     if (lastMyHistoryList.FirstOrDefault().Mode == tweetProcType)
                     {
@@ -304,7 +298,7 @@ namespace DbotManager
                             continue;
                         }
                     }
-
+#endif
                     // 無料アカウントは制限時間内の取引を中止
                     if (制限時間以内に履歴ありの無料アカウントを排除)
                     {
