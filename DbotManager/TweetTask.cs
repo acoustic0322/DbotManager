@@ -288,7 +288,7 @@ namespace DbotManager
                 var lastMyHistoryList = myHistory.Where(x => x.AccountId == account.Id).OrderByDescending(x => x.UpdateTime).ToList();
                 if (lastMyHistoryList.Count() > 0)
                 {
-#if false           // 最期と同じ処理に制限かけるのを保留
+#if false           // 最後と同じ処理に制限かけるのを保留
                     // 最期の処理が同じだった場合はスルー
                     if (lastMyHistoryList.FirstOrDefault().Mode == tweetProcType)
                     {
