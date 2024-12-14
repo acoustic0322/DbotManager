@@ -28,6 +28,7 @@ namespace DbotManager
 
         private CommentDialog _commentDialog;
 
+        private CheckAccountDialog _checkAccountDialog;
 
         #endregion
 
@@ -245,6 +246,15 @@ namespace DbotManager
                     _commentDialog.UpdateInfo(0, int.Parse(textBoxAccountID.Text) , GetUserId());
                 }
             }
+
+            if (_checkAccountDialog != null && !_checkAccountDialog.IsDisposed)
+            {
+                var selectedRow = dataGridViewAccount.CurrentRow;
+                if (selectedRow != null)
+                {
+                    _checkAccountDialog.UpdateInfo(0, int.Parse(textBoxAccountID.Text), GetUserId());
+                }
+            }
         }
 
         private void buttonアカウント追加_Click(object sender, EventArgs e)
@@ -434,5 +444,21 @@ namespace DbotManager
             }
         }
         #endregion
+
+        private void button監視設定_Click(object sender, EventArgs e)
+        {
+            // ダイアログが未作成または破棄されている場合に新しいダイアログを作成
+            if (_checkAccountDialog == null || _checkAccountDialog.IsDisposed)
+            {
+                _checkAccountDialog = new CheckAccountDialog(dbConnection);
+                _checkAccountDialog.Show();
+                _checkAccountDialog.UpdateInfo(0, int.Parse(textBoxAccountID.Text), GetUserId());
+            }
+            else
+            {
+                // 既に開いている場合はフォーカスを移動
+                _checkAccountDialog.Focus();
+            }
+        }
     }
 }

@@ -22,6 +22,16 @@ namespace DbotManager
         GET_ACCESSTOKEN,
         GET_REFRESHTOKEN,
         MONOMANE,
+        NONE,
+        CHECK,
+        CHECKREP
+    }
+
+    public enum CheckAccountModes
+    {
+        監視,
+        監視toReply,
+        ものまね,
         NONE
     }
 

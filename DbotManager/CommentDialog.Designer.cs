@@ -36,6 +36,8 @@
             this.CommentMaster_ChatGpt = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.CommentMaster_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.checkBoxMovie = new System.Windows.Forms.CheckBox();
+            this.checkBoxPhoto = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.comboBox動画 = new System.Windows.Forms.ComboBox();
             this.comboBox画像 = new System.Windows.Forms.ComboBox();
@@ -57,8 +59,6 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
-            this.checkBoxPhoto = new System.Windows.Forms.CheckBox();
-            this.checkBoxMovie = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).BeginInit();
             this.groupBox6.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -157,6 +157,28 @@
             this.groupBox6.TabIndex = 6;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "コメント設定";
+            // 
+            // checkBoxMovie
+            // 
+            this.checkBoxMovie.AutoSize = true;
+            this.checkBoxMovie.Location = new System.Drawing.Point(265, 32);
+            this.checkBoxMovie.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBoxMovie.Name = "checkBoxMovie";
+            this.checkBoxMovie.Size = new System.Drawing.Size(58, 23);
+            this.checkBoxMovie.TabIndex = 41;
+            this.checkBoxMovie.Text = "動画";
+            this.checkBoxMovie.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxPhoto
+            // 
+            this.checkBoxPhoto.AutoSize = true;
+            this.checkBoxPhoto.Location = new System.Drawing.Point(196, 32);
+            this.checkBoxPhoto.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.checkBoxPhoto.Name = "checkBoxPhoto";
+            this.checkBoxPhoto.Size = new System.Drawing.Size(58, 23);
+            this.checkBoxPhoto.TabIndex = 40;
+            this.checkBoxPhoto.Text = "画像";
+            this.checkBoxPhoto.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
@@ -381,28 +403,6 @@
             this.textBoxUrlTweetID.Name = "textBoxUrlTweetID";
             this.textBoxUrlTweetID.Size = new System.Drawing.Size(502, 27);
             this.textBoxUrlTweetID.TabIndex = 24;
-            // 
-            // checkBoxPhoto
-            // 
-            this.checkBoxPhoto.AutoSize = true;
-            this.checkBoxPhoto.Location = new System.Drawing.Point(196, 32);
-            this.checkBoxPhoto.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBoxPhoto.Name = "checkBoxPhoto";
-            this.checkBoxPhoto.Size = new System.Drawing.Size(58, 23);
-            this.checkBoxPhoto.TabIndex = 40;
-            this.checkBoxPhoto.Text = "画像";
-            this.checkBoxPhoto.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxMovie
-            // 
-            this.checkBoxMovie.AutoSize = true;
-            this.checkBoxMovie.Location = new System.Drawing.Point(265, 32);
-            this.checkBoxMovie.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBoxMovie.Name = "checkBoxMovie";
-            this.checkBoxMovie.Size = new System.Drawing.Size(58, 23);
-            this.checkBoxMovie.TabIndex = 41;
-            this.checkBoxMovie.Text = "動画";
-            this.checkBoxMovie.UseVisualStyleBackColor = true;
             // 
             // CommentDialog
             // 

@@ -87,6 +87,9 @@ public class MySqlDataAccess
         else if (value == "reply") return TweetProcTypes.REPLY;
         else if (value == "get_access_token") return TweetProcTypes.GET_ACCESSTOKEN;
         else if (value == "get_refresh_token") return TweetProcTypes.GET_REFRESHTOKEN;
+        else if (value == "check" || value == "CHECK") return TweetProcTypes.CHECK;
+        else if (value == "checkrep" || value == "CHECKREP") return TweetProcTypes.CHECKREP;
+        else if (value == "monomane" || value == "MONOMANE") return TweetProcTypes.MONOMANE;
 
         return TweetProcTypes.NONE;
     }
@@ -411,6 +414,162 @@ public class MySqlDataAccess
 
 
     #endregion
+
+    #region CheckAccountList
+
+    public int InsertCheckAccountList(CheckAccountList account)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                INSERT INTO check_account_list 
+                (
+                    account_id, enable, mode, check_account
+                )
+                VALUES 
+                (@AccountId, @Enable, @Mode, @CheckAccount
+                );
+                SELECT LAST_INSERT_ID(); ";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+//                    command.Parameters.AddWithValue("@Id", account.Id);
+                    command.Parameters.AddWithValue("@AccountId", account.AccountId);
+                    command.Parameters.AddWithValue("@Enable", account.Enable ? "1" : "0");
+                    command.Parameters.AddWithValue("@Mode", account.Mode.ToString());
+                    command.Parameters.AddWithValue("@CheckAccount", account.CheckAccount);
+
+                    //                    command.ExecuteNonQuery();
+                    int insertedId = Convert.ToInt32(command.ExecuteScalar());
+                    return insertedId;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+
+            return -1;
+        }
+    }
+
+    public List<CheckAccountList> GetCheckAccountList()
+    {
+        List<CheckAccountList> checkAccountList = new List<CheckAccountList>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"SELECT id ,account_id, enable, mode, check_account
+                    FROM check_account_list
+                    ";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            CheckAccountList accountItem = new CheckAccountList()
+                            {
+                                Id = int.Parse(reader["id"].ToString()),
+                                AccountId = int.Parse(reader["account_id"].ToString()),
+                                Mode = GetTweetProcType(reader["mode"].ToString()),
+                                CheckAccount = reader["check_account"].ToString(),
+                                Enable = reader["enable"].ToString() == "1",
+                            };
+
+                            checkAccountList.Add(accountItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return checkAccountList;
+    }
+
+    public void UpdateCheckAccountList(CheckAccountList account)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                UPDATE check_account_list 
+                SET account_id = @AccountId, 
+                    enable = @Enable, 
+                    mode = @Mode, 
+                    check_account = @CheckAccount 
+                WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", account.Id);
+                    command.Parameters.AddWithValue("@AccountId", account.AccountId);
+                    command.Parameters.AddWithValue("@Enable", account.Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Mode", account.Mode);
+                    command.Parameters.AddWithValue("@CheckAccount", account.CheckAccount);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+    public bool DeleteCheckAccountList(int id)
+    {
+        bool isDeleted = false;
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = "DELETE FROM check_account_list WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    // 削除された行数が1以上で成功とみなす
+                    isDeleted = rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return isDeleted;
+    }
+
+
+
+    #endregion
+
 
     #region CommentMaster
 

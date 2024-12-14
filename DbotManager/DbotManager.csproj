@@ -104,6 +104,12 @@
     <Compile Include="AccountDialog.Designer.cs">
       <DependentUpon>AccountDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="CheckAccountDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CheckAccountDialog.Designer.cs">
+      <DependentUpon>CheckAccountDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Entity\WebCommand.cs" />
     <Compile Include="MySql\DbConnectionInfo.cs" />
     <Compile Include="ReserveRegistrationDialog.cs">
@@ -128,6 +134,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SupportUtil.cs" />
+    <Compile Include="Table\CheckAccountList.cs" />
     <Compile Include="Table\AccountMaster.cs" />
     <Compile Include="Table\CommentMaster.cs" />
     <Compile Include="Table\MediaMaster.cs" />
@@ -139,6 +146,9 @@
     <Compile Include="TweetTask.cs" />
     <EmbeddedResource Include="AccountDialog.resx">
       <DependentUpon>AccountDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CheckAccountDialog.resx">
+      <DependentUpon>CheckAccountDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="CommentDialog.resx">
       <DependentUpon>CommentDialog.cs</DependentUpon>

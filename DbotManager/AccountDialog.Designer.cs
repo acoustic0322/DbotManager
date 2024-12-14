@@ -120,6 +120,7 @@
             this.buttonいいね_Debug = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBoxRenew = new System.Windows.Forms.TextBox();
+            this.button監視設定 = new System.Windows.Forms.Button();
             this.groupBox6.SuspendLayout();
             this.groupBox7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAccount)).BeginInit();
@@ -128,6 +129,7 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.button監視設定);
             this.groupBox6.Controls.Add(this.checkBox有料APIブックマーク);
             this.groupBox6.Controls.Add(this.checkBox有料APIいいね);
             this.groupBox6.Controls.Add(this.checkBoxリプライ);
@@ -1244,6 +1246,17 @@
             this.textBoxRenew.Size = new System.Drawing.Size(596, 67);
             this.textBoxRenew.TabIndex = 21;
             // 
+            // button監視設定
+            // 
+            this.button監視設定.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button監視設定.Location = new System.Drawing.Point(120, 498);
+            this.button監視設定.Name = "button監視設定";
+            this.button監視設定.Size = new System.Drawing.Size(106, 33);
+            this.button監視設定.TabIndex = 39;
+            this.button監視設定.Text = "監視設定";
+            this.button監視設定.UseVisualStyleBackColor = true;
+            this.button監視設定.Click += new System.EventHandler(this.button監視設定_Click);
+            // 
             // AccountDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1365,5 +1378,6 @@
         private System.Windows.Forms.CheckBox checkBox有料APIブックマーク;
         private System.Windows.Forms.CheckBox checkBox有料APIいいね;
         private System.Windows.Forms.CheckBox checkBox有料;
+        private System.Windows.Forms.Button button監視設定;
     }
 }
