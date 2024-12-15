@@ -252,7 +252,7 @@ namespace DbotManager
                 var selectedRow = dataGridViewAccount.CurrentRow;
                 if (selectedRow != null)
                 {
-                    _checkAccountDialog.UpdateInfo(0, int.Parse(textBoxAccountID.Text), GetUserId());
+                    _checkAccountDialog.UpdateInfo(false, int.Parse(textBoxAccountID.Text), GetUserId());
                 }
             }
         }
@@ -452,7 +452,7 @@ namespace DbotManager
             {
                 _checkAccountDialog = new CheckAccountDialog(dbConnection);
                 _checkAccountDialog.Show();
-                _checkAccountDialog.UpdateInfo(0, int.Parse(textBoxAccountID.Text), GetUserId());
+                _checkAccountDialog.UpdateInfo(false, int.Parse(textBoxAccountID.Text), GetUserId());
             }
             else
             {

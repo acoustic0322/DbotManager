@@ -501,7 +501,7 @@ public class MySqlDataAccess
         return checkAccountList;
     }
 
-    public void UpdateCheckAccountList(CheckAccountList account)
+    public void UpdateCheckAccountList(CheckAccountList item)
     {
         using (MySqlConnection connection = new MySqlConnection(connectionString))
         {
@@ -519,11 +519,11 @@ public class MySqlDataAccess
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Id", account.Id);
-                    command.Parameters.AddWithValue("@AccountId", account.AccountId);
-                    command.Parameters.AddWithValue("@Enable", account.Enable ? 1 : 0);
-                    command.Parameters.AddWithValue("@Mode", account.Mode);
-                    command.Parameters.AddWithValue("@CheckAccount", account.CheckAccount);
+                    command.Parameters.AddWithValue("@Id", item.Id);
+                    command.Parameters.AddWithValue("@AccountId", item.AccountId);
+                    command.Parameters.AddWithValue("@Enable", item.Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Mode", item.Mode.ToString());
+                    command.Parameters.AddWithValue("@CheckAccount", item.CheckAccount);
 
                     command.ExecuteNonQuery();
                 }

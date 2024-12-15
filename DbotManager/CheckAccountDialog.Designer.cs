@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.dataGridViewComment = new System.Windows.Forms.DataGridView();
+            this.dataGridViewCheckAccount = new System.Windows.Forms.DataGridView();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.textBoxId = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -50,32 +50,32 @@
             this.CommentMaster_AccountId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.CommentMaster_Enable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.CommentMaster_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewCheckAccount)).BeginInit();
             this.groupBox6.SuspendLayout();
             this.SuspendLayout();
             // 
             // dataGridViewComment
             // 
-            this.dataGridViewComment.AllowUserToAddRows = false;
-            this.dataGridViewComment.AllowUserToDeleteRows = false;
-            this.dataGridViewComment.AllowUserToResizeRows = false;
-            this.dataGridViewComment.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewComment.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewCheckAccount.AllowUserToAddRows = false;
+            this.dataGridViewCheckAccount.AllowUserToDeleteRows = false;
+            this.dataGridViewCheckAccount.AllowUserToResizeRows = false;
+            this.dataGridViewCheckAccount.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewCheckAccount.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.CommentMaster_Id,
             this.CommentMaster_UserId,
             this.CommentMaster_AccountId,
             this.CommentMaster_Enable,
             this.CommentMaster_Comment});
-            this.dataGridViewComment.Location = new System.Drawing.Point(13, 37);
-            this.dataGridViewComment.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.dataGridViewComment.MultiSelect = false;
-            this.dataGridViewComment.Name = "dataGridViewComment";
-            this.dataGridViewComment.RowHeadersVisible = false;
-            this.dataGridViewComment.RowTemplate.Height = 21;
-            this.dataGridViewComment.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewComment.Size = new System.Drawing.Size(617, 272);
-            this.dataGridViewComment.TabIndex = 5;
-            this.dataGridViewComment.SelectionChanged += new System.EventHandler(this.dataGridViewComment_SelectionChanged);
+            this.dataGridViewCheckAccount.Location = new System.Drawing.Point(13, 37);
+            this.dataGridViewCheckAccount.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.dataGridViewCheckAccount.MultiSelect = false;
+            this.dataGridViewCheckAccount.Name = "dataGridViewComment";
+            this.dataGridViewCheckAccount.RowHeadersVisible = false;
+            this.dataGridViewCheckAccount.RowTemplate.Height = 21;
+            this.dataGridViewCheckAccount.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridViewCheckAccount.Size = new System.Drawing.Size(617, 272);
+            this.dataGridViewCheckAccount.TabIndex = 5;
+            this.dataGridViewCheckAccount.SelectionChanged += new System.EventHandler(this.dataGridViewComment_SelectionChanged);
             // 
             // groupBox6
             // 
@@ -304,7 +304,7 @@
             this.Controls.Add(this.radioButton監視toReply);
             this.Controls.Add(this.radioButton監視);
             this.Controls.Add(this.groupBox6);
-            this.Controls.Add(this.dataGridViewComment);
+            this.Controls.Add(this.dataGridViewCheckAccount);
             this.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
@@ -312,7 +312,7 @@
             this.Name = "CheckAccountDialog";
             this.Text = "CommentRegistrationDialog";
             this.Load += new System.EventHandler(this.CommentDialog_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewCheckAccount)).EndInit();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
             this.ResumeLayout(false);
@@ -322,7 +322,7 @@
 
         #endregion
 
-        private System.Windows.Forms.DataGridView dataGridViewComment;
+        private System.Windows.Forms.DataGridView dataGridViewCheckAccount;
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.Button buttonコメント保存;
         private System.Windows.Forms.Button buttonコメント追加;

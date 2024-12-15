@@ -49,15 +49,15 @@ namespace DbotManager
             _isLoading = false;
         }
 
-        private void ReadCheckAccountList(int commentId = 0)
+        private void ReadCheckAccountList(int checkId = 0)
         {
-            _isLoading = true;
+//            _isLoading = true;
             _checkAccountList = dataAccess.GetCheckAccountList();
             _accountMasterList = dataAccess.GetAccountMaster();
 
-            dataGridViewComment.DataSource = _checkAccountList.Where(x => x.AccountId == AccountId).ToList();
-            UpdateInfo(commentId ,AccountId , UserId);
-            _isLoading = false;
+//            dataGridViewCheckAccount.DataSource = _checkAccountList.Where(x => x.AccountId == AccountId).ToList();
+            UpdateInfo(true ,AccountId , UserId);
+//            _isLoading = false;
         }
 
         #endregion
@@ -67,9 +67,9 @@ namespace DbotManager
         {
             if (_isLoading) return;
 
-            if (dataGridViewComment.CurrentCell != null)
+            if (dataGridViewCheckAccount.CurrentCell != null)
             {
-                var commentId = int.Parse(dataGridViewComment.CurrentRow.Cells[CommentMaster_Id.Name].Value.ToString());
+                var commentId = int.Parse(dataGridViewCheckAccount.CurrentRow.Cells[CommentMaster_Id.Name].Value.ToString());
                 FillControl_CommentInfo(commentId);
             }
         }
@@ -159,7 +159,7 @@ namespace DbotManager
         #endregion
 
         #region 画面更新
-        public void UpdateInfo(int commentId = 0, int accountId = 0 , int userId = 0)
+        public void UpdateInfo(bool reSelect = true, int accountId = 0 , int userId = 0)
         {
             if(accountId != 0)
             {
@@ -178,11 +178,12 @@ namespace DbotManager
                     list = list.Where(x => x.Mode == TweetProcTypes.MONOMANE).ToList();
                 }
 
-                dataGridViewComment.DataSource = list;
+                dataGridViewCheckAccount.DataSource = list;
 
-                if(commentId != 0)
+                if(reSelect)
                 {
-                    SupportUtil.SelectRowsByColumnValue(dataGridViewComment, CommentMaster_Id.Name, commentId);
+                    var id = list.FirstOrDefault().Id;
+                    SupportUtil.SelectRowsByColumnValue(dataGridViewCheckAccount, CommentMaster_Id.Name, id);
                 }
 
                 var accountName = _accountMasterList.Where(x => x.Id == accountId).FirstOrDefault().Name;
@@ -206,9 +207,9 @@ namespace DbotManager
             else
             {
                 // DataGridViewの先頭行を選択
-                dataGridViewComment.ClearSelection(); // 一度選択をクリア
-                if (dataGridViewComment.Rows.Count > 1)
-                    dataGridViewComment.Rows[0].Selected = true; // 先頭行を選択
+                dataGridViewCheckAccount.ClearSelection(); // 一度選択をクリア
+                if (dataGridViewCheckAccount.Rows.Count > 1)
+                    dataGridViewCheckAccount.Rows[0].Selected = true; // 先頭行を選択
             }
 
             if(userId != 0)
