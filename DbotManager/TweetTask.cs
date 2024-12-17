@@ -45,6 +45,10 @@ namespace DbotManager
         {
             this.logAction = logAction;
             dbConnectin = dbConnection;
+
+            CheckAccountList_監視 = new List<CheckAccountList>();
+            CheckAccountList_監視toRep = new List<CheckAccountList>();
+            CheckAccountList_モノマネ = new List<CheckAccountList>();
         }
 
 
@@ -58,6 +62,13 @@ namespace DbotManager
         public bool ReplyEnable { get; set; }
         public bool DuplicateEnable { get; set; }
 
+        public bool 監視Enable { get; set; }
+        public bool 監視toRepEnable { get; set; }
+        public bool モノマネEnable { get; set; }
+        public int 周期秒数_監視 { get; set; }
+        public int 周期秒数_監視toRep { get; set; }
+        public int 周期秒数_モノマネ { get; set; }
+
         public int 件数 { get; set; }
         public string TargetTweetID { get; set; }
         public bool 制限時間以内に履歴ありの無料アカウントを排除 { get; set; }
@@ -66,12 +77,18 @@ namespace DbotManager
         public List<AccountMaster> BookmarkAccountList { get; set; }
         public List<AccountMaster> RepostAccountList { get; set; }
         public List<AccountMaster> ReplyAccountList { get; set; }
+
+        public List<CheckAccountList> CheckAccountList_監視 { get; set; }
+        public List<CheckAccountList> CheckAccountList_監視toRep { get; set; }
+        public List<CheckAccountList> CheckAccountList_モノマネ { get; set; }
+
+
         public int いいね件数 { get; set; }
         public int ブックマーク件数 { get; set; }
         public int リポスト件数 { get; set; }
         public int リプライ件数 { get; set; }
 
-        public void StartTask()
+        public void Exe_一括処理()
         {
             int maxLength = Math.Max(ReplyAccountList.Count,
                             Math.Max(LikeAccountList.Count,
@@ -110,7 +127,7 @@ namespace DbotManager
         }
 
 
-        public void InitAccountList()
+        public void Init一括処理list()
         {
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
@@ -138,6 +155,72 @@ namespace DbotManager
             ReplyAccountList = selectedItems.Item2;
             BookmarkAccountList = selectedItems.Item3;
             RepostAccountList = selectedItems.Item4;
+        }
+
+
+        public void Init監視list()
+        {
+            // MySQLデータアクセスの初期化
+            var dataAccess = new MySqlDataAccess(dbConnectin);
+
+            List<UserMaster> userMasterList = dataAccess.GetUserMaster().Where(x => x.PostEnable && x.Enable).ToList();
+            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster()
+                .Where(x => x.PostEnable && x.Enable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
+
+            List<CheckAccountList> list = dataAccess.GetCheckAccountList()
+                .Where(x => x.Enable && accountMasterList.Any(y => y.Id == x.AccountId)).ToList();
+
+            var 監視toReplist = list.Where(x => x.Mode == TweetProcTypes.CHECKREP).ToList();
+            var モノマネlist = list.Where(x => x.Mode == TweetProcTypes.MONOMANE).ToList();
+
+            if(監視Enable)
+            {
+                var 監視list = list.Where(x => x.Mode == TweetProcTypes.CHECK).ToList();
+                var 監視group = 監視list.GroupBy(x => x.CheckAccount);
+
+                List<CheckAccountList> listWk = new List<CheckAccountList>();
+
+                foreach(var gp in 監視group)
+                {
+                    DateTime? sinceDateTime = null;
+                    if(CheckAccountList_監視.Where(x => x.CheckAccount == gp.FirstOrDefault().CheckAccount).Count() > 0)
+                    {
+                        sinceDateTime = CheckAccountList_監視.Where(x => x.CheckAccount == gp.FirstOrDefault().CheckAccount).FirstOrDefault().SinceDatetime;
+                    }
+
+                    CheckAccountList item = new CheckAccountList()
+                    {
+                        AccountId = 0,
+                        CheckAccount = gp.FirstOrDefault().CheckAccount,
+                        Enable = true,
+                        Mode = TweetProcTypes.CHECK,
+                        ExeAccountIdList = gp.Select(x => x.AccountId).ToList(),
+                        ExeAccountNameList = GetNameList(accountMasterList,gp.Select(x => x.AccountId).ToList()),
+
+                        // 実施済の更新日時で更新
+                        SinceDatetime = sinceDateTime
+                    };
+                    listWk.Add(item);
+                }
+                CheckAccountList_監視 = listWk;
+            }
+            else
+            {
+                CheckAccountList_監視.Clear();
+            }
+
+        }
+
+        private string GetNameList(List<AccountMaster> accountMasterList, List<int> list)
+        {
+            string ret = string.Empty;
+
+            foreach(var item in list)
+            {
+                ret += accountMasterList.Where(x => x.Id == item).FirstOrDefault().Name + ",";
+            }
+
+            return ret;
         }
 
         private (List<AccountMaster>, List<AccountMaster>, List<AccountMaster>, List<AccountMaster>) SelectBalancedItems(
@@ -403,11 +486,17 @@ namespace DbotManager
                 case TweetProcTypes.MONOMANE:
                     return "monomane";
                     break;
+                case TweetProcTypes.CHECK:
+                    return "check";
+                    break;
+                case TweetProcTypes.CHECKREP:
+                    return "checkrep";
+                    break;
             }
             return string.Empty;
         }
 
-        public void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)
+        public void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int modeId, string tweetId)
         {
 
 
@@ -417,18 +506,17 @@ namespace DbotManager
             switch (tweetProcType)
             {
                 case TweetProcTypes.POST:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={modeId}";
                     break;
 
                 case TweetProcTypes.LIKE:
                 case TweetProcTypes.BOOKMARK:
                 case TweetProcTypes.REPOST:
-                case TweetProcTypes.MONOMANE:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
 
                 case TweetProcTypes.REPLY:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId} tweet_id={tweetId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={modeId} tweet_id={tweetId}";
                     break;
 
                 case TweetProcTypes.GET_ACCESSTOKEN:
@@ -436,6 +524,12 @@ namespace DbotManager
                     break;
                 case TweetProcTypes.GET_REFRESHTOKEN:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId}";
+                    break;
+
+                case TweetProcTypes.CHECK:
+                case TweetProcTypes.CHECKREP:
+                case TweetProcTypes.MONOMANE:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} check_list_id={modeId}";
                     break;
             }
 
@@ -475,6 +569,12 @@ namespace DbotManager
                 }
 
                 //                process.WaitForExit();
+            }
+
+
+            // pythonの実行結果を受けて次動作を行うモードの実装
+            {
+
             }
 
         }

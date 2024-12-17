@@ -15,5 +15,11 @@ namespace DbotManager.Table
         public string CheckAccount { get; set; }
 
 
+        public List<int> ExeAccountIdList { get; set; }
+        public string ExeAccountNameList { get; set; }
+        public DateTime? SinceDatetime { get; set; }
+
+
+
     }
 }

@@ -702,7 +702,6 @@ def ConvJstTimeZone(dt_utc):
 #    return dt_jst
     return dt_utc_naive
 
-#search_tweet
 def proc_check(credentials , check_list_id ):
     # セッションを作成
     session = requests.Session()
@@ -756,7 +755,6 @@ def proc_check(credentials , check_list_id ):
 
     return False , ""
 
-#search_tweet2
 def proc_checkrep(credentials , check_list_id ):
     # セッションを作成
     session = requests.Session()
@@ -933,7 +931,7 @@ if credentials:
             elif mode == "check":
                 success , error_log = proc_check(credentials , check_list_id )
             elif mode == "checkrep":
-                success , error_log proc_checkrep(credentials , check_list_id )
+                success , error_log = proc_checkrep(credentials , check_list_id )
             elif mode == "monomane":
                 success , error_log = proc_monomane(credentials , account_id )
             else:
@@ -946,12 +944,10 @@ if credentials:
 
             if success == True:
                 save_tweet_history(account_id, comment_id , mode , tweet_id , True , error_log)
-                print(json.dumps({"success": True, "error_log": error_log}))
                 sys.exit(0)
             else:
 #                outputLog(f"エラーが発生しました: {result}", file=sys.stderr)
                 save_tweet_history(account_id, comment_id , mode , tweet_id , False , error_log)
-                print(json.dumps({"success": False, "error_log": error_log}))
                 sys.exit(1)
 #    else:
 #        save_tweet_history(account_id, comment_id , mode , tweet_id , False , verify_message)

@@ -208,7 +208,7 @@ namespace DbotManager
 
                 checkBoxDuplicate.Checked = _webCommand.Duplicate;
 
-                MakeList();
+                MakeList_一括処理();
 
 #if DEBUG
 #else
@@ -250,6 +250,18 @@ namespace DbotManager
 
         private void FillDebugControls_AccountMaster()
         {
+            List<AccountMaster> acciuntList = dataAccess.GetAccountMaster().Where(x => x.Paid).ToList();
+
+            if (acciuntList != null)
+            {
+                comboBox監視実施アカウント.DataSource = acciuntList;
+                comboBox監視実施アカウント.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
+                comboBox監視実施アカウント.ValueMember = "Id";     // 選択されたときに取得するプロパティ
+            }
+            else
+            {
+                MessageBox.Show("アカウント名を取得できませんでした。");
+            }
         }
 
         private void FillDebugControls_UserName()
@@ -261,6 +273,10 @@ namespace DbotManager
                 comboBoxUserMaster.DataSource = userList;
                 comboBoxUserMaster.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
                 comboBoxUserMaster.ValueMember = "Id";     // 選択されたときに取得するプロパティ
+
+                comboBox監視UserMaster.DataSource = userList;
+                comboBox監視UserMaster.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
+                comboBox監視UserMaster.ValueMember = "Id";     // 選択されたときに取得するプロパティ
             }
             else
             {
@@ -281,15 +297,22 @@ namespace DbotManager
             public string Media { get; set; }
         }
 
+        private class 監視アカウントInfo
+        {
+            public string CheckAccountName { get; set; }
+            public string ExeAccountName { get; set; }
+            public DateTime? SinceDatetime { get; set; }
+        }
+
 
         private void buttonMakeList_Click(object sender, EventArgs e)
         {
-            MakeList();
+            MakeList_一括処理();
         }
 
         private void buttonExeList_Click(object sender, EventArgs e)
         {
-            ExeList();
+            Exe一括処理();
         }
 
         private void buttonクリアlog_Click(object sender, EventArgs e)
@@ -345,7 +368,7 @@ namespace DbotManager
         #region TweetTask関連
 
 
-        private void MakeList()
+        private void MakeList_一括処理()
         {
             _tweetTask.いいね件数 = checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0;
             _tweetTask.リプライ件数 = checkBoxリプライ.Checked ? int.Parse(textBoxリプライ件数.Text) : 0;
@@ -363,7 +386,7 @@ namespace DbotManager
 
             _tweetTask.UserId = checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0;
 
-            _tweetTask.InitAccountList();
+            _tweetTask.Init一括処理list();
 
             var userList = dataAccess.GetUserMaster();
             var commentList = dataAccess.GetCommentMaster();
@@ -443,9 +466,9 @@ namespace DbotManager
             }
         }
 
-        private void ExeList()
+        private void Exe一括処理()
         {
-            _tweetTask.StartTask();
+            _tweetTask.Exe_一括処理();
         }
         #endregion
 
@@ -700,6 +723,52 @@ namespace DbotManager
             */
         }
 
+        #region 監視・モノマネ
 
+        private void button監視MakeList_Click(object sender, EventArgs e)
+        {
+            MakeList_監視();
+        }
+
+        private void button監視ExeList_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MakeList_監視()
+        {
+            _tweetTask.監視Enable = checkBox監視.Checked;
+            _tweetTask.監視toRepEnable = checkBox監視toRep.Checked;
+            _tweetTask.モノマネEnable = checkBoxモノマネ.Checked;
+
+            _tweetTask.周期秒数_監視 = int.Parse(textBox監視周期.Text);
+            _tweetTask.周期秒数_監視toRep = int.Parse(textBox監視toRep周期.Text);
+            _tweetTask.周期秒数_モノマネ = int.Parse(textBoxモノマネ周期.Text);
+
+            _tweetTask.Init監視list();
+
+            {
+                List<監視アカウントInfo> list = new List<監視アカウントInfo>();
+                foreach (var item in _tweetTask.CheckAccountList_監視)
+                {
+                    list.Add(new 監視アカウントInfo()
+                    {
+                         CheckAccountName = item.CheckAccount,
+                         ExeAccountName = item.ExeAccountNameList,
+                         SinceDatetime = item.SinceDatetime
+                    });
+                }
+                dataGridView監視.DataSource = list;
+                label監視件数.Text = $"({list.Count}件)";
+            }
+
+        }
+
+        private void Exe監視()
+        {
+            _tweetTask.Exe_一括処理();
+        }
+
+        #endregion 監視・モノマネ
     }
 }

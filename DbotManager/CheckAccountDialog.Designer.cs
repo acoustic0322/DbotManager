@@ -29,6 +29,11 @@
         private void InitializeComponent()
         {
             this.dataGridViewCheckAccount = new System.Windows.Forms.DataGridView();
+            this.CommentMaster_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CommentMaster_UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CommentMaster_AccountId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CommentMaster_Enable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.CommentMaster_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.textBoxId = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -45,16 +50,11 @@
             this.label13 = new System.Windows.Forms.Label();
             this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
             this.radioButtonものまね = new System.Windows.Forms.RadioButton();
-            this.CommentMaster_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CommentMaster_UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CommentMaster_AccountId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CommentMaster_Enable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.CommentMaster_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewCheckAccount)).BeginInit();
             this.groupBox6.SuspendLayout();
             this.SuspendLayout();
             // 
-            // dataGridViewComment
+            // dataGridViewCheckAccount
             // 
             this.dataGridViewCheckAccount.AllowUserToAddRows = false;
             this.dataGridViewCheckAccount.AllowUserToDeleteRows = false;
@@ -69,13 +69,50 @@
             this.dataGridViewCheckAccount.Location = new System.Drawing.Point(13, 37);
             this.dataGridViewCheckAccount.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.dataGridViewCheckAccount.MultiSelect = false;
-            this.dataGridViewCheckAccount.Name = "dataGridViewComment";
+            this.dataGridViewCheckAccount.Name = "dataGridViewCheckAccount";
             this.dataGridViewCheckAccount.RowHeadersVisible = false;
             this.dataGridViewCheckAccount.RowTemplate.Height = 21;
             this.dataGridViewCheckAccount.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewCheckAccount.Size = new System.Drawing.Size(617, 272);
             this.dataGridViewCheckAccount.TabIndex = 5;
             this.dataGridViewCheckAccount.SelectionChanged += new System.EventHandler(this.dataGridViewComment_SelectionChanged);
+            // 
+            // CommentMaster_Id
+            // 
+            this.CommentMaster_Id.DataPropertyName = "Id";
+            this.CommentMaster_Id.HeaderText = "Id";
+            this.CommentMaster_Id.Name = "CommentMaster_Id";
+            this.CommentMaster_Id.Visible = false;
+            // 
+            // CommentMaster_UserId
+            // 
+            this.CommentMaster_UserId.DataPropertyName = "UserId";
+            this.CommentMaster_UserId.HeaderText = "UserId";
+            this.CommentMaster_UserId.Name = "CommentMaster_UserId";
+            this.CommentMaster_UserId.Visible = false;
+            // 
+            // CommentMaster_AccountId
+            // 
+            this.CommentMaster_AccountId.DataPropertyName = "AccountId";
+            this.CommentMaster_AccountId.HeaderText = "AccountId";
+            this.CommentMaster_AccountId.Name = "CommentMaster_AccountId";
+            this.CommentMaster_AccountId.Visible = false;
+            // 
+            // CommentMaster_Enable
+            // 
+            this.CommentMaster_Enable.DataPropertyName = "Enable";
+            this.CommentMaster_Enable.FalseValue = "False";
+            this.CommentMaster_Enable.HeaderText = "有効";
+            this.CommentMaster_Enable.Name = "CommentMaster_Enable";
+            this.CommentMaster_Enable.TrueValue = "True";
+            this.CommentMaster_Enable.Width = 80;
+            // 
+            // CommentMaster_Comment
+            // 
+            this.CommentMaster_Comment.DataPropertyName = "CheckAccount";
+            this.CommentMaster_Comment.HeaderText = "対象アカウント";
+            this.CommentMaster_Comment.Name = "CommentMaster_Comment";
+            this.CommentMaster_Comment.Width = 500;
             // 
             // groupBox6
             // 
@@ -174,7 +211,7 @@
             this.buttonExe.Name = "buttonExe";
             this.buttonExe.Size = new System.Drawing.Size(109, 30);
             this.buttonExe.TabIndex = 11;
-            this.buttonExe.Text = "テストツイート";
+            this.buttonExe.Text = "テスト";
             this.buttonExe.UseVisualStyleBackColor = true;
             this.buttonExe.Click += new System.EventHandler(this.buttonExe_Click);
             // 
@@ -252,43 +289,6 @@
             this.radioButtonものまね.Text = "ものまね";
             this.radioButtonものまね.UseVisualStyleBackColor = true;
             this.radioButtonものまね.CheckedChanged += new System.EventHandler(this.radioButtonものまね_CheckedChanged);
-            // 
-            // CommentMaster_Id
-            // 
-            this.CommentMaster_Id.DataPropertyName = "Id";
-            this.CommentMaster_Id.HeaderText = "Id";
-            this.CommentMaster_Id.Name = "CommentMaster_Id";
-            this.CommentMaster_Id.Visible = false;
-            // 
-            // CommentMaster_UserId
-            // 
-            this.CommentMaster_UserId.DataPropertyName = "UserId";
-            this.CommentMaster_UserId.HeaderText = "UserId";
-            this.CommentMaster_UserId.Name = "CommentMaster_UserId";
-            this.CommentMaster_UserId.Visible = false;
-            // 
-            // CommentMaster_AccountId
-            // 
-            this.CommentMaster_AccountId.DataPropertyName = "AccountId";
-            this.CommentMaster_AccountId.HeaderText = "AccountId";
-            this.CommentMaster_AccountId.Name = "CommentMaster_AccountId";
-            this.CommentMaster_AccountId.Visible = false;
-            // 
-            // CommentMaster_Enable
-            // 
-            this.CommentMaster_Enable.DataPropertyName = "Enable";
-            this.CommentMaster_Enable.FalseValue = "False";
-            this.CommentMaster_Enable.HeaderText = "有効";
-            this.CommentMaster_Enable.Name = "CommentMaster_Enable";
-            this.CommentMaster_Enable.TrueValue = "True";
-            this.CommentMaster_Enable.Width = 80;
-            // 
-            // CommentMaster_Comment
-            // 
-            this.CommentMaster_Comment.DataPropertyName = "CheckAccount";
-            this.CommentMaster_Comment.HeaderText = "対象アカウント";
-            this.CommentMaster_Comment.Name = "CommentMaster_Comment";
-            this.CommentMaster_Comment.Width = 500;
             // 
             // CheckAccountDialog
             // 

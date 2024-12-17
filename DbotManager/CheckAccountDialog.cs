@@ -144,11 +144,11 @@ namespace DbotManager
         {
             int userId = UserId;
             int accountId = AccountId;
-            int commentId = int.Parse(textBoxId.Text);
+            int checkAccountId = int.Parse(textBoxId.Text);
             string tweetId = GetTweetId(true);
 
             TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
-            _tweetTask.TweetProc(radioButton監視.Checked ? TweetProcTypes.CHECK :  (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE), userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(radioButton監視.Checked ? TweetProcTypes.CHECK :  (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE), userId, accountId, checkAccountId, tweetId);
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
