@@ -50,32 +50,6 @@ def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , 
     finally:
         connection.close()        
 
-def get_comment_by_id(comment_id):
-
-    # MySQLデータベースに接続
-    connection = pymysql.connect(
-        host='localhost',      # ホスト名
-        user='root',           # ユーザー名
-        password='abcd1234',   # パスワード
-        database='d_bot',      # データベース名
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor        
-    )
-
-    try:
-        with connection.cursor() as cursor:
-            # 認証情報を格納しているテーブルからデータを取得
-            sql = "SELECT comment FROM comment_master WHERE id=%s"
-            cursor.execute(sql, (comment_id,))
-            result = cursor.fetchone()
-    finally:
-        connection.close()
-
-    if result is None:
-        outputLog("エラー: 指定したコメントIDに対応するレコードが見つかりません。")
-        return None
-    
-    return result["comment"]  # コメントを返す
 
 def update_access_token(account_id, access_token, access_token_secret):
     connection = pymysql.connect(
@@ -181,12 +155,22 @@ def create_api(credentials):
         return None
 
 # コマンドライン引数の解析関数
+#def parse_arguments(args):
+#    params = {}
+#    for arg in args:
+#        key, value = arg.split('=')
+#        params[key] = value
+#    return params
+
 def parse_arguments(args):
-    params = {}
+    parsed_args = {}
     for arg in args:
-        key, value = arg.split('=')
-        params[key] = value
-    return params
+        if '=' in arg:
+            key, value = arg.split('=', 1)  # 最初の1つ目の = だけで分割
+            parsed_args[key] = value
+        else:
+            raise ValueError(f"Invalid argument format: {arg}")
+    return parsed_args
 
 def print_id(text):
     print("account_id=",account_id, " " , text)
@@ -254,7 +238,99 @@ def proc_get_access_token2(credentials , account_id , oauth_token , oauth_verifi
             "message": str(e)
         }))
         return False  # エラーの終了コード
-    
+
+def proc_get_refresh_token_web(credentials , account_id , code):
+    try:
+
+        print(code)
+
+        # スコープのリスト（できるだけ多く指定）
+        scopes = [
+            "tweet.read",
+            "tweet.write",
+            "users.read",
+            "offline.access",
+            "bookmark.read",
+            "bookmark.write"
+        ]
+
+        print('0')
+        print(credentials['client_id'])
+        print(credentials['client_secret'])
+
+        auth = tweepy.OAuth2UserHandler(
+            client_id=credentials['client_id'],
+            client_secret=credentials['client_secret'],
+            redirect_uri='https://script.google.com/macros/s/AKfycbzVkmUti3NUc5T1MxSfX586zn8Iv4i1l-fMSlMb99gIl5Wlius5Sf-CkQP4zenPlpl_AQ/exec',
+            scope=scopes
+        )
+
+        # 認証URLを取得する
+        authorization_url = auth.get_authorization_url()
+#        print(f"右のURLにツイートしたいアカウントでアクセスする: {authorization_url}")
+        print(f"以下のURLをクリップボードにコピーしました。ブラウザを開いてアクセスしてください: ")
+        print(f"{authorization_url}")
+
+        # クリップボードにコピー
+        pyperclip.copy(authorization_url)
+
+        # 認証後のコールバックURLからコードを取得し、アクセストークンを交換する
+        code = input("ブラウザで認証後に表示されるコードを入力してください: ")
+        os.system('cls')        
+
+#        # 認証後のコールバックURLからコードを取得し、アクセストークンを交換する
+#        code = input("ブラウザで認証後に表示されるコードを入力してください: ")
+#        os.system('cls')
+
+        print('00')
+
+        print(code)
+        try:
+            token = auth.fetch_token(code)
+        except Exception as e:
+            print(f"エラー: {e}")            
+
+        print('1')
+
+        # アクセストークンとリフレッシュトークンを取得する
+        bearer_token = token.get("access_token")
+        refresh_token = token.get("refresh_token")
+        # expires_in = token.get("expires_in")
+
+#            print(f"Bearer Token: {bearer_token}")
+#            print(f"Refresh Token: {refresh_token}")
+
+        print('2')
+
+        update_refresh_token(account_id , bearer_token , refresh_token)
+
+        print('3')
+        print(bearer_token)
+        print(refresh_token)
+
+        # 結果をJSON形式で出力
+        result = {
+            "status": "success",
+            "bearer_token": bearer_token,
+            "refresh_token": refresh_token
+        }
+        print('4')
+
+        print(result)
+        # print(f"Expires In: {expires_in}")
+
+        return True  # 成功の終了コード
+
+    except Exception as e:
+        # エラーが発生した場合のメッセージを標準出力
+        print(json.dumps({
+            "status": "error",
+            "message": str(e)
+        }))
+        return False  # エラーの終了コード 
+#    return True , ""    
+
+
 def outputLog(message):
     # 現在時刻を取得してメッセージに追加
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -262,6 +338,8 @@ def outputLog(message):
     
     # 標準出力にメッセージを出力
     print(full_message)
+
+
 
 args = parse_arguments(sys.argv[1:])
 account_id = int(args.get("account_id","0"))
@@ -273,6 +351,7 @@ photo_id = args.get("photo_id","")
 video_id = args.get("video_id","")
 oauth_token = args.get("oauth_token","")
 oauth_verifier = args.get("oauth_verifier","")
+url = args.get("url","")
 #outputLog(args)
 
 # 認証情報を取得
@@ -289,6 +368,9 @@ if credentials:
             error_log = ""
             if mode == "get_access_token2":
                 success = proc_get_access_token2(credentials , account_id , oauth_token , oauth_verifier)
+            elif mode == "get_refresh_token_web":
+                print('test')
+                success = proc_get_refresh_token_web(credentials , account_id , url)
             else:
                 # エラーメッセージを標準エラーに出力
                 outputLog(f"サポートされていないmode: {mode}")

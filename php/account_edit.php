@@ -192,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>プロフィール設定</title>
+    <title>Xアカウント編集</title>
     <link rel="stylesheet" type="text/css" href="./main.css">
     <style>
         .registration-form {
@@ -246,7 +246,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- コンテンツエリア -->
     <div class="content" id="content">
 <!--        <form action="?" method="post">  -->
-        <form method="POST" action="?" class="registration-form">
+<!--        <form method="POST" action="?" class="registration-form">-->
+        <form method="POST" action="?">
             <!--
             <label for="user_id">ユーザーID:</label>
             <input type="text" id="user_id" name="user_id" value="<?php echo htmlspecialchars($edit_account['user_id'] ?? '') ?>" required><br><br>
@@ -289,40 +290,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="input-group" checkbox-group">
             <label>
                 <input type="checkbox" name="enable" value="1" <?php echo !empty($edit_account['enable']) ? 'checked' : '' ?>>有効
-            </label>
+            </label><br>
+
+            <?php if (isset($_SESSION['post_enable']) && $_SESSION['post_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="post_enable" value="1" <?php echo !empty($edit_account['post_enable']) ? 'checked' : '' ?>>ポスト機能
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="like_enable" value="1" <?php echo !empty($edit_account['like_enable']) ? 'checked' : '' ?>>いいね機能
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="bookmark_enable" value="1" <?php echo !empty($edit_account['bookmark_enable']) ? 'checked' : '' ?>>ブックマーク機能
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['reply_enable']) && $_SESSION['reply_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="reply_enable" value="1" <?php echo !empty($edit_account['reply_enable']) ? 'checked' : '' ?>>リプライ機能
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['repost_enable']) && $_SESSION['repost_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="repost_enable" value="1" <?php echo !empty($edit_account['repost_enable']) ? 'checked' : '' ?>>リポスト機能
-            </label>
-        </div>
+            </label><br>
+            <?php endif; ?>
 
-        <div class="input-group">
+            <?php if ((isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1) || 
+              (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1)): ?>
             <label>
                 <input type="checkbox" name="paid" value="1" <?php echo !empty($edit_account['paid']) ? 'checked' : '' ?>>有料アカウント
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="paid_like" value="1" <?php echo !empty($edit_account['paid_like']) ? 'checked' : '' ?>>有料API(いいね)
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="paid_bookmark" value="1" <?php echo !empty($edit_account['paid_bookmark']) ? 'checked' : '' ?>>有料API(ブックマーク)
-            </label>
+            </label><br>
+            <?php endif; ?>
         </div>
 
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
             <button type="submit">更新</button>
         </form>
     </div>
+
+<style>
+    /* テキストボックスの幅を80%に設定 */
+    .input-group input[type="text"] {
+        width: 80%; /* 幅を80%に設定 */
+        padding: 8px; /* パディングを追加 */
+        font-size: 12px; /* フォントサイズを調整 */
+        margin-bottom: 5px; /* ボックス間のスペース */
+        box-sizing: border-box; /* パディングを含めた幅を計算 */
+    }
+</style> 
 
 </body>
 </html>

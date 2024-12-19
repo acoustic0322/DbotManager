@@ -6,8 +6,12 @@
     <a href="account_list.php">Xアカウント設定</a>
     <a href="comment_list.php">コメント設定</a>
     <a href="password.php">パスワード変更</a>
-    <a href="upload.php?type=m">動画アップロード</a>
-    <a href="upload.php?type=p">画像アップロード</a>
+    <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
+        <a href="upload.php?type=m">動画アップロード</a>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+        <a href="upload.php?type=p">画像アップロード</a>
+    <?php endif; ?>
     
     <?php if (isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>
         <a href="user_list.php">ユーザー編集(管理者)</a>

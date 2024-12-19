@@ -8,7 +8,7 @@ if (!current_user($conn)) {
     exit;
 }
 
-$max_count;
+$max_count = 6;
 
 $type = $_GET['type']??'m';
 $title = '動画';
@@ -18,10 +18,8 @@ if ($type == 'p') {
     $title = '画像';
     $file_prefix = 'p';
     $file_type_name = 'photo';
-    $max_count = MAX_PHOTO_COUNT;
 }else{
     $type = 'm';
-    $max_count = MAX_MOVIE_COUNT;
 }
 
 $xuser_id = $_GET['xuser']??'';
@@ -69,11 +67,10 @@ $allowed_mime_types = [
     'video/3gpp',
     'video/3gpp2',
     'video/hevc',
-    'video/x-m4v',
-    'video/x-msvideo',
-    'video/msvideo'
+    'video/x-m4v'
 ];
-$allowed_extensions = ['mp4', 'avi', 'mpeg', 'webm', 'mkv', 'mov', 'wmv', 'flv', 'ogg', '3gp', '3g2', 'hevc', 'm4v'];
+//$allowed_extensions = ['mp4', 'avi', 'mpeg', 'webm', 'mkv', 'mov', 'wmv', 'flv', 'ogg', '3gp', '3g2', 'hevc', 'm4v'];
+$allowed_extensions = ['mp4'];
 if ($type == 'p') {
     $allowed_mime_types = [
         'image/jpeg',
@@ -250,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             // ステートメントを閉じる
                             $stmt->close();
 
-                            if ($type == 'p' && $file_extension == $ext) {
+                            if ($file_extension == $ext) {
                                 // 保存先ファイルパス
                                 $destination = $upload_dir . $file_prefix.$insert_id . '.'.$file_extension;
 

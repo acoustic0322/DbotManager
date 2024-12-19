@@ -1,5 +1,10 @@
 <?php
 
+require __DIR__.'/twitteroauth/vendor/autoload.php';
+
+//define('OAUTH_CALLBACK' , 'http://localhost:8000/callback.php');
+define('OAUTH_CALLBACK' , 'https://d-bot.happywinds.net/d-bot/callback.php');
+
 $config = [
     'servername' => 'localhost',
     'username' => 'root',
@@ -12,8 +17,15 @@ define('PARTS_DIR',MAIN_DIR.'/parts');
 define('CONTENTS_DIR',MAIN_DIR.'/contents');
 
 define('UPLOAD_DIR',__DIR__.'/../upload');
-define('MEDIA_URL', __DIR__.'/../upload');
+//define('MEDIA_URL', __DIR__.'/../upload');
 //define('MEDIA_URL', '/upload');
+
+//define('MEDIA_URL', '/upload');
+define('MEDIA_URL', '/d-bot/upload');
+
+
+define('MAX_MOVIE_COUNT', 200);
+define('MAX_PHOTO_COUNT', 200);
 
 function return_bytes($val) {
     $val = trim($val);
@@ -42,6 +54,18 @@ function current_user($conn){
         $current_user = $user;
         $_SESSION['username'] = $user['username'];
         $_SESSION['admin'] = $user['admin'];
+        $_SESSION['enable'] = $user['enable'];
+        $_SESSION['memo'] = $user['memo'];
+        $_SESSION['like_enable'] = $user['like_enable'];
+        $_SESSION['bookmark_enable'] = $user['bookmark_enable'];
+        $_SESSION['reply_enable'] = $user['reply_enable'];
+        $_SESSION['repost_enable'] = $user['repost_enable'];
+        $_SESSION['sensyuken_enable'] = $user['sensyuken_enable'];
+        $_SESSION['post_enable'] = $user['post_enable'];
+        $_SESSION['reserve_enable'] = $user['reserve_enable'];
+        $_SESSION['photo_enable'] = $user['photo_enable'];
+        $_SESSION['movie_enable'] = $user['movie_enable'];
+
         $re = true;
     }
 
@@ -51,12 +75,30 @@ function current_user($conn){
 function get_user($conn,$id){
     $re = null;
 
-    $stmt = $conn->prepare("SELECT id,username,admin,password FROM user_master WHERE id = ?");
+    $stmt = $conn->prepare("SELECT id,username,admin,password,enable,memo,
+    like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,photo_enable,movie_enable
+     FROM user_master WHERE id = ?");
     if ($stmt) {
         $stmt->bind_param("i",$id);
         $stmt->execute();
         $stmt->store_result();
-        $stmt->bind_result($user_id,$username, $admin,$password);
+        $stmt->bind_result(
+            $user_id,
+            $username, 
+            $admin,
+            $password,
+            $enable,
+            $memo,
+            $like_enable,
+            $bookmark_enable,
+            $reply_enable,
+            $repost_enable,
+            $sensyuken_enable,
+            $post_enable,
+            $reserve_enable,
+            $photo_enable,
+            $movie_enable
+        );
         $stmt->fetch();
 
         if ($stmt->num_rows > 0) {
@@ -65,7 +107,18 @@ function get_user($conn,$id){
                 'username' => $username,
                 'admin' => $admin,
                 'password' => $password,
-            ];
+                'enable' => $enable,
+                'memo' => $memo,
+                'like_enable' => $like_enable,
+                'bookmark_enable' => $bookmark_enable,
+                'reply_enable' => $reply_enable,
+                'repost_enable' => $repost_enable,
+                'sensyuken_enable' => $sensyuken_enable,
+                'post_enable' => $post_enable,
+                'reserve_enable' => $reserve_enable,
+                'photo_enable' => $photo_enable,
+                'movie_enable' => $movie_enable
+                ];
         }
 
         $stmt->close();
@@ -81,6 +134,7 @@ function get_account($conn, $id)
 
     $query = "
     SELECT 
+        id,
         user_id,
         name,
         login_id,
@@ -131,6 +185,7 @@ function get_account($conn, $id)
 
         // 結果をバインド
         $stmt->bind_result(
+            $id,
             $user_id,
             $name,
             $login_id,
@@ -173,6 +228,7 @@ function get_account($conn, $id)
         if ($stmt->fetch()) {
             // データが取得できた場合
             $re = [
+                'id' => $id,
                 'user_id' => $user_id,
                 'name' => $name,
                 'login_id' => $login_id,

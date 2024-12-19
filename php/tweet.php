@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>プロフィール設定</title>
+    <title>いいね・ブックマーク処理</title>
     <link rel="stylesheet" type="text/css" href="./main.css">
     <style>
         .registration-form {
@@ -120,31 +120,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- コンテンツエリア -->
     <div class="content" id="content">
 <!--        <form action="?" method="post">  -->
+        <h2>いいね・ブックマーク処理</h2>
         <form method="POST" action="?">
+        <!--
         <label for="user_id">ユーザーID: 
             <span id="user_id"><?php echo htmlspecialchars($current_userid); ?></span>
         </label><br><br>
+        -->
 
         <div class="input-group" checkbox-group">
             <label>
                 <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートID" required>
             </label><br>
+
+            <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="like_enable" value="1">いいね
                 <input type="number" name="like_count" min="1" value="10" placeholder="件数" style="width: 60px; margin-left: 5px;">                
             </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="bookmark_enable" value="1">ブックマーク
                 <input type="number" name="bookmark_count" min="1" value="10" placeholder="件数" style="width: 60px; margin-left: 5px;">                
             </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['reply_enable']) && $_SESSION['reply_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="reply_enable" value="1">リプライ
                 <input type="number" name="reply_count" min="1" value="10" placeholder="件数" style="width: 60px; margin-left: 5px;">                
             </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['repost_enable']) && $_SESSION['repost_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="repost_enable" value="1">リポスト
                 <input type="number" name="repost_count" min="1" value="10" placeholder="件数" style="width: 60px; margin-left: 5px;">                
             </label><br>
+            <?php endif; ?>
         </div>
 
             <button type="submit">実行</button>

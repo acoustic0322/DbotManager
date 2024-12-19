@@ -555,6 +555,22 @@ namespace DbotManager
             dataGridViewReserveSchedule.DataSource = _reserveTask.MakeScheduleList();
         }
 
+
+        private void button予約Start_Click(object sender, EventArgs e)
+        {
+            if(_reserveTask.作成済 == false)
+            {
+                _reserveTask.MakeScheduleList();
+            }
+
+            _reserveTask.StartTask();
+        }
+
+        private void button予約End_Click(object sender, EventArgs e)
+        {
+
+        }
+
         AccountDialog _accountDialog;
 
         private void buttonアカウント設定_Click(object sender, EventArgs e)
@@ -691,5 +707,6 @@ namespace DbotManager
         }
 
         #endregion 監視・モノマネ
+
     }
 }

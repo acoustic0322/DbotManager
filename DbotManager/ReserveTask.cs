@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using DbotManager.Table;
 
 namespace DbotManager
@@ -13,10 +16,18 @@ namespace DbotManager
 
         private DbConnectionInfo dbConnectin;
 
+        public bool 作成済 { get; set; }
+
+        private static System.Timers.Timer _予約監視Timer;
+
+        private List<ReserveSchedule> _reserveScheduleList = new List<ReserveSchedule>();
+
         public ReserveTask(DbConnectionInfo dbConnection, Action<string> logAction = null)
         {
             this.logAction = logAction;
             dbConnectin = dbConnection;
+
+            作成済 = false;
         }
 
         public List<ReserveSchedule> MakeScheduleList()
@@ -66,6 +77,11 @@ namespace DbotManager
             {
                 dataAccess.InsertReserveSchedule(item);
             }
+
+            if (reserveScheduleList.Count > 0) 作成済 = true;
+
+            _reserveScheduleList.Clear();
+            _reserveScheduleList.AddRange(reserveScheduleList);
 
             return reserveScheduleList;
         }
@@ -119,6 +135,67 @@ namespace DbotManager
 
             return schedules;
         }
+
+        public void StartTask()
+        {
+            // タイマーを設定（1000msごと = 1秒ごと）
+            _予約監視Timer = new System.Timers.Timer(10 * 1000);
+            _予約監視Timer.Elapsed += OnTimedEvent;
+            _予約監視Timer.AutoReset = true; // 繰り返し実行
+            _予約監視Timer.Enabled = true;
+
+        }
+
+        public void OnTimedEvent(object sender, ElapsedEventArgs e)
+        {
+            Console.WriteLine($"処理を実行中: {DateTime.Now}");
+
+            DateTime dtNow = DateTime.Now;
+
+            foreach(var reserveSchedule in _reserveScheduleList)
+            {
+                if (reserveSchedule.Result) continue;
+
+                if (reserveSchedule.ReserveDate == null) continue;
+                if (reserveSchedule.ReserveTime == null) continue;
+
+                if ((DateTime)reserveSchedule.ReserveDate.Value.Date != dtNow.Date) continue;
+
+                if ((DateTime)reserveSchedule.ReserveTime.Value > dtNow) continue;
+
+                TweetTask task = new TweetTask(dbConnectin, logAction);
+                var result = task.TweetProc(new TweetCommand() { 
+                    TweetProcType = TweetProcTypes.POST,
+                    AccountId = (int)reserveSchedule.AccountId,
+                    CommentId = (int)reserveSchedule.CommentId }
+                );
+
+                if(result.result == true)
+                {
+                    reserveSchedule.Result = true;
+                }
+
+
+            }
+
+
+
+            /*
+
+            foreach (var item in CheckAccountList_監視)
+            {
+                int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
+                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount, TweetId = item.SinceTweetId });
+
+                if (tweetResult != null && tweetResult.result == true)
+                {
+                    TweetProcReply(item, tweetResult);
+                }
+            }
+            */
+
+        }
+
 
     }
 }

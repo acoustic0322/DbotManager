@@ -1,6 +1,6 @@
 <?php
-require 'twitteroauth/vendor/autoload.php';
-use Abraham\TwitterOAuth\TwitterOAuth;
+
+require __DIR__.'/_lib/config.php';
 
 
 // POSTデータを受け取る

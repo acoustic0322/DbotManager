@@ -1,6 +1,5 @@
 <?php
-require 'twitteroauth/vendor/autoload.php';
-use Abraham\TwitterOAuth\TwitterOAuth;
+require __DIR__.'/_lib/config.php';
 
 // テスト用の認証情報
 $api_key = '72Wzr0E71pUGiokxQZ0whs5Kf';

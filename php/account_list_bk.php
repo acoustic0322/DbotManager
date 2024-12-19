@@ -170,14 +170,14 @@ $result = $stmt->get_result();
             margin-bottom: 20px;
         }
         .registration-form input {
-            width: 100%; /* 幅を調整 */
+            width: 80%; /* 幅を調整 */
             margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
             padding: 8px;
-            font-size: 16px;
+            font-size: 12px;
         }
         .registration-form button {
             padding: 8px 12px;
-            font-size: 16px;
+            font-size: 12px;
             cursor: pointer;
         }
         table {
@@ -202,6 +202,7 @@ $result = $stmt->get_result();
             gap: 10px; /* チェックボックス間のスペース */
         }
 
+
         .checkbox-group label {
             display: flex;
             align-items: center; /* チェックボックスとテキストを縦方向で中央揃え */
@@ -215,7 +216,7 @@ $result = $stmt->get_result();
     <!-- コンテンツエリア -->
     <div class="content" id="content">
    <h2>新規Xアカウント登録</h2>
-   <form method="POST" action="?" class="registration-form">
+   <form method="POST" action="?">
 
         <div class="input-group">
             <input type="text" id="new_name" name="new_name" placeholder="名前" required>
@@ -227,21 +228,21 @@ $result = $stmt->get_result();
             <input type="text" id="new_login_pass" name="new_login_pass" placeholder="ログインパス">
         </div>
         <div class="input-group">
-            <input type="text" name="new_client_id" placeholder="ClientID">
+            <input type="text" name="new_client_id" placeholder="ClientID" required>
         </div>
         <div class="input-group">
-            <input type="text" name="new_client_secret" placeholder="ClientSecret">
+            <input type="text" name="new_client_secret" placeholder="ClientSecret" required>
         </div>
         <div class="input-group">
-            <input type="text" name="new_api_key" placeholder="ApiKey">
+            <input type="text" name="new_api_key" placeholder="ApiKey" required>
         </div>
         <div class="input-group">
-            <input type="text" name="new_api_key_secret" placeholder="ApiKeySecret">
+            <input type="text" name="new_api_key_secret" placeholder="ApiKeySecret" required>
         </div>
 
+        <!--
         <div class="input-group">
             <input type="text" id="new_access_token" name="new_access_token" placeholder="AccessToken">
-            <button type="button" id="generate_token_btn" onclick="generateAccessToken()">自動発行</button>
         </div>        
 
         <div class="input-group">
@@ -253,38 +254,63 @@ $result = $stmt->get_result();
         <div class="input-group">
             <input type="text" name="new_refresh_token" placeholder="RefreshToken">
         </div>
+    -->
 
         <div class="input-group" checkbox-group">
             <label>
                 <input type="checkbox" name="new_enable" value="1" checked>有効
-            </label>
+            </label><br>
+
+            <?php if (isset($_SESSION['post_enable']) && $_SESSION['post_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="new_post_enable" value="1" checked>ポスト機能
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="new_like_enable" value="1" checked>いいね機能
-            </label>
-            <label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
+                <label>
                 <input type="checkbox" name="new_bookmark_enable" value="1" checked>ブックマーク機能
-            </label>
-            <label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['reply_enable']) && $_SESSION['reply_enable'] == 1): ?>
+                <label>
                 <input type="checkbox" name="new_reply_enable" value="1"  checked>リプライ機能
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['repost_enable']) && $_SESSION['repost_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="new_repost_enable" value="1" checked>リポスト機能
-            </label>
+            </label><br>
+            <?php endif; ?>
         </div>
 
         <div class="input-group">
-            <label>
-                <input type="checkbox" name="new_paid" value="1" checked>有料アカウント
-            </label>
+            <?php if ((isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1) || 
+              (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1)): ?>
+                <label>
+                    <input type="checkbox" name="new_paid" value="1" checked>有料アカウント
+                </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="new_paid_like" value="1" checked>有料API(いいね)
-            </label>
+            </label><br>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="new_paid_bookmark" value="1" checked>有料API(ブックマーク)
-            </label>
+            </label><br>
+            <?php endif; ?>
         </div>
 
 
@@ -304,6 +330,7 @@ $result = $stmt->get_result();
             <tr>
                 <th>名前</th>
                 <th>ログインID</th>
+                <!--
                 <th>ログインパス</th>
                 <th>ClientID</th>
                 <th>ClientSecret</th>
@@ -313,6 +340,9 @@ $result = $stmt->get_result();
                 <th>AccessTokenSecret</th>
                 <th>BearerToken</th>
                 <th>RefreshToken</th>
+                -->
+                <th>AccessToken</th>
+                <th>BearerToken</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -321,6 +351,7 @@ $result = $stmt->get_result();
             <tr>
                 <td><?php echo htmlspecialchars($row['name']); ?></td>
                 <td><?php echo htmlspecialchars($row['login_id']); ?></td>
+                <!--
                 <td><?php echo !empty($row['login_password']) ? '〇' : '×'; ?></td>
                 <td><?php echo !empty($row['client_id']) ? '〇' : '×'; ?></td>
                 <td><?php echo !empty($row['client_secret']) ? '〇' : '×'; ?></td>
@@ -330,13 +361,19 @@ $result = $stmt->get_result();
                 <td><?php echo !empty($row['access_token_secret']) ? '〇' : '×'; ?></td>
                 <td><?php echo !empty($row['bearer_token']) ? '〇' : '×'; ?></td>
                 <td><?php echo !empty($row['refresh_token']) ? '〇' : '×'; ?></td>
+                -->
+
+                <td><?php echo (!empty($row['access_token']) && !empty($row['access_token_secret']))  ? '〇' : '×'; ?></td>
+                <td><?php echo !empty($row['bearer_token']) ? '〇' : '×'; ?></td>
+
                 <td>
                     <button onclick="editAccountMaster(<?php echo $row['id']; ?>)">編集</button>
                     <button onclick="editAccessToken(<?php echo $row['id']; ?>)">AccessToken取得</button>
 
                     <input type="hidden" name="api_key" value="<?php echo htmlspecialchars($row['api_key']); ?>">
                     <input type="hidden" name="api_key_secret" value="<?php echo htmlspecialchars($row['api_key_secret']); ?>">
-                    <button onclick="getBearerToken(<?php echo $row['id']; ?>)">BearerToken取得</button>
+<!--                    <input type="hidden" name="client_id" value="<?php echo htmlspecialchars($row['client_id']); ?>"> -->
+
 
 
                     <form class="button_form" method="POST" action="?">
@@ -354,7 +391,12 @@ $result = $stmt->get_result();
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+
+
+
+
         function editAccountMaster(id) {
+            console.log("editAccountMaster");
             window.location.href = './account_edit.php?id='+id;
         }
 
@@ -373,33 +415,37 @@ $result = $stmt->get_result();
                 button.form.submit();
             }
         }
-    </script>
 
-<script>
-        async function getBearerToken() {
+        function getBearerToken2(id) {
+            alert('getBearerToken2');
+
+            if (!id) {
+               alert('IDが指定されていません');
+               return;
+            }
 
             // フォームから値を取得
             const apiKey = document.querySelector('input[name="api_key"]').value;
             const apiKeySecret = document.querySelector('input[name="api_key_secret"]').value;            
+            const clientId = document.querySelector('input[name="client_id"]').value;            
 
             if (!apiKey || !apiKeySecret) {
                 alert('APIキーまたはAPIキーシークレットが未入力です。');
                 return;
             }
 
-            alert(apiKey);
-
             // データをURLエンコード形式で構築
             const params = new URLSearchParams({
                 api_key: apiKey,
                 api_key_secret: apiKeySecret,
+                client_id: 
             });
 
 //            alert('エラーが発生しました。認証URLを取得できませんでした。');
   //          const form = document.getElementById('authForm');
     //        const formData = new FormData(form);
 
-            const response = await fetch('generate_bearer_token.php', {
+            const response = await fetch('generate_refresh_url.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded', // フォームデータ形式
@@ -408,13 +454,38 @@ $result = $stmt->get_result();
                 });
 
                 if (response.ok) {
+
                     const authUrl = await response.text();
                     alert(authUrl);
+                    // 別タブで認証URLを開く
+                    window.open(authUrl, '_blank');
+
+                    // authUrl をDBに保存する
+                    const saveResponse = await fetch('save_auth_url.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({ id , bearer_token }).toString(),
+                    });
+
+                    if (saveResponse.ok) {
+                        console.log('authUrl がDBに保存されました');
+                        alert('BearerTokenを更新しました');
+                        // 成功したらリダイレクト
+                        window.location.href = 'account_list.php'; // リダイレクト先を指定
+                    } else {
+                        console.error('authUrl 保存エラー:', saveResponse.status);
+                        alert(saveResponse.status);
+                    }
+
                 } else {
                     console.error('HTTPエラー:', response.status);
                     alert(response.status);
                 }
-        }
+            }
+
+
     </script>
 
 
@@ -456,6 +527,16 @@ $result = $stmt->get_result();
     }
 </script>
 
- 
+<style>
+    /* テキストボックスの幅を80%に設定 */
+    .input-group input[type="text"] {
+        width: 80%; /* 幅を80%に設定 */
+        padding: 8px; /* パディングを追加 */
+        font-size: 12px; /* フォントサイズを調整 */
+        margin-bottom: 5px; /* ボックス間のスペース */
+        box-sizing: border-box; /* パディングを含めた幅を計算 */
+    }
+</style> 
+
 </body>
 </html>

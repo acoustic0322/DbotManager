@@ -489,6 +489,7 @@ def proc_get_refresh_token(credentials , account_id):
         os.system('cls')
 
         try:
+            print(code)
             token = auth.fetch_token(code)
 
             # アクセストークンとリフレッシュトークンを取得する
@@ -498,6 +499,7 @@ def proc_get_refresh_token(credentials , account_id):
 
             print(f"Bearer Token: {bearer_token}")
             print(f"Refresh Token: {refresh_token}")
+            print(f"code: {code}")
 
             update_refresh_token(account_id , bearer_token , refresh_token)
 
