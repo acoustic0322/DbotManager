@@ -145,10 +145,18 @@ namespace DbotManager
             int userId = UserId;
             int accountId = AccountId;
             int checkAccountId = int.Parse(textBoxId.Text);
-            string tweetId = GetTweetId(true);
+//            string tweetId = GetTweetId(true);
 
             TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
-            _tweetTask.TweetProc(radioButton監視.Checked ? TweetProcTypes.CHECK :  (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE), userId, accountId, checkAccountId, tweetId);
+//            _tweetTask.TweetProc(radioButton監視.Checked ? TweetProcTypes.CHECK :  (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE), userId, accountId, checkAccountId, tweetId);
+            _tweetTask.TweetProc(new TweetCommand() { 
+                TweetProcType = (radioButton監視.Checked ? TweetProcTypes.CHECK : (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE)),
+                UserId = userId,
+                AccountId = accountId,
+                CheckListId = checkAccountId               
+                }
+            );
+
         }
 
         private void buttonClose_Click(object sender, EventArgs e)

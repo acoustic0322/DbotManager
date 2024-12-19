@@ -89,45 +89,45 @@
             this.button履歴再取得 = new System.Windows.Forms.Button();
             this.dataGridViewTweetHistory = new System.Windows.Forms.DataGridView();
             this.tabPage監視モノマネ = new System.Windows.Forms.TabPage();
-            this.groupBox7 = new System.Windows.Forms.GroupBox();
-            this.comboBox監視UserMaster = new System.Windows.Forms.ComboBox();
-            this.checkBox監視UserId = new System.Windows.Forms.CheckBox();
-            this.button監視ExeList = new System.Windows.Forms.Button();
-            this.button監視MakeList = new System.Windows.Forms.Button();
-            this.checkBox監視_15分以内に履歴のある無料アカウントを除外する = new System.Windows.Forms.CheckBox();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label監視件数 = new System.Windows.Forms.Label();
-            this.dataGridView監視 = new System.Windows.Forms.DataGridView();
-            this.textBox監視周期 = new System.Windows.Forms.TextBox();
-            this.checkBox監視 = new System.Windows.Forms.CheckBox();
-            this.buttonものまね = new System.Windows.Forms.Button();
-            this.textBoxRenew = new System.Windows.Forms.TextBox();
-            this.buttonクリアlog = new System.Windows.Forms.Button();
-            this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.groupBox8 = new System.Windows.Forms.GroupBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label監視toRep件数 = new System.Windows.Forms.Label();
-            this.textBox監視toRep周期 = new System.Windows.Forms.TextBox();
-            this.checkBox監視toRep = new System.Windows.Forms.CheckBox();
-            this.comboBox監視実施アカウント = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.checkBoxモノマネ = new System.Windows.Forms.CheckBox();
-            this.textBoxモノマネ周期 = new System.Windows.Forms.TextBox();
-            this.labelモノマネ件数 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.groupBox9 = new System.Windows.Forms.GroupBox();
-            this.dataGridView監視toRep = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.groupBoxモノマネ = new System.Windows.Forms.GroupBox();
             this.dataGridViewモノマネ = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.label6 = new System.Windows.Forms.Label();
+            this.labelモノマネ件数 = new System.Windows.Forms.Label();
+            this.textBoxモノマネ周期 = new System.Windows.Forms.TextBox();
+            this.checkBoxモノマネ = new System.Windows.Forms.CheckBox();
+            this.groupBox監視toRep = new System.Windows.Forms.GroupBox();
+            this.dataGridView監視toRep = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label監視toRep件数 = new System.Windows.Forms.Label();
+            this.textBox監視toRep周期 = new System.Windows.Forms.TextBox();
+            this.checkBox監視toRep = new System.Windows.Forms.CheckBox();
+            this.groupBox基本設定_監視 = new System.Windows.Forms.GroupBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.comboBox監視実施アカウント = new System.Windows.Forms.ComboBox();
+            this.comboBox監視UserMaster = new System.Windows.Forms.ComboBox();
+            this.checkBox監視UserId = new System.Windows.Forms.CheckBox();
+            this.checkBox監視_15分以内に履歴のある無料アカウントを除外する = new System.Windows.Forms.CheckBox();
+            this.groupBox監視 = new System.Windows.Forms.GroupBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label監視件数 = new System.Windows.Forms.Label();
+            this.dataGridView監視 = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.textBox監視周期 = new System.Windows.Forms.TextBox();
+            this.checkBox監視 = new System.Windows.Forms.CheckBox();
+            this.button監視End = new System.Windows.Forms.Button();
+            this.button監視Start = new System.Windows.Forms.Button();
+            this.buttonものまね = new System.Windows.Forms.Button();
+            this.textBoxRenew = new System.Windows.Forms.TextBox();
+            this.buttonクリアlog = new System.Windows.Forms.Button();
+            this.buttonアカウント設定 = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -144,21 +144,21 @@
             this.tabPage履歴.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).BeginInit();
             this.tabPage監視モノマネ.SuspendLayout();
-            this.groupBox7.SuspendLayout();
-            this.groupBox5.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視)).BeginInit();
-            this.groupBox8.SuspendLayout();
-            this.groupBox9.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視toRep)).BeginInit();
+            this.groupBoxモノマネ.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewモノマネ)).BeginInit();
+            this.groupBox監視toRep.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視toRep)).BeginInit();
+            this.groupBox基本設定_監視.SuspendLayout();
+            this.groupBox監視.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl
             // 
             this.tabControl.Controls.Add(this.tabPage一括処理);
+            this.tabControl.Controls.Add(this.tabPage監視モノマネ);
             this.tabControl.Controls.Add(this.tabPage予約);
             this.tabControl.Controls.Add(this.tabPage履歴);
-            this.tabControl.Controls.Add(this.tabPage監視モノマネ);
             this.tabControl.Font = new System.Drawing.Font("Meiryo UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.tabControl.Location = new System.Drawing.Point(13, 14);
             this.tabControl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -753,10 +753,12 @@
             // 
             // tabPage監視モノマネ
             // 
-            this.tabPage監視モノマネ.Controls.Add(this.groupBox9);
-            this.tabPage監視モノマネ.Controls.Add(this.groupBox8);
-            this.tabPage監視モノマネ.Controls.Add(this.groupBox7);
-            this.tabPage監視モノマネ.Controls.Add(this.groupBox5);
+            this.tabPage監視モノマネ.Controls.Add(this.groupBoxモノマネ);
+            this.tabPage監視モノマネ.Controls.Add(this.groupBox監視toRep);
+            this.tabPage監視モノマネ.Controls.Add(this.groupBox基本設定_監視);
+            this.tabPage監視モノマネ.Controls.Add(this.groupBox監視);
+            this.tabPage監視モノマネ.Controls.Add(this.button監視End);
+            this.tabPage監視モノマネ.Controls.Add(this.button監視Start);
             this.tabPage監視モノマネ.Location = new System.Drawing.Point(4, 28);
             this.tabPage監視モノマネ.Name = "tabPage監視モノマネ";
             this.tabPage監視モノマネ.Size = new System.Drawing.Size(781, 642);
@@ -764,21 +766,217 @@
             this.tabPage監視モノマネ.Text = "監視・モノマネ";
             this.tabPage監視モノマネ.UseVisualStyleBackColor = true;
             // 
-            // groupBox7
+            // groupBoxモノマネ
             // 
-            this.groupBox7.Controls.Add(this.label5);
-            this.groupBox7.Controls.Add(this.comboBox監視実施アカウント);
-            this.groupBox7.Controls.Add(this.comboBox監視UserMaster);
-            this.groupBox7.Controls.Add(this.checkBox監視UserId);
-            this.groupBox7.Controls.Add(this.button監視ExeList);
-            this.groupBox7.Controls.Add(this.button監視MakeList);
-            this.groupBox7.Controls.Add(this.checkBox監視_15分以内に履歴のある無料アカウントを除外する);
-            this.groupBox7.Location = new System.Drawing.Point(5, 3);
-            this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(767, 125);
-            this.groupBox7.TabIndex = 8;
-            this.groupBox7.TabStop = false;
-            this.groupBox7.Text = "基本設定";
+            this.groupBoxモノマネ.Controls.Add(this.dataGridViewモノマネ);
+            this.groupBoxモノマネ.Controls.Add(this.label6);
+            this.groupBoxモノマネ.Controls.Add(this.labelモノマネ件数);
+            this.groupBoxモノマネ.Controls.Add(this.textBoxモノマネ周期);
+            this.groupBoxモノマネ.Controls.Add(this.checkBoxモノマネ);
+            this.groupBoxモノマネ.Location = new System.Drawing.Point(522, 134);
+            this.groupBoxモノマネ.Name = "groupBoxモノマネ";
+            this.groupBoxモノマネ.Size = new System.Drawing.Size(250, 505);
+            this.groupBoxモノマネ.TabIndex = 10;
+            this.groupBoxモノマネ.TabStop = false;
+            this.groupBoxモノマネ.Text = "モノマネ";
+            // 
+            // dataGridViewモノマネ
+            // 
+            this.dataGridViewモノマネ.AllowUserToAddRows = false;
+            this.dataGridViewモノマネ.AllowUserToDeleteRows = false;
+            this.dataGridViewモノマネ.AllowUserToResizeColumns = false;
+            this.dataGridViewモノマネ.AllowUserToResizeRows = false;
+            this.dataGridViewモノマネ.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewモノマネ.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn9,
+            this.dataGridViewTextBoxColumn10,
+            this.dataGridViewTextBoxColumn15});
+            this.dataGridViewモノマネ.Location = new System.Drawing.Point(7, 57);
+            this.dataGridViewモノマネ.Name = "dataGridViewモノマネ";
+            this.dataGridViewモノマネ.RowHeadersVisible = false;
+            this.dataGridViewモノマネ.RowTemplate.Height = 21;
+            this.dataGridViewモノマネ.Size = new System.Drawing.Size(239, 442);
+            this.dataGridViewモノマネ.TabIndex = 11;
+            // 
+            // dataGridViewTextBoxColumn9
+            // 
+            this.dataGridViewTextBoxColumn9.DataPropertyName = "CheckAccountName";
+            this.dataGridViewTextBoxColumn9.HeaderText = "対象";
+            this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
+            // 
+            // dataGridViewTextBoxColumn10
+            // 
+            this.dataGridViewTextBoxColumn10.DataPropertyName = "SinceDatetime";
+            this.dataGridViewTextBoxColumn10.HeaderText = "最終更新";
+            this.dataGridViewTextBoxColumn10.Name = "dataGridViewTextBoxColumn10";
+            // 
+            // dataGridViewTextBoxColumn15
+            // 
+            this.dataGridViewTextBoxColumn15.DataPropertyName = "ExeAccountName";
+            this.dataGridViewTextBoxColumn15.HeaderText = "実施候補";
+            this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(102, 30);
+            this.label6.Name = "label6";
+            this.label6.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label6.Size = new System.Drawing.Size(54, 19);
+            this.label6.TabIndex = 10;
+            this.label6.Text = "秒周期";
+            // 
+            // labelモノマネ件数
+            // 
+            this.labelモノマネ件数.AutoSize = true;
+            this.labelモノマネ件数.Location = new System.Drawing.Point(162, 30);
+            this.labelモノマネ件数.Name = "labelモノマネ件数";
+            this.labelモノマネ件数.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.labelモノマネ件数.Size = new System.Drawing.Size(47, 19);
+            this.labelモノマネ件数.TabIndex = 9;
+            this.labelモノマネ件数.Text = "(0件)";
+            // 
+            // textBoxモノマネ周期
+            // 
+            this.textBoxモノマネ周期.Location = new System.Drawing.Point(43, 22);
+            this.textBoxモノマネ周期.Name = "textBoxモノマネ周期";
+            this.textBoxモノマネ周期.Size = new System.Drawing.Size(53, 27);
+            this.textBoxモノマネ周期.TabIndex = 0;
+            this.textBoxモノマネ周期.Text = "10";
+            // 
+            // checkBoxモノマネ
+            // 
+            this.checkBoxモノマネ.AutoSize = true;
+            this.checkBoxモノマネ.Checked = true;
+            this.checkBoxモノマネ.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxモノマネ.Location = new System.Drawing.Point(10, 28);
+            this.checkBoxモノマネ.Name = "checkBoxモノマネ";
+            this.checkBoxモノマネ.Size = new System.Drawing.Size(15, 14);
+            this.checkBoxモノマネ.TabIndex = 5;
+            this.checkBoxモノマネ.UseVisualStyleBackColor = true;
+            // 
+            // groupBox監視toRep
+            // 
+            this.groupBox監視toRep.Controls.Add(this.dataGridView監視toRep);
+            this.groupBox監視toRep.Controls.Add(this.label3);
+            this.groupBox監視toRep.Controls.Add(this.label監視toRep件数);
+            this.groupBox監視toRep.Controls.Add(this.textBox監視toRep周期);
+            this.groupBox監視toRep.Controls.Add(this.checkBox監視toRep);
+            this.groupBox監視toRep.Location = new System.Drawing.Point(262, 134);
+            this.groupBox監視toRep.Name = "groupBox監視toRep";
+            this.groupBox監視toRep.Size = new System.Drawing.Size(250, 505);
+            this.groupBox監視toRep.TabIndex = 9;
+            this.groupBox監視toRep.TabStop = false;
+            this.groupBox監視toRep.Text = "監視toRep";
+            // 
+            // dataGridView監視toRep
+            // 
+            this.dataGridView監視toRep.AllowUserToAddRows = false;
+            this.dataGridView監視toRep.AllowUserToDeleteRows = false;
+            this.dataGridView監視toRep.AllowUserToResizeColumns = false;
+            this.dataGridView監視toRep.AllowUserToResizeRows = false;
+            this.dataGridView監視toRep.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView監視toRep.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn4,
+            this.dataGridViewTextBoxColumn7,
+            this.dataGridViewTextBoxColumn8});
+            this.dataGridView監視toRep.Location = new System.Drawing.Point(6, 57);
+            this.dataGridView監視toRep.Name = "dataGridView監視toRep";
+            this.dataGridView監視toRep.RowHeadersVisible = false;
+            this.dataGridView監視toRep.RowTemplate.Height = 21;
+            this.dataGridView監視toRep.Size = new System.Drawing.Size(239, 442);
+            this.dataGridView監視toRep.TabIndex = 11;
+            // 
+            // dataGridViewTextBoxColumn4
+            // 
+            this.dataGridViewTextBoxColumn4.DataPropertyName = "CheckAccountName";
+            this.dataGridViewTextBoxColumn4.HeaderText = "対象";
+            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+            // 
+            // dataGridViewTextBoxColumn7
+            // 
+            this.dataGridViewTextBoxColumn7.DataPropertyName = "SinceDatetime";
+            this.dataGridViewTextBoxColumn7.HeaderText = "最終更新";
+            this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
+            // 
+            // dataGridViewTextBoxColumn8
+            // 
+            this.dataGridViewTextBoxColumn8.DataPropertyName = "ExeAccountName";
+            this.dataGridViewTextBoxColumn8.HeaderText = "実施候補";
+            this.dataGridViewTextBoxColumn8.Name = "dataGridViewTextBoxColumn8";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(102, 30);
+            this.label3.Name = "label3";
+            this.label3.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label3.Size = new System.Drawing.Size(54, 19);
+            this.label3.TabIndex = 10;
+            this.label3.Text = "秒周期";
+            // 
+            // label監視toRep件数
+            // 
+            this.label監視toRep件数.AutoSize = true;
+            this.label監視toRep件数.Location = new System.Drawing.Point(162, 30);
+            this.label監視toRep件数.Name = "label監視toRep件数";
+            this.label監視toRep件数.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label監視toRep件数.Size = new System.Drawing.Size(47, 19);
+            this.label監視toRep件数.TabIndex = 9;
+            this.label監視toRep件数.Text = "(0件)";
+            // 
+            // textBox監視toRep周期
+            // 
+            this.textBox監視toRep周期.Location = new System.Drawing.Point(43, 22);
+            this.textBox監視toRep周期.Name = "textBox監視toRep周期";
+            this.textBox監視toRep周期.Size = new System.Drawing.Size(53, 27);
+            this.textBox監視toRep周期.TabIndex = 0;
+            this.textBox監視toRep周期.Text = "10";
+            // 
+            // checkBox監視toRep
+            // 
+            this.checkBox監視toRep.AutoSize = true;
+            this.checkBox監視toRep.Checked = true;
+            this.checkBox監視toRep.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox監視toRep.Location = new System.Drawing.Point(10, 28);
+            this.checkBox監視toRep.Name = "checkBox監視toRep";
+            this.checkBox監視toRep.Size = new System.Drawing.Size(15, 14);
+            this.checkBox監視toRep.TabIndex = 5;
+            this.checkBox監視toRep.UseVisualStyleBackColor = true;
+            // 
+            // groupBox基本設定_監視
+            // 
+            this.groupBox基本設定_監視.Controls.Add(this.label5);
+            this.groupBox基本設定_監視.Controls.Add(this.comboBox監視実施アカウント);
+            this.groupBox基本設定_監視.Controls.Add(this.comboBox監視UserMaster);
+            this.groupBox基本設定_監視.Controls.Add(this.checkBox監視UserId);
+            this.groupBox基本設定_監視.Controls.Add(this.checkBox監視_15分以内に履歴のある無料アカウントを除外する);
+            this.groupBox基本設定_監視.Location = new System.Drawing.Point(5, 3);
+            this.groupBox基本設定_監視.Name = "groupBox基本設定_監視";
+            this.groupBox基本設定_監視.Size = new System.Drawing.Size(654, 125);
+            this.groupBox基本設定_監視.TabIndex = 8;
+            this.groupBox基本設定_監視.TabStop = false;
+            this.groupBox基本設定_監視.Text = "基本設定";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(7, 96);
+            this.label5.Name = "label5";
+            this.label5.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label5.Size = new System.Drawing.Size(124, 19);
+            this.label5.TabIndex = 11;
+            this.label5.Text = "監視実施アカウント";
+            // 
+            // comboBox監視実施アカウント
+            // 
+            this.comboBox監視実施アカウント.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox監視実施アカウント.FormattingEnabled = true;
+            this.comboBox監視実施アカウント.Location = new System.Drawing.Point(150, 93);
+            this.comboBox監視実施アカウント.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.comboBox監視実施アカウント.Name = "comboBox監視実施アカウント";
+            this.comboBox監視実施アカウント.Size = new System.Drawing.Size(180, 27);
+            this.comboBox監視実施アカウント.TabIndex = 9;
             // 
             // comboBox監視UserMaster
             // 
@@ -800,26 +998,6 @@
             this.checkBox監視UserId.Text = "対象ユーザー絞込";
             this.checkBox監視UserId.UseVisualStyleBackColor = true;
             // 
-            // button監視ExeList
-            // 
-            this.button監視ExeList.Location = new System.Drawing.Point(633, 71);
-            this.button監視ExeList.Name = "button監視ExeList";
-            this.button監視ExeList.Size = new System.Drawing.Size(103, 44);
-            this.button監視ExeList.TabIndex = 3;
-            this.button監視ExeList.Text = "開始";
-            this.button監視ExeList.UseVisualStyleBackColor = true;
-            this.button監視ExeList.Click += new System.EventHandler(this.button監視ExeList_Click);
-            // 
-            // button監視MakeList
-            // 
-            this.button監視MakeList.Location = new System.Drawing.Point(633, 18);
-            this.button監視MakeList.Name = "button監視MakeList";
-            this.button監視MakeList.Size = new System.Drawing.Size(103, 44);
-            this.button監視MakeList.TabIndex = 1;
-            this.button監視MakeList.Text = "リスト作成";
-            this.button監視MakeList.UseVisualStyleBackColor = true;
-            this.button監視MakeList.Click += new System.EventHandler(this.button監視MakeList_Click);
-            // 
             // checkBox監視_15分以内に履歴のある無料アカウントを除外する
             // 
             this.checkBox監視_15分以内に履歴のある無料アカウントを除外する.AutoSize = true;
@@ -832,19 +1010,19 @@
             this.checkBox監視_15分以内に履歴のある無料アカウントを除外する.Text = "利用制限時間内の無料アカウントを除外する(いいね１日、ﾌﾞｯｸﾏｰｸ・ﾘﾎﾟｽﾄ15分)";
             this.checkBox監視_15分以内に履歴のある無料アカウントを除外する.UseVisualStyleBackColor = true;
             // 
-            // groupBox5
+            // groupBox監視
             // 
-            this.groupBox5.Controls.Add(this.label4);
-            this.groupBox5.Controls.Add(this.label監視件数);
-            this.groupBox5.Controls.Add(this.dataGridView監視);
-            this.groupBox5.Controls.Add(this.textBox監視周期);
-            this.groupBox5.Controls.Add(this.checkBox監視);
-            this.groupBox5.Location = new System.Drawing.Point(3, 134);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(250, 505);
-            this.groupBox5.TabIndex = 7;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "監視";
+            this.groupBox監視.Controls.Add(this.label4);
+            this.groupBox監視.Controls.Add(this.label監視件数);
+            this.groupBox監視.Controls.Add(this.dataGridView監視);
+            this.groupBox監視.Controls.Add(this.textBox監視周期);
+            this.groupBox監視.Controls.Add(this.checkBox監視);
+            this.groupBox監視.Location = new System.Drawing.Point(3, 134);
+            this.groupBox監視.Name = "groupBox監視";
+            this.groupBox監視.Size = new System.Drawing.Size(250, 505);
+            this.groupBox監視.TabIndex = 7;
+            this.groupBox監視.TabStop = false;
+            this.groupBox監視.Text = "監視";
             // 
             // label4
             // 
@@ -884,13 +1062,31 @@
             this.dataGridView監視.Size = new System.Drawing.Size(239, 442);
             this.dataGridView監視.TabIndex = 0;
             // 
+            // dataGridViewTextBoxColumn5
+            // 
+            this.dataGridViewTextBoxColumn5.DataPropertyName = "CheckAccountName";
+            this.dataGridViewTextBoxColumn5.HeaderText = "対象";
+            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+            // 
+            // Column3
+            // 
+            this.Column3.DataPropertyName = "SinceDatetime";
+            this.Column3.HeaderText = "最終更新";
+            this.Column3.Name = "Column3";
+            // 
+            // dataGridViewTextBoxColumn6
+            // 
+            this.dataGridViewTextBoxColumn6.DataPropertyName = "ExeAccountName";
+            this.dataGridViewTextBoxColumn6.HeaderText = "実施候補";
+            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+            // 
             // textBox監視周期
             // 
             this.textBox監視周期.Location = new System.Drawing.Point(43, 22);
             this.textBox監視周期.Name = "textBox監視周期";
             this.textBox監視周期.Size = new System.Drawing.Size(53, 27);
             this.textBox監視周期.TabIndex = 0;
-            this.textBox監視周期.Text = "110";
+            this.textBox監視周期.Text = "10";
             // 
             // checkBox監視
             // 
@@ -902,6 +1098,27 @@
             this.checkBox監視.Size = new System.Drawing.Size(15, 14);
             this.checkBox監視.TabIndex = 5;
             this.checkBox監視.UseVisualStyleBackColor = true;
+            // 
+            // button監視End
+            // 
+            this.button監視End.Enabled = false;
+            this.button監視End.Location = new System.Drawing.Point(665, 62);
+            this.button監視End.Name = "button監視End";
+            this.button監視End.Size = new System.Drawing.Size(103, 44);
+            this.button監視End.TabIndex = 3;
+            this.button監視End.Text = "停止";
+            this.button監視End.UseVisualStyleBackColor = true;
+            this.button監視End.Click += new System.EventHandler(this.button監視End_Click);
+            // 
+            // button監視Start
+            // 
+            this.button監視Start.Location = new System.Drawing.Point(665, 12);
+            this.button監視Start.Name = "button監視Start";
+            this.button監視Start.Size = new System.Drawing.Size(103, 44);
+            this.button監視Start.TabIndex = 1;
+            this.button監視Start.Text = "開始";
+            this.button監視Start.UseVisualStyleBackColor = true;
+            this.button監視Start.Click += new System.EventHandler(this.button監視Start_Click);
             // 
             // buttonものまね
             // 
@@ -948,222 +1165,6 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // groupBox8
-            // 
-            this.groupBox8.Controls.Add(this.dataGridView監視toRep);
-            this.groupBox8.Controls.Add(this.label3);
-            this.groupBox8.Controls.Add(this.label監視toRep件数);
-            this.groupBox8.Controls.Add(this.textBox監視toRep周期);
-            this.groupBox8.Controls.Add(this.checkBox監視toRep);
-            this.groupBox8.Location = new System.Drawing.Point(262, 134);
-            this.groupBox8.Name = "groupBox8";
-            this.groupBox8.Size = new System.Drawing.Size(250, 505);
-            this.groupBox8.TabIndex = 9;
-            this.groupBox8.TabStop = false;
-            this.groupBox8.Text = "監視toRep";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(102, 30);
-            this.label3.Name = "label3";
-            this.label3.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.label3.Size = new System.Drawing.Size(54, 19);
-            this.label3.TabIndex = 10;
-            this.label3.Text = "秒周期";
-            // 
-            // label監視toRep件数
-            // 
-            this.label監視toRep件数.AutoSize = true;
-            this.label監視toRep件数.Location = new System.Drawing.Point(162, 30);
-            this.label監視toRep件数.Name = "label監視toRep件数";
-            this.label監視toRep件数.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.label監視toRep件数.Size = new System.Drawing.Size(47, 19);
-            this.label監視toRep件数.TabIndex = 9;
-            this.label監視toRep件数.Text = "(0件)";
-            // 
-            // textBox監視toRep周期
-            // 
-            this.textBox監視toRep周期.Location = new System.Drawing.Point(43, 22);
-            this.textBox監視toRep周期.Name = "textBox監視toRep周期";
-            this.textBox監視toRep周期.Size = new System.Drawing.Size(53, 27);
-            this.textBox監視toRep周期.TabIndex = 0;
-            this.textBox監視toRep周期.Text = "110";
-            // 
-            // checkBox監視toRep
-            // 
-            this.checkBox監視toRep.AutoSize = true;
-            this.checkBox監視toRep.Checked = true;
-            this.checkBox監視toRep.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox監視toRep.Location = new System.Drawing.Point(10, 28);
-            this.checkBox監視toRep.Name = "checkBox監視toRep";
-            this.checkBox監視toRep.Size = new System.Drawing.Size(15, 14);
-            this.checkBox監視toRep.TabIndex = 5;
-            this.checkBox監視toRep.UseVisualStyleBackColor = true;
-            // 
-            // comboBox監視実施アカウント
-            // 
-            this.comboBox監視実施アカウント.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox監視実施アカウント.FormattingEnabled = true;
-            this.comboBox監視実施アカウント.Location = new System.Drawing.Point(150, 93);
-            this.comboBox監視実施アカウント.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.comboBox監視実施アカウント.Name = "comboBox監視実施アカウント";
-            this.comboBox監視実施アカウント.Size = new System.Drawing.Size(180, 27);
-            this.comboBox監視実施アカウント.TabIndex = 9;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(7, 96);
-            this.label5.Name = "label5";
-            this.label5.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.label5.Size = new System.Drawing.Size(124, 19);
-            this.label5.TabIndex = 11;
-            this.label5.Text = "監視実施アカウント";
-            // 
-            // dataGridViewTextBoxColumn5
-            // 
-            this.dataGridViewTextBoxColumn5.DataPropertyName = "CheckAccountName";
-            this.dataGridViewTextBoxColumn5.HeaderText = "対象";
-            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
-            // 
-            // Column3
-            // 
-            this.Column3.DataPropertyName = "SinceDatetime";
-            this.Column3.HeaderText = "最終更新";
-            this.Column3.Name = "Column3";
-            // 
-            // dataGridViewTextBoxColumn6
-            // 
-            this.dataGridViewTextBoxColumn6.DataPropertyName = "ExeAccountName";
-            this.dataGridViewTextBoxColumn6.HeaderText = "実施候補";
-            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
-            // 
-            // checkBoxモノマネ
-            // 
-            this.checkBoxモノマネ.AutoSize = true;
-            this.checkBoxモノマネ.Checked = true;
-            this.checkBoxモノマネ.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxモノマネ.Location = new System.Drawing.Point(10, 28);
-            this.checkBoxモノマネ.Name = "checkBoxモノマネ";
-            this.checkBoxモノマネ.Size = new System.Drawing.Size(15, 14);
-            this.checkBoxモノマネ.TabIndex = 5;
-            this.checkBoxモノマネ.UseVisualStyleBackColor = true;
-            // 
-            // textBoxモノマネ周期
-            // 
-            this.textBoxモノマネ周期.Location = new System.Drawing.Point(43, 22);
-            this.textBoxモノマネ周期.Name = "textBoxモノマネ周期";
-            this.textBoxモノマネ周期.Size = new System.Drawing.Size(53, 27);
-            this.textBoxモノマネ周期.TabIndex = 0;
-            this.textBoxモノマネ周期.Text = "110";
-            // 
-            // labelモノマネ件数
-            // 
-            this.labelモノマネ件数.AutoSize = true;
-            this.labelモノマネ件数.Location = new System.Drawing.Point(162, 30);
-            this.labelモノマネ件数.Name = "labelモノマネ件数";
-            this.labelモノマネ件数.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.labelモノマネ件数.Size = new System.Drawing.Size(47, 19);
-            this.labelモノマネ件数.TabIndex = 9;
-            this.labelモノマネ件数.Text = "(0件)";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(102, 30);
-            this.label6.Name = "label6";
-            this.label6.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.label6.Size = new System.Drawing.Size(54, 19);
-            this.label6.TabIndex = 10;
-            this.label6.Text = "秒周期";
-            // 
-            // groupBox9
-            // 
-            this.groupBox9.Controls.Add(this.dataGridViewモノマネ);
-            this.groupBox9.Controls.Add(this.label6);
-            this.groupBox9.Controls.Add(this.labelモノマネ件数);
-            this.groupBox9.Controls.Add(this.textBoxモノマネ周期);
-            this.groupBox9.Controls.Add(this.checkBoxモノマネ);
-            this.groupBox9.Location = new System.Drawing.Point(522, 134);
-            this.groupBox9.Name = "groupBox9";
-            this.groupBox9.Size = new System.Drawing.Size(250, 505);
-            this.groupBox9.TabIndex = 10;
-            this.groupBox9.TabStop = false;
-            this.groupBox9.Text = "モノマネ";
-            // 
-            // dataGridView監視toRep
-            // 
-            this.dataGridView監視toRep.AllowUserToAddRows = false;
-            this.dataGridView監視toRep.AllowUserToDeleteRows = false;
-            this.dataGridView監視toRep.AllowUserToResizeColumns = false;
-            this.dataGridView監視toRep.AllowUserToResizeRows = false;
-            this.dataGridView監視toRep.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView監視toRep.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn4,
-            this.dataGridViewTextBoxColumn7,
-            this.dataGridViewTextBoxColumn8});
-            this.dataGridView監視toRep.Location = new System.Drawing.Point(6, 57);
-            this.dataGridView監視toRep.Name = "dataGridView監視toRep";
-            this.dataGridView監視toRep.RowHeadersVisible = false;
-            this.dataGridView監視toRep.RowTemplate.Height = 21;
-            this.dataGridView監視toRep.Size = new System.Drawing.Size(239, 442);
-            this.dataGridView監視toRep.TabIndex = 11;
-            // 
-            // dataGridViewTextBoxColumn4
-            // 
-            this.dataGridViewTextBoxColumn4.DataPropertyName = "CheckAccountName";
-            this.dataGridViewTextBoxColumn4.HeaderText = "対象";
-            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-            // 
-            // dataGridViewTextBoxColumn7
-            // 
-            this.dataGridViewTextBoxColumn7.DataPropertyName = "SinceDatetime";
-            this.dataGridViewTextBoxColumn7.HeaderText = "最終更新";
-            this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
-            // 
-            // dataGridViewTextBoxColumn8
-            // 
-            this.dataGridViewTextBoxColumn8.DataPropertyName = "ExeAccountName";
-            this.dataGridViewTextBoxColumn8.HeaderText = "実施候補";
-            this.dataGridViewTextBoxColumn8.Name = "dataGridViewTextBoxColumn8";
-            // 
-            // dataGridViewモノマネ
-            // 
-            this.dataGridViewモノマネ.AllowUserToAddRows = false;
-            this.dataGridViewモノマネ.AllowUserToDeleteRows = false;
-            this.dataGridViewモノマネ.AllowUserToResizeColumns = false;
-            this.dataGridViewモノマネ.AllowUserToResizeRows = false;
-            this.dataGridViewモノマネ.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewモノマネ.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn9,
-            this.dataGridViewTextBoxColumn10,
-            this.dataGridViewTextBoxColumn15});
-            this.dataGridViewモノマネ.Location = new System.Drawing.Point(7, 57);
-            this.dataGridViewモノマネ.Name = "dataGridViewモノマネ";
-            this.dataGridViewモノマネ.RowHeadersVisible = false;
-            this.dataGridViewモノマネ.RowTemplate.Height = 21;
-            this.dataGridViewモノマネ.Size = new System.Drawing.Size(239, 442);
-            this.dataGridViewモノマネ.TabIndex = 11;
-            // 
-            // dataGridViewTextBoxColumn9
-            // 
-            this.dataGridViewTextBoxColumn9.DataPropertyName = "CheckAccountName";
-            this.dataGridViewTextBoxColumn9.HeaderText = "対象";
-            this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
-            // 
-            // dataGridViewTextBoxColumn10
-            // 
-            this.dataGridViewTextBoxColumn10.DataPropertyName = "SinceDatetime";
-            this.dataGridViewTextBoxColumn10.HeaderText = "最終更新";
-            this.dataGridViewTextBoxColumn10.Name = "dataGridViewTextBoxColumn10";
-            // 
-            // dataGridViewTextBoxColumn15
-            // 
-            this.dataGridViewTextBoxColumn15.DataPropertyName = "ExeAccountName";
-            this.dataGridViewTextBoxColumn15.HeaderText = "実施候補";
-            this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
-            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1201,17 +1202,17 @@
             this.tabPage履歴.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).EndInit();
             this.tabPage監視モノマネ.ResumeLayout(false);
-            this.groupBox7.ResumeLayout(false);
-            this.groupBox7.PerformLayout();
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視)).EndInit();
-            this.groupBox8.ResumeLayout(false);
-            this.groupBox8.PerformLayout();
-            this.groupBox9.ResumeLayout(false);
-            this.groupBox9.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視toRep)).EndInit();
+            this.groupBoxモノマネ.ResumeLayout(false);
+            this.groupBoxモノマネ.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewモノマネ)).EndInit();
+            this.groupBox監視toRep.ResumeLayout(false);
+            this.groupBox監視toRep.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視toRep)).EndInit();
+            this.groupBox基本設定_監視.ResumeLayout(false);
+            this.groupBox基本設定_監視.PerformLayout();
+            this.groupBox監視.ResumeLayout(false);
+            this.groupBox監視.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1284,26 +1285,26 @@
         private System.Windows.Forms.CheckBox checkBoxDuplicate;
         private System.Windows.Forms.TextBox textBoxSearchHistoryAccountId;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.GroupBox groupBox7;
+        private System.Windows.Forms.GroupBox groupBox基本設定_監視;
         private System.Windows.Forms.ComboBox comboBox監視UserMaster;
         private System.Windows.Forms.CheckBox checkBox監視UserId;
-        private System.Windows.Forms.Button button監視ExeList;
-        private System.Windows.Forms.Button button監視MakeList;
+        private System.Windows.Forms.Button button監視End;
+        private System.Windows.Forms.Button button監視Start;
         private System.Windows.Forms.CheckBox checkBox監視_15分以内に履歴のある無料アカウントを除外する;
-        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.GroupBox groupBox監視;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label監視件数;
         private System.Windows.Forms.DataGridView dataGridView監視;
         private System.Windows.Forms.TextBox textBox監視周期;
         private System.Windows.Forms.CheckBox checkBox監視;
-        private System.Windows.Forms.GroupBox groupBox8;
+        private System.Windows.Forms.GroupBox groupBox監視toRep;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label監視toRep件数;
         private System.Windows.Forms.TextBox textBox監視toRep周期;
         private System.Windows.Forms.CheckBox checkBox監視toRep;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox comboBox監視実施アカウント;
-        private System.Windows.Forms.GroupBox groupBox9;
+        private System.Windows.Forms.GroupBox groupBoxモノマネ;
         private System.Windows.Forms.DataGridView dataGridViewモノマネ;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn10;

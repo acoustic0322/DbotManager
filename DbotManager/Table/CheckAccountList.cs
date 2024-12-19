@@ -18,6 +18,7 @@ namespace DbotManager.Table
         public List<int> ExeAccountIdList { get; set; }
         public string ExeAccountNameList { get; set; }
         public DateTime? SinceDatetime { get; set; }
+        public string SinceTweetId { get; set; }
 
 
 

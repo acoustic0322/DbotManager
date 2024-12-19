@@ -703,7 +703,53 @@ def ConvJstTimeZone(dt_utc):
     return dt_utc_naive
 
 #search_tweet
-def proc_check(credentials , check_list_id ):
+def proc_check(credentials , account_id ,account_id2 ,check_account_name, tweet_id ):
+    # セッションを作成
+    session = requests.Session()
+    client = create_client(credentials)
+#    check_account = get_check_account_list(check_list_id)
+
+    check_account_name = check_account_name.replace("@","")
+#    since_datetime = check_account['since_datetime']
+
+    if tweet_id != None and tweet_id != "":
+        tweets = client.search_recent_tweets(
+            f'from:{check_account_name} -is:reply',
+            since_id=tweet_id,
+            max_results=100,
+            tweet_fields=["id","text", "author_id", "created_at","referenced_tweets"]
+        )
+    else:
+        tweets = client.search_recent_tweets(
+            f'from:{check_account_name} -is:reply',
+            max_results=100,
+            tweet_fields=["id","text", "author_id", "created_at","referenced_tweets"]
+        )
+
+    # 取得したツイートを表示する
+    if tweets.data is not None and len(tweets.data) > 0:
+
+#        for tweet in tweets.data:
+#            print(f"{tweet.id}:{tweet.text}:{ConvJstTimeZone(tweet.created_at)}")
+
+        # ツイートを created_at でソート（降順）
+        sorted_tweets = sorted(tweets.data, key=lambda t: t.created_at, reverse=True)
+    
+        # 一番新しいツイートを取得
+        latest_tweet = sorted_tweets[0]
+        print(f"Latest Tweet: {latest_tweet.id} - {latest_tweet.text} - {ConvJstTimeZone(latest_tweet.created_at)}")
+
+        if tweet_id != None and tweet_id != "":
+            return True , latest_tweet.id
+        elif latest_tweet.id != tweet_id:
+#        if since_datetime == NoneType or since_datetime < ConvJstTimeZone(latest_tweet.created_at) or since_id == None or since_id == "":
+#        if since_datetime < ConvJstTimeZone(latest_tweet.created_at) :
+#            update_check_account_list(check_account['id'] , latest_tweet.id , ConvJstTimeZone(latest_tweet.created_at))
+            return True , latest_tweet.id
+
+    return False , ""
+
+def proc_check_debug(credentials , check_list_id ):
     # セッションを作成
     session = requests.Session()
     client = create_client(credentials)
@@ -755,6 +801,7 @@ def proc_check(credentials , check_list_id ):
             return True , latest_tweet.id
 
     return False , ""
+
 
 #search_tweet2
 def proc_checkrep(credentials , check_list_id ):
@@ -891,6 +938,7 @@ def proc_monomane(credentials , account_id):
 
 args = parse_arguments(sys.argv[1:])
 account_id = int(args.get("account_id","0"))
+account_id2 = int(args.get("account_id2","0"))
 tweet_id = args.get("tweet_id","")
 mode = args.get("mode","")
 #tweet_text = args.get("text")
@@ -898,6 +946,7 @@ comment_id = args.get("comment_id","")
 photo_id = args.get("photo_id","")
 video_id = args.get("video_id","")
 check_list_id = args.get("check_list_id","")
+check_account_name = args.get("check_account_name","")
 outputLog(args)
 
 
@@ -931,11 +980,17 @@ if credentials:
 #                success , error_log = proc_get_access_token(credentials , account_id )
                 success , error_log = proc_get_access_token(credentials , account_id )
             elif mode == "check":
-                success , error_log = proc_check(credentials , check_list_id )
+                success , error_log = proc_check(credentials , account_id ,account_id2 ,check_account_name, tweet_id )
             elif mode == "checkrep":
                 success , error_log proc_checkrep(credentials , check_list_id )
             elif mode == "monomane":
                 success , error_log = proc_monomane(credentials , account_id )
+            elif mode == "check_debug":
+                success , error_log = proc_check_debug(credentials , check_list_id )
+            elif mode == "checkrep_debug":
+                success , error_log proc_checkrep_debug(credentials , check_list_id )
+            elif mode == "monomane_debug":
+                success , error_log = proc_monomane_debug(credentials , account_id )
             else:
                 # エラーメッセージを標準エラーに出力
                 outputLog(f"サポートされていないmode: {mode}")

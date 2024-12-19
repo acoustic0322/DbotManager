@@ -28,6 +28,7 @@ namespace DbotManager
     public partial class Form : System.Windows.Forms.Form
     {
         TweetTask _tweetTask;
+        ReserveTask _reserveTask;
 
         public DbConnectionInfo DbConnection = new DbConnectionInfo();
 
@@ -166,6 +167,7 @@ namespace DbotManager
         {
             SupportUtil.MakeFolder("python");
             _tweetTask = new TweetTask(DbConnection , AppendLog);
+            _reserveTask = new ReserveTask(DbConnection, AppendLog);
 
             FillControls();
             _isLoading = false;
@@ -367,7 +369,6 @@ namespace DbotManager
 
         #region TweetTask関連
 
-
         private void MakeList_一括処理()
         {
             _tweetTask.いいね件数 = checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0;
@@ -551,102 +552,8 @@ namespace DbotManager
 
         private void button予約作成_Click(object sender, EventArgs e)
         {
-            var accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable);
-
-            List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
-            List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
-
-            foreach(var account in accountList)
-            {
-                reserveMasterList.Add(dataAccess.GetReserveMaster(account.Id));
-            }
-
-            List<ReserveSchedule> reserveScheduleList = new List<ReserveSchedule>();
-
-            foreach(var reserve in reserveMasterList)
-            {
-                var commentList = commentMasterList.Where(x => x.UserId == reserve.UserId).ToList();
-
-                if (reserve.Reserve1Enable)
-                {
-                    var scheduleWk = MakeSchedule(reserve.Reserve1Count , reserve.Reserve1StartHour , reserve.Reserve1EndHour , reserve.UserId , reserve.AccountId , commentList ,1);
-                    reserveScheduleList.AddRange(scheduleWk);
-                }
-
-                if (reserve.Reserve2Enable)
-                {
-                    var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentList, 2);
-                    reserveScheduleList.AddRange(scheduleWk);
-                }
-
-                if (reserve.Reserve3Enable)
-                {
-                    var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentList, 3);
-                    reserveScheduleList.AddRange(scheduleWk);
-                }
-            }
-
-            dataAccess.DeleteReserveSchedule(DateTime.Today);
-
-            foreach (var item in reserveScheduleList)
-            {
-                dataAccess.InsertReserveSchedule(item);
-            }
-
-            dataGridViewReserveSchedule.DataSource = dataAccess.GetReserveScheduleView(DateTime.Today).OrderBy(x => x.ReserveTime).ToList();
-
+            dataGridViewReserveSchedule.DataSource = _reserveTask.MakeScheduleList();
         }
-
-        private List<ReserveSchedule> MakeSchedule(int count, int startHour, int endHour, int userId, int accountId, List<CommentMaster> commentList , int type)
-        {
-            var schedules = new List<ReserveSchedule>();
-            var random = new Random();
-
-            // 今日の日付
-            var today = DateTime.Today;
-
-            // 開始時刻と終了時刻
-            var startDateTime = startHour >= 24
-                ? today.AddDays(1).AddHours(startHour - 24) // 翌日の時間
-                : today.AddHours(startHour);
-
-            var endDateTime = endHour >= 24
-                ? today.AddDays(1).AddHours(endHour - 24) // 翌日の時間
-                : today.AddHours(endHour);                // 当日の時間
-
-            // ランダムな時間を生成する
-            for (int i = 0; i < count; i++)
-            {
-                DateTime randomTime;
-
-                do
-                {
-                    // ランダムな時刻を生成
-                    var totalMinutes = (int)(endDateTime - startDateTime).TotalMinutes;
-                    randomTime = startDateTime.AddMinutes(random.Next(totalMinutes)).AddSeconds(random.Next(60));
-                }
-                // 直前のスケジュールと5分以上の間隔を設ける
-                while (schedules.Any(s => Math.Abs(((DateTime)s.ReserveTime - randomTime).TotalMinutes) < 5));
-
-                // CommentMaster からランダムに1つ選択
-                var randomComment = commentList[random.Next(commentList.Count)];
-
-                // スケジュールを追加
-                schedules.Add(new ReserveSchedule
-                {
-                    ReserveDate = today,
-                    ReserveTime = randomTime,
-                    UserId = userId,
-                    AccountId = accountId,
-                    CommentId = randomComment.Id,
-                    ReserveId = $"{accountId}-{type}-{(i+1)}",
-                    Result = false
-                });
-            }
-
-            return schedules;
-        }
-
 
         AccountDialog _accountDialog;
 
@@ -725,17 +632,28 @@ namespace DbotManager
 
         #region 監視・モノマネ
 
-        private void button監視MakeList_Click(object sender, EventArgs e)
+        private void button監視Start_Click(object sender, EventArgs e)
         {
             MakeList_監視();
+
+            _tweetTask.StartTask_監視();
+
+            button監視Start.Enabled = false;
+            button監視End.Enabled = true;
+
+            groupBox基本設定_監視.Enabled = false;
         }
 
-        private void button監視ExeList_Click(object sender, EventArgs e)
+        private void button監視End_Click(object sender, EventArgs e)
         {
+            _tweetTask.EndTask_監視();
+            button監視Start.Enabled = true;
+            button監視End.Enabled = false;
 
+            groupBox基本設定_監視.Enabled = true;
         }
 
-        private void MakeList_監視()
+        private void MakeList_監視(bool 監視flag = true, bool 監視toRepflag = true, bool モノマネflag = true)
         {
             _tweetTask.監視Enable = checkBox監視.Checked;
             _tweetTask.監視toRepEnable = checkBox監視toRep.Checked;
@@ -745,8 +663,11 @@ namespace DbotManager
             _tweetTask.周期秒数_監視toRep = int.Parse(textBox監視toRep周期.Text);
             _tweetTask.周期秒数_モノマネ = int.Parse(textBoxモノマネ周期.Text);
 
-            _tweetTask.Init監視list();
+            _tweetTask.監視実施AccountId = int.Parse(comboBox監視実施アカウント.SelectedValue.ToString());
+            
+            _tweetTask.Init監視list(監視flag , 監視toRepflag , モノマネflag);
 
+            if(監視flag)
             {
                 List<監視アカウントInfo> list = new List<監視アカウントInfo>();
                 foreach (var item in _tweetTask.CheckAccountList_監視)

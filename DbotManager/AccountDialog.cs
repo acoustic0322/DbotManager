@@ -405,7 +405,8 @@ namespace DbotManager
             string tweetId = GetTweetId(true);
 
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
-            tweetTask.TweetProc(TweetProcTypes.LIKE, userId, accountId, 0, tweetId);
+            //            tweetTask.TweetProc(TweetProcTypes.LIKE, userId, accountId, 0, tweetId);
+            tweetTask.TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.LIKE, UserId = userId, AccountId = accountId, TweetId = tweetId });
         }
 
         private void buttonブックマーク_Debug_Click(object sender, EventArgs e)
@@ -415,7 +416,8 @@ namespace DbotManager
             string tweetId = GetTweetId(true);
 
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
-            tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, 0, tweetId);
+//            tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, 0, tweetId);
+            tweetTask.TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.BOOKMARK, UserId = userId, AccountId = accountId, TweetId = tweetId });
         }
 
         private void buttonリプライ_Debug_Click(object sender, EventArgs e)
@@ -425,7 +427,8 @@ namespace DbotManager
             string tweetId = GetTweetId(true);
 
             TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
-            tweetTask.TweetProc(TweetProcTypes.REPOST, userId, accountId, 0, tweetId);
+//            tweetTask.TweetProc(TweetProcTypes.REPOST, userId, accountId, 0, tweetId);
+            tweetTask.TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPOST, UserId = userId, AccountId = accountId, TweetId = tweetId });
         }
 
         private void buttonコメント編集_Click(object sender, EventArgs e)

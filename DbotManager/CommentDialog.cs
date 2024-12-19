@@ -173,7 +173,10 @@ namespace DbotManager
             string tweetId = GetTweetId(true);
 
             TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
-            _tweetTask.TweetProc(radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY, userId, accountId, commentId, tweetId);
+//            _tweetTask.TweetProc(radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY, userId, accountId, commentId, tweetId);
+            _tweetTask.TweetProc(new TweetCommand() { TweetProcType = radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY,
+                UserId = userId, AccountId = accountId, CommentId=commentId, TweetId = tweetId });
+
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
