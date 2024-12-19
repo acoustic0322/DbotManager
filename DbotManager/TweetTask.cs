@@ -346,8 +346,8 @@ namespace DbotManager
 
                 var myHistory = tweetHistoryList.Where(x => x.AccountId == account.Id && x.Result == true).ToList();
 
-                // 対象ツイートIDで処理済みの場合はスルー
-                if (myHistory.Where(x => x.TargetTweetID == TargetTweetID).Count() > 0) continue;
+                // 対象ツイートIDのモードで処理済みの場合はスルー
+                if (myHistory.Where(x => x.TargetTweetID == TargetTweetID && x.Mode == tweetProcType).Count() > 0) continue;
 
                 var lastMyHistoryList = myHistory.Where(x => x.AccountId == account.Id).OrderByDescending(x => x.UpdateTime).ToList();
                 if (lastMyHistoryList.Count() > 0)

@@ -212,11 +212,8 @@ namespace DbotManager
 
                 MakeList_一括処理();
 
-#if DEBUG
-#else
-                ExeList();
+                Exe一括処理();
                 this.Close();
-#endif
             }
         }
 
