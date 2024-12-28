@@ -190,8 +190,11 @@ namespace DbotManager
 
                 if(reSelect)
                 {
-                    var id = list.FirstOrDefault().Id;
-                    SupportUtil.SelectRowsByColumnValue(dataGridViewCheckAccount, CommentMaster_Id.Name, id);
+                    if(list.Count > 0)
+                    {
+                        var id = list.FirstOrDefault().Id;
+                        SupportUtil.SelectRowsByColumnValue(dataGridViewCheckAccount, CommentMaster_Id.Name, id);
+                    }
                 }
 
                 var accountName = _accountMasterList.Where(x => x.Id == accountId).FirstOrDefault().Name;

@@ -505,6 +505,78 @@ namespace DbotManager
                 CheckAccountList_監視.Clear();
             }
 
+            if (監視toRepEnable && 監視toRepflag)
+            {
+                var 監視list = list.Where(x => x.Mode == TweetProcTypes.CHECKREP).ToList();
+                var 監視group = 監視list.GroupBy(x => x.CheckAccount);
+
+                List<CheckAccountList> listWk = new List<CheckAccountList>();
+
+                foreach (var gp in 監視group)
+                {
+                    DateTime? sinceDateTime = null;
+                    if (CheckAccountList_監視toRep.Where(x => x.CheckAccount == gp.FirstOrDefault().CheckAccount).Count() > 0)
+                    {
+                        sinceDateTime = CheckAccountList_監視toRep.Where(x => x.CheckAccount == gp.FirstOrDefault().CheckAccount).FirstOrDefault().SinceDatetime;
+                    }
+
+                    CheckAccountList item = new CheckAccountList()
+                    {
+                        AccountId = 0,
+                        CheckAccount = gp.FirstOrDefault().CheckAccount,
+                        Enable = true,
+                        Mode = TweetProcTypes.CHECKREP,
+                        ExeAccountIdList = gp.Select(x => x.AccountId).ToList(),
+                        ExeAccountNameList = GetNameList(accountMasterList, gp.Select(x => x.AccountId).ToList()),
+
+                        // 実施済の更新日時で更新
+                        SinceDatetime = sinceDateTime
+                    };
+                    listWk.Add(item);
+                }
+                CheckAccountList_監視toRep = listWk;
+            }
+            else
+            {
+                CheckAccountList_監視toRep.Clear();
+            }
+
+            if (モノマネEnable && モノマネflag)
+            {
+                var 監視list = list.Where(x => x.Mode == TweetProcTypes.MONOMANE).ToList();
+                var 監視group = 監視list.GroupBy(x => x.CheckAccount);
+
+                List<CheckAccountList> listWk = new List<CheckAccountList>();
+
+                foreach (var gp in 監視group)
+                {
+                    DateTime? sinceDateTime = null;
+                    if (CheckAccountList_監視toRep.Where(x => x.CheckAccount == gp.FirstOrDefault().CheckAccount).Count() > 0)
+                    {
+                        sinceDateTime = CheckAccountList_モノマネ.Where(x => x.CheckAccount == gp.FirstOrDefault().CheckAccount).FirstOrDefault().SinceDatetime;
+                    }
+
+                    CheckAccountList item = new CheckAccountList()
+                    {
+                        AccountId = 0,
+                        CheckAccount = gp.FirstOrDefault().CheckAccount,
+                        Enable = true,
+                        Mode = TweetProcTypes.MONOMANE,
+                        ExeAccountIdList = gp.Select(x => x.AccountId).ToList(),
+                        ExeAccountNameList = GetNameList(accountMasterList, gp.Select(x => x.AccountId).ToList()),
+
+                        // 実施済の更新日時で更新
+                        SinceDatetime = sinceDateTime
+                    };
+                    listWk.Add(item);
+                }
+                CheckAccountList_モノマネ = listWk;
+            }
+            else
+            {
+                CheckAccountList_モノマネ.Clear();
+            }
+
         }
 
 
@@ -515,11 +587,23 @@ namespace DbotManager
             _監視Timer.Elapsed += OnTimedEvent_監視;
             _監視Timer.AutoReset = true; // 繰り返し実行
             _監視Timer.Enabled = true;
+
+            _監視toRepTimer = new System.Timers.Timer(周期秒数_監視toRep * 1000);
+            _監視toRepTimer.Elapsed += OnTimedEvent_監視toRep;
+            _監視toRepTimer.AutoReset = true; // 繰り返し実行
+            _監視toRepTimer.Enabled = true;
+
+            _モノマネtimer = new System.Timers.Timer(周期秒数_モノマネ * 1000);
+            _モノマネtimer.Elapsed += OnTimedEvent_監視モノマネ;
+            _モノマネtimer.AutoReset = true; // 繰り返し実行
+            _モノマネtimer.Enabled = true;
         }
 
         public void EndTask_監視()
         {
             _監視Timer.Enabled = false;
+            _監視toRepTimer.Enabled = false;
+            _モノマネtimer.Enabled = false;
         }
 
         public void OnTimedEvent_監視(object sender, ElapsedEventArgs e)
@@ -545,6 +629,58 @@ namespace DbotManager
             }
 
             Init監視list(true, false, false);
+            _監視Timer.Enabled = true;
+        }
+
+        public void OnTimedEvent_監視toRep(object sender, ElapsedEventArgs e)
+        {
+            _監視toRepTimer.Enabled = false;
+            Console.WriteLine($"処理を実行中: {DateTime.Now}");
+
+            foreach (var item in CheckAccountList_監視toRep)
+            {
+                int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
+                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount.Replace("@", ""), TweetId = item.SinceTweetId });
+
+#if DEBUG
+                tweetResult.result = true;
+                tweetResult.contents = "1872912589858193502";
+
+#endif
+
+                if (tweetResult != null && tweetResult.result == true)
+                {
+                    TweetProcReply(item, tweetResult);
+                }
+            }
+
+            Init監視list(false, true, false);
+            _監視toRepTimer.Enabled = true;
+        }
+
+        public void OnTimedEvent_監視モノマネ(object sender, ElapsedEventArgs e)
+        {
+            _監視Timer.Enabled = false;
+            Console.WriteLine($"処理を実行中: {DateTime.Now}");
+
+            foreach (var item in CheckAccountList_モノマネ)
+            {
+                int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
+                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount.Replace("@", ""), TweetId = item.SinceTweetId });
+
+#if DEBUG
+                tweetResult.result = true;
+                tweetResult.contents = "1872912589858193502";
+
+#endif
+
+                if (tweetResult != null && tweetResult.result == true)
+                {
+                    TweetProcReply(item, tweetResult);
+                }
+            }
+
+            Init監視list(false, false, true);
             _監視Timer.Enabled = true;
         }
 

@@ -703,6 +703,38 @@ namespace DbotManager
                 label監視件数.Text = $"({list.Count}件)";
             }
 
+            if (監視toRepflag)
+            {
+                List<監視アカウントInfo> list = new List<監視アカウントInfo>();
+                foreach (var item in _tweetTask.CheckAccountList_監視toRep)
+                {
+                    list.Add(new 監視アカウントInfo()
+                    {
+                        CheckAccountName = item.CheckAccount,
+                        ExeAccountName = item.ExeAccountNameList,
+                        SinceDatetime = item.SinceDatetime
+                    });
+                }
+                dataGridView監視toRep.DataSource = list;
+                label監視toRep件数.Text = $"({list.Count}件)";
+            }
+
+            if (モノマネflag)
+            {
+                List<監視アカウントInfo> list = new List<監視アカウントInfo>();
+                foreach (var item in _tweetTask.CheckAccountList_モノマネ)
+                {
+                    list.Add(new 監視アカウントInfo()
+                    {
+                        CheckAccountName = item.CheckAccount,
+                        ExeAccountName = item.ExeAccountNameList,
+                        SinceDatetime = item.SinceDatetime
+                    });
+                }
+                dataGridViewモノマネ.DataSource = list;
+                labelモノマネ件数.Text = $"({list.Count}件)";
+            }
+
         }
 
         private void Exe監視()

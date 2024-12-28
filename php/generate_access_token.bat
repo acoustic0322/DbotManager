@@ -1,1 +1,0 @@
-php generate_access_token.php
