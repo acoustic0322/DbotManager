@@ -110,6 +110,8 @@
             this.button監視End = new System.Windows.Forms.Button();
             this.button監視Start = new System.Windows.Forms.Button();
             this.tabPage予約 = new System.Windows.Forms.TabPage();
+            this.button予約End = new System.Windows.Forms.Button();
+            this.button予約Start = new System.Windows.Forms.Button();
             this.dataGridViewReserveSchedule = new System.Windows.Forms.DataGridView();
             this.dataGridViewReserveSchedule_ReserveId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewReserveSchedule_UserName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -128,8 +130,6 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.button予約Start = new System.Windows.Forms.Button();
-            this.button予約End = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -992,6 +992,26 @@
             this.tabPage予約.Text = "予約機能";
             this.tabPage予約.UseVisualStyleBackColor = true;
             // 
+            // button予約End
+            // 
+            this.button予約End.Location = new System.Drawing.Point(276, 7);
+            this.button予約End.Name = "button予約End";
+            this.button予約End.Size = new System.Drawing.Size(125, 47);
+            this.button予約End.TabIndex = 7;
+            this.button予約End.Text = "停止";
+            this.button予約End.UseVisualStyleBackColor = true;
+            this.button予約End.Click += new System.EventHandler(this.button予約End_Click);
+            // 
+            // button予約Start
+            // 
+            this.button予約Start.Location = new System.Drawing.Point(145, 7);
+            this.button予約Start.Name = "button予約Start";
+            this.button予約Start.Size = new System.Drawing.Size(125, 47);
+            this.button予約Start.TabIndex = 6;
+            this.button予約Start.Text = "開始";
+            this.button予約Start.UseVisualStyleBackColor = true;
+            this.button予約Start.Click += new System.EventHandler(this.button予約Start_Click);
+            // 
             // dataGridViewReserveSchedule
             // 
             this.dataGridViewReserveSchedule.AllowUserToAddRows = false;
@@ -1169,26 +1189,6 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // button予約Start
-            // 
-            this.button予約Start.Location = new System.Drawing.Point(145, 7);
-            this.button予約Start.Name = "button予約Start";
-            this.button予約Start.Size = new System.Drawing.Size(125, 47);
-            this.button予約Start.TabIndex = 6;
-            this.button予約Start.Text = "開始";
-            this.button予約Start.UseVisualStyleBackColor = true;
-            this.button予約Start.Click += new System.EventHandler(this.button予約Start_Click);
-            // 
-            // button予約End
-            // 
-            this.button予約End.Location = new System.Drawing.Point(276, 7);
-            this.button予約End.Name = "button予約End";
-            this.button予約End.Size = new System.Drawing.Size(125, 47);
-            this.button予約End.TabIndex = 7;
-            this.button予約End.Text = "停止";
-            this.button予約End.UseVisualStyleBackColor = true;
-            this.button予約End.Click += new System.EventHandler(this.button予約End_Click);
-            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1203,6 +1203,7 @@
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "Form";
             this.Text = "DbotManager";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.tabControl.ResumeLayout(false);
             this.tabPage一括処理.ResumeLayout(false);

@@ -173,6 +173,11 @@ namespace DbotManager
             _isLoading = false;
         }
 
+        private void Form_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SaveIniファイル();
+        }
+
 
         #region DataGridView
 
@@ -187,6 +192,8 @@ namespace DbotManager
             FillDebugControls_AccountMaster();
             FillDebugControls_UserName();
             FillControls_WebCommand();
+
+            ReadIniファイル();
         }
 
         private void FillControls_WebCommand()
@@ -704,6 +711,89 @@ namespace DbotManager
         }
 
         #endregion 監視・モノマネ
+
+        #region iniファイル
+
+        private void SaveIniファイル()
+        {
+            string filePath = "config.ini";
+
+            string account = comboBox監視実施アカウント.SelectedValue == null ? "" : comboBox監視実施アカウント.SelectedValue.ToString();
+
+            // 複数の設定項目を保存する内容
+            var iniContent = $@"
+[監視設定]
+監視実施アカウント={account}
+監視周期={textBox監視周期.Text}
+監視toRep周期={textBox監視toRep周期.Text}
+モノマネ周期={textBoxモノマネ周期.Text}
+
+";
+            // ファイルに書き込み
+            File.WriteAllText(filePath, iniContent.Trim());
+
+        }
+
+        private void ReadIniファイル()
+        {
+            string filePath = "config.ini";
+
+            // ファイルを読み込み
+            if (File.Exists(filePath))
+            {
+                var lines = File.ReadAllLines(filePath);
+                var settings = new Dictionary<string, Dictionary<string, string>>();
+                string currentSection = "";
+
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith("[") && line.EndsWith("]"))
+                    {
+                        currentSection = line.Trim('[', ']');
+                        if (!settings.ContainsKey(currentSection))
+                        {
+                            settings[currentSection] = new Dictionary<string, string>();
+                        }
+                    }
+                    else if (!string.IsNullOrWhiteSpace(line) && line.Contains('='))
+                    {
+                        var keyValue = line.Split(new[] { '=' }, 2);
+                        if (!string.IsNullOrEmpty(currentSection) && keyValue.Length == 2)
+                        {
+                            settings[currentSection][keyValue[0].Trim()] = keyValue[1].Trim();
+                        }
+                    }
+                }
+
+                // 設定を確認
+                if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("監視実施アカウント"))
+                {
+                    string account = settings["監視設定"]["監視実施アカウント"];
+                    comboBox監視実施アカウント.SelectedValue = int.Parse(account);
+                }
+                // 設定を確認
+                if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("監視周期"))
+                {
+                    string account = settings["監視設定"]["監視周期"];
+                    textBox監視周期.Text = account;
+                }
+                // 設定を確認
+                if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("監視toRep周期"))
+                {
+                    string account = settings["監視設定"]["監視toRep周期"];
+                    textBox監視toRep周期.Text = account;
+                }
+                // 設定を確認
+                if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("モノマネ周期"))
+                {
+                    string account = settings["監視設定"]["モノマネ周期"];
+                    textBoxモノマネ周期.Text = account;
+                }
+            }
+        }
+
+        #endregion
+
 
     }
 }

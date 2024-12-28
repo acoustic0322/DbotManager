@@ -140,6 +140,7 @@
     <Compile Include="SupportUtil.cs" />
     <Compile Include="Table\CheckAccountList.cs" />
     <Compile Include="Table\AccountMaster.cs" />
+    <Compile Include="Table\CheckUserMaster.cs" />
     <Compile Include="Table\CommentMaster.cs" />
     <Compile Include="Table\MediaMaster.cs" />
     <Compile Include="Table\ReserveSchedule.cs" />

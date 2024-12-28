@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Timers;
 
 using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
 
 namespace DbotManager
 {
@@ -447,6 +448,22 @@ namespace DbotManager
             List<CheckAccountList> list = dataAccess.GetCheckAccountList()
                 .Where(x => x.Enable && accountMasterList.Any(y => y.Id == x.AccountId)).ToList();
 
+            List<CheckUserMaster> checkUserMasterList = dataAccess.GetCheckUserMaster();
+//                .Where(x => list.Any(y => y.CheckAccount == x.UserName)).ToList();
+
+            foreach(var row in list)
+            {
+                if(checkUserMasterList.Where(x => x.UserName == row.CheckAccount.Replace("@","")).Count() == 0)
+                {
+                    dataAccess.InsertCheckUserMaster(new CheckUserMaster()
+                    {
+                        UserName = row.CheckAccount.Replace("@",""),
+                        UpdateTime = DateTime.Now
+                    });
+                }
+            }
+
+
             var 監視toReplist = list.Where(x => x.Mode == TweetProcTypes.CHECKREP).ToList();
             var モノマネlist = list.Where(x => x.Mode == TweetProcTypes.MONOMANE).ToList();
 
@@ -507,12 +524,19 @@ namespace DbotManager
 
         public void OnTimedEvent_監視(object sender, ElapsedEventArgs e)
         {
+            _監視Timer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
 
             foreach (var item in CheckAccountList_監視)
             {
                 int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
-                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount, TweetId = item.SinceTweetId });
+                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount.Replace("@",""), TweetId = item.SinceTweetId });
+
+#if DEBUG
+                tweetResult.result = true;
+                tweetResult.contents = "1872912589858193502";
+
+#endif
 
                 if (tweetResult != null && tweetResult.result == true)
                 {
@@ -521,6 +545,7 @@ namespace DbotManager
             }
 
             Init監視list(true, false, false);
+            _監視Timer.Enabled = true;
         }
 
         #endregion
@@ -617,10 +642,13 @@ namespace DbotManager
                 case TweetProcTypes.CHECK:
                 case TweetProcTypes.CHECKREP:
                 case TweetProcTypes.MONOMANE:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_account_name={tweetCommand.CheckAccountName.Replace("@","")}";
+                    /*
                     if (tweetCommand.DebugMode)
-                        pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)}_debug account_id={tweetCommand.AccountId} check_list_id={tweetCommand.CheckListId}";
+                        pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)}_debug account_id={tweetCommand.CheckAccountName} check_list_id={tweetCommand.CheckListId}";
                     else
                         pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} account_id2={tweetCommand.AccountId2} check_account_name={tweetCommand.CheckAccountName} tweet_id={(tweetCommand.TweetId == null ? "" : tweetCommand.TweetId)}";
+                    */
 
                     //                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_list_id={tweetCommand.CheckListId}";
                     break;

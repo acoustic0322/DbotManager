@@ -483,7 +483,7 @@ public class MySqlDataAccess
                                 Id = int.Parse(reader["id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
                                 Mode = GetTweetProcType(reader["mode"].ToString()),
-                                CheckAccount = reader["check_account"].ToString(),
+                                CheckAccount = reader["check_account"].ToString().Replace("@",""),
                                 Enable = reader["enable"].ToString() == "1",
                             };
 
@@ -546,6 +546,154 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = "DELETE FROM check_account_list WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    // 削除された行数が1以上で成功とみなす
+                    isDeleted = rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return isDeleted;
+    }
+
+
+
+    #endregion
+
+    #region CheckUserMaster
+
+    public int InsertCheckUserMaster(CheckUserMaster row)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                INSERT INTO check_user_master 
+                (
+                    user_name, user_id, update_time
+                )
+                VALUES 
+                (@UserName, @UserId, @UpdateTime
+                );
+                SELECT LAST_INSERT_ID(); ";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    //                    command.Parameters.AddWithValue("@Id", account.Id);
+                    command.Parameters.AddWithValue("@UserName", row.UserName);
+                    command.Parameters.AddWithValue("@UserId", row.UserId);
+                    command.Parameters.AddWithValue("@UpdateTime", row.UpdateTime);
+
+                    //                    command.ExecuteNonQuery();
+                    int insertedId = Convert.ToInt32(command.ExecuteScalar());
+                    return insertedId;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+
+            return -1;
+        }
+    }
+
+    public List<CheckUserMaster> GetCheckUserMaster()
+    {
+        List<CheckUserMaster> checkAccountList = new List<CheckUserMaster>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"SELECT id ,user_name, user_id, update_time
+                    FROM check_user_master
+                    ";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            CheckUserMaster accountItem = new CheckUserMaster()
+                            {
+                                Id = int.Parse(reader["id"].ToString()),
+                                UserName = reader["user_name"].ToString(),
+                                UserId = reader["user_id"].ToString(),
+                            };
+
+                            checkAccountList.Add(accountItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return checkAccountList;
+    }
+
+    public void UpdateCheckUserMaster(CheckUserMaster item)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                UPDATE check_user_master 
+                SET user_name = @UserName, 
+                    user_id = @UserId 
+                WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserName", item.UserName);
+                    command.Parameters.AddWithValue("@UserId", item.UserId);
+                    command.Parameters.AddWithValue("@Id", item.Id);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+    public bool DeleteCheckUserMaster(int id)
+    {
+        bool isDeleted = false;
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = "DELETE FROM check_user_master WHERE id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
