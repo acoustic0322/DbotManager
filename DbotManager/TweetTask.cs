@@ -668,6 +668,8 @@ namespace DbotManager
                 if (tweetResult != null)
                 {
                     Console.WriteLine($"Result: {tweetResult.result}, Contents: {tweetResult.contents} Now:{DateTime.Now.ToString()}");
+
+                    logAction?.Invoke($"Result: {tweetResult.result}, Contents: {tweetResult.contents} Now:{DateTime.Now.ToString()}");
                 }
                 else
                 {
