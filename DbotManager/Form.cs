@@ -556,7 +556,9 @@ namespace DbotManager
 
         private void button予約作成_Click(object sender, EventArgs e)
         {
-            dataGridViewReserveSchedule.DataSource = _reserveTask.MakeScheduleList();
+            var list = _reserveTask.MakeScheduleList().OrderBy(x => x.ReserveTime).ToList();
+
+            dataGridViewReserveSchedule.DataSource = list;
         }
 
 

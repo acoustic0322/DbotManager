@@ -38,6 +38,7 @@ namespace DbotManager
             var accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable);
 
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
+            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
 
             foreach (var account in accountList)
@@ -50,28 +51,50 @@ namespace DbotManager
 
             foreach (var reserve in reserveMasterList)
             {
-                var commentList = commentMasterList.Where(x => x.UserId == reserve.UserId).ToList();
+                // ランダム指定済みのコメントは除外する
+                var commentList = commentMasterList
+                    .Where(x => x.AccountId == reserve.AccountId)// && !withoutCommentIdList.Contains(x.Id))
+                    .ToList();
+
+                if (commentList.Count == 0) continue;
 
                 if (reserve.Reserve1Enable)
                 {
-                    var scheduleWk = MakeSchedule(reserve.Reserve1Count, reserve.Reserve1StartHour, reserve.Reserve1EndHour, reserve.UserId, reserve.AccountId, commentList, 1);
+                    var scheduleWk = MakeSchedule(reserve.Reserve1Count, reserve.Reserve1StartHour, reserve.Reserve1EndHour, reserve.UserId, reserve.AccountId, commentList, 1 , reserveScheduleList);
                     reserveScheduleList.AddRange(scheduleWk);
                 }
 
                 if (reserve.Reserve2Enable)
                 {
-                    var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentList, 2);
+                    var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentList, 2, reserveScheduleList);
                     reserveScheduleList.AddRange(scheduleWk);
                 }
 
                 if (reserve.Reserve3Enable)
                 {
-                    var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentList, 3);
+                    var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentList, 3, reserveScheduleList);
                     reserveScheduleList.AddRange(scheduleWk);
                 }
             }
 
             dataAccess.DeleteReserveSchedule(DateTime.Today);
+
+
+            foreach (var item in reserveScheduleList)
+            {
+                var commentItem = commentMasterList.Where(x => x.Id == item.CommentId).ToList();
+                if(commentItem.Count > 0)
+                {
+                    item.Comment = commentItem.FirstOrDefault().Comment;
+                }
+
+                var accountItem = accountMasterList.Where(x => x.Id == item.AccountId).ToList();
+                if (accountItem.Count > 0)
+                {
+                    item.AccountName = accountItem.FirstOrDefault().Name;
+                }
+            }
+
 
             foreach (var item in reserveScheduleList)
             {
@@ -86,10 +109,11 @@ namespace DbotManager
             return reserveScheduleList;
         }
 
-        private List<ReserveSchedule> MakeSchedule(int count, int startHour, int endHour, int userId, int accountId, List<CommentMaster> commentList, int type)
+        private List<ReserveSchedule> MakeSchedule(int count, int startHour, int endHour, int userId, int accountId, List<CommentMaster> commentList, int type , List<ReserveSchedule> reserveList)
         {
             var schedules = new List<ReserveSchedule>();
             var random = new Random();
+            var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
 
             // 今日の日付
             var today = DateTime.Today;
@@ -117,8 +141,12 @@ namespace DbotManager
                 // 直前のスケジュールと5分以上の間隔を設ける
                 while (schedules.Any(s => Math.Abs(((DateTime)s.ReserveTime - randomTime).TotalMinutes) < 5));
 
+                var commentList_重複除外 = commentList.Where(x => !withoutCommentIdList.Contains(x.Id)).ToList();
+
+                if (commentList_重複除外.Count == 0) continue;
+
                 // CommentMaster からランダムに1つ選択
-                var randomComment = commentList[random.Next(commentList.Count)];
+                var randomComment = commentList_重複除外[random.Next(commentList.Count)];
 
                 // スケジュールを追加
                 schedules.Add(new ReserveSchedule
@@ -131,6 +159,8 @@ namespace DbotManager
                     ReserveId = $"{accountId}-{type}-{(i + 1)}",
                     Result = false
                 });
+
+                withoutCommentIdList.Add(randomComment.Id);
             }
 
             return schedules;

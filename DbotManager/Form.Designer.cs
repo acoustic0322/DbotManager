@@ -113,13 +113,6 @@
             this.button予約End = new System.Windows.Forms.Button();
             this.button予約Start = new System.Windows.Forms.Button();
             this.dataGridViewReserveSchedule = new System.Windows.Forms.DataGridView();
-            this.dataGridViewReserveSchedule_ReserveId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewReserveSchedule_UserName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewReserveSchedule_AccountId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewReserveSchedule_AccountName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewReserveSchedule_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewReserveSchedule_ReserveTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewReserveSchedule_Result = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.button予約作成 = new System.Windows.Forms.Button();
             this.tabPage履歴 = new System.Windows.Forms.TabPage();
             this.label1 = new System.Windows.Forms.Label();
@@ -130,6 +123,15 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
+            this.dataGridViewReserveSchedule_Result = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewReserveSchedule_ReserveTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewReserveSchedule_AccountName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewReserveSchedule_Comment = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewReserveSchedule_ReserveId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewReserveSchedule_UserName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewReserveSchedule_AccountId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CommentId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ReserveDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -989,7 +991,7 @@
             this.tabPage予約.Name = "tabPage予約";
             this.tabPage予約.Size = new System.Drawing.Size(781, 642);
             this.tabPage予約.TabIndex = 4;
-            this.tabPage予約.Text = "予約機能";
+            this.tabPage予約.Text = "予約ポスト";
             this.tabPage予約.UseVisualStyleBackColor = true;
             // 
             // button予約End
@@ -1016,15 +1018,18 @@
             // 
             this.dataGridViewReserveSchedule.AllowUserToAddRows = false;
             this.dataGridViewReserveSchedule.AllowUserToDeleteRows = false;
+            this.dataGridViewReserveSchedule.AllowUserToResizeRows = false;
             this.dataGridViewReserveSchedule.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewReserveSchedule.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewReserveSchedule_Result,
+            this.dataGridViewReserveSchedule_ReserveTime,
+            this.dataGridViewReserveSchedule_AccountName,
+            this.dataGridViewReserveSchedule_Comment,
             this.dataGridViewReserveSchedule_ReserveId,
             this.dataGridViewReserveSchedule_UserName,
             this.dataGridViewReserveSchedule_AccountId,
-            this.dataGridViewReserveSchedule_AccountName,
-            this.dataGridViewReserveSchedule_Comment,
-            this.dataGridViewReserveSchedule_ReserveTime,
-            this.dataGridViewReserveSchedule_Result});
+            this.CommentId,
+            this.ReserveDate});
             this.dataGridViewReserveSchedule.Location = new System.Drawing.Point(14, 60);
             this.dataGridViewReserveSchedule.Name = "dataGridViewReserveSchedule";
             this.dataGridViewReserveSchedule.RowHeadersVisible = false;
@@ -1032,50 +1037,6 @@
             this.dataGridViewReserveSchedule.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewReserveSchedule.Size = new System.Drawing.Size(719, 524);
             this.dataGridViewReserveSchedule.TabIndex = 5;
-            // 
-            // dataGridViewReserveSchedule_ReserveId
-            // 
-            this.dataGridViewReserveSchedule_ReserveId.DataPropertyName = "ReserveId";
-            this.dataGridViewReserveSchedule_ReserveId.HeaderText = "予約ID";
-            this.dataGridViewReserveSchedule_ReserveId.Name = "dataGridViewReserveSchedule_ReserveId";
-            // 
-            // dataGridViewReserveSchedule_UserName
-            // 
-            this.dataGridViewReserveSchedule_UserName.DataPropertyName = "UserName";
-            this.dataGridViewReserveSchedule_UserName.HeaderText = "ユーザー名";
-            this.dataGridViewReserveSchedule_UserName.Name = "dataGridViewReserveSchedule_UserName";
-            // 
-            // dataGridViewReserveSchedule_AccountId
-            // 
-            this.dataGridViewReserveSchedule_AccountId.DataPropertyName = "AccountId";
-            this.dataGridViewReserveSchedule_AccountId.HeaderText = "アカウントID";
-            this.dataGridViewReserveSchedule_AccountId.Name = "dataGridViewReserveSchedule_AccountId";
-            // 
-            // dataGridViewReserveSchedule_AccountName
-            // 
-            this.dataGridViewReserveSchedule_AccountName.DataPropertyName = "AccountName";
-            this.dataGridViewReserveSchedule_AccountName.HeaderText = "アカウント名";
-            this.dataGridViewReserveSchedule_AccountName.Name = "dataGridViewReserveSchedule_AccountName";
-            // 
-            // dataGridViewReserveSchedule_Comment
-            // 
-            this.dataGridViewReserveSchedule_Comment.DataPropertyName = "Comment";
-            this.dataGridViewReserveSchedule_Comment.HeaderText = "コメント";
-            this.dataGridViewReserveSchedule_Comment.Name = "dataGridViewReserveSchedule_Comment";
-            // 
-            // dataGridViewReserveSchedule_ReserveTime
-            // 
-            this.dataGridViewReserveSchedule_ReserveTime.DataPropertyName = "ReserveTime";
-            this.dataGridViewReserveSchedule_ReserveTime.HeaderText = "投稿時間";
-            this.dataGridViewReserveSchedule_ReserveTime.Name = "dataGridViewReserveSchedule_ReserveTime";
-            this.dataGridViewReserveSchedule_ReserveTime.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewReserveSchedule_ReserveTime.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // dataGridViewReserveSchedule_Result
-            // 
-            this.dataGridViewReserveSchedule_Result.DataPropertyName = "Result";
-            this.dataGridViewReserveSchedule_Result.HeaderText = "状況";
-            this.dataGridViewReserveSchedule_Result.Name = "dataGridViewReserveSchedule_Result";
             // 
             // button予約作成
             // 
@@ -1189,6 +1150,68 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
+            // dataGridViewReserveSchedule_Result
+            // 
+            this.dataGridViewReserveSchedule_Result.DataPropertyName = "Result";
+            this.dataGridViewReserveSchedule_Result.HeaderText = "状況";
+            this.dataGridViewReserveSchedule_Result.Name = "dataGridViewReserveSchedule_Result";
+            // 
+            // dataGridViewReserveSchedule_ReserveTime
+            // 
+            this.dataGridViewReserveSchedule_ReserveTime.DataPropertyName = "ReserveTime";
+            this.dataGridViewReserveSchedule_ReserveTime.HeaderText = "ポスト時刻";
+            this.dataGridViewReserveSchedule_ReserveTime.Name = "dataGridViewReserveSchedule_ReserveTime";
+            this.dataGridViewReserveSchedule_ReserveTime.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewReserveSchedule_ReserveTime.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.dataGridViewReserveSchedule_ReserveTime.Width = 200;
+            // 
+            // dataGridViewReserveSchedule_AccountName
+            // 
+            this.dataGridViewReserveSchedule_AccountName.DataPropertyName = "AccountName";
+            this.dataGridViewReserveSchedule_AccountName.HeaderText = "アカウント";
+            this.dataGridViewReserveSchedule_AccountName.Name = "dataGridViewReserveSchedule_AccountName";
+            // 
+            // dataGridViewReserveSchedule_Comment
+            // 
+            this.dataGridViewReserveSchedule_Comment.DataPropertyName = "Comment";
+            this.dataGridViewReserveSchedule_Comment.HeaderText = "コメント";
+            this.dataGridViewReserveSchedule_Comment.Name = "dataGridViewReserveSchedule_Comment";
+            this.dataGridViewReserveSchedule_Comment.Width = 400;
+            // 
+            // dataGridViewReserveSchedule_ReserveId
+            // 
+            this.dataGridViewReserveSchedule_ReserveId.DataPropertyName = "ReserveId";
+            this.dataGridViewReserveSchedule_ReserveId.HeaderText = "予約ID";
+            this.dataGridViewReserveSchedule_ReserveId.Name = "dataGridViewReserveSchedule_ReserveId";
+            // 
+            // dataGridViewReserveSchedule_UserName
+            // 
+            this.dataGridViewReserveSchedule_UserName.DataPropertyName = "UserId";
+            this.dataGridViewReserveSchedule_UserName.HeaderText = "ユーザーID";
+            this.dataGridViewReserveSchedule_UserName.Name = "dataGridViewReserveSchedule_UserName";
+            this.dataGridViewReserveSchedule_UserName.Visible = false;
+            // 
+            // dataGridViewReserveSchedule_AccountId
+            // 
+            this.dataGridViewReserveSchedule_AccountId.DataPropertyName = "AccountId";
+            this.dataGridViewReserveSchedule_AccountId.HeaderText = "アカウントID";
+            this.dataGridViewReserveSchedule_AccountId.Name = "dataGridViewReserveSchedule_AccountId";
+            this.dataGridViewReserveSchedule_AccountId.Visible = false;
+            // 
+            // CommentId
+            // 
+            this.CommentId.DataPropertyName = "CommentId";
+            this.CommentId.HeaderText = "コメントID";
+            this.CommentId.Name = "CommentId";
+            this.CommentId.Visible = false;
+            // 
+            // ReserveDate
+            // 
+            this.ReserveDate.DataPropertyName = "ReserveDate";
+            this.ReserveDate.HeaderText = "日付";
+            this.ReserveDate.Name = "ReserveDate";
+            this.ReserveDate.Visible = false;
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1263,13 +1286,6 @@
         private System.Windows.Forms.TabPage tabPage予約;
         private System.Windows.Forms.Button button予約作成;
         private System.Windows.Forms.DataGridView dataGridViewReserveSchedule;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_ReserveId;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_UserName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_AccountId;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_AccountName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_Comment;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_ReserveTime;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_Result;
         private System.Windows.Forms.Button buttonアカウント設定;
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.GroupBox groupBox2;
@@ -1347,6 +1363,15 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
         private System.Windows.Forms.Button button予約End;
         private System.Windows.Forms.Button button予約Start;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_Result;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_ReserveTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_AccountName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_Comment;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_ReserveId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_UserName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_AccountId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn CommentId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ReserveDate;
     }
 }
 
