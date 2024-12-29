@@ -676,7 +676,7 @@ namespace DbotManager
 
         public void OnTimedEvent_監視モノマネ(object sender, ElapsedEventArgs e)
         {
-            _監視Timer.Enabled = false;
+            _モノマネtimer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
 
             var list = new List<CheckAccountList>();
@@ -700,7 +700,7 @@ namespace DbotManager
             }
 
             Init監視list(false, false, true);
-            _監視Timer.Enabled = true;
+            _モノマネtimer.Enabled = true;
         }
 
         #endregion
