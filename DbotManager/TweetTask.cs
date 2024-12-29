@@ -866,7 +866,9 @@ namespace DbotManager
                 Console.WriteLine($"Exception: {ex.Message}");
             }
 
+            return tweetResult;
 
+            /*
             switch (tweetCommand.TweetProcType)
             {
                 case TweetProcTypes.POST:
@@ -886,7 +888,7 @@ namespace DbotManager
             }
 
             return null;
-
+            */
 
 
             /*
