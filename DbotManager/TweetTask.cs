@@ -449,15 +449,17 @@ namespace DbotManager
                 .Where(x => x.Enable && accountMasterList.Any(y => y.Id == x.AccountId)).ToList();
 
             List<CheckUserMaster> checkUserMasterList = dataAccess.GetCheckUserMaster();
-//                .Where(x => list.Any(y => y.CheckAccount == x.UserName)).ToList();
+            //                .Where(x => list.Any(y => y.CheckAccount == x.UserName)).ToList();
 
-            foreach(var row in list)
+            List<string> checkAccountList = list.Select(x => x.CheckAccount).Distinct().ToList();
+
+            foreach(var row in checkAccountList)
             {
-                if(checkUserMasterList.Where(x => x.UserName == row.CheckAccount.Replace("@","")).Count() == 0)
+                if(checkUserMasterList.Where(x => x.UserName == row.Replace("@","")).Count() == 0)
                 {
                     dataAccess.InsertCheckUserMaster(new CheckUserMaster()
                     {
-                        UserName = row.CheckAccount.Replace("@",""),
+                        UserName = row.Replace("@",""),
                         UpdateTime = DateTime.Now
                     });
                 }
@@ -498,12 +500,15 @@ namespace DbotManager
                     };
                     listWk.Add(item);
                 }
+                CheckAccountList_監視.Clear();
                 CheckAccountList_監視 = listWk;
             }
+            /*
             else
             {
                 CheckAccountList_監視.Clear();
             }
+            */
 
             if (監視toRepEnable && 監視toRepflag)
             {
@@ -534,12 +539,15 @@ namespace DbotManager
                     };
                     listWk.Add(item);
                 }
+                CheckAccountList_監視toRep.Clear();
                 CheckAccountList_監視toRep = listWk;
             }
+            /*
             else
             {
                 CheckAccountList_監視toRep.Clear();
             }
+            */
 
             if (モノマネEnable && モノマネflag)
             {
@@ -570,13 +578,15 @@ namespace DbotManager
                     };
                     listWk.Add(item);
                 }
+                CheckAccountList_モノマネ.Clear();
                 CheckAccountList_モノマネ = listWk;
             }
+            /*
             else
             {
                 CheckAccountList_モノマネ.Clear();
             }
-
+            */
         }
 
 
@@ -611,14 +621,17 @@ namespace DbotManager
             _監視Timer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
 
-            foreach (var item in CheckAccountList_監視)
+            var list = new List<CheckAccountList>();
+            list.AddRange(CheckAccountList_監視);
+
+            foreach (var item in list)
             {
                 int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
                 var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount.Replace("@",""), TweetId = item.SinceTweetId });
 
 #if DEBUG
-                tweetResult.result = true;
-                tweetResult.contents = "1872912589858193502";
+//                tweetResult.result = true;
+//                tweetResult.contents = "1872912589858193502";
 
 #endif
 
@@ -637,14 +650,17 @@ namespace DbotManager
             _監視toRepTimer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
 
-            foreach (var item in CheckAccountList_監視toRep)
+            var list = new List<CheckAccountList>();
+            list.AddRange(CheckAccountList_監視toRep);
+
+            foreach (var item in list)
             {
                 int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
-                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount.Replace("@", ""), TweetId = item.SinceTweetId });
+                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECKREP, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount.Replace("@", ""), TweetId = item.SinceTweetId });
 
 #if DEBUG
-                tweetResult.result = true;
-                tweetResult.contents = "1872912589858193502";
+//                tweetResult.result = true;
+//                tweetResult.contents = "1872912589858193502";
 
 #endif
 
@@ -663,14 +679,17 @@ namespace DbotManager
             _監視Timer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
 
-            foreach (var item in CheckAccountList_モノマネ)
+            var list = new List<CheckAccountList>();
+            list.AddRange(CheckAccountList_モノマネ);
+
+            foreach (var item in list)
             {
                 int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
-                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount.Replace("@", ""), TweetId = item.SinceTweetId });
+                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.MONOMANE, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount.Replace("@", ""), TweetId = item.SinceTweetId });
 
 #if DEBUG
-                tweetResult.result = true;
-                tweetResult.contents = "1872912589858193502";
+//                tweetResult.result = true;
+//                tweetResult.contents = "1872912589858193502";
 
 #endif
 
@@ -691,6 +710,8 @@ namespace DbotManager
         public void TweetProcReply(CheckAccountList checkAccountList, TweetResult result)
         {
             int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
+
+            if (_repCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
             var commentId = SupportUtil.GetRandomItem(_repCommentList.Where(x => x.AccountId == accountId).ToList()).Id;
             TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents });
         }
