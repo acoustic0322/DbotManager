@@ -22,6 +22,8 @@ namespace DbotManager
 
         private List<ReserveSchedule> _reserveScheduleList = new List<ReserveSchedule>();
 
+        private DateTime dtBk = DateTime.Today;
+
         public ReserveTask(DbConnectionInfo dbConnection, Action<string> logAction = null)
         {
             this.logAction = logAction;
@@ -54,6 +56,7 @@ namespace DbotManager
                 // ランダム指定済みのコメントは除外する
                 var commentList = commentMasterList
                     .Where(x => x.AccountId == reserve.AccountId)// && !withoutCommentIdList.Contains(x.Id))
+                    .Where(x => x.TweetModeType == TweetModeTypes.Tweet)
                     .ToList();
 
                 if (commentList.Count == 0) continue;
@@ -146,7 +149,7 @@ namespace DbotManager
                 if (commentList_重複除外.Count == 0) continue;
 
                 // CommentMaster からランダムに1つ選択
-                var randomComment = commentList_重複除外[random.Next(commentList.Count)];
+                var randomComment = commentList_重複除外[random.Next(commentList_重複除外.Count)];
 
                 // スケジュールを追加
                 schedules.Add(new ReserveSchedule
@@ -182,6 +185,12 @@ namespace DbotManager
 
             DateTime dtNow = DateTime.Now;
 
+            // 日付が変わったらリスト再作成
+            if(DateTime.Today != dtBk)
+            {
+                MakeScheduleList();
+            }
+
             foreach(var reserveSchedule in _reserveScheduleList)
             {
                 if (reserveSchedule.Result) continue;
@@ -191,7 +200,11 @@ namespace DbotManager
 
                 if ((DateTime)reserveSchedule.ReserveDate.Value.Date != dtNow.Date) continue;
 
+                // 未来の予約をスルー
                 if ((DateTime)reserveSchedule.ReserveTime.Value > dtNow) continue;
+
+                // 過去３分以上過ぎたものをスルー
+                if ((DateTime)reserveSchedule.ReserveTime.Value < dtNow.AddMinutes(-3)) continue;
 
                 TweetTask task = new TweetTask(dbConnectin, logAction);
                 var result = task.TweetProc(new TweetCommand() { 
@@ -200,13 +213,25 @@ namespace DbotManager
                     CommentId = (int)reserveSchedule.CommentId }
                 );
 
-                if(result.result == true)
+                if(result != null)
                 {
-                    reserveSchedule.Result = true;
+                    if (result.result == true)
+                    {
+                        reserveSchedule.Result = true;
+                    }
+                    else
+                    {
+                        if(result.contents.Contains("Too Many Requests"))
+                        {
+                            reserveSchedule.Result = true;
+                        }
+                    }
                 }
 
 
             }
+
+            dtBk = DateTime.Today;
 
 
 
