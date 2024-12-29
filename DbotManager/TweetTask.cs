@@ -827,6 +827,8 @@ namespace DbotManager
                 }
             };
 
+            logAction?.Invoke($"{DateTime.Now.ToString()} > {pythonScriptPath}");
+
             TweetResult tweetResult = null;
 
             try
@@ -852,18 +854,20 @@ namespace DbotManager
 
                 if (tweetResult != null)
                 {
-                    Console.WriteLine($"Result: {tweetResult.result}, Contents: {tweetResult.contents} Now:{DateTime.Now.ToString()}");
+                    Console.WriteLine($"{DateTime.Now.ToString()} < [{tweetResult.result}]{tweetResult.contents}");
 
-                    logAction?.Invoke($"Result: {tweetResult.result}, Contents: {tweetResult.contents} Now:{DateTime.Now.ToString()}");
+                    logAction?.Invoke($"{DateTime.Now.ToString()} < [{tweetResult.result}]{tweetResult.contents}");
                 }
                 else
                 {
                     Console.WriteLine("Python script returned invalid output.");
+                    logAction?.Invoke($"{DateTime.Now.ToString()} TweetProc Python script returned invalid output.");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
+                logAction?.Invoke($"{DateTime.Now.ToString()} TweetProc Exception: {ex.Message}");
             }
 
             return tweetResult;
