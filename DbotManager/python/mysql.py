@@ -204,7 +204,7 @@ def get_user_id_from_db(user_name):
     finally:
         connection.close()
 
-def get_slice_id_from_db(user_name):
+def get_slice_id_from_db(user_name , search_replies):
     # MySQLデータベースに接続
     connection = pymysql.connect(
         host='localhost',      # ホスト名
@@ -217,7 +217,7 @@ def get_slice_id_from_db(user_name):
     try:
         with connection.cursor() as cursor:
             # 認証情報を格納しているテーブルからデータを取得
-            sql = "SELECT since_id FROM check_user_master WHERE user_name = %s"
+            sql = "SELECT since_id , since_reply_id FROM check_user_master WHERE user_name = %s"
 #            sql = "SELECT id , api_key, api_key_secret, access_token, access_token_secret , bearer_token , client_id , client_secret , refresh_token , login_id FROM account_master WHERE id = %s"
             cursor.execute(sql, (user_name,))
             credentials = cursor.fetchone()
@@ -227,9 +227,14 @@ def get_slice_id_from_db(user_name):
 #                print(f"ユーザー名 '{user_name}' に対応するデータが見つかりませんでした。")
                 return None
 
+            if search_replies == True:
+                return credentials['since_reply_id']
+
             return credentials['since_id']
     finally:
         connection.close()
+
+    return None
 
 def update_user_id_from_db(user_name , user_id):
     # MySQLデータベースに接続
@@ -251,7 +256,7 @@ def update_user_id_from_db(user_name , user_id):
     finally:
         connection.close()      
 
-def update_since_id_from_db(user_name , since_id):
+def update_since_id_from_db(user_name , since_id , search_reply):
     # MySQLデータベースに接続
     connection = pymysql.connect(
         host='localhost',
@@ -263,9 +268,15 @@ def update_since_id_from_db(user_name , since_id):
     )
     try:
         with connection.cursor() as cursor:
-            sql = """
-                UPDATE check_user_master set since_id = %s where user_name = %s
-            """
+
+            if search_reply == True:
+                sql = """
+                    UPDATE check_user_master set since_reply_id = %s where user_name = %s
+                """
+            else:
+                sql = """
+                    UPDATE check_user_master set since_id = %s where user_name = %s
+                """
 
 #            print(sql)
 #            print("since_id=",since_id)

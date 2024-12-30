@@ -59,6 +59,7 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.textBoxUrlTweetID = new System.Windows.Forms.TextBox();
+            this.radioButtonリプライtoリプライ = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewComment)).BeginInit();
             this.groupBox6.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -404,11 +405,24 @@
             this.textBoxUrlTweetID.Size = new System.Drawing.Size(502, 27);
             this.textBoxUrlTweetID.TabIndex = 24;
             // 
+            // radioButtonリプライtoリプライ
+            // 
+            this.radioButtonリプライtoリプライ.AutoSize = true;
+            this.radioButtonリプライtoリプライ.Location = new System.Drawing.Point(209, 8);
+            this.radioButtonリプライtoリプライ.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.radioButtonリプライtoリプライ.Name = "radioButtonリプライtoリプライ";
+            this.radioButtonリプライtoリプライ.Size = new System.Drawing.Size(124, 23);
+            this.radioButtonリプライtoリプライ.TabIndex = 25;
+            this.radioButtonリプライtoリプライ.Text = "リプライtoリプライ";
+            this.radioButtonリプライtoリプライ.UseVisualStyleBackColor = true;
+            this.radioButtonリプライtoリプライ.CheckedChanged += new System.EventHandler(this.radioButtonリプライto監視_CheckedChanged);
+            // 
             // CommentDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(647, 686);
+            this.Controls.Add(this.radioButtonリプライtoリプライ);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.textBoxUrlTweetID);
             this.Controls.Add(this.textBoxRenew);
@@ -468,5 +482,6 @@
         private System.Windows.Forms.TextBox textBoxUrlTweetID;
         private System.Windows.Forms.CheckBox checkBoxMovie;
         private System.Windows.Forms.CheckBox checkBoxPhoto;
+        private System.Windows.Forms.RadioButton radioButtonリプライtoリプライ;
     }
 }

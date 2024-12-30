@@ -8,8 +8,9 @@ namespace DbotManager.Table
 {
     public enum TweetModeTypes
     {
-        Tweet,
-        Replay
+        Post,
+        Replay,
+        ReplyToReply
     }
 
 

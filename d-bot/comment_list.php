@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 //        $new_mode = $_POST['new_mode'] ?? '';
 
+        /*
         // 判別処理
         if (!empty($_POST['new_mode'])) {
             if ($_POST['new_mode'] === 'post') {
@@ -62,6 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {        
             $new_mode = null; // POSTに値が含まれていない場合
         }
+            */
+
+        $new_mode = $_POST['new_mode'];
 
         // $new_modeがnullの場合のエラーハンドリング
         if ($new_mode === null) {
@@ -99,15 +103,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$stmt = $conn->prepare("SELECT * FROM comment_master WHERE account_id = ? and mode = 'tweet'");
+$stmt = $conn->prepare("SELECT * FROM comment_master WHERE account_id = ? and mode = 'post'");
 $stmt->bind_param("i", $account_id);
 $stmt->execute();
-$result_tweet = $stmt->get_result();
+$result_post = $stmt->get_result();
 
-$stmt = $conn->prepare("SELECT * FROM comment_master WHERE account_id = ? and mode = 'retweet'");
+$stmt = $conn->prepare("SELECT * FROM comment_master WHERE account_id = ? and mode = 'reply'");
 $stmt->bind_param("i", $account_id);
 $stmt->execute();
 $result_reply = $stmt->get_result();
+
+$stmt = $conn->prepare("SELECT * FROM comment_master WHERE account_id = ? and mode = 'replytoreply'");
+$stmt->bind_param("i", $account_id);
+$stmt->execute();
+$result_replytoreply = $stmt->get_result();
 
 ?>
 
@@ -171,7 +180,7 @@ $result_reply = $stmt->get_result();
     <form method="POST" action="?">
         <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($account_id); ?>">
         <div class="input-group">
-            <input type="checkbox" name="new_enable" placeholder="有効">有効
+            <input type="checkbox" name="new_enable" placeholder="有効" checked>有効
         </div>
         <label>
             <input type="radio" name="new_mode" value="post" checked>
@@ -180,6 +189,10 @@ $result_reply = $stmt->get_result();
         <label>
             <input type="radio" name="new_mode" value="reply">
             リプライ
+        </label>
+        <label>
+            <input type="radio" name="new_mode" value="replytoreply">
+            リプライtoリプライ
         </label>
         <div class="input-group">
             コメント<br>
@@ -200,7 +213,7 @@ $result_reply = $stmt->get_result();
         <button type="submit">登録</button>
     </form>
 
-    <h2>ポストコメント一覧</h2>
+    <h2>ポスト一覧</h2>
     <table>
         <thead>
             <tr>
@@ -217,7 +230,7 @@ $result_reply = $stmt->get_result();
             </tr>
         </thead>
         <tbody>
-            <?php while ($row = $result_tweet->fetch_assoc()): ?>
+            <?php while ($row = $result_post->fetch_assoc()): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
                     <td><?php echo htmlspecialchars($row['comment']); ?></td>
@@ -244,7 +257,7 @@ $result_reply = $stmt->get_result();
         </tbody>
     </table>
 
-    <h2>リプライコメント一覧</h2>
+    <h2>リプライ一覧</h2>
     <table>
         <thead>
             <tr>
@@ -287,6 +300,51 @@ $result_reply = $stmt->get_result();
             <?php endwhile; ?>
         </tbody>
     </table>
+
+    <h2>リプライtoリプライ一覧</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>有効</th>
+                <th>コメント</th>
+                <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
+                <th>動画</th>
+                <?php endif; ?>
+                <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+                <th>画像</th>
+                <?php endif; ?>   
+<!--                <th>ChatGPT</th> -->
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php while ($row = $result_replytoreply->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
+                    <td><?php echo htmlspecialchars($row['comment']); ?></td>
+                    <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
+                        <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '〇' : '×'; ?></td>
+                    <?php endif; ?>                
+                    <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+                        <td><?php echo htmlspecialchars($row['photo_enable']) == 1 ? '〇' : '×'; ?></td>
+                    <?php endif; ?>  
+                    <td class="hidden"><?php echo htmlspecialchars($row['chatgpt']) == 1 ? '〇' : '×'; ?></td>
+                    <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
+
+                    <td>
+                        <button onclick="editComment(<?php echo $row['id']; ?>)">編集</button>
+                        <form class="button_form" method="POST" action="?">
+                        <input type="hidden" name="type" value="comment_del">
+                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']) ?>">
+                        <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($account_id); ?>">
+                        <button type="button" onclick="deleteComment(this,<?php echo htmlspecialchars($row['id']) ?>)">削除</button>
+                    </form>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        </tbody>
+    </table>
+
 
     <style>
     .hidden {

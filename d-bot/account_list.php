@@ -98,14 +98,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 login_password,
                 client_id,
                 client_secret,
-                api_key,
-                api_key_secret,
-                /*
-                access_token,
-                access_token_secret,                
-                bearer_token,
-                refresh_token,
-                */
                 enable,
                 like_enable,
                 reply_enable,
@@ -115,19 +107,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 paid,
                 paid_like,
                 paid_bookmark
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
             
             $stmt->bind_param(
-                "ssssssssssssiiiiiiiii",
+                "ssssssiiiiiiiii",
                 $current_userid,
                 $new_name,
                 $new_login_id,
                 $new_login_pass,
                 $new_client_id,
                 $new_client_secret,
+                /*
                 $new_api_key,
                 $new_api_key_secret,
-                /*
                 $new_access_token,
                 $new_access_token_secret, 
                 $new_bearer_token,
@@ -265,6 +257,8 @@ $result = $stmt->get_result();
         <div class="input-group">
             <input type="text" name="new_client_secret" placeholder="ClientSecret" required>
         </div>
+
+        <!--
         <div class="input-group">
             <input type="text" name="new_api_key" placeholder="ApiKey" required>
         </div>
@@ -272,7 +266,6 @@ $result = $stmt->get_result();
             <input type="text" name="new_api_key_secret" placeholder="ApiKeySecret" required>
         </div>
 
-        <!--
         <div class="input-group">
             <input type="text" id="new_access_token" name="new_access_token" placeholder="AccessToken">
         </div>        
@@ -374,7 +367,7 @@ $result = $stmt->get_result();
                 <th>RefreshToken</th>
                 <th>アクセストークン</th>
                 -->
-                <th>リフレッシュトークン</th>
+                <th>認証</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -405,7 +398,7 @@ $result = $stmt->get_result();
                     <!--
                     <button onclick="editXLogin1(<?php echo $row['id']; ?>)">アクセストークン取得</button>
                     -->
-                    <button onclick="editXLogin2(<?php echo $row['id']; ?>)">リフレッシュトークン取得</button>
+                    <button onclick="editXLogin2(<?php echo $row['id']; ?>)">認証</button>
 
 
                     <form class="button_form" method="POST" action="?">
