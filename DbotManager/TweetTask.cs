@@ -112,7 +112,8 @@ namespace DbotManager
         public List<CheckAccountList> CheckAccountList_監視toRep = new List<CheckAccountList>();
         public List<CheckAccountList> CheckAccountList_モノマネ = new List<CheckAccountList>();
 
-        List<CommentMaster> _repCommentList = new List<CommentMaster>();
+        List<CommentMaster> _replyCommentList = new List<CommentMaster>();
+        List<CommentMaster> _replyToReplyCommentList = new List<CommentMaster>();
 
 
         public int いいね件数 { get; set; }
@@ -469,7 +470,8 @@ namespace DbotManager
             var 監視toReplist = list.Where(x => x.Mode == TweetProcTypes.CHECKREP).ToList();
             var モノマネlist = list.Where(x => x.Mode == TweetProcTypes.MONOMANE).ToList();
 
-            _repCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
+            _replyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
+            _replyToReplyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.ReplyToReply).ToList();
 
             if (監視Enable && 監視flag)
             {
@@ -666,7 +668,7 @@ namespace DbotManager
 
                 if (tweetResult != null && tweetResult.result == true)
                 {
-                    TweetProcReply(item, tweetResult);
+                    TweetProcReplyToReply(item, tweetResult);
                 }
             }
 
@@ -695,7 +697,7 @@ namespace DbotManager
 
                 if (tweetResult != null && tweetResult.result == true)
                 {
-                    TweetProcReply(item, tweetResult);
+            //        TweetProcReply(item, tweetResult);
                 }
             }
 
@@ -711,8 +713,17 @@ namespace DbotManager
         {
             int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
 
-            if (_repCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
-            var commentId = SupportUtil.GetRandomItem(_repCommentList.Where(x => x.AccountId == accountId).ToList()).Id;
+            if (_replyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
+            var commentId = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList()).Id;
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents });
+        }
+
+        public void TweetProcReplyToReply(CheckAccountList checkAccountList, TweetResult result)
+        {
+            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
+
+            if (_replyToReplyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
+            var commentId = SupportUtil.GetRandomItem(_replyToReplyCommentList.Where(x => x.AccountId == accountId).ToList()).Id;
             TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents });
         }
 

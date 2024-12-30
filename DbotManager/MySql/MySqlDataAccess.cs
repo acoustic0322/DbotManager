@@ -753,7 +753,7 @@ public class MySqlDataAccess
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
-                                TweetModeType = reader["mode"].ToString() == "tweet" ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                                TweetModeType = reader["mode"].ToString() == "post" ? TweetModeTypes.Post : reader["mode"].ToString() == "reply" ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
                             };
 
                             commentMasterList.Add(commentItem);
@@ -804,7 +804,7 @@ public class MySqlDataAccess
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
-                                TweetModeType = reader["mode"].ToString() == "tweet" ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                                TweetModeType = reader["mode"].ToString() == "post" ? TweetModeTypes.Post : reader["mode"].ToString() == "reply" ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
                             };
 
                             retList.Add(commentItem);
@@ -852,7 +852,7 @@ public class MySqlDataAccess
                                 Comment = reader["comment"].ToString(),
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
-                                TweetModeType = reader["mode"].ToString() == "tweet" ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                                TweetModeType = reader["mode"].ToString() == "post" ? TweetModeTypes.Post : reader["mode"].ToString() == "reply" ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
                             };
 
                             return commentItem;
@@ -901,7 +901,7 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@MovieEnable", commentMaster.MovieEnable ? 1 : 0);
                     //                    command.Parameters.AddWithValue("@PhotoId", commentMaster.PhotoId);
                     //                    command.Parameters.AddWithValue("@MovieId", commentMaster.MovieId);
-                    command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Tweet ? "tweet" : "retweet");
+                    command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Post ? "post" : commentMaster.TweetModeType == TweetModeTypes.Replay ? "reply" : "replytoreply");
 
                     int rowsAffected = command.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -934,7 +934,7 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Comment", commentMaster.Comment);
                     command.Parameters.AddWithValue("@Enable", commentMaster.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Chatgpt", commentMaster.ChatGpt ? 1 : 0);
-                    command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Tweet ? "tweet" : "retweet");
+                    command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Post ? "post" : commentMaster.TweetModeType == TweetModeTypes.Replay ? "reply" : "replytoreply");
                     command.Parameters.AddWithValue("@PhotoEnable", commentMaster.PhotoEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@MovieEnable", commentMaster.MovieEnable ? 1 : 0);
 

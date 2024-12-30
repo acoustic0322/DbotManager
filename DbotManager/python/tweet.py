@@ -89,7 +89,9 @@ if credentials:
     elif mode == "bookmark":
         success , error_log = proc_bookmark_v2(credentials, tweet_id)
     elif mode == "check":
-        success , error_log = proc_check_v2(credentials , check_account_name )
+        success , error_log = proc_check_v2(credentials , check_account_name , False)
+    elif mode == "checkrep":
+        success , error_log = proc_check_v2(credentials , check_account_name , True)
     elif mode == "check_latest":
         latest_tweet , success , error_log = get_latest_tweet(credentials , check_account_name , False)
 #        success , error_log = True , "" #未実装
@@ -102,18 +104,17 @@ if credentials:
         # 終了コードを1にして異常終了を示す
         sys.exit(1)
 
-    outputLog(f"success={success}")
-    outputLog(f"error_log={error_log}")
-
+#    outputLog(f"success={success}")
+#    outputLog(f"error_log={error_log}")
 
     if success == True:
         save_tweet_history(account_id, comment_id , mode , tweet_id , True , error_log)
-        print(json.dumps({"success": True, "error_log": error_log}))
+        print(json.dumps({"result": True, "contents": error_log}))
         sys.exit(0)
     else:
 #                outputLog(f"エラーが発生しました: {result}", file=sys.stderr)
         save_tweet_history(account_id, comment_id , mode , tweet_id , False , error_log)
-        print(json.dumps({"success": False, "error_log": error_log}))
+        print(json.dumps({"result": False, "contents": error_log}))
         sys.exit(1)
 
 else:

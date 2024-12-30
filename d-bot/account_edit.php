@@ -39,10 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login_password = trim($_POST['login_password'] ?? '');
     $client_id = trim($_POST['client_id'] ?? '');
     $client_secret = trim($_POST['client_secret'] ?? '');
-    $api_key = trim($_POST['api_key'] ?? '');
-    $api_key_secret = trim($_POST['api_key_secret'] ?? '');
 
     /*
+    $api_key = trim($_POST['api_key'] ?? '');
+    $api_key_secret = trim($_POST['api_key_secret'] ?? '');
     $access_token = trim($_POST['access_token'] ?? '');
     $access_token_secret = trim($_POST['access_token_secret'] ?? '');
     $bearer_token = trim($_POST['bearer_token'] ?? '');
@@ -130,8 +130,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         WHERE id = ?
     ");
 
+//    "sssssssssssiiiiiiiiiiiiiiiiiiiiiiiiii", // 型指定
     $stmt->bind_param(
-        "sssssssssssiiiiiiiiiiiiiiiiiiiiiiiiii", // 型指定
+        "sssssssiiiiiiiiiiiiiiiiiiiiiiiiii", // 型指定
         $name, 
         $login_id, 
         $hashed_password, 
@@ -268,6 +269,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="name">クライアントシークレット:</label><br>
             <input type="text" name="client_secret" placeholder="ClientSecret" value="<?php echo htmlspecialchars($edit_account['client_secret'] ?? '') ?>">
         </div>
+
+        <!--
         <div class="input-group">
             <label for="name">APIキー:</label><br>
             <input type="text" name="api_key" placeholder="ApiKey" value="<?php echo htmlspecialchars($edit_account['api_key'] ?? '') ?>">
@@ -276,7 +279,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="name">APIキーシークレット:</label><br>
             <input type="text" name="api_key_secret" placeholder="ApiKeySecret" value="<?php echo htmlspecialchars($edit_account['api_key_secret'] ?? '') ?>">
         </div>
-        <!--
         <div class="input-group">
             <label for="name">access_token:</label>
             <input type="text" name="access_token" placeholder="AccessToken" value="<?php echo htmlspecialchars($edit_account['access_token'] ?? '') ?>">

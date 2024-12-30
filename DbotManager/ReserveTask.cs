@@ -56,7 +56,7 @@ namespace DbotManager
                 // ランダム指定済みのコメントは除外する
                 var commentList = commentMasterList
                     .Where(x => x.AccountId == reserve.AccountId)// && !withoutCommentIdList.Contains(x.Id))
-                    .Where(x => x.TweetModeType == TweetModeTypes.Tweet)
+                    .Where(x => x.TweetModeType == TweetModeTypes.Post)
                     .ToList();
 
                 if (commentList.Count == 0) continue;

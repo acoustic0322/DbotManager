@@ -37,10 +37,10 @@ def get_user_id(credentials):
     if response.status_code == 200:
         user_data = response.json()
         user_id = user_data["data"]["id"]
-        print(f"get_user_id {username}のユーザーID: {user_id}")
+#        print(f"get_user_id {username}のユーザーID: {user_id}")
         return user_id
     else:
-        print(f"get_user_idエラー: {response.status_code}, {response.text}")
+#        print(f"get_user_idエラー: {response.status_code}, {response.text}")
         return None
 
 def check_access_token(credentials):
@@ -57,7 +57,7 @@ def check_access_token(credentials):
 
 def proc_update_refresh_token():
     print("proc_update_refresh_token")
-#    credentials_list = get_account_master_for_update_refresh()
+    credentials_list = get_account_master_for_update_refresh()
     for credentials in credentials_list:
 #        print("target=",credentials['id'])
         result , access_token , refresh_token = refresh_access_token(credentials)
@@ -94,14 +94,14 @@ def refresh_access_token(credentials):
         # HTTPエラーの場合の処理
         if response.status_code == 200:
             response_data = response.json()  # JSONデータを取得
-#            print("response.json()=", response_data)
+            print("response.json()=", response_data)
 
             # access_token を抜き出す
             access_token = response_data.get("access_token")
-#            print("access_token=", access_token)
+            print("access_token=", access_token)
 
             refresh_token = response_data.get("refresh_token")
-#            print("refresh_token=", refresh_token)
+            print("refresh_token=", refresh_token)
 
             # スコープを確認する
             scope = response_data.get("scope")
@@ -191,6 +191,8 @@ def proc_post_v2(credentials ,comment_id, media_type , media_id, reply_to_tweet_
     # コメントの取得
     comment = get_comment_by_id(comment_id)
 
+#    print("comment=",comment)
+
     # コメントが取得できなかった場合、処理を終了
     if comment is None:
         return False       
@@ -202,9 +204,9 @@ def proc_post_v2(credentials ,comment_id, media_type , media_id, reply_to_tweet_
     
     # メディアが指定されている場合、メディアをアップロード
     upload_id = None
-    if media_id and media_type:
+    if media_id != "" and media_type != "":
         upload_id = upload_media(credentials, media_id, media_type)
-        if not media_id:
+        if not upload_id:
             return False, "メディアアップロードに失敗しました"
 
     # 投稿するデータ
@@ -235,13 +237,15 @@ def proc_post_v2(credentials ,comment_id, media_type , media_id, reply_to_tweet_
     # POSTリクエストを送信
     response = requests.post(url, headers=headers, json=data)
 
+#    print(response.json())
+
     try:
         # レスポンスを JSON としてパース
         response_data = response.json()
     except ValueError as e:
         # JSON パースエラー時の処理
-        print("JSON パースエラー:", str(e))
-        print("Raw response text:", response.text)  # 生データを確認
+#        print("JSON パースエラー:", str(e))
+#        print("Raw response text:", response.text)  # 生データを確認
         return False, f"JSON パースエラー: {str(e)}"
 
 #    # レスポンスコードを確認
@@ -252,12 +256,12 @@ def proc_post_v2(credentials ,comment_id, media_type , media_id, reply_to_tweet_
 #        print(response_data)
 
     # レスポンスを確認
-    if response.status_code == 201:
-        print("proc_post_v2 ポスト/リプライしました:")
-        print(response_data)  # 成功時のレスポンス
-    else:
-        print(f"proc_post_v2 エラー: {response.status_code}")
-        print(response_data)
+#    if response.status_code == 201:
+#        print("proc_post_v2 ポスト/リプライしました:")
+#        print(response_data)  # 成功時のレスポンス
+#    else:
+#        print(f"proc_post_v2 エラー: {response.status_code}")
+#        print(response_data)
 
 
     response_str = json.dumps(response_data)  # json.dumps を使用
@@ -359,12 +363,12 @@ def proc_like_v2(credentials, tweet_id):
     response = requests.post(url, headers=headers, json=data)
 
     # レスポンスを確認
-    if response.status_code == 200:
-        print("proc_like_v2 ツイートにいいねを付けました:")
-        print(response.json())  # 成功時のレスポンス
-    else:
-        print(f"proc_like_v2 エラー: {response.status_code}")
-        print(response.json())
+#    if response.status_code == 200:
+#        print("proc_like_v2 ツイートにいいねを付けました:")
+#        print(response.json())  # 成功時のレスポンス
+#    else:
+#        print(f"proc_like_v2 エラー: {response.status_code}")
+#        print(response.json())
 
     response_str = json.dumps(response.json())  # json.dumps を使用
 
@@ -379,7 +383,7 @@ def proc_bookmark_v2(credentials, tweet_id):
     :param tweet_id: ブックマークする対象のツイートID
     """
 
-    print("login_id:",credentials['login_id'])
+#    print("login_id:",credentials['login_id'])
 
     access_token = credentials['bearer_token']
 
@@ -402,13 +406,13 @@ def proc_bookmark_v2(credentials, tweet_id):
     # POSTリクエストを送信
     response = requests.post(url, headers=headers, json=data)
 
-    # レスポンスを確認
-    if response.status_code == 200:
-        print("ツイートをブックマークしました:")
-        print(response.json())  # 成功時のレスポンス
-    else:
-        print(f"エラー: {response.status_code}")
-        print(response.json())
+#    # レスポンスを確認
+#    if response.status_code == 200:
+#        print("ツイートをブックマークしました:")
+#        print(response.json())  # 成功時のレスポンス
+#    else:
+#        print(f"エラー: {response.status_code}")
+#        print(response.json())
 
     response_str = json.dumps(response.json())  # json.dumps を使用
 
@@ -447,19 +451,19 @@ def proc_repost_v2(credentials, tweet_id):
     # POSTリクエストを送信
     response = requests.post(url, headers=headers, json=data)
 
-    # レスポンスを確認
-    if response.status_code in (200, 201):
-        print("リポストが成功しました:")
-        print(response.json())  # 投稿成功時のレスポンス
-    else:
-        print(f"エラー: {response.status_code}")
-        print(response.json())  # エラー時のレスポンス
+#    # レスポンスを確認
+#    if response.status_code in (200, 201):
+#        print("リポストが成功しました:")
+#        print(response.json())  # 投稿成功時のレスポンス
+#    else:
+#        print(f"エラー: {response.status_code}")
+#        print(response.json())  # エラー時のレスポンス
 
     response_str = json.dumps(response.json())  # json.dumps を使用
 
     return response.status_code in (200, 201), response_str
 
-def proc_check_v2(credentials, username):
+def proc_check_v2(credentials, username, search_replies=True):
     """
     特定アカウントのツイートを監視し、新しいツイートをリツイートする関数。
 
@@ -469,14 +473,20 @@ def proc_check_v2(credentials, username):
         interval (int): 監視間隔（秒）。
     """
 
-    last_tweet_id = get_slice_id_from_db(username)
-
-    return True , last_tweet_id 
+    last_tweet_id = get_slice_id_from_db(username , search_replies)
+#    print("last_tweet_id")
+#    print(last_tweet_id)
 
     try:
-        latest_tweet_id = get_latest_tweet(credentials, username)
-        if latest_tweet_id and latest_tweet_id != last_tweet_id:
-            print(f"新しいツイートを検出: {latest_tweet_id}")
+        latest_tweet_id , result , error_log = get_latest_tweet(credentials, username, search_replies)
+
+        if result == False:
+            return False , error_log
+
+#        print("last_tweet_id=",last_tweet_id)
+#        print("latest_tweet_id=",latest_tweet_id)
+        if (latest_tweet_id and latest_tweet_id != last_tweet_id ) or last_tweet_id is None:
+#            print(f"新しいツイートを検出: {latest_tweet_id}")
 #            success, response = proc_repost_v2(credentials, latest_tweet_id)
 #            if success:
 #                print("リツイート成功:", response)
@@ -484,19 +494,19 @@ def proc_check_v2(credentials, username):
 #                print("リツイート失敗:", response)
 
 #            last_tweet_id = latest_tweet_id
-            update_since_id_from_db(username ,latest_tweet_id )
+            update_since_id_from_db(username ,latest_tweet_id , search_replies)
 
-            print(json.dumps(output))
+#            print(json.dumps(output))
 
             return True , latest_tweet_id
-        else:
-            print("新しいツイートはありません。")
+#        else:
+#            print("新しいツイートはありません。")
 
-        return False , ""
+        return False , last_tweet_id
 
     except Exception as e:
-        print(f"エラーが発生しました: {e}")
-        return False , ""
+#        print(f"エラーが発生しました: {e}")
+        return False , last_tweet_id
 
 def get_user_id_by_username(credentials, username):
     """
@@ -511,10 +521,12 @@ def get_user_id_by_username(credentials, username):
     """
 
 
+#    print("username=",username)
     username_db = get_user_id_from_db(username)
+#    print("username_db=",username_db)
 
     if username_db != "" and username_db is not None:
-        print("username_db=",username_db)
+#        print("username_db=",username_db)
         return username_db
 
 #    return "1773941705605341184"
@@ -538,7 +550,7 @@ def get_user_id_by_username(credentials, username):
         print(f"ユーザーIDの取得に失敗: {response.status_code}, {response.text}")
         return None
 
-def get_latest_tweet(credentials, username, search_replies=False):
+def get_latest_tweet(credentials, username, search_replies=True):
     """
     特定ユーザーの最新ツイートを取得する関数。
 
@@ -553,18 +565,23 @@ def get_latest_tweet(credentials, username, search_replies=False):
     user_id = get_user_id_by_username(credentials, username)
 
     if not user_id:
-        print("ユーザーIDの取得に失敗しました。終了します。")
-        return False , "ユーザーIDの取得に失敗"
+#        print("ユーザーIDの取得に失敗しました。終了します。")
+        return "" , False , "ユーザーIDの取得に失敗"
 
-    print("user_id",user_id)
+#    print("user_id",user_id)
 
     access_token = credentials['bearer_token']
-    url = f"https://api.twitter.com/2/users/{user_id}/tweets?max_results=20"
+    url = f"https://api.twitter.com/2/users/{user_id}/tweets?max_results=20&expansions=in_reply_to_user_id"
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
 
     response = requests.get(url, headers=headers)
+
+#    print("test")
+#    print(response.status_code)
+#    print("response.json")
+#    print(response.json())
 
     if response.status_code == 200:
         tweets = response.json().get("data", [])
@@ -574,22 +591,31 @@ def get_latest_tweet(credentials, username, search_replies=False):
 #            # リプライではないツイート（referenced_tweetsがないもの）
 #            tweets = [tweet for tweet in tweets if "referenced_tweets" not in tweet]
         
-        # リプライのみのツイートを検索
-#        elif search_replies:
+#        # リプライのみのツイートを検索
+#        if search_replies:
 #            # 他のツイートへのリプライ（referenced_tweetsがあるもの）
 #            tweets = [tweet for tweet in tweets if "referenced_tweets" in tweet]
 
-        if tweets:
-            print("最新ツイート:",tweets[0]["id"])
-            return tweets[0]["id"]
+        # リプライかどうかを判別してフィルタリング
+        filtered_tweets = [
+            tweet for tweet in tweets
+            if ('in_reply_to_user_id' in tweet) == search_replies
+        ]
 
-        return  ""
+#        print("filtered_tweets")
+#        print(filtered_tweets)
+
+        if filtered_tweets:
+#            print("最新ツイート:",filtered_tweets[0]["id"])
+            return filtered_tweets[0]["id"] , True , ""
+
+        return  "" , False , response.text
 #        return  "" , False, response.text
         
     else:
-        print(f"ツイートの取得に失敗: {response.status_code}, {response.text}")
+#        print(f"ツイートの取得に失敗: {response.status_code}, {response.text}")
 #        response_str = json.dumps(response.json())  # json.dumps を使用
 #        return "" , False, response.text
-        return ""
+        return "" , False , response.text
 
 

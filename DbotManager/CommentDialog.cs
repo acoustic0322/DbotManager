@@ -117,9 +117,9 @@ namespace DbotManager
                 ChatGpt = checkBoxChatGpt.Checked,
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
-                TweetModeType = radioButtonポスト.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
-//                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
-//                MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
+                TweetModeType = radioButtonポスト.Checked ? TweetModeTypes.Post : radioButtonリプライ.Checked ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
+                //                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
+                //                MovieId = radioButton動画.Checked ? int.Parse(comboBox動画.SelectedValue.ToString()) : 0,
                 PhotoEnable = checkBoxPhoto.Checked,
                 MovieEnable = checkBoxMovie.Checked
             };
@@ -142,7 +142,7 @@ namespace DbotManager
                 ChatGpt = checkBoxChatGpt.Checked,
                 Enable = checkBox有効.Checked,
                 Comment = textBoxコメント.Text,
-                TweetModeType = radioButtonポスト.Checked ? TweetModeTypes.Tweet : TweetModeTypes.Replay,
+                TweetModeType = radioButtonポスト.Checked ? TweetModeTypes.Post : radioButtonリプライ.Checked ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
                 PhotoEnable = checkBoxPhoto.Checked,
                 MovieEnable = checkBoxMovie.Checked
 //                PhotoId = radioButton画像.Checked ? int.Parse(comboBox画像.SelectedValue.ToString()) : 0,
@@ -165,6 +165,12 @@ namespace DbotManager
             ReadCommentMaster();
         }
 
+        private void radioButtonリプライto監視_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            ReadCommentMaster();
+        }
+
         private void buttonExe_Click(object sender, EventArgs e)
         {
             int userId = UserId;
@@ -174,7 +180,7 @@ namespace DbotManager
 
             TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
 //            _tweetTask.TweetProc(radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY, userId, accountId, commentId, tweetId);
-            _tweetTask.TweetProc(new TweetCommand() { TweetProcType = radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY,
+            _tweetTask.TweetProc(new TweetCommand() { TweetProcType = radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY ,
                 UserId = userId, AccountId = accountId, CommentId=commentId, TweetId = tweetId });
 
         }
@@ -195,11 +201,15 @@ namespace DbotManager
 
                 if (radioButtonポスト.Checked)
                 {
-                    list = list.Where(x => x.TweetModeType == TweetModeTypes.Tweet).ToList();
+                    list = list.Where(x => x.TweetModeType == TweetModeTypes.Post).ToList();
+                }
+                else if(radioButtonリプライ.Checked)
+                {
+                    list = list.Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
                 }
                 else
                 {
-                    list = list.Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
+                    list = list.Where(x => x.TweetModeType == TweetModeTypes.ReplyToReply).ToList();
                 }
 
                 dataGridViewComment.DataSource = list;

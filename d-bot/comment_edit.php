@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $photo_enable = isset($_POST['photo_enable']) ? 1 : 0;
     $chatgpt = isset($_POST['chatgpt']) ? 1 : 0;
 
+    /*
     // 判別処理
     if (!empty($_POST['mode'])) {
         if ($_POST['mode'] === 'tweet') {
@@ -51,6 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {        
         $mode = null; // POSTに値が含まれていない場合
     }    
+        */
+    $mode = $_POST['mode'];
 
     // 入力値のバリデーション
 //    if (empty($name) || empty($login_id) || empty($login_password)) {
@@ -176,11 +179,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </label><br>
 
                 <label>
-                    <input type="radio" name="mode" value="tweet" <?php echo ($edit_account['mode'] === 'tweet') ? 'checked' : ''; ?>> ポスト
+                    <input type="radio" name="mode" value="post" <?php echo ($edit_account['mode'] === 'post') ? 'checked' : ''; ?>> ポスト
                 </label>
-                <br>
                 <label>
-                    <input type="radio" name="mode" value="retweet" <?php echo ($edit_account['mode'] === 'retweet') ? 'checked' : ''; ?>> リプライ
+                    <input type="radio" name="mode" value="reply" <?php echo ($edit_account['mode'] === 'reply') ? 'checked' : ''; ?>> リプライ
+                </label>
+                <label>
+                    <input type="radio" name="mode" value="replytoreply" <?php echo ($edit_account['mode'] === 'replytoreply') ? 'checked' : ''; ?>> リプライtoリプライ
                 </label>
                 <br>            
 

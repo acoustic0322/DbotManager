@@ -158,7 +158,7 @@ $result_checkrep = $stmt->get_result();
     <form method="POST" action="?">
         <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($account_id); ?>">
         <div class="input-group">
-            <input type="checkbox" name="new_enable" placeholder="有効">有効
+            <input type="checkbox" name="new_enable" placeholder="有効" checked>有効
         </div>
         <label>
             <input type="radio" name="new_mode" value="CHECK" checked>
