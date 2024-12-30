@@ -996,6 +996,7 @@
             // 
             // button予約End
             // 
+            this.button予約End.Enabled = false;
             this.button予約End.Location = new System.Drawing.Point(276, 7);
             this.button予約End.Name = "button予約End";
             this.button予約End.Size = new System.Drawing.Size(125, 47);

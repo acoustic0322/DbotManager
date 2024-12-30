@@ -570,11 +570,15 @@ namespace DbotManager
             }
 
             _reserveTask.StartTask();
+
+            button予約Start.Enabled = false;
+            button予約End.Enabled = true;
         }
 
         private void button予約End_Click(object sender, EventArgs e)
         {
-
+            button予約Start.Enabled = true;
+            button予約End.Enabled = false;
         }
 
         AccountDialog _accountDialog;
