@@ -45,8 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_enable = isset($_POST['new_enable']) ? 1 : 0;
         $new_chatgpt = isset($_POST['new_chatgpt']) ? 1 : 0;
 //        $new_mode = $_POST['new_mode'];
-        $new_movie_enable = isset($_POST['new_movie_enable']) ? 1 : 0;
-        $new_photo_enable = isset($_POST['new_photo_enable']) ? 1 : 0;
+
 
 //        $new_mode = $_POST['new_mode'] ?? '';
 
@@ -66,6 +65,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             */
 
         $new_mode = $_POST['new_mode'];
+        if($_POST['new_mediatype'] == "")
+        {
+            $new_movie_enable = 0;
+            $new_photo_enable = 0;
+        }
+        elseif($_POST['new_mediatype'] == "video")
+        {
+            $new_movie_enable = 1;
+            $new_photo_enable = 0;
+        }
+        else{
+            $new_movie_enable = 0;
+            $new_photo_enable = 1;
+        }
+
+        // 時間帯設定の処理
+        $time_zone_setting = $_POST['time_zone_setting'];
+        switch ($time_zone_setting) {
+            case "":
+                $reserve_mode = 0; // なし
+                break;
+            case "time_zone_1":
+                $reserve_mode = 1; // 時間帯1
+                break;
+            case "time_zone_2":
+                $reserve_mode = 2; // 時間帯2
+                break;
+            case "time_zone_3":
+                $reserve_mode = 3; // 時間帯3
+                break;
+            case "time_zone_4":
+                $reserve_mode = 4; // 時間帯4
+                break;
+            default:
+                $reserve_mode = 0; // デフォルト値
+        }
+
+
 
         // $new_modeがnullの場合のエラーハンドリング
         if ($new_mode === null) {
@@ -75,13 +112,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // コメントをデータベースに登録
         $stmt = $conn->prepare("INSERT INTO comment_master (
-            user_id, account_id, comment, enable, chatgpt, mode, movie_enable, photo_enable
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            user_id, account_id, comment, enable, chatgpt, mode, movie_enable, photo_enable, reserve_mode
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         $stmt->bind_param(
-            "iisiisii",
+            "iisiisiii",
             $new_user_id, $new_account_id, $new_comment, $new_enable, $new_chatgpt,
-            $new_mode, $new_movie_enable, $new_photo_enable
+            $new_mode, $new_movie_enable, $new_photo_enable, $reserve_mode
         );
 
         /*
@@ -182,6 +219,7 @@ $result_replytoreply = $stmt->get_result();
         <div class="input-group">
             <input type="checkbox" name="new_enable" placeholder="有効" checked>有効
         </div>
+        モード
         <label>
             <input type="radio" name="new_mode" value="post" checked>
             ポスト
@@ -193,17 +231,55 @@ $result_replytoreply = $stmt->get_result();
         <label>
             <input type="radio" name="new_mode" value="replytoreply">
             リプライtoリプライ
+        </label><br>
+
+        <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
+        <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+
+        動画/画像
+        <label>
+            <input type="radio" name="new_mediatype" value="" checked>
+            なし
         </label>
+        <label>
+            <input type="radio" name="new_mediatype" value="video">
+            動画
+        </label>
+        <label>
+            <input type="radio" name="new_mediatype" value="photo">
+            画像
+        </label>
+        <?php endif; ?>
+        <?php endif; ?>
+        <br>
+
         <div class="input-group">
-            コメント<br>
+            コメント
             <input type="text" name="new_comment" placeholder="コメント" required style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px;">
         </div>
+
+        <!-- 時間帯設定のコンボボックスを追加 -->
+        <div class="input-group">
+            時間帯設定
+            <select name="time_zone_setting">
+                <option value="">なし</option>
+                <option value="time_zone_1">時間帯1</option>
+                <option value="time_zone_2">時間帯2</option>
+                <option value="time_zone_3">時間帯3</option>
+                <option value="time_zone_4">時間帯4</option>
+            </select>
+            ※ポスト設定時のみ有効
+        </div>
+
+        <!--
         <div class="input-group">
             <input type="checkbox" name="new_movie_enable" placeholder="動画">動画
         </div>
         <div class="input-group">
             <input type="checkbox" name="new_photo_enable" placeholder="画像">画像
         </div>
+        -->
+
         <!--
         <div class="input-group">
             <input type="checkbox" name="new_photo_enable" placeholder="ChatGPT(開発予定)">ChatGPT(開発予定)
@@ -220,12 +296,13 @@ $result_replytoreply = $stmt->get_result();
                 <th>有効</th>
                 <th>コメント</th>
                 <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                <th>動画</th>
-                <?php endif; ?>
                 <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                <th>画像</th>
+                <th>動画/画像</th>
+                <?php endif; ?>
                 <?php endif; ?>                
-<!--                <th>ChatGPT</th>-->
+                <th>時間帯</th>
+
+                <!--                <th>ChatGPT</th>-->
                 <th>操作</th>
             </tr>
         </thead>
@@ -234,12 +311,37 @@ $result_replytoreply = $stmt->get_result();
                 <tr>
                     <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
                     <td><?php echo htmlspecialchars($row['comment']); ?></td>
+
                     <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                        <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '〇' : '×'; ?></td>
-                    <?php endif; ?>                
                     <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                        <td><?php echo htmlspecialchars($row['photo_enable']) == 1 ? '〇' : '×'; ?></td>
+                            <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '動画' : (htmlspecialchars($row['photo_enable']) == 1 ? '画像' : 'なし'); ?></td>
                     <?php endif; ?>                
+                    <?php endif; ?>               
+
+                    <!-- 時間帯の表示 -->
+                    <td>
+                        <?php 
+                        switch ($row['reserve_mode']) {
+                            case 1:
+                                echo "時間帯1";
+                                break;
+                            case 2:
+                                echo "時間帯2";
+                                break;
+                            case 3:
+                                echo "時間帯3";
+                                break;
+                            case 4:
+                                echo "時間帯4";
+                                break;
+                            default:
+                                echo "なし";
+                                break;
+                        }
+                        ?>
+                    </td>
+
+                    <!-- 隠し要素 -->                     
                     <td class="hidden"><?php echo htmlspecialchars($row['chatgpt']) == 1 ? '〇' : '×'; ?></td>
                     <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
 
@@ -264,10 +366,9 @@ $result_replytoreply = $stmt->get_result();
                 <th>有効</th>
                 <th>コメント</th>
                 <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                <th>動画</th>
-                <?php endif; ?>
                 <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                <th>画像</th>
+                <th>動画/画像</th>
+                <?php endif; ?>
                 <?php endif; ?>   
 <!--                <th>ChatGPT</th> -->
                 <th>操作</th>
@@ -278,12 +379,13 @@ $result_replytoreply = $stmt->get_result();
                 <tr>
                     <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
                     <td><?php echo htmlspecialchars($row['comment']); ?></td>
+
                     <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                        <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '〇' : '×'; ?></td>
-                    <?php endif; ?>                
                     <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                        <td><?php echo htmlspecialchars($row['photo_enable']) == 1 ? '〇' : '×'; ?></td>
-                    <?php endif; ?>  
+                            <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '動画' : (htmlspecialchars($row['photo_enable']) == 1 ? '画像' : 'なし'); ?></td>
+                    <?php endif; ?>                
+                    <?php endif; ?>                
+
                     <td class="hidden"><?php echo htmlspecialchars($row['chatgpt']) == 1 ? '〇' : '×'; ?></td>
                     <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
 
@@ -308,11 +410,10 @@ $result_replytoreply = $stmt->get_result();
                 <th>有効</th>
                 <th>コメント</th>
                 <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                <th>動画</th>
-                <?php endif; ?>
                 <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                <th>画像</th>
-                <?php endif; ?>   
+                <th>動画/画像</th>
+                <?php endif; ?>
+                <?php endif; ?> 
 <!--                <th>ChatGPT</th> -->
                 <th>操作</th>
             </tr>
@@ -322,12 +423,13 @@ $result_replytoreply = $stmt->get_result();
                 <tr>
                     <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
                     <td><?php echo htmlspecialchars($row['comment']); ?></td>
+
                     <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                        <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '〇' : '×'; ?></td>
-                    <?php endif; ?>                
                     <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                        <td><?php echo htmlspecialchars($row['photo_enable']) == 1 ? '〇' : '×'; ?></td>
-                    <?php endif; ?>  
+                            <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '動画' : (htmlspecialchars($row['photo_enable']) == 1 ? '画像' : 'なし'); ?></td>
+                    <?php endif; ?>                
+                    <?php endif; ?>                
+
                     <td class="hidden"><?php echo htmlspecialchars($row['chatgpt']) == 1 ? '〇' : '×'; ?></td>
                     <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
 

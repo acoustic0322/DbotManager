@@ -732,7 +732,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable
+                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable, reserve_mode
                         FROM comment_master;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -754,6 +754,7 @@ public class MySqlDataAccess
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
                                 TweetModeType = reader["mode"].ToString() == "post" ? TweetModeTypes.Post : reader["mode"].ToString() == "reply" ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
+                                ReserveMode = int.Parse(reader["reserve_mode"].ToString()),
                             };
 
                             commentMasterList.Add(commentItem);
@@ -781,7 +782,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable
+                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable , reserve_mode
                         FROM comment_master where account_id = @AccountId;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -805,6 +806,7 @@ public class MySqlDataAccess
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
                                 TweetModeType = reader["mode"].ToString() == "post" ? TweetModeTypes.Post : reader["mode"].ToString() == "reply" ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
+                                ReserveMode = int.Parse(reader["reserve_mode"].ToString()),
                             };
 
                             retList.Add(commentItem);
@@ -831,7 +833,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"SELECT id,user_id,
-                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable
+                        account_id,comment,enable , chatgpt , mode , photo_enable , movie_enable, reserve_mode
                         FROM comment_master where id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -853,6 +855,7 @@ public class MySqlDataAccess
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
                                 TweetModeType = reader["mode"].ToString() == "post" ? TweetModeTypes.Post : reader["mode"].ToString() == "reply" ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
+                                ReserveMode = int.Parse(reader["reserve_mode"].ToString()),
                             };
 
                             return commentItem;
@@ -886,7 +889,8 @@ public class MySqlDataAccess
                                  mode = @Mode,
                                  enable = @Enable,
                                  photo_enable = @PhotoEnable,
-                                 movie_enable = @MovieEnable
+                                 movie_enable = @MovieEnable,
+                                 reserve_mode = @ReserveMode
                              WHERE id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -902,6 +906,7 @@ public class MySqlDataAccess
                     //                    command.Parameters.AddWithValue("@PhotoId", commentMaster.PhotoId);
                     //                    command.Parameters.AddWithValue("@MovieId", commentMaster.MovieId);
                     command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Post ? "post" : commentMaster.TweetModeType == TweetModeTypes.Replay ? "reply" : "replytoreply");
+                    command.Parameters.AddWithValue("@ReserveMode", commentMaster.ReserveMode);
 
                     int rowsAffected = command.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -923,8 +928,8 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = @"INSERT INTO comment_master (user_id, account_id, comment, enable, chatgpt , mode , photo_enable , movie_enable) 
-                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Chatgpt, @Mode , @PhotoEnable , @MovieEnable);
+                string query = @"INSERT INTO comment_master (user_id, account_id, comment, enable, chatgpt , mode , photo_enable , movie_enable, reserve_mode) 
+                             VALUES (@UserId, @AccountId, @Comment, @Enable, @Chatgpt, @Mode , @PhotoEnable , @MovieEnable , @ReserveMode);
                             SELECT LAST_INSERT_ID(); ";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -937,6 +942,7 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Mode", commentMaster.TweetModeType == TweetModeTypes.Post ? "post" : commentMaster.TweetModeType == TweetModeTypes.Replay ? "reply" : "replytoreply");
                     command.Parameters.AddWithValue("@PhotoEnable", commentMaster.PhotoEnable ? 1 : 0);
                     command.Parameters.AddWithValue("@MovieEnable", commentMaster.MovieEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@ReserveMode", commentMaster.ReserveMode);
 
                     int insertedId = Convert.ToInt32(command.ExecuteScalar());
                     return insertedId;
@@ -1046,12 +1052,15 @@ public class MySqlDataAccess
                 (user_id,account_id, reserve1_enable, reserve2_enable, reserve3_enable, 
                  reserve1_start_hour, reserve2_start_hour, reserve3_start_hour, 
                  reserve1_end_hour, reserve2_end_hour, reserve3_end_hour, 
-                 reserve1_count, reserve2_count, reserve3_count) 
+                 reserve1_count, reserve2_count, reserve3_count
+                 ,reserve4_enable,reserve4_start_hour,reserve4_end_hour,reserve4_count) 
                 VALUES 
                 (@UserId, @AccountId, @Reserve1Enable, @Reserve2Enable, @Reserve3Enable, 
                  @Reserve1StartHour, @Reserve2StartHour, @Reserve3StartHour, 
                  @Reserve1EndHour, @Reserve2EndHour, @Reserve3EndHour, 
-                 @Reserve1Count, @Reserve2Count, @Reserve3Count);";
+                 @Reserve1Count, @Reserve2Count, @Reserve3Count
+                 ,@Reserve4Enable, @Reserve4StartHour, @Reserve4EndHour, @Reserve4Count
+                  );";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1060,15 +1069,19 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Reserve1Enable", reserveMaster.Reserve1Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve2Enable", reserveMaster.Reserve2Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve3Enable", reserveMaster.Reserve3Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve4Enable", reserveMaster.Reserve4Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1StartHour", reserveMaster.Reserve1StartHour);
                     command.Parameters.AddWithValue("@Reserve2StartHour", reserveMaster.Reserve2StartHour);
                     command.Parameters.AddWithValue("@Reserve3StartHour", reserveMaster.Reserve3StartHour);
+                    command.Parameters.AddWithValue("@Reserve4StartHour", reserveMaster.Reserve4StartHour);
                     command.Parameters.AddWithValue("@Reserve1EndHour", reserveMaster.Reserve1EndHour);
                     command.Parameters.AddWithValue("@Reserve2EndHour", reserveMaster.Reserve2EndHour);
                     command.Parameters.AddWithValue("@Reserve3EndHour", reserveMaster.Reserve3EndHour);
+                    command.Parameters.AddWithValue("@Reserve4EndHour", reserveMaster.Reserve4EndHour);
                     command.Parameters.AddWithValue("@Reserve1Count", reserveMaster.Reserve1Count);
                     command.Parameters.AddWithValue("@Reserve2Count", reserveMaster.Reserve2Count);
                     command.Parameters.AddWithValue("@Reserve3Count", reserveMaster.Reserve3Count);
+                    command.Parameters.AddWithValue("@Reserve4Count", reserveMaster.Reserve4Count);
 
                     command.ExecuteNonQuery();
                 }
@@ -1089,11 +1102,12 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = @"SELECT user_id , account_id,reserve1_enable,reserve2_enable,reserve3_enable,
+                string query = @"SELECT user_id , id,reserve1_enable,reserve2_enable,reserve3_enable,
                         reserve1_start_hour,reserve2_start_hour,reserve3_start_hour,
                         reserve1_end_hour,reserve2_end_hour,reserve3_end_hour,
                         reserve1_count,reserve2_count,reserve3_count
-                        FROM reserve_master where account_id = @AccountId;";
+                        ,reserve4_enable,reserve4_start_hour,reserve4_end_hour,reserve4_count
+                        FROM account_master where id = @AccountId;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1106,19 +1120,23 @@ public class MySqlDataAccess
                             ReserveMaster reserveItem = new ReserveMaster()
                             {
                                 UserId = int.Parse(reader["user_id"].ToString()),
-                                AccountId = int.Parse(reader["account_id"].ToString()),
+                                AccountId = int.Parse(reader["id"].ToString()),
                                 Reserve1Count = int.Parse(reader["reserve1_count"].ToString()),
                                 Reserve2Count = int.Parse(reader["reserve2_count"].ToString()),
                                 Reserve3Count = int.Parse(reader["reserve3_count"].ToString()),
+                                Reserve4Count = int.Parse(reader["reserve4_count"].ToString()),
                                 Reserve1StartHour = int.Parse(reader["reserve1_start_hour"].ToString()),
                                 Reserve2StartHour = int.Parse(reader["reserve2_start_hour"].ToString()),
                                 Reserve3StartHour = int.Parse(reader["reserve3_start_hour"].ToString()),
+                                Reserve4StartHour = int.Parse(reader["reserve4_start_hour"].ToString()),
                                 Reserve1EndHour = int.Parse(reader["reserve1_end_hour"].ToString()),
                                 Reserve2EndHour = int.Parse(reader["reserve2_end_hour"].ToString()),
                                 Reserve3EndHour = int.Parse(reader["reserve3_end_hour"].ToString()),
+                                Reserve4EndHour = int.Parse(reader["reserve4_end_hour"].ToString()),
                                 Reserve1Enable = reader["reserve1_enable"].ToString() == "1",
                                 Reserve2Enable = reader["reserve2_enable"].ToString() == "1",
                                 Reserve3Enable = reader["reserve3_enable"].ToString() == "1",
+                                Reserve4Enable = reader["reserve4_enable"].ToString() == "1",
                             };
 
                             return reserveItem;
@@ -1145,21 +1163,24 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = @"
-                UPDATE reserve_master 
+                UPDATE account_master 
                 SET 
-                    user_id = @UserId,
                     reserve1_enable = @Reserve1Enable,
                     reserve2_enable = @Reserve2Enable,
                     reserve3_enable = @Reserve3Enable,
+                    reserve4_enable = @Reserve4Enable,
                     reserve1_start_hour = @Reserve1StartHour,
                     reserve2_start_hour = @Reserve2StartHour,
                     reserve3_start_hour = @Reserve3StartHour,
+                    reserve4_start_hour = @Reserve4StartHour,
                     reserve1_end_hour = @Reserve1EndHour,
                     reserve2_end_hour = @Reserve2EndHour,
                     reserve3_end_hour = @Reserve3EndHour,
+                    reserve4_end_hour = @Reserve4EndHour,
                     reserve1_count = @Reserve1Count,
                     reserve2_count = @Reserve2Count,
-                    reserve3_count = @Reserve3Count
+                    reserve3_count = @Reserve3Count,
+                    reserve4_count = @Reserve4Count
                 WHERE account_id = @AccountId;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -1169,15 +1190,19 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Reserve1Enable", reserveMaster.Reserve1Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve2Enable", reserveMaster.Reserve2Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve3Enable", reserveMaster.Reserve3Enable ? 1 : 0);
+                    command.Parameters.AddWithValue("@Reserve4Enable", reserveMaster.Reserve4Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Reserve1StartHour", reserveMaster.Reserve1StartHour);
                     command.Parameters.AddWithValue("@Reserve2StartHour", reserveMaster.Reserve2StartHour);
                     command.Parameters.AddWithValue("@Reserve3StartHour", reserveMaster.Reserve3StartHour);
+                    command.Parameters.AddWithValue("@Reserve4StartHour", reserveMaster.Reserve4StartHour);
                     command.Parameters.AddWithValue("@Reserve1EndHour", reserveMaster.Reserve1EndHour);
                     command.Parameters.AddWithValue("@Reserve2EndHour", reserveMaster.Reserve2EndHour);
                     command.Parameters.AddWithValue("@Reserve3EndHour", reserveMaster.Reserve3EndHour);
+                    command.Parameters.AddWithValue("@Reserve4EndHour", reserveMaster.Reserve4EndHour);
                     command.Parameters.AddWithValue("@Reserve1Count", reserveMaster.Reserve1Count);
                     command.Parameters.AddWithValue("@Reserve2Count", reserveMaster.Reserve2Count);
                     command.Parameters.AddWithValue("@Reserve3Count", reserveMaster.Reserve3Count);
+                    command.Parameters.AddWithValue("@Reserve4Count", reserveMaster.Reserve4Count);
 
                     command.ExecuteNonQuery();
                 }

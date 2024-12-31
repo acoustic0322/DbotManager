@@ -338,11 +338,44 @@ $result = $stmt->get_result();
             <?php endif; ?>
         </div>
 
+        <br>
+        【ポスト予約設定】
+        <br>
+        <label>
+            <input type="checkbox" name="reserve1_enable" value="1" checked>時間帯１
+            <input type="text" id="reserve1_start_hour" name="reserve1_start_hour" class="short" placeholder="開始" > ～
+            <input type="text" id="reserve1_end_hour" name="reserve1_end_hour" class="short" placeholder="終了" > 時　
+            <input type="text" id="reserve1_count" name="reserve1_count" class="short" placeholder="" > 回
+        </label><br>
+        <label>
+            <input type="checkbox" name="reserve2_enable" value="1" checked>時間帯２
+            <input type="text" id="reserve2_start_hour" name="reserve2_start_hour" class="short" placeholder="開始" > ～
+            <input type="text" id="reserve2_end_hour" name="reserve2_end_hour" class="short" placeholder="終了" > 時　
+            <input type="text" id="reserve2_count" name="reserve2_count" class="short" placeholder="" > 回
+        </label><br>
+        <label>
+            <input type="checkbox" name="reserve3_enable" value="1" checked>時間帯３
+            <input type="text" id="reserve3_start_hour" name="reserve3_start_hour" class="short" placeholder="開始" > ～
+            <input type="text" id="reserve3_end_hour" name="reserve3_end_hour" class="short" placeholder="終了" > 時　
+            <input type="text" id="reserve3_count" name="reserve3_count" class="short" placeholder="" > 回
+        </label><br>
+        <label>
+            <input type="checkbox" name="reserve4_enable" value="1" checked>時間帯４
+            <input type="text" id="reserve4_start_hour" name="reserve4_start_hour" class="short" placeholder="開始" > ～
+            <input type="text" id="reserve4_end_hour" name="reserve4_end_hour" class="short" placeholder="終了" > 時　
+            <input type="text" id="reserve4_count" name="reserve4_count" class="short" placeholder="" > 回
+        </label><br>
+        
+        <br>
 
-    <div class="input-group">
+
+
+        <div class="input-group">
             <button type="submit">登録</button>
         </div>
     </form>
+
+
 
     <h2>Xアカウント一覧</h2>
     <form method="GET" style="margin-bottom: 20px;">
@@ -369,6 +402,9 @@ $result = $stmt->get_result();
                 -->
                 <th>認証</th>
                 <th>操作</th>
+                <!--
+                <th>一括複製</th>
+            -->
             </tr>
         </thead>
         <tbody>
@@ -407,6 +443,13 @@ $result = $stmt->get_result();
                         <button type="button" onclick="deleteUser(this,<?php echo htmlspecialchars($row['id']) ?>)">削除</button>
                     </form>
                 </td>
+
+                <!-- 複製ボタンをできれば実装したい
+                <td>
+                    <input type="checkbox" name="copy_comment" value="1" <?php echo 'checked' ?>>コメント
+                    <input type="checkbox" name="copy_checkrep" value="1" <?php echo 'checked' ?>>監視設定
+                </td>
+                -->
             </tr>
             <?php endwhile; ?>
         </tbody>
@@ -474,6 +517,13 @@ $result = $stmt->get_result();
         box-sizing: border-box; /* パディングを含めた幅を計算 */
     }
 </style> 
+
+<style>
+    /* テキストボックスの幅を短く設定 */
+    input[type="text"].short {
+        width: 40px; /* 必要に応じて調整 */
+    }
+</style>
 
 </body>
 </html>

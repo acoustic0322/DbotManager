@@ -55,6 +55,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         */
     $mode = $_POST['mode'];
 
+    if($_POST['new_mediatype'] == "")
+    {
+        $movie_enable = 0;
+        $photo_enable = 0;
+    }
+    elseif($_POST['new_mediatype'] == "video")
+    {
+        $movie_enable = 1;
+        $photo_enable = 0;
+    }
+    else{
+        $movie_enable = 0;
+        $photo_enable = 1;
+    }
+
+    // 時間帯設定の処理
+    $time_zone_setting = $_POST['time_zone_setting'];
+    switch ($time_zone_setting) {
+        case "":
+            $reserve_mode = 0; // なし
+            break;
+        case "time_zone_1":
+            $reserve_mode = 1; // 時間帯1
+            break;
+        case "time_zone_2":
+            $reserve_mode = 2; // 時間帯2
+            break;
+        case "time_zone_3":
+            $reserve_mode = 3; // 時間帯3
+            break;
+        case "time_zone_4":
+            $reserve_mode = 4; // 時間帯4
+            break;
+        default:
+            $reserve_mode = 0; // デフォルト値
+    }    
+
     // 入力値のバリデーション
 //    if (empty($name) || empty($login_id) || empty($login_password)) {
     if (empty($comment) || empty($mode)) {
@@ -71,18 +108,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             chatgpt = ?, 
             mode = ?, 
             movie_enable = ?, 
-            photo_enable = ?
+            photo_enable = ?,
+            reserve_mode = ?
         WHERE id = ?
     ");
 
     $stmt->bind_param(
-        "siisiii", // 型指定
+        "siisiiii", // 型指定
         $comment,
         $enable , 
         $chatgpt, 
         $mode, 
         $movie_enable, 
         $photo_enable,
+        $reserve_mode,
         $id
     );
     
@@ -167,17 +206,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" id="user_id" name="user_id" value="<?php echo htmlspecialchars($edit_account['user_id'] ?? '') ?>" required><br><br>
             -->
 
-            <div class="input-group">
-                <label for="name">コメント:</label><br>
-                <input type="text" id="comment" name="comment" placeholder="コメント" value="<?php echo htmlspecialchars($edit_account['comment'] ?? '') ?>" required>
-            </div>
-
             <div class="input-group" checkbox-group">
 
                 <label>
                     <input type="checkbox" name="enable" value="1" <?php echo !empty($edit_account['enable']) ? 'checked' : '' ?>>有効
                 </label><br>
 
+                モード
                 <label>
                     <input type="radio" name="mode" value="post" <?php echo ($edit_account['mode'] === 'post') ? 'checked' : ''; ?>> ポスト
                 </label>
@@ -190,17 +225,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <br>            
 
                 <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                <label>
-                    <input type="checkbox" name="movie_enable" value="1" <?php echo !empty($edit_account['movie_enable']) ? 'checked' : '' ?>>動画
-                </label><br>
-                <?php endif; ?>
-
                 <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                <label>
-                    <input type="checkbox" name="photo_enable" value="1" <?php echo !empty($edit_account['photo_enable']) ? 'checked' : '' ?>>画像
-                </label><br>
-                <?php endif; ?>
 
+                動画/画像
+                <label>
+                    <input type="radio" name="new_mediatype" value="" <?php echo ($edit_account['movie_enable'] === 0 && $edit_account['photo_enable'] === 0) ? 'checked' : ''; ?>>
+                    なし
+                </label>
+                <label>
+                <input type="radio" name="new_mediatype" value="video" <?php echo ($edit_account['movie_enable'] === 1) ? 'checked' : ''; ?>>
+                    動画
+                </label>
+                <label>
+                <input type="radio" name="new_mediatype" value="photo" <?php echo ($edit_account['photo_enable'] === 1) ? 'checked' : ''; ?>>
+                    画像
+                </label>
+                <?php endif; ?>
+                <?php endif; ?>
+                <br>            
+            </div>
+
+            <div class="input-group">
+                <label for="name">コメント:</label><br>
+                <input type="text" id="comment" name="comment" placeholder="コメント" value="<?php echo htmlspecialchars($edit_account['comment'] ?? '') ?>" required>
+            </div>
+
+            <!-- 時間帯設定のコンボボックスを追加 -->
+            <div class="input-group">
+                時間帯設定
+                <select name="time_zone_setting">
+                    <option value="" <?php echo $edit_account['reserve_mode'] == 0 ? 'selected' : ''; ?>>なし</option>
+                    <option value="time_zone_1" <?php echo $edit_account['reserve_mode'] == 1 ? 'selected' : ''; ?>>時間帯1</option>
+                    <option value="time_zone_2" <?php echo $edit_account['reserve_mode'] == 2 ? 'selected' : ''; ?>>時間帯2</option>
+                    <option value="time_zone_3" <?php echo $edit_account['reserve_mode'] == 3 ? 'selected' : ''; ?>>時間帯3</option>
+                    <option value="time_zone_4" <?php echo $edit_account['reserve_mode'] == 4 ? 'selected' : ''; ?>>時間帯4</option>
+                </select>
+                ※ポスト設定時のみ有効
             </div>
 
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">

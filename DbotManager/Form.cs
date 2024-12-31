@@ -226,7 +226,7 @@ namespace DbotManager
 
         private void FillDebugControls_TweetHistory()
         {
-            _tweetHistoryList = dataAccess.GetTweetHistoryView();
+            _tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.UpdateTime >= DateTime.Today.AddDays(-3)).ToList();
             UpdateTweetHistoryFilter();
 
         }
