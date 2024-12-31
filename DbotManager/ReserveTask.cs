@@ -63,20 +63,42 @@ namespace DbotManager
 
                 if (reserve.Reserve1Enable)
                 {
-                    var scheduleWk = MakeSchedule(reserve.Reserve1Count, reserve.Reserve1StartHour, reserve.Reserve1EndHour, reserve.UserId, reserve.AccountId, commentList, 1 , reserveScheduleList);
-                    reserveScheduleList.AddRange(scheduleWk);
+                    var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 1).ToList();
+                    if(commentListWk.Count > 0)
+                    {
+                        var scheduleWk = MakeSchedule(reserve.Reserve1Count, reserve.Reserve1StartHour, reserve.Reserve1EndHour, reserve.UserId, reserve.AccountId, commentListWk, 1, reserveScheduleList);
+                        reserveScheduleList.AddRange(scheduleWk);
+                    }
                 }
 
                 if (reserve.Reserve2Enable)
                 {
-                    var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentList, 2, reserveScheduleList);
-                    reserveScheduleList.AddRange(scheduleWk);
+                    var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 2).ToList();
+                    if (commentListWk.Count > 0)
+                    {
+                        var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentListWk, 2, reserveScheduleList);
+                        reserveScheduleList.AddRange(scheduleWk);
+                    }
                 }
 
                 if (reserve.Reserve3Enable)
                 {
-                    var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentList, 3, reserveScheduleList);
-                    reserveScheduleList.AddRange(scheduleWk);
+                    var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 3).ToList();
+                    if (commentListWk.Count > 0)
+                    {
+                        var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentListWk, 3, reserveScheduleList);
+                        reserveScheduleList.AddRange(scheduleWk);
+                    }
+                }
+
+                if (reserve.Reserve4Enable)
+                {
+                    var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 4).ToList();
+                    if (commentListWk.Count > 0)
+                    {
+                        var scheduleWk = MakeSchedule(reserve.Reserve4Count, reserve.Reserve4StartHour, reserve.Reserve4EndHour, reserve.UserId, reserve.AccountId, commentListWk, 4, reserveScheduleList);
+                        reserveScheduleList.AddRange(scheduleWk);
+                    }
                 }
             }
 

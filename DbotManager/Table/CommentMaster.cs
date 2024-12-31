@@ -27,5 +27,6 @@ namespace DbotManager.Table
         //        public int MovieId { get; set; }
         public bool PhotoEnable { get; set; }
         public bool MovieEnable { get; set; }
+        public int ReserveMode { get; set; }
     }
 }

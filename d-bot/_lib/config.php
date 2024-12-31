@@ -291,7 +291,8 @@ function get_comment($conn, $id)
         chatgpt,
         mode,
         movie_enable,
-        photo_enable
+        photo_enable,
+        reserve_mode
     FROM comment_master
     WHERE id = ?;
     ";
@@ -313,7 +314,8 @@ function get_comment($conn, $id)
             $chatgpt,
             $mode,
             $movie_enable,
-            $photo_enable
+            $photo_enable,
+            $reserve_mode
         );
 
         if ($stmt->fetch()) {
@@ -327,8 +329,8 @@ function get_comment($conn, $id)
                 'chatgpt' => $chatgpt,
                 'mode' => $mode,
                 'movie_enable' => $movie_enable,
-                'photo_enable' => $photo_enable
-   
+                'photo_enable' => $photo_enable,
+                'reserve_mode' => $reserve_mode
             ];
         }
     }

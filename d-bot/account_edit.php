@@ -168,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id
     );
     
-//    echo "<script>alert('{$id}');</script>";
+//    echo "<script>alert('{$reserve1_enable}');</script>";
 
     // SQLクエリ実行
     $stmt->execute();
@@ -352,6 +352,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
         </div>
 
+        <br>
+        【ポスト予約設定】
+        <br>
+        <label>
+            <input type="checkbox" name="reserve1_enable" value="1" <?php echo !empty($edit_account['reserve1_enable']) ? 'checked' : '' ?>>時間帯１
+            <input type="text" name="reserve1_start_hour" class="short" placeholder="開始" value="<?php echo htmlspecialchars($edit_account['reserve1_start_hour'] ?? '') ?>"> ～
+            <input type="text" name="reserve1_end_hour" class="short" placeholder="終了" value="<?php echo htmlspecialchars($edit_account['reserve1_end_hour'] ?? '') ?>"> 時　
+            <input type="text" name="reserve1_count" class="short" placeholder="" value="<?php echo htmlspecialchars($edit_account['reserve1_count'] ?? '') ?>"> 回
+        </label><br>
+        <label>
+            <input type="checkbox" name="reserve2_enable" value="1" <?php echo !empty($edit_account['reserve2_enable']) ? 'checked' : '' ?>>時間帯２
+            <input type="text" name="reserve2_start_hour" class="short" placeholder="開始" value="<?php echo htmlspecialchars($edit_account['reserve2_start_hour'] ?? '') ?>"> ～
+            <input type="text" name="reserve2_end_hour" class="short" placeholder="終了" value="<?php echo htmlspecialchars($edit_account['reserve2_end_hour'] ?? '') ?>"> 時　
+            <input type="text" name="reserve2_count" class="short" placeholder="" value="<?php echo htmlspecialchars($edit_account['reserve2_count'] ?? '') ?>"> 回
+        </label><br>
+        <label>
+            <input type="checkbox" name="reserve3_enable" value="1" <?php echo !empty($edit_account['reserve3_enable']) ? 'checked' : '' ?>>時間帯３
+            <input type="text" name="reserve3_start_hour" class="short" placeholder="開始" value="<?php echo htmlspecialchars($edit_account['reserve3_start_hour'] ?? '') ?>"> ～
+            <input type="text" name="reserve3_end_hour" class="short" placeholder="終了" value="<?php echo htmlspecialchars($edit_account['reserve3_end_hour'] ?? '') ?>"> 時　
+            <input type="text" name="reserve3_count" class="short" placeholder="" value="<?php echo htmlspecialchars($edit_account['reserve3_count'] ?? '') ?>"> 回
+        </label><br>
+        <label>
+            <input type="checkbox" name="reserve4_enable" value="1" <?php echo !empty($edit_account['reserve4_enable']) ? 'checked' : '' ?>>時間帯４
+            <input type="text" name="reserve4_start_hour" class="short" placeholder="開始" value="<?php echo htmlspecialchars($edit_account['reserve4_start_hour'] ?? '') ?>"> ～
+            <input type="text" name="reserve4_end_hour" class="short" placeholder="終了" value="<?php echo htmlspecialchars($edit_account['reserve4_end_hour'] ?? '') ?>"> 時　
+            <input type="text" name="reserve4_count" class="short" placeholder="" value="<?php echo htmlspecialchars($edit_account['reserve4_count'] ?? '') ?>"> 回
+        </label><br>
+        
+        <br>
+
+
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
             <button type="submit">更新</button>
         </form>
@@ -367,6 +398,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         box-sizing: border-box; /* パディングを含めた幅を計算 */
     }
 </style> 
+
+<style>
+    /* テキストボックスの幅を短く設定 */
+    input[type="text"].short {
+        width: 40px; /* 必要に応じて調整 */
+    }
+</style>
 
 </body>
 </html>
