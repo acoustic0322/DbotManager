@@ -30,7 +30,8 @@ namespace DbotManager
         private List<AccountMaster> _accountMasterList = new List<AccountMaster>();
         private List<MediaMaster> _mediaMasterList = new List<MediaMaster>();
 
-        
+        DiscordTask _discordTask;
+
 
         #endregion
 
@@ -48,6 +49,9 @@ namespace DbotManager
             dataAccess = new MySqlDataAccess(this.dbConnection);
 
             ReadCommentMaster();
+
+            _discordTask = new DiscordTask();
+            _discordTask.StartTask();
 
             _isLoading = false;
         }
@@ -281,6 +285,8 @@ namespace DbotManager
 
                 // 必要に応じてログファイルにも書き込む
                 SupportUtil.SaveLogToFile(message, textBoxRenew);
+
+                _discordTask.SendMessage(message);
             }
             /*
             if (message != null)

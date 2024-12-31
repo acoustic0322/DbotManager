@@ -30,6 +30,8 @@ namespace DbotManager
 
         private CheckAccountDialog _checkAccountDialog;
 
+        DiscordTask _discordTask;
+
         #endregion
 
         #region 初期化
@@ -83,6 +85,9 @@ namespace DbotManager
             ReadAccountMaster(GetUserId());
             _isLoading = false;
             dataGridViewAccount_SelectionChanged(sender, e);
+
+            _discordTask = new DiscordTask();
+            _discordTask.StartTask();
         }
 
         #endregion
@@ -211,6 +216,8 @@ namespace DbotManager
 
                 // 必要に応じてログファイルにも書き込む
                 SupportUtil.SaveLogToFile(message, textBoxRenew);
+
+                _discordTask.SendMessage(message);
             }
             /*
             if (message != null)
