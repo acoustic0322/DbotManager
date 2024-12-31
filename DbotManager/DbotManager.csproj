@@ -113,6 +113,7 @@
     <Compile Include="CheckAccountDialog.Designer.cs">
       <DependentUpon>CheckAccountDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="DiscordTask.cs" />
     <Compile Include="Entity\WebCommand.cs" />
     <Compile Include="MySql\DbConnectionInfo.cs" />
     <Compile Include="ReserveRegistrationDialog.cs">

@@ -28,6 +28,7 @@ namespace DbotManager
     public partial class Form : System.Windows.Forms.Form
     {
         TweetTask _tweetTask;
+        DiscordTask _discordTask;
         ReserveTask _reserveTask;
 
         public DbConnectionInfo DbConnection = new DbConnectionInfo();
@@ -168,6 +169,8 @@ namespace DbotManager
             SupportUtil.MakeFolder("python");
             _tweetTask = new TweetTask(DbConnection , AppendLog);
             _reserveTask = new ReserveTask(DbConnection, AppendLog);
+            _discordTask = new DiscordTask();
+            _discordTask.StartTask();
 
             FillControls();
             _isLoading = false;
@@ -490,6 +493,8 @@ namespace DbotManager
 
                 // 必要に応じてログファイルにも書き込む
                 SupportUtil.SaveLogToFile(message , textBoxRenew);
+
+                _discordTask.SendMessage(message);
             }
         }
 
