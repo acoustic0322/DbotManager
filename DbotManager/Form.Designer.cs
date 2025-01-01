@@ -83,6 +83,13 @@
             this.groupBox監視 = new System.Windows.Forms.GroupBox();
             this.label監視件数 = new System.Windows.Forms.Label();
             this.dataGridView監視 = new System.Windows.Forms.DataGridView();
+            this.Mode = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.CheckDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.button監視End = new System.Windows.Forms.Button();
             this.button監視Start = new System.Windows.Forms.Button();
             this.tabPage予約 = new System.Windows.Forms.TabPage();
@@ -108,13 +115,6 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.Mode = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CheckDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -712,6 +712,54 @@
             this.dataGridView監視.Size = new System.Drawing.Size(754, 442);
             this.dataGridView監視.TabIndex = 0;
             // 
+            // Mode
+            // 
+            this.Mode.DataPropertyName = "Mode";
+            this.Mode.HeaderText = "モード";
+            this.Mode.Name = "Mode";
+            // 
+            // dataGridViewTextBoxColumn5
+            // 
+            this.dataGridViewTextBoxColumn5.DataPropertyName = "TargetAccountName";
+            this.dataGridViewTextBoxColumn5.HeaderText = "対象";
+            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+            this.dataGridViewTextBoxColumn5.Width = 140;
+            // 
+            // Column4
+            // 
+            this.Column4.DataPropertyName = "CheckAccountName";
+            this.Column4.HeaderText = "監視実施";
+            this.Column4.Name = "Column4";
+            this.Column4.Width = 140;
+            // 
+            // Column5
+            // 
+            this.Column5.DataPropertyName = "AccountName";
+            this.Column5.HeaderText = "リプ実施";
+            this.Column5.Name = "Column5";
+            this.Column5.Width = 140;
+            // 
+            // CheckDate
+            // 
+            this.CheckDate.DataPropertyName = "CheckDate";
+            this.CheckDate.HeaderText = "次回監視";
+            this.CheckDate.Name = "CheckDate";
+            this.CheckDate.Width = 200;
+            // 
+            // Column3
+            // 
+            this.Column3.DataPropertyName = "SinceDatetime";
+            this.Column3.HeaderText = "最終更新";
+            this.Column3.Name = "Column3";
+            this.Column3.Visible = false;
+            // 
+            // dataGridViewTextBoxColumn6
+            // 
+            this.dataGridViewTextBoxColumn6.DataPropertyName = "ExeAccountName";
+            this.dataGridViewTextBoxColumn6.HeaderText = "実施候補";
+            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+            this.dataGridViewTextBoxColumn6.Visible = false;
+            // 
             // button監視End
             // 
             this.button監視End.Enabled = false;
@@ -964,54 +1012,6 @@
             this.buttonアカウント設定.Text = "アカウント設定";
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
-            // 
-            // Mode
-            // 
-            this.Mode.DataPropertyName = "Mode";
-            this.Mode.HeaderText = "モード";
-            this.Mode.Name = "Mode";
-            // 
-            // dataGridViewTextBoxColumn5
-            // 
-            this.dataGridViewTextBoxColumn5.DataPropertyName = "TargetAccountName";
-            this.dataGridViewTextBoxColumn5.HeaderText = "対象";
-            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
-            this.dataGridViewTextBoxColumn5.Width = 140;
-            // 
-            // Column4
-            // 
-            this.Column4.DataPropertyName = "CheckAccountName";
-            this.Column4.HeaderText = "監視実施";
-            this.Column4.Name = "Column4";
-            this.Column4.Width = 140;
-            // 
-            // Column5
-            // 
-            this.Column5.DataPropertyName = "AccountName";
-            this.Column5.HeaderText = "リプ実施";
-            this.Column5.Name = "Column5";
-            this.Column5.Width = 140;
-            // 
-            // CheckDate
-            // 
-            this.CheckDate.DataPropertyName = "CheckDate";
-            this.CheckDate.HeaderText = "次回監視";
-            this.CheckDate.Name = "CheckDate";
-            this.CheckDate.Width = 200;
-            // 
-            // Column3
-            // 
-            this.Column3.DataPropertyName = "SinceDatetime";
-            this.Column3.HeaderText = "最終更新";
-            this.Column3.Name = "Column3";
-            this.Column3.Visible = false;
-            // 
-            // dataGridViewTextBoxColumn6
-            // 
-            this.dataGridViewTextBoxColumn6.DataPropertyName = "ExeAccountName";
-            this.dataGridViewTextBoxColumn6.HeaderText = "実施候補";
-            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
-            this.dataGridViewTextBoxColumn6.Visible = false;
             // 
             // Form
             // 

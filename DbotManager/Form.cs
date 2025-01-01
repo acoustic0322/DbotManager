@@ -172,6 +172,11 @@ namespace DbotManager
             _discordTask = new DiscordTask();
             _discordTask.StartTask();
 
+            var col = dataGridView監視.Columns[CheckDate.Name];
+            col.DefaultCellStyle.Format = "HH:mm:ss";
+            col = dataGridViewReserveSchedule.Columns[dataGridViewReserveSchedule_ReserveTime.Name];
+            col.DefaultCellStyle.Format = "HH:mm:ss";
+
             FillControls();
             _isLoading = false;
         }
@@ -665,7 +670,7 @@ namespace DbotManager
 
         private void button監視Start_Click(object sender, EventArgs e)
         {
-            MakeList_監視();
+            MakeList_監視(true);
 
             _tweetTask.StartTask_監視();
             _tweetTask.監視完了 += On監視完了;
@@ -685,7 +690,7 @@ namespace DbotManager
         {
             Console.WriteLine("監視処理が完了しました。追加処理を行います。");
 
-            var list = _tweetTask.CheckAccountList.ToList();
+            var list = _tweetTask.CheckAccountList.OrderBy(x => x.CheckDate).ToList();
 
             // メインスレッドで UI を更新する
             if (dataGridView監視.InvokeRequired)
@@ -722,7 +727,7 @@ namespace DbotManager
           
             _tweetTask.Init監視list(first_flag);
 
-            var list = _tweetTask.CheckAccountList.ToList();
+            var list = _tweetTask.CheckAccountList.OrderBy(x => x.CheckDate).ToList();
             dataGridView監視.DataSource = list;
             label監視件数.Text = $"({list.Count}件)";
 
