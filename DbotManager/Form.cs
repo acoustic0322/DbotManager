@@ -668,11 +668,44 @@ namespace DbotManager
             MakeList_監視();
 
             _tweetTask.StartTask_監視();
+            _tweetTask.監視完了 += On監視完了;
 
             button監視Start.Enabled = false;
             button監視End.Enabled = true;
 
             groupBox基本設定_監視.Enabled = false;
+        }
+
+        /// <summary>
+        /// TweetTaskの監視処理が実行された際に呼び出されるイベント
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void On監視完了(object sender, EventArgs e)
+        {
+            Console.WriteLine("監視処理が完了しました。追加処理を行います。");
+
+            var list = _tweetTask.CheckAccountList.ToList();
+
+            // メインスレッドで UI を更新する
+            if (dataGridView監視.InvokeRequired)
+            {
+                dataGridView監視.Invoke(new Action(() =>
+                {
+                    UpdateUI(list);
+                }));
+            }
+            else
+            {
+                UpdateUI(list);
+            }
+        }
+
+        // UI を更新する処理を別メソッドにまとめる
+        private void UpdateUI(List<CheckAccountList> list)
+        {
+            dataGridView監視.DataSource = list;
+            label監視件数.Text = $"({list.Count}件)";
         }
 
         private void button監視End_Click(object sender, EventArgs e)
@@ -684,10 +717,10 @@ namespace DbotManager
             groupBox基本設定_監視.Enabled = true;
         }
 
-        private void MakeList_監視(bool 監視flag = true, bool 監視toRepflag = true, bool モノマネflag = true)
+        private void MakeList_監視(bool first_flag = false)
         {
           
-            _tweetTask.Init監視list(監視flag , 監視toRepflag , モノマネflag);
+            _tweetTask.Init監視list(first_flag);
 
             var list = _tweetTask.CheckAccountList.ToList();
             dataGridView監視.DataSource = list;

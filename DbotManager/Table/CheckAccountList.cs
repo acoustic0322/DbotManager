@@ -29,5 +29,7 @@ namespace DbotManager.Table
         public DateTime CheckDate { get; set; }
         public int CheckInterval { get; set; }
 
+        public bool FirstFlag { get; set; }
+
     }
 }
