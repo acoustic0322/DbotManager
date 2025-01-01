@@ -686,65 +686,12 @@ namespace DbotManager
 
         private void MakeList_監視(bool 監視flag = true, bool 監視toRepflag = true, bool モノマネflag = true)
         {
-            _tweetTask.監視Enable = checkBox監視.Checked;
-            _tweetTask.監視toRepEnable = checkBox監視toRep.Checked;
-            _tweetTask.モノマネEnable = checkBoxモノマネ.Checked;
-
-            _tweetTask.周期秒数_監視 = int.Parse(textBox監視周期.Text);
-            _tweetTask.周期秒数_監視toRep = int.Parse(textBox監視toRep周期.Text);
-            _tweetTask.周期秒数_モノマネ = int.Parse(textBoxモノマネ周期.Text);
-
-            _tweetTask.監視実施AccountId = int.Parse(comboBox監視実施アカウント.SelectedValue.ToString());
-            
+          
             _tweetTask.Init監視list(監視flag , 監視toRepflag , モノマネflag);
 
-            if(監視flag)
-            {
-                List<監視アカウントInfo> list = new List<監視アカウントInfo>();
-                foreach (var item in _tweetTask.CheckAccountList_監視)
-                {
-                    list.Add(new 監視アカウントInfo()
-                    {
-                         CheckAccountName = item.CheckAccount,
-                         ExeAccountName = item.ExeAccountNameList,
-                         SinceDatetime = item.SinceDatetime
-                    });
-                }
-                dataGridView監視.DataSource = list;
-                label監視件数.Text = $"({list.Count}件)";
-            }
-
-            if (監視toRepflag)
-            {
-                List<監視アカウントInfo> list = new List<監視アカウントInfo>();
-                foreach (var item in _tweetTask.CheckAccountList_監視toRep)
-                {
-                    list.Add(new 監視アカウントInfo()
-                    {
-                        CheckAccountName = item.CheckAccount,
-                        ExeAccountName = item.ExeAccountNameList,
-                        SinceDatetime = item.SinceDatetime
-                    });
-                }
-                dataGridView監視toRep.DataSource = list;
-                label監視toRep件数.Text = $"({list.Count}件)";
-            }
-
-            if (モノマネflag)
-            {
-                List<監視アカウントInfo> list = new List<監視アカウントInfo>();
-                foreach (var item in _tweetTask.CheckAccountList_モノマネ)
-                {
-                    list.Add(new 監視アカウントInfo()
-                    {
-                        CheckAccountName = item.CheckAccount,
-                        ExeAccountName = item.ExeAccountNameList,
-                        SinceDatetime = item.SinceDatetime
-                    });
-                }
-                dataGridViewモノマネ.DataSource = list;
-                labelモノマネ件数.Text = $"({list.Count}件)";
-            }
+            var list = _tweetTask.CheckAccountList.ToList();
+            dataGridView監視.DataSource = list;
+            label監視件数.Text = $"({list.Count}件)";
 
         }
 
@@ -765,12 +712,6 @@ namespace DbotManager
 
             // 複数の設定項目を保存する内容
             var iniContent = $@"
-[監視設定]
-監視実施アカウント={account}
-監視周期={textBox監視周期.Text}
-監視toRep周期={textBox監視toRep周期.Text}
-モノマネ周期={textBoxモノマネ周期.Text}
-
 ";
             // ファイルに書き込み
             File.WriteAllText(filePath, iniContent.Trim());
@@ -818,19 +759,16 @@ namespace DbotManager
                 if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("監視周期"))
                 {
                     string account = settings["監視設定"]["監視周期"];
-                    textBox監視周期.Text = account;
                 }
                 // 設定を確認
                 if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("監視toRep周期"))
                 {
                     string account = settings["監視設定"]["監視toRep周期"];
-                    textBox監視toRep周期.Text = account;
                 }
                 // 設定を確認
                 if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("モノマネ周期"))
                 {
                     string account = settings["監視設定"]["モノマネ周期"];
-                    textBoxモノマネ周期.Text = account;
                 }
             }
         }

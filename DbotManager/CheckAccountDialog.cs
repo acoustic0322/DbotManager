@@ -80,7 +80,7 @@ namespace DbotManager
             textBoxId.Text = commentId.ToString();
 
             checkBox有効.Checked = checkAccount.Enable;
-            textBoxCheckAccount.Text = checkAccount.CheckAccount;
+            textBoxCheckAccount.Text = checkAccount.TargetAccountName;
         }
 
         private void buttonコメント削除_Click(object sender, EventArgs e)
@@ -97,7 +97,7 @@ namespace DbotManager
                 //                Id = int.Parse(textBoxCommentID.Text),
                 AccountId = AccountId,
                 Enable = checkBox有効.Checked,
-                CheckAccount = textBoxCheckAccount.Text,
+                TargetAccountName = textBoxCheckAccount.Text,
                 Mode = radioButton監視.Checked ? TweetProcTypes.CHECK : (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE)
             };
 
@@ -114,7 +114,7 @@ namespace DbotManager
                 //                Id = int.Parse(textBoxCommentID.Text),
                 AccountId = AccountId,
                 Enable = checkBox有効.Checked,
-                CheckAccount = textBoxCheckAccount.Text,
+                TargetAccountName = textBoxCheckAccount.Text,
                 Mode = radioButton監視.Checked ? TweetProcTypes.CHECK : (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE)
             };
 

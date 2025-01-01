@@ -47,6 +47,11 @@ namespace DbotManager.Table
         public int Reserve3Count { get; set; }
         public int Reserve4Count { get; set; }
 
+        public int CheckInterval { get; set; }
+        public int CheckRepInterval { get; set; }
+        public int MonomaneInterval { get; set; }
+
+
         // TweetTask用
         public int CommentId { get; set; }
         public int PhotoId { get; set; }

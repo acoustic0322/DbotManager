@@ -12,15 +12,22 @@ namespace DbotManager.Table
         public int AccountId { get; set; }
         public bool Enable { get; set; }
         public TweetProcTypes Mode { get; set; }
-        public string CheckAccount { get; set; }
+        public string TargetAccountName { get; set; }
 
+        public int CheckAccountId { get; set; }
 
-        public List<int> ExeAccountIdList { get; set; }
-        public string ExeAccountNameList { get; set; }
+//        public List<int> ExeAccountIdList { get; set; }
+//        public string ExeAccountNameList { get; set; }
         public DateTime? SinceDatetime { get; set; }
         public string SinceTweetId { get; set; }
 
 
+        public string AccountName { get; set; }
+        public string CheckAccountName { get; set; }
+
+
+        public DateTime CheckDate { get; set; }
+        public int CheckInterval { get; set; }
 
     }
 }
