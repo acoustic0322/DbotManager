@@ -106,6 +106,9 @@ namespace DbotManager
 
         private static System.Timers.Timer _監視Timer;
 
+
+        public event EventHandler<EventArgs> 監視完了;
+
         #region 一括処理
 
         public void Init一括処理list()
@@ -417,7 +420,7 @@ namespace DbotManager
 
         #region 監視処理
 
-        public void Init監視list(bool 監視flag = true, bool 監視toRepflag = true, bool モノマネflag = true)
+        public void Init監視list(bool first_flag = false)
         {
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
@@ -449,6 +452,8 @@ namespace DbotManager
                 item.AccountName = account.Name;
                 item.CheckAccountName = checkaccount.Name;
 
+                if (first_flag) item.FirstFlag = true;
+
                 CheckAccountList.Add(item);
             }
 
@@ -459,9 +464,16 @@ namespace DbotManager
 
         public void StartTask_監視()
         {
+            Action callback = () =>
+            {
+                Console.WriteLine("監視タスクが完了しました。");
+                // 必要ならここで追加処理を実行
+                On監視完了();
+            };
+
             // タイマーを設定（1000msごと = 1秒ごと）
             _監視Timer = new System.Timers.Timer(1000);
-            _監視Timer.Elapsed += OnTimedEvent_監視;
+            _監視Timer.Elapsed += (sender, e) => OnTimedEvent_監視(sender, e, callback); //OnTimedEvent_監視(null,null, );
             _監視Timer.AutoReset = true; // 繰り返し実行
             _監視Timer.Enabled = true;
         }
@@ -471,10 +483,20 @@ namespace DbotManager
             _監視Timer.Enabled = false;
         }
 
-        public void OnTimedEvent_監視(object sender, ElapsedEventArgs e)
+        private void On監視完了()
         {
-            _監視Timer.Enabled = false;
+            Console.WriteLine("監視処理が完了しました。追加処理を行います。");
+
+            監視完了?.Invoke(this, EventArgs.Empty);
+            // ここで追加処理を行う
+        }
+
+        public void OnTimedEvent_監視(object sender, ElapsedEventArgs e, Action callback)
+        {
+//            _監視Timer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
+
+            bool renewFlag = false;
 
             var list = new List<CheckAccountList>();
             list.AddRange(CheckAccountList);
@@ -496,14 +518,24 @@ namespace DbotManager
 
                 item.CheckDate = dtNow.AddSeconds(item.CheckInterval);
 
-                if (tweetResult != null && tweetResult.result == true)
+                if(item.FirstFlag == false)
                 {
-                    TweetProcReply(item, tweetResult);
+                    if (tweetResult != null && tweetResult.result == true)
+                    {
+                        TweetProcReply(item, tweetResult);
+                    }
                 }
+
+                item.FirstFlag = false;
+
+                renewFlag = true;
             }
 
-//            Init監視list(true, false, false);
-            _監視Timer.Enabled = true;
+            if(renewFlag)
+            {
+                // コールバックを呼び出し(Formのdatagridview更新のため)
+                callback?.Invoke();
+            }
         }
 
 
