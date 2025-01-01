@@ -62,7 +62,7 @@ namespace DbotManager
 
         private void ReadIniファイル()
         {
-            string filePath = "config.ini";
+            string filePath = "config_discord.ini";
 
             // ファイルを読み込み
             if (File.Exists(filePath))

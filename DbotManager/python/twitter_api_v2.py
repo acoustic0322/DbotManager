@@ -292,7 +292,12 @@ def upload_media(credentials, media_id, media_type):
 #    base_dir = os.getenv("BASE_DIR", os.path.dirname(os.path.abspath(__file__)))
 
     # メディアパスを生成
-    media_path = os.path.join(media_dir, "media", media_type, account_id, f"{media_id}.{media_ext}")
+    print("media_dir=",media_dir)
+    print("account_id=",account_id)
+    print(f"media_file={media_id}.{media_ext}")
+    media_path = os.path.join(media_dir, account_id, f"{media_id}.{media_ext}")
+    print("media_path=",media_path)
+
 
 #    # 現在のスクリプトがあるディレクトリのパスを取得
 #    current_dir = os.path.dirname(os.path.abspath(__file__))

@@ -204,6 +204,7 @@ public class MySqlDataAccess
                     ,am.reserve3_enable,am.reserve3_start_hour,am.reserve3_end_hour,am.reserve3_count
                     ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
                     ,am.paid_like,am.paid_bookmark
+                    ,am.check_interval,am.checkrep_interval,am.monomane_interval
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
                     ";
@@ -264,6 +265,10 @@ public class MySqlDataAccess
                                 Paid = reader["paid"].ToString() == "1",
                                 PaidLike = reader["paid_like"].ToString() == "1",
                                 PaidBookmark = reader["paid_bookmark"].ToString() == "1",
+
+                                CheckInterval = int.Parse(reader["check_interval"].ToString()),
+                                CheckRepInterval = int.Parse(reader["checkrep_interval"].ToString()),
+                                MonomaneInterval = int.Parse(reader["monomane_interval"].ToString()),
                             };
                 
                             accountMasterList.Add(accountItem);
@@ -428,10 +433,10 @@ public class MySqlDataAccess
                 string query = @"
                 INSERT INTO check_account_list 
                 (
-                    account_id, enable, mode, check_account
+                    account_id, enable, mode, target_account_name
                 )
                 VALUES 
-                (@AccountId, @Enable, @Mode, @CheckAccount
+                (@AccountId, @Enable, @Mode, @TargetAccountName
                 );
                 SELECT LAST_INSERT_ID(); ";
 
@@ -441,7 +446,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@AccountId", account.AccountId);
                     command.Parameters.AddWithValue("@Enable", account.Enable ? "1" : "0");
                     command.Parameters.AddWithValue("@Mode", account.Mode.ToString());
-                    command.Parameters.AddWithValue("@CheckAccount", account.CheckAccount);
+                    command.Parameters.AddWithValue("@TargetAccountName", account.TargetAccountName);
+                    command.Parameters.AddWithValue("@CheckAccountId", account.CheckAccountId);
 
                     //                    command.ExecuteNonQuery();
                     int insertedId = Convert.ToInt32(command.ExecuteScalar());
@@ -467,7 +473,7 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = @"SELECT id ,account_id, enable, mode, check_account
+                string query = @"SELECT id ,account_id, enable, mode, target_account_name , check_account_id
                     FROM check_account_list
                     ";
 
@@ -482,8 +488,9 @@ public class MySqlDataAccess
                             {
                                 Id = int.Parse(reader["id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
+                                CheckAccountId = int.Parse(reader["check_account_id"].ToString()),
                                 Mode = GetTweetProcType(reader["mode"].ToString()),
-                                CheckAccount = reader["check_account"].ToString().Replace("@",""),
+                                TargetAccountName = reader["target_account_name"].ToString().Replace("@",""),
                                 Enable = reader["enable"].ToString() == "1",
                             };
 
@@ -514,7 +521,8 @@ public class MySqlDataAccess
                 SET account_id = @AccountId, 
                     enable = @Enable, 
                     mode = @Mode, 
-                    check_account = @CheckAccount 
+                    target_account_name = @TargetAccountName ,
+                    check_account_id = @CheckAccountId 
                 WHERE id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -523,7 +531,8 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@AccountId", item.AccountId);
                     command.Parameters.AddWithValue("@Enable", item.Enable ? 1 : 0);
                     command.Parameters.AddWithValue("@Mode", item.Mode.ToString());
-                    command.Parameters.AddWithValue("@CheckAccount", item.CheckAccount);
+                    command.Parameters.AddWithValue("@TargetAccountName", item.TargetAccountName);
+                    command.Parameters.AddWithValue("@CheckAccountId", item.CheckAccountId);
 
                     command.ExecuteNonQuery();
                 }
