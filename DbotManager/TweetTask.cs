@@ -472,7 +472,7 @@ namespace DbotManager
             };
 
             // タイマーを設定（1000msごと = 1秒ごと）
-            _監視Timer = new System.Timers.Timer(1000);
+            _監視Timer = new System.Timers.Timer(10000);
             _監視Timer.Elapsed += (sender, e) => OnTimedEvent_監視(sender, e, callback); //OnTimedEvent_監視(null,null, );
             _監視Timer.AutoReset = true; // 繰り返し実行
             _監視Timer.Enabled = true;
@@ -493,7 +493,7 @@ namespace DbotManager
 
         public void OnTimedEvent_監視(object sender, ElapsedEventArgs e, Action callback)
         {
-//            _監視Timer.Enabled = false;
+            _監視Timer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
 
             bool renewFlag = false;
@@ -536,6 +536,9 @@ namespace DbotManager
                 // コールバックを呼び出し(Formのdatagridview更新のため)
                 callback?.Invoke();
             }
+
+            _監視Timer.Enabled = true;
+
         }
 
 
