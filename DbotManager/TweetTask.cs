@@ -109,6 +109,8 @@ namespace DbotManager
 
         public event EventHandler<EventArgs> 監視完了;
 
+        DateTime _監視list作成日時 = DateTime.Now;
+
         #region 一括処理
 
         public void Init一括処理list()
@@ -459,6 +461,8 @@ namespace DbotManager
 
             _replyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
             _replyToReplyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.ReplyToReply).ToList();
+
+            _監視list作成日時 = DateTime.Now;
         }
 
 
@@ -495,6 +499,11 @@ namespace DbotManager
         {
 //            _監視Timer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
+
+            if(_監視list作成日時.AddHours(1) <= DateTime.Now)
+            {
+                Init監視list(false);
+            }
 
             bool renewFlag = false;
 
