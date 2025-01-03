@@ -42,6 +42,7 @@ namespace DbotManager
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
+            List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
 
             foreach (var account in accountList)
             {
@@ -66,7 +67,7 @@ namespace DbotManager
                     var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 1).ToList();
                     if(commentListWk.Count > 0)
                     {
-                        var scheduleWk = MakeSchedule(reserve.Reserve1Count, reserve.Reserve1StartHour, reserve.Reserve1EndHour, reserve.UserId, reserve.AccountId, commentListWk, 1, reserveScheduleList);
+                        var scheduleWk = MakeSchedule(reserve.Reserve1Count, reserve.Reserve1StartHour, reserve.Reserve1EndHour, reserve.UserId, reserve.AccountId, commentListWk, 1, reserveScheduleList, mediaMasterList);
                         reserveScheduleList.AddRange(scheduleWk);
                     }
                 }
@@ -76,7 +77,7 @@ namespace DbotManager
                     var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 2).ToList();
                     if (commentListWk.Count > 0)
                     {
-                        var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentListWk, 2, reserveScheduleList);
+                        var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentListWk, 2, reserveScheduleList, mediaMasterList);
                         reserveScheduleList.AddRange(scheduleWk);
                     }
                 }
@@ -86,7 +87,7 @@ namespace DbotManager
                     var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 3).ToList();
                     if (commentListWk.Count > 0)
                     {
-                        var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentListWk, 3, reserveScheduleList);
+                        var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentListWk, 3, reserveScheduleList, mediaMasterList);
                         reserveScheduleList.AddRange(scheduleWk);
                     }
                 }
@@ -96,7 +97,7 @@ namespace DbotManager
                     var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 4).ToList();
                     if (commentListWk.Count > 0)
                     {
-                        var scheduleWk = MakeSchedule(reserve.Reserve4Count, reserve.Reserve4StartHour, reserve.Reserve4EndHour, reserve.UserId, reserve.AccountId, commentListWk, 4, reserveScheduleList);
+                        var scheduleWk = MakeSchedule(reserve.Reserve4Count, reserve.Reserve4StartHour, reserve.Reserve4EndHour, reserve.UserId, reserve.AccountId, commentListWk, 4, reserveScheduleList, mediaMasterList);
                         reserveScheduleList.AddRange(scheduleWk);
                     }
                 }
@@ -134,7 +135,7 @@ namespace DbotManager
             return reserveScheduleList;
         }
 
-        private List<ReserveSchedule> MakeSchedule(int count, int startHour, int endHour, int userId, int accountId, List<CommentMaster> commentList, int type , List<ReserveSchedule> reserveList)
+        private List<ReserveSchedule> MakeSchedule(int count, int startHour, int endHour, int userId, int accountId, List<CommentMaster> commentList, int type , List<ReserveSchedule> reserveList , List<MediaMaster> mediaMasterList)
         {
             var schedules = new List<ReserveSchedule>();
             var random = new Random();
@@ -173,6 +174,24 @@ namespace DbotManager
                 // CommentMaster からランダムに1つ選択
                 var randomComment = commentList_重複除外[random.Next(commentList_重複除外.Count)];
 
+                MediaMaster mediaRow = null;
+                if(randomComment.MovieEnable)
+                {
+                    var mediaList = mediaMasterList.Where(x => x.AccountId == randomComment.AccountId && x.MediaType == MediaTypes.Photo).ToList();
+                    if(mediaList.Count > 0)
+                    {
+                        mediaRow = mediaList[random.Next(mediaList.Count)];
+                    }
+                }
+                else if(randomComment.MovieEnable)
+                {
+                    var mediaList = mediaMasterList.Where(x => x.AccountId == randomComment.AccountId && x.MediaType == MediaTypes.Movie).ToList();
+                    if (mediaList.Count > 0)
+                    {
+                        mediaRow = mediaList[random.Next(mediaList.Count)];
+                    }
+                }
+
                 // スケジュールを追加
                 schedules.Add(new ReserveSchedule
                 {
@@ -182,7 +201,10 @@ namespace DbotManager
                     AccountId = accountId,
                     CommentId = randomComment.Id,
                     ReserveId = $"{accountId}-{type}-{(i + 1)}",
-                    Result = false
+                    Result = false,
+
+                    MediaType = mediaRow == null ? MediaTypes.None : mediaRow.MediaType,
+                    MediaId = mediaRow == null ? null : (int?)mediaRow.MediaId,
                 });
 
                 withoutCommentIdList.Add(randomComment.Id);
@@ -232,7 +254,11 @@ namespace DbotManager
                 var result = task.TweetProc(new TweetCommand() { 
                     TweetProcType = TweetProcTypes.POST,
                     AccountId = (int)reserveSchedule.AccountId,
-                    CommentId = (int)reserveSchedule.CommentId }
+                    CommentId = (int)reserveSchedule.CommentId ,
+                    MediaId = reserveSchedule.MediaId,
+                    MediaType = reserveSchedule.MediaType
+
+                }
                 );
 
                 if(result != null)
