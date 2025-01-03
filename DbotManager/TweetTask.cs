@@ -42,15 +42,18 @@ namespace DbotManager
     public class TweetCommand
     {
         public TweetProcTypes TweetProcType { get; set; }
-        public int UserId { get; set; }
-        public int AccountId { get; set; }
-        public int AccountId2 { get; set; }
-        public int CommentId { get; set; }
+        public int? UserId { get; set; }
+        public int? AccountId { get; set; }
+        public int? AccountId2 { get; set; }
+        public int? CommentId { get; set; }
         public string TweetId { get; set; }
 
-        public int CheckListId { get; set; }
+        public int? CheckListId { get; set; }
         public string CheckAccountName { get; set; }
         public DateTime DateTime { get; set; }
+
+        public MediaTypes MediaType { get; set; }
+        public int? MediaId { get; set; }
 
         public bool DebugMode { get; set; }
     }
@@ -633,6 +636,12 @@ namespace DbotManager
             {
                 case TweetProcTypes.POST:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId}";
+
+                    if(tweetCommand.MediaType != MediaTypes.None)
+                    {
+                        pythonScriptPath += $" media_type={(tweetCommand.MediaType == MediaTypes.Photo ? "photo" : "video")} media_id={tweetCommand.MediaId}";
+                    }
+
                     break;
 
                 case TweetProcTypes.LIKE:
@@ -667,6 +676,8 @@ namespace DbotManager
                     break;
             }
 
+            pythonScriptPath += " debug=False";
+
             // Pythonの実行ファイルのパスを指定（通常 "python" または "python3" でOK）
             string pythonExePath = "python";
 
@@ -680,8 +691,11 @@ namespace DbotManager
                     RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
+
                 }
             };
+            // 環境変数を設定
+//            StartInfo.EnvironmentVariables["RUNNING_FROM_CSHARP"] = "1";
 
             logAction?.Invoke($"{DateTime.Now.ToString()} > {pythonScriptPath}");
 

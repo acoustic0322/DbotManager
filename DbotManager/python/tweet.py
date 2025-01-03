@@ -12,17 +12,18 @@ from datetime import datetime, timezone, timedelta
 
 from twitter_api_v2 import proc_like_v2
 from twitter_api_v2 import proc_bookmark_v2
-from twitter_api_v2 import proc_post_v2_old
 from twitter_api_v2 import proc_post_v2
 from twitter_api_v2 import proc_repost_v2
 from twitter_api_v2 import proc_check_v2
 from twitter_api_v2 import get_latest_tweet
+from twitter_api_v1 import proc_post_v10a
 
 from mysql import get_account_master
 from mysql import get_check_account_list
 from mysql import save_tweet_history
 from twitter_api_v2 import proc_update_refresh_token
 
+import config
 
 # コマンドライン引数の解析関数
 def parse_arguments(args):
@@ -60,10 +61,9 @@ media_id = args.get("media_id","")
 #video_id = args.get("video_id","")
 check_list_id = args.get("check_list_id","")
 check_account_name = args.get("check_account_name","")
-#outputLog(args)
+config.debug = args.get("debug","").lower() == "true"
 
-#print("testetste")
-#sys.exit(0)
+#outputLog(args)
 
 if mode ==  "check_refresh":
     proc_update_refresh_token()
@@ -77,10 +77,12 @@ credentials = get_account_master(account_id)
 if credentials:
     error_log = ""
     if mode == "post":
-#                success , error_log = proc_post_v2(credentials)
-        success , error_log = proc_post_v2(credentials , comment_id , media_type , media_id , "")               
+        if media_type != '':
+            success , error_log = proc_post_v10a(credentials , comment_id , media_type , media_id , tweet_id)               
+        else:
+            success , error_log = proc_post_v2(credentials , comment_id , "")               
     elif mode == "reply":
-        success , error_log = proc_post_v2(credentials , comment_id , media_type , media_id , tweet_id)               
+        success , error_log = proc_post_v2(credentials , comment_id , tweet_id)               
 #        success , error_log = True , "" #未実装
     elif mode == "repost":
         success , error_log = proc_repost_v2(credentials, tweet_id)
@@ -89,9 +91,9 @@ if credentials:
     elif mode == "bookmark":
         success , error_log = proc_bookmark_v2(credentials, tweet_id)
     elif mode == "check":
-        success , error_log = proc_check_v2(credentials , check_account_name , False)
+        success , error_log = proc_check_v2(credentials , check_account_name , check_list_id, False)
     elif mode == "checkrep":
-        success , error_log = proc_check_v2(credentials , check_account_name , True)
+        success , error_log = proc_check_v2(credentials , check_account_name , check_list_id, True)
     elif mode == "check_latest":
         latest_tweet , success , error_log = get_latest_tweet(credentials , check_account_name , False)
 #        success , error_log = True , "" #未実装

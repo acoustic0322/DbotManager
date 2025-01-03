@@ -1228,11 +1228,20 @@ public class MySqlDataAccess
 
     #endregion
 
+    private int? GetIntValue(object value)
+    {
+        if (value == null) return null;
+
+        if (value.ToString() == string.Empty) return null;
+
+        return int.Parse(value.ToString());
+    }
+
     #region MediaMaster
 
     public List<MediaMaster> GetMediaMaster()
     {
-        List<MediaMaster> commentMasterList = new List<MediaMaster>();
+        List<MediaMaster> mediaMasterList = new List<MediaMaster>();
 
         using (MySqlConnection connection = new MySqlConnection(connectionString))
         {
@@ -1252,15 +1261,15 @@ public class MySqlDataAccess
                         {
                             MediaMaster mediaMaster = new MediaMaster()
                             {
-                                CommentId = int.Parse(reader["comment_id"].ToString()),
-                                MediaId = int.Parse(reader["media_id"].ToString()),
-                                UserId = int.Parse(reader["user_id"].ToString()),
-                                AccountId = int.Parse(reader["account_id"].ToString()),
+                                CommentId = GetIntValue(reader["comment_id"]),// int.Parse(reader["comment_id"].ToString()),
+                                MediaId = GetIntValue(reader["media_id"]),
+                                UserId = GetIntValue(reader["user_id"]),
+                                AccountId = GetIntValue(reader["account_id"]),
                                 Name = reader["name"].ToString(),
                                 MediaType = reader["media_type"].ToString() == "photo" ? MediaTypes.Photo : MediaTypes.Movie
                             };
 
-                            commentMasterList.Add(mediaMaster);
+                            mediaMasterList.Add(mediaMaster);
                         }
                     }
                 }
@@ -1271,7 +1280,7 @@ public class MySqlDataAccess
             }
         }
 
-        return commentMasterList;
+        return mediaMasterList;
     }
 
     public void InsertMediaMaster(MediaMaster mediaMaster)

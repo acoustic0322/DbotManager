@@ -19,6 +19,9 @@ namespace DbotManager.Table
         public string AccountName { get; set; }
         public string Comment { get; set; }
 
+        public MediaTypes MediaType { get; set; }
+        public int? MediaId { get; set; }
+
     }
 
 }

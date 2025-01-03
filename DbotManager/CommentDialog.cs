@@ -182,10 +182,40 @@ namespace DbotManager
             int commentId = int.Parse(textBoxCommentID.Text);
             string tweetId = GetTweetId(true);
 
+            List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
+
+            MediaMaster mediaRow = null;
+            var random = new Random();
+
+            if (checkBoxMovie.Checked)
+            {
+                var mediaList = mediaMasterList.Where(x => x.AccountId == accountId && x.MediaType == MediaTypes.Movie).ToList();
+                if (mediaList.Count > 0)
+                {
+                    mediaRow = mediaList[random.Next(mediaList.Count)];
+                }
+            }
+            else if (checkBoxPhoto.Checked)
+            {
+                var mediaList = mediaMasterList.Where(x => x.AccountId == accountId && x.MediaType == MediaTypes.Photo).ToList();
+                if (mediaList.Count > 0)
+                {
+                    mediaRow = mediaList[random.Next(mediaList.Count)];
+                }
+            }
+
             TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
-//            _tweetTask.TweetProc(radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY, userId, accountId, commentId, tweetId);
-            _tweetTask.TweetProc(new TweetCommand() { TweetProcType = radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY ,
-                UserId = userId, AccountId = accountId, CommentId=commentId, TweetId = tweetId });
+
+            _tweetTask.TweetProc(
+                new TweetCommand() { 
+                    TweetProcType = radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY ,
+                    UserId = userId, 
+                    AccountId = accountId,
+                    CommentId=commentId,
+                    TweetId = tweetId,
+                    MediaType = mediaRow == null ? MediaTypes.None : mediaRow.MediaType,
+                    MediaId = mediaRow == null ? null : (int?)mediaRow.MediaId,
+                });
 
         }
 

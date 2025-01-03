@@ -53,9 +53,9 @@ namespace DbotManager.Table
 
 
         // TweetTask用
-        public int CommentId { get; set; }
-        public int PhotoId { get; set; }
-        public int MovieId { get; set; }
+        public int? CommentId { get; set; }
+        public int? PhotoId { get; set; }
+        public int? MovieId { get; set; }
 
     }
 }
