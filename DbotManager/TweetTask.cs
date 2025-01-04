@@ -393,7 +393,7 @@ namespace DbotManager
                     var commentItem = SupportUtil.GetRandomItem(commentMasterListWk.Where(x => x.AccountId == account.Id).ToList());
                     account.CommentId = commentItem.Id;
 
-                    if (commentItem.PhotoEnable && userMasterRow.PhotoEnable)
+                    if (commentItem.PhotoEnable && userMasterRow.MediaEnable)
                     {
                         var photoItem = SupportUtil.GetRandomItem(mediaMasterList.Where(x => x.CommentId == commentItem.Id && x.MediaType == MediaTypes.Photo).ToList());
                         account.PhotoId = photoItem.MediaId;
@@ -403,7 +403,7 @@ namespace DbotManager
                         account.PhotoId = 0;
                     }
 
-                    if (commentItem.MovieEnable && userMasterRow.MovieEnable)
+                    if (commentItem.MovieEnable && userMasterRow.MediaEnable)
                     {
                         var movieItem = SupportUtil.GetRandomItem(mediaMasterList.Where(x => x.CommentId == commentItem.Id && x.MediaType == MediaTypes.Movie).ToList());
                         account.MovieId = movieItem.MediaId;
