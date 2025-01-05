@@ -274,6 +274,8 @@ namespace DbotManager
                             reserveSchedule.Result = true;
                         }
                     }
+
+                    reserveSchedule.Result = true;
                 }
 
 
