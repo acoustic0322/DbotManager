@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
 
         $new_account_id = $account_id;
-        $new_check_account = $_POST['new_check_account'];
+        $new_target_account_name = $_POST['new_target_account_name'];
         $new_enable = isset($_POST['new_enable']) ? 1 : 0;
 
         /*
@@ -68,12 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // コメントをデータベースに登録
         $stmt = $conn->prepare("INSERT INTO check_account_list (
-            account_id, enable, mode, check_account
+            account_id, enable, mode, target_account_name
         ) VALUES (?, ?, ?, ?)");
 
         $stmt->bind_param(
             "iiss",
-            $new_account_id, $new_enable, $new_mode, $new_check_account
+            $new_account_id, $new_enable, $new_mode, $new_target_account_name
         );
 
         $stmt->execute();
@@ -170,7 +170,7 @@ $result_checkrep = $stmt->get_result();
         </label>
         <div class="input-group">
             アカウント名<br>
-            <input type="text" name="new_check_account" placeholder="アカウント名" required style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px;">
+            <input type="text" name="new_target_account_name" placeholder="アカウント名" required style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px;">
         </div>
         <button type="submit">登録</button>
     </form>
@@ -188,7 +188,7 @@ $result_checkrep = $stmt->get_result();
             <?php while ($row = $result_check->fetch_assoc()): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
-                    <td><?php echo htmlspecialchars($row['check_account']); ?></td>
+                    <td><?php echo htmlspecialchars($row['target_account_name']); ?></td>
                     <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
 
                     <td>
@@ -218,7 +218,7 @@ $result_checkrep = $stmt->get_result();
             <?php while ($row = $result_checkrep->fetch_assoc()): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
-                    <td><?php echo htmlspecialchars($row['check_account']); ?></td>
+                    <td><?php echo htmlspecialchars($row['target_account_name']); ?></td>
                     <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
 
                     <td>

@@ -114,6 +114,8 @@ namespace DbotManager
 
         DateTime _監視list作成日時 = DateTime.Now;
 
+        private string pythonWorkingPath;
+
         #region 一括処理
 
         public void Init一括処理list()
@@ -632,8 +634,10 @@ namespace DbotManager
         //        public void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)
         public TweetResult TweetProc(TweetCommand tweetCommand)
         {
+            ReadIniファイル();
+
             // Pythonスクリプトのパスを指定
-            string pythonScriptPath = @"python\tweet.py";
+            string pythonScriptPath = $@"{pythonWorkingPath}\tweet.py";
 
             switch (tweetCommand.TweetProcType)
             {
@@ -679,6 +683,7 @@ namespace DbotManager
                     break;
             }
 
+//            pythonScriptPath += " debug=True";
             pythonScriptPath += " debug=False";
 
             // Pythonの実行ファイルのパスを指定（通常 "python" または "python3" でOK）
@@ -693,7 +698,8 @@ namespace DbotManager
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    WorkingDirectory = pythonWorkingPath
 
                 }
             };
@@ -842,6 +848,46 @@ namespace DbotManager
         }
 
         #endregion
+
+
+        private void ReadIniファイル()
+        {
+            string filePath = "config_tweet.ini";
+
+            // ファイルを読み込み
+            if (File.Exists(filePath))
+            {
+                var lines = File.ReadAllLines(filePath);
+                var settings = new Dictionary<string, Dictionary<string, string>>();
+                string currentSection = "";
+
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith("[") && line.EndsWith("]"))
+                    {
+                        currentSection = line.Trim('[', ']');
+                        if (!settings.ContainsKey(currentSection))
+                        {
+                            settings[currentSection] = new Dictionary<string, string>();
+                        }
+                    }
+                    else if (!string.IsNullOrWhiteSpace(line) && line.Contains('='))
+                    {
+                        var keyValue = line.Split(new[] { '=' }, 2);
+                        if (!string.IsNullOrEmpty(currentSection) && keyValue.Length == 2)
+                        {
+                            settings[currentSection][keyValue[0].Trim()] = keyValue[1].Trim();
+                        }
+                    }
+                }
+
+                // 設定を確認
+                if (settings.ContainsKey("Tweet") && settings["Tweet"].ContainsKey("working"))
+                {
+                    pythonWorkingPath = settings["Tweet"]["working"];
+                }
+            }
+        }
 
     }
 }

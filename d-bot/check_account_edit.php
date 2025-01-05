@@ -31,7 +31,7 @@ if ($edit_account === null) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 必須フィールドのサニタイズ
-    $check_account = htmlspecialchars(trim($_POST['check_account'] ?? ''));
+    $target_account_name = htmlspecialchars(trim($_POST['target_account_name'] ?? ''));
     // チェックボックスの値をバインド
     $enable = isset($_POST['enable']) ? 1 : 0;
 
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 入力値のバリデーション
 //    if (empty($name) || empty($login_id) || empty($login_password)) {
-    if (empty($check_account) || empty($mode)) {
+    if (empty($target_account_name) || empty($mode)) {
             echo '必須項目を全て入力してください';
         exit;
     }
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         SET 
             enable = ?,
             mode = ?,
-            check_account = ?
+            target_account_name = ?
         WHERE id = ?
     ");
 
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "issi", // 型指定
         $enable , 
         $mode, 
-        $check_account,
+        $target_account_name,
         $id
     );
     
@@ -176,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="input-group">
                 <label for="name">アカウント名:</label><br>
-                <input type="text" id="check_account" name="check_account" placeholder="アカウント名" value="<?php echo htmlspecialchars($edit_account['check_account'] ?? '') ?>" required>
+                <input type="text" id="target_account_name" name="target_account_name" placeholder="アカウント名" value="<?php echo htmlspecialchars($edit_account['target_account_name'] ?? '') ?>" required>
             </div>
 
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
