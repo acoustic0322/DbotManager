@@ -34,7 +34,8 @@ namespace DbotManager
         {
             if (list == null || list.Count == 0)
             {
-                throw new ArgumentException("リストが空またはnullです。");
+                return default(T);
+//                throw new ArgumentException("リストが空またはnullです。");
             }
 
             Random random = new Random();

@@ -393,26 +393,24 @@ namespace DbotManager
                     if (commentMasterListWk.Count == 0) continue;
 
                     var commentItem = SupportUtil.GetRandomItem(commentMasterListWk.Where(x => x.AccountId == account.Id).ToList());
-                    account.CommentId = commentItem.Id;
+                    account.CommentId = commentItem == null ? 0 : commentItem.Id;
+
+                    account.PhotoId = 0;
 
                     if (commentItem.PhotoEnable && userMasterRow.MediaEnable)
                     {
                         var photoItem = SupportUtil.GetRandomItem(mediaMasterList.Where(x => x.CommentId == commentItem.Id && x.MediaType == MediaTypes.Photo).ToList());
-                        account.PhotoId = photoItem.MediaId;
-                    }
-                    else
-                    {
-                        account.PhotoId = 0;
+                        if(photoItem != null)
+                            account.PhotoId = photoItem.MediaId;
                     }
 
+                    account.MovieId = 0;
                     if (commentItem.MovieEnable && userMasterRow.MediaEnable)
                     {
                         var movieItem = SupportUtil.GetRandomItem(mediaMasterList.Where(x => x.CommentId == commentItem.Id && x.MediaType == MediaTypes.Movie).ToList());
-                        account.MovieId = movieItem.MediaId;
-                    }
-                    else
-                    {
-                        account.MovieId = 0;
+
+                        if(movieItem != null)
+                            account.MovieId = movieItem.MediaId;
                     }
                 }
 
@@ -566,7 +564,10 @@ namespace DbotManager
             int accountId = checkAccountList.AccountId;
 
             if (_replyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
-            var commentId = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList()).Id;
+
+            var commentItem = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList());
+            if (commentItem == null) return;
+            var commentId = commentItem.Id;
             TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents });
         }
 
@@ -576,7 +577,11 @@ namespace DbotManager
             int accountId = checkAccountList.AccountId;
 
             if (_replyToReplyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
-            var commentId = SupportUtil.GetRandomItem(_replyToReplyCommentList.Where(x => x.AccountId == accountId).ToList()).Id;
+
+            var commentItem = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList());
+            if (commentItem == null) return;
+            var commentId = commentItem.Id;
+
             TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents });
         }
 
