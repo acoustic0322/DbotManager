@@ -267,6 +267,87 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
     return response.status_code in (200, 201), response_str
 
 
+def upload_media(credentials, media_id, media_type):
+
+    # INIファイルのパス
+#    config_file = "config.ini"
+
+#    # ConfigParserを使ってINIファイルを読み込む
+##    config = configparser.ConfigParser()
+#    config.read(config_file, encoding="utf-8")
+
+    # INIファイルからbase_dirを取得 (デフォルトは現在のスクリプトの場所)
+#    base_dir = config.get("Paths", "base_dir", fallback=os.path.dirname(os.path.abspath(__file__)))
+
+    media_dir = config.media_dir
+
+    account_id = credentials['id']
+
+    media_ext = "jpg"
+    media_head = "p"
+    if media_type == "video":
+        media_ext = "mp4"
+        media_head = "m"
+
+    # 環境変数からベースディレクトリを取得 (デフォルトは現在のスクリプトの場所)
+#    base_dir = os.getenv("BASE_DIR", os.path.dirname(os.path.abspath(__file__)))
+
+    # メディアパスを生成
+#    media_path = os.path.join(media_dir, "media", media_type, account_id, f"{media_id}.{media_ext}")
+
+    # メディアパスを生成
+#    print("media_dir=",media_dir)
+#    print("account_id=",account_id)
+#    print(f"media_file={media_id}.{media_ext}")
+    media_path = os.path.join(media_dir, f"{account_id}", f"{media_head}{media_id}.{media_ext}")
+#    print("media_path=",media_path)
+
+#    # 現在のスクリプトがあるディレクトリのパスを取得
+#    current_dir = os.path.dirname(os.path.abspath(__file__))
+#    print(current_dir)#
+
+#    # 一つ上の階層に移動
+#    parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
+#    print(parent_dir)
+
+#    media_path = os.path.join(parent_dir, "media", media_type, account_id, f"{media_id}.{media_ext}")
+
+
+    access_token = credentials['bearer_token']
+#    access_token = "AAAAAAAAAAAAAAAAAAAAAMQ7wwEAAAAApBmHlycWMnqn5QYxDDT0XZaVs%2BM%3DetF7QRIb2GbbAsoePpnnLN8E8gCFfmuDR5IK9uJDbazDqOQVYN"
+
+    # エンドポイントURL
+    url = "https://upload.twitter.com/1.1/media/upload.json"
+    
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    
+    # ファイルをバイナリ形式で開く
+    with open(media_path, "rb") as media_file:
+        files = {
+            "media": media_file
+        }
+        data = {
+            "media_category": "tweet_video" if media_type == "video" else "tweet_image"
+        }
+        # POSTリクエストを送信
+        response = requests.post(url, headers=headers, files=files, data=data)
+
+    # レスポンスを確認
+    if response.status_code == 200:
+        media_id = response.json().get("media_id_string")
+        return media_id
+    else:
+
+        print(f"レスポンスコード: {response.status_code}")
+        print(f"レスポンス内容: {response.text}")        
+#        print(f"メディアアップロードエラー: {response.status_code}")
+#        response_str = json.dumps(response.json())  # json.dumps を使用
+#        print(response_str)
+        return None
+
 def proc_like_v2(credentials, tweet_id):
     """
     指定されたツイートに「いいね」を付ける関数。
@@ -395,8 +476,164 @@ def proc_repost_v2(credentials, tweet_id):
 
     return response.status_code in (200, 201), response_str
 
+def proc_check_v2(credentials, username, check_list_id , search_replies=True):
+    """
+    特定アカウントのツイートを監視し、新しいツイートをリツイートする関数。
 
-def proc_check_v2(credentials , search_row , mode):
+    Args:
+        credentials (dict): API認証情報。
+        username (str): 監視対象のTwitterユーザー名。
+        interval (int): 監視間隔（秒）。
+    """
+
+    last_tweet_id , last_tweet_datetime = get_last_tweet_id_from_check_account_list(check_list_id , search_replies)
+    try:
+        latest_tweet_id ,latest_tweet_datetime , result , error_log = get_latest_tweet(credentials, check_list_id, username, search_replies)
+
+        if config.debug == True:
+            print("last_tweet_id=",last_tweet_id)
+            print("last_tweet_datetime=",last_tweet_datetime)
+            print("latest_tweet_id=",latest_tweet_id)
+            print("latest_tweet_datetime=",latest_tweet_datetime)
+
+        if result == False:
+            return False , error_log
+
+        if (latest_tweet_id and latest_tweet_id != last_tweet_id ) or last_tweet_id is None or last_tweet_id == "":
+            if last_tweet_datetime is None or latest_tweet_datetime > last_tweet_dt:
+                update_last_tweet_id_from_check_account_list(check_list_id ,latest_tweet_id , latest_tweet_datetime , search_replies)
+                return True , latest_tweet_id
+
+        else:
+            if config.debug == True:
+                print("新しいツイートはありません。")
+
+        return False , last_tweet_id
+
+    except Exception as e:
+        if config.debug == True:
+            print(f"エラーが発生しました: {e}")
+        return False , last_tweet_id
+
+def get_user_id_by_username(credentials, check_list_id, username):
+    """
+    ユーザー名からユーザーIDを取得する関数。
+
+    Args:
+        credentials (dict): API認証情報。
+        username (str): Twitterユーザー名。
+
+    Returns:
+        str: ユーザーID（成功時）。
+    """
+
+
+#    print("username=",username)
+#    print("check_list_id=",check_list_id)
+    username_db = get_user_id_from_db(check_list_id)
+#    print("username_db=",username_db)
+
+    if username_db != "" and username_db is not None:
+#        print("username_db=",username_db)
+        return username_db
+
+    access_token = credentials['bearer_token']
+#    url = f"https://api.twitter.com/2/users/by/username/{username.lstrip('@')}"
+    url = f"https://api.twitter.com/2/users/by/username/{username}"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        user_data = response.json()
+#        print("ユーザーID:",user_data.get("data", {}).get("id"))
+        update_user_id_from_db(check_list_id , user_data.get("data", {}).get("id"))
+        return user_data.get("data", {}).get("id")
+    else:
+#        print(f"ユーザーIDの取得に失敗: {response.status_code}, {response.text}")
+        return None
+
+
+
+          
+
+def get_latest_tweet(credentials,check_list_id, username, search_replies=True):
+    """
+    特定ユーザーの最新ツイートを取得する関数。
+
+    Args:
+        credentials (dict): API認証情報。
+        user_id (str): ユーザーID。
+
+    Returns:
+        str: 最新ツイートのID（成功時）。
+    """
+
+    user_id = get_user_id_by_username(credentials,check_list_id,username)
+
+    if not user_id:
+        if config.debug == True:
+            print("ユーザーIDの取得に失敗しました。終了します。")
+        return "" , None , False , "ユーザーIDの取得に失敗"
+
+    if config.debug == True:
+        print("user_id=",user_id)
+
+    access_token = credentials['bearer_token']
+    url = f"https://api.twitter.com/2/users/{user_id}/tweets?max_results=20&expansions=in_reply_to_user_id&tweet.fields=created_at"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if config.debug == True:
+        print(response.status_code)
+        print("response.json")
+        print(response.json())
+
+    if response.status_code == 200:
+        tweets = response.json().get("data", [])
+
+        # リプライかどうかを判別してフィルタリング
+        filtered_tweets = [
+            tweet for tweet in tweets
+            if ('in_reply_to_user_id' in tweet) == search_replies
+        ]
+
+        if config.debug == True:
+            print("filtered_tweets=",filtered_tweets)
+
+        if filtered_tweets:
+            latest_tweet = filtered_tweets[0]
+            tweet_id = latest_tweet["id"]
+            iso_format_date = latest_tweet.get("created_at", None)  # ツイート日時
+    
+#            print("iso_format_date")
+#            print(iso_format_date)
+
+            # フォーマット変更
+            tweet_date = convert_tweet_datetime(iso_format_date)
+#            print("tweet_date")
+#            print(tweet_date)
+
+            if config.debug == True:
+                print("最新ツイート:",filtered_tweets[0]["id"])
+            return tweet_id, tweet_date, True, ""            
+#            return filtered_tweets[0]["id"] , True , ""
+
+        return  "" , None , False , response.text
+#        return  "" , False, response.text
+        
+    else:
+        if config.debug == True:        
+            print(f"ツイートの取得に失敗: {response.status_code}, {response.text}")
+#        response_str = json.dumps(response.json())  # json.dumps を使用
+#        return "" , False, response.text
+        return "" , None , False , response.text
+
+def proc_check_latest_tweet(credentials , search_row , mode):
 
     if mode == 'post':
         datetime_column = 'last_post_time'
@@ -412,7 +649,7 @@ def proc_check_v2(credentials , search_row , mode):
     search_id = search_row['search_account_id']
 
     client = createClient(credentials)
-    tweet = get_latest_tweet(client , search_row['search_user_name'] , serach_reply)
+    tweet = get_latest_tweet_new(client , search_row['search_user_name'] , serach_reply)
 
     if tweet is None:
         return False , ''
@@ -429,7 +666,7 @@ def proc_check_v2(credentials , search_row , mode):
     return True , tweet.data['id']
 
 
-def get_latest_tweet(client , search_user_name , search_replies=True):
+def get_latest_tweet_new(client , search_user_name , search_replies=True):
     try:
         tweets = client.search_recent_tweets(
             f'from:{search_user_name} -is:retweet',

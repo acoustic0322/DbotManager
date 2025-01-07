@@ -12,23 +12,17 @@ from datetime import datetime, timezone, timedelta
 
 from twitter_api_v2 import proc_like_v2
 from twitter_api_v2 import proc_bookmark_v2
+from twitter_api_v2 import proc_post_v2_old
 from twitter_api_v2 import proc_post_v2
 from twitter_api_v2 import proc_repost_v2
 from twitter_api_v2 import proc_check_v2
 from twitter_api_v2 import get_latest_tweet
-from twitter_api_v1 import proc_post_v10a
 
 from mysql import get_account_master
 from mysql import get_check_account_list
 from mysql import save_tweet_history
-from mysql import get_search_list
 from twitter_api_v2 import proc_update_refresh_token
-#from twitter_api_v2 import proc_check_latest_tweet
 
-from tweet_copy_dmm import tweet_copy_dmm
-
-import config
-from config import outputLog
 
 # コマンドライン引数の解析関数
 def parse_arguments(args):
@@ -40,8 +34,17 @@ def parse_arguments(args):
 
 def print_id(text):
     print("account_id=",account_id, " " , text)
-    return   
+    return 
 
+    
+def outputLog(message):
+    # 現在時刻を取得してメッセージに追加
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#    full_message = f"[{current_time}] [account_id={account_id}] {message}"
+    full_message = f"[{current_time}] {message}"
+    
+    # 標準出力にメッセージを出力
+    print(full_message)
 
 args = parse_arguments(sys.argv[1:])
 account_id = int(args.get("account_id","0"))
@@ -57,34 +60,27 @@ media_id = args.get("media_id","")
 #video_id = args.get("video_id","")
 check_list_id = args.get("check_list_id","")
 check_account_name = args.get("check_account_name","")
-search_id = args.get("search_id","")
-
-config.debug = args.get("debug","").lower() == "true"
-dmmid = args.get("dmmid","")
-
 #outputLog(args)
+
+#print("testetste")
+#sys.exit(0)
 
 if mode ==  "check_refresh":
     proc_update_refresh_token()
     sys.exit(0)
 
 # 認証情報を取得
-if mode != "monomane":
-    credentials = get_account_master(account_id)
-else:
-    search_row = get_search_list(search_id)
-    print("search_row['search_account_id']=",search_row['search_account_id'])
-    credentials = get_account_master(search_row['search_account_id'])
+credentials = get_account_master(account_id)
+#access_tokenの有効判定を行い、古かったら更新
+#credentials['bearer_token'] , credentials['refresh_token'] = check_access_token(credentials)
 
 if credentials:
     error_log = ""
     if mode == "post":
-        if media_type != '':
-            success , error_log = proc_post_v10a(credentials , comment_id , media_type , media_id , tweet_id)               
-        else:
-            success , error_log = proc_post_v2(credentials , comment_id , "")               
+#                success , error_log = proc_post_v2(credentials)
+        success , error_log = proc_post_v2(credentials , comment_id , media_type , media_id , "")               
     elif mode == "reply":
-        success , error_log = proc_post_v2(credentials , comment_id , tweet_id)               
+        success , error_log = proc_post_v2(credentials , comment_id , media_type , media_id , tweet_id)               
 #        success , error_log = True , "" #未実装
     elif mode == "repost":
         success , error_log = proc_repost_v2(credentials, tweet_id)
@@ -93,16 +89,12 @@ if credentials:
     elif mode == "bookmark":
         success , error_log = proc_bookmark_v2(credentials, tweet_id)
     elif mode == "check":
-        success , error_log = proc_check_v2(credentials , search_row , 'post')
-    elif mode == "checkrep":
-        success , error_log = proc_check_v2(credentials , search_row , 'reply')
-    elif mode == "monomane":
-#        success , error_log = tweet_copy_dmm(credentials , check_account_name , dmmid)
-        success , error_log = proc_check_v2(credentials , search_row , "monomane" )
-#    elif mode == "check_latest":
-#        latest_tweet , success , error_log = proc_check_v2(credentials , check_account_name , 'monomane')
-#    elif mode == "update_userid":
-#        latest_tweet , success , error_log = get_latest_tweet(credentials , check_account_name , True)
+        success , error_log = proc_check_v2(credentials , check_account_name )
+    elif mode == "check_latest":
+        latest_tweet , success , error_log = get_latest_tweet(credentials , check_account_name , False)
+#        success , error_log = True , "" #未実装
+    elif mode == "update_userid":
+        latest_tweet , success , error_log = get_latest_tweet(credentials , check_account_name , True)
 
     else:
         # エラーメッセージを標準エラーに出力
@@ -110,18 +102,18 @@ if credentials:
         # 終了コードを1にして異常終了を示す
         sys.exit(1)
 
-    if config.debug :
-        outputLog(f"success={success}")
-        outputLog(f"error_log={error_log}")
+    outputLog(f"success={success}")
+    outputLog(f"error_log={error_log}")
+
 
     if success == True:
-        print(json.dumps({"result": True, "contents": error_log}))
         save_tweet_history(account_id, comment_id , mode , tweet_id , True , error_log)
+        print(json.dumps({"success": True, "error_log": error_log}))
         sys.exit(0)
     else:
 #                outputLog(f"エラーが発生しました: {result}", file=sys.stderr)
-        print(json.dumps({"result": False, "contents": error_log}))
         save_tweet_history(account_id, comment_id , mode , tweet_id , False , error_log)
+        print(json.dumps({"success": False, "error_log": error_log}))
         sys.exit(1)
 
 else:
