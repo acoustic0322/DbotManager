@@ -100,14 +100,15 @@ if credentials:
     elif mode == "bookmark":
         result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
     elif mode == "check":
-        result1 , tweet1 , result2 , tweet2 = proc_check_v2_2(credentials , search_row)
+        result1 , tweet1 , result2 , tweet2 , tweets = proc_check_v2_2(credentials , search_row)
         contents1 = tweet1.data['id'] if tweet1 else None
         contents2 = tweet2.data['id'] if tweet2 else None
 
 #        if search_row['monomane_enable'] == True and result1 == True:
         if True:
             outputLog("monomane実行")
-            result_wk , contents_wk = proc_monomane(search_row , tweet1)
+            outputLog(f"tweet1={tweet1.data}")
+            result_wk , contents_wk = proc_monomane(search_row , tweet1.data , tweets)
             save_tweet_history(search_row['monomane_account_id'], None , 'monomane' , None , result_wk , contents_wk , None , None )
 
     else:

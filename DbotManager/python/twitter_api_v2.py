@@ -487,7 +487,7 @@ def proc_check_v2_2(credentials , search_row):
 
     if tweets is None:
         outputLog(f"tweets={tweets}")
-        return False , None ,False ,None
+        return False , None ,False ,None ,None
 
 
     tweet_post = get_latest_tweet2(tweets , False)
@@ -515,7 +515,7 @@ def proc_check_v2_2(credentials , search_row):
         if check_reply == True:
             update_search_list(search_row['id'] , tweet_reply.data['id'] , latest_tweet_datetime , 'reply')
 
-    return check_post , tweet_post , check_reply , tweet_reply
+    return check_post , tweet_post , check_reply , tweet_reply , tweets
 
 
 def get_latest_tweets(client , search_user_name):

@@ -300,7 +300,7 @@ def generate_random_string(length):
     random_string = ''.join(random.choice(characters) for _ in range(length))
     return random_string
 
-def proc_monomane(search_row , tweet_data):
+def proc_monomane(search_row , tweet_data, tweets):
 
     # モノマネ実施のアカウントID取得
     account_id = search_row['monomane_account_id']
@@ -326,12 +326,12 @@ def proc_monomane(search_row , tweet_data):
 
     try:
         # print(tweet_data['attachments'])
-        if 'attachments' in tweet_data:
-            media_keys = tweet_data['attachments']['media_keys']
 
-            # tweetsを使っているが間違えでは？
-#            media = {m.media_key: m for m in tweets.includes['media']}
-            media = {m.media_key: m for m in tweet_data.includes['media']}
+        # includes からメディア情報を取得する処理
+        if 'attachments' in tweet_data and 'media_keys' in tweet_data['attachments']:
+
+            media_keys = tweet_data['attachments']['media_keys']
+            media = {m.media_key: m for m in tweets.includes['media']}
                     
             for key in media_keys:
                 media_type = media[key].type

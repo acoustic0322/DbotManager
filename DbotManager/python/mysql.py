@@ -203,10 +203,10 @@ def update_search_list(id, tweet_id, datetime, mode):
                     UPDATE search_list set last_monomane_id = %s , last_monomane_time = %s  where id = %s
                 """
 
-#            print(sql)
-#            print(id)
-#            print(tweet_id)
-#            print(datetime)
+#            outputLog(sql)
+#            outputLog(id)
+#            outputLog(tweet_id)
+#            outputLog(datetime)
 
             cursor.execute(sql, (tweet_id , datetime , id))
 #            sql = """
@@ -257,7 +257,7 @@ def get_user_id_from_db(check_list_id):
 
             # データが取得できなかった場合はNoneを返す
             if credentials is None:
-#                print(f"ユーザー名 '{user_name}' に対応するデータが見つかりませんでした。")
+#                outputLog(f"ユーザー名 '{user_name}' に対応するデータが見つかりませんでした。")
                 return None
 
             return credentials['target_user_id']
@@ -284,7 +284,7 @@ def get_slice_id_from_db(user_name , search_replies):
 
             # データが取得できなかった場合はNoneを返す
             if credentials is None:
-#                print(f"ユーザー名 '{user_name}' に対応するデータが見つかりませんでした。")
+#                outputLog(f"ユーザー名 '{user_name}' に対応するデータが見つかりませんでした。")
                 return None
 
             if search_replies == True:
@@ -316,17 +316,17 @@ def get_last_tweet_id_from_check_account_list(id , search_replies):
 
             # データが取得できなかった場合はNoneを返す
             if credentials is None:
-                print(f"ユーザー名 '{user_name}' に対応するデータが見つかりませんでした。")
+                outputLog(f"ユーザー名 '{user_name}' に対応するデータが見つかりませんでした。")
                 return None , None
 
             if search_replies == True:
                 if config.debug == True:
-                    print("credentials['last_reply_id'] =",credentials['last_reply_id'] )
-                    print("credentials['last_reply_datetime'] =",credentials['last_reply_datetime'] )
+                    outputLog("credentials['last_reply_id'] =",credentials['last_reply_id'] )
+                    outputLog("credentials['last_reply_datetime'] =",credentials['last_reply_datetime'] )
                 return credentials['last_reply_id'] , credentials['last_reply_datetime']
             if config.debug == True:
-                print("credentials['last_tweet_id'] =",credentials['last_tweet_id'] )
-                print("credentials['last_tweet_datetime'] =",credentials['last_tweet_datetime'] )
+                outputLog("credentials['last_tweet_id'] =",credentials['last_tweet_id'] )
+                outputLog("credentials['last_tweet_datetime'] =",credentials['last_tweet_datetime'] )
             return credentials['last_tweet_id'] , credentials['last_tweet_datetime']
     finally:
         connection.close()
@@ -377,10 +377,10 @@ def update_last_tweet_id_from_check_account_list(id , latest_tweet_id , latest_t
                     UPDATE check_account_list set last_tweet_id = %s , last_tweet_datetime = %s where id = %s
                 """
 
-#            print(sql)
-#            print("id=",id)
-#            print("latest_tweet_id=",latest_tweet_id)
-#            print("latest_tweet_dt=",latest_tweet_datetime)
+#            outputLog(sql)
+#            outputLog("id=",id)
+#            outputLog("latest_tweet_id=",latest_tweet_id)
+#            outputLog("latest_tweet_dt=",latest_tweet_datetime)
             cursor.execute(sql, (latest_tweet_id , latest_tweet_datetime , id ))
             connection.commit()
     finally:
