@@ -172,10 +172,20 @@ namespace DbotManager
             _discordTask = new DiscordTask();
             _discordTask.StartTask();
 
-            var col = dataGridView監視.Columns[CheckDate.Name];
-            col.DefaultCellStyle.Format = "HH:mm:ss";
+            var col = dataGridView監視.Columns[SearchList_LastPostTime.Name];
+            col.DefaultCellStyle.Format = "yyyy/MM/dd HH:mm:ss";
             col = dataGridViewReserveSchedule.Columns[dataGridViewReserveSchedule_ReserveTime.Name];
-            col.DefaultCellStyle.Format = "HH:mm:ss";
+            col.DefaultCellStyle.Format = "yyyy/MM/dd HH:mm:ss";
+
+            var col2 = dataGridView監視.Columns[SearchList_LastReplyTime.Name];
+            col2.DefaultCellStyle.Format = "yyyy/MM/dd HH:mm:ss";
+            col2 = dataGridViewReserveSchedule.Columns[dataGridViewReserveSchedule_ReserveTime.Name];
+            col2.DefaultCellStyle.Format = "yyyy/MM/dd HH:mm:ss";
+
+            var col3 = dataGridView監視.Columns[SearchList_CheckDate.Name];
+            col3.DefaultCellStyle.Format = "HH:mm:ss";
+            col3 = dataGridViewReserveSchedule.Columns[dataGridViewReserveSchedule_ReserveTime.Name];
+            col3.DefaultCellStyle.Format = "HH:mm:ss";
 
             FillControls();
             _isLoading = false;

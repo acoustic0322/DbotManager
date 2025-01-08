@@ -83,13 +83,6 @@
             this.groupBox監視 = new System.Windows.Forms.GroupBox();
             this.label監視件数 = new System.Windows.Forms.Label();
             this.dataGridView監視 = new System.Windows.Forms.DataGridView();
-            this.Mode = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.CheckDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.button監視End = new System.Windows.Forms.Button();
             this.button監視Start = new System.Windows.Forms.Button();
             this.tabPage予約 = new System.Windows.Forms.TabPage();
@@ -115,6 +108,14 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
+            this.SearchList_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SearchList_SearchUserName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SearchList_CheckDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SearchList_PostEnable = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SearchList_ReplyEnable = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SearchList_MonomaneEnable = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SearchList_LastPostTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SearchList_LastReplyTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -698,67 +699,20 @@
             this.dataGridView監視.AllowUserToResizeRows = false;
             this.dataGridView監視.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView監視.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Mode,
-            this.dataGridViewTextBoxColumn5,
-            this.Column4,
-            this.Column5,
-            this.CheckDate,
-            this.Column3,
-            this.dataGridViewTextBoxColumn6});
+            this.SearchList_Id,
+            this.SearchList_SearchUserName,
+            this.SearchList_CheckDate,
+            this.SearchList_PostEnable,
+            this.SearchList_ReplyEnable,
+            this.SearchList_MonomaneEnable,
+            this.SearchList_LastPostTime,
+            this.SearchList_LastReplyTime});
             this.dataGridView監視.Location = new System.Drawing.Point(5, 57);
             this.dataGridView監視.Name = "dataGridView監視";
             this.dataGridView監視.RowHeadersVisible = false;
             this.dataGridView監視.RowTemplate.Height = 21;
             this.dataGridView監視.Size = new System.Drawing.Size(754, 442);
             this.dataGridView監視.TabIndex = 0;
-            // 
-            // Mode
-            // 
-            this.Mode.DataPropertyName = "Mode";
-            this.Mode.HeaderText = "モード";
-            this.Mode.Name = "Mode";
-            // 
-            // dataGridViewTextBoxColumn5
-            // 
-            this.dataGridViewTextBoxColumn5.DataPropertyName = "TargetAccountName";
-            this.dataGridViewTextBoxColumn5.HeaderText = "対象";
-            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
-            this.dataGridViewTextBoxColumn5.Width = 140;
-            // 
-            // Column4
-            // 
-            this.Column4.DataPropertyName = "CheckAccountName";
-            this.Column4.HeaderText = "監視実施";
-            this.Column4.Name = "Column4";
-            this.Column4.Width = 140;
-            // 
-            // Column5
-            // 
-            this.Column5.DataPropertyName = "AccountName";
-            this.Column5.HeaderText = "リプ実施";
-            this.Column5.Name = "Column5";
-            this.Column5.Width = 140;
-            // 
-            // CheckDate
-            // 
-            this.CheckDate.DataPropertyName = "CheckDate";
-            this.CheckDate.HeaderText = "次回監視";
-            this.CheckDate.Name = "CheckDate";
-            this.CheckDate.Width = 200;
-            // 
-            // Column3
-            // 
-            this.Column3.DataPropertyName = "SinceDatetime";
-            this.Column3.HeaderText = "最終更新";
-            this.Column3.Name = "Column3";
-            this.Column3.Visible = false;
-            // 
-            // dataGridViewTextBoxColumn6
-            // 
-            this.dataGridViewTextBoxColumn6.DataPropertyName = "ExeAccountName";
-            this.dataGridViewTextBoxColumn6.HeaderText = "実施候補";
-            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
-            this.dataGridViewTextBoxColumn6.Visible = false;
             // 
             // button監視End
             // 
@@ -1013,6 +967,61 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
+            // SearchList_Id
+            // 
+            this.SearchList_Id.DataPropertyName = "Id";
+            this.SearchList_Id.HeaderText = "ID";
+            this.SearchList_Id.Name = "SearchList_Id";
+            this.SearchList_Id.Width = 40;
+            // 
+            // SearchList_SearchUserName
+            // 
+            this.SearchList_SearchUserName.DataPropertyName = "SearchUserName";
+            this.SearchList_SearchUserName.HeaderText = "監視対象";
+            this.SearchList_SearchUserName.Name = "SearchList_SearchUserName";
+            this.SearchList_SearchUserName.Width = 140;
+            // 
+            // SearchList_CheckDate
+            // 
+            this.SearchList_CheckDate.DataPropertyName = "CheckDate";
+            this.SearchList_CheckDate.HeaderText = "次回監視";
+            this.SearchList_CheckDate.Name = "SearchList_CheckDate";
+            // 
+            // SearchList_PostEnable
+            // 
+            this.SearchList_PostEnable.DataPropertyName = "PostEnable";
+            this.SearchList_PostEnable.HeaderText = "監視Rep";
+            this.SearchList_PostEnable.Name = "SearchList_PostEnable";
+            this.SearchList_PostEnable.Width = 80;
+            // 
+            // SearchList_ReplyEnable
+            // 
+            this.SearchList_ReplyEnable.DataPropertyName = "ReplyEnable";
+            this.SearchList_ReplyEnable.HeaderText = "監視RepToRep";
+            this.SearchList_ReplyEnable.Name = "SearchList_ReplyEnable";
+            this.SearchList_ReplyEnable.Width = 80;
+            // 
+            // SearchList_MonomaneEnable
+            // 
+            this.SearchList_MonomaneEnable.DataPropertyName = "MonomaneEnable";
+            this.SearchList_MonomaneEnable.HeaderText = "モノマネ";
+            this.SearchList_MonomaneEnable.Name = "SearchList_MonomaneEnable";
+            this.SearchList_MonomaneEnable.Width = 80;
+            // 
+            // SearchList_LastPostTime
+            // 
+            this.SearchList_LastPostTime.DataPropertyName = "LastPostTime";
+            this.SearchList_LastPostTime.HeaderText = "最終ポスト";
+            this.SearchList_LastPostTime.Name = "SearchList_LastPostTime";
+            this.SearchList_LastPostTime.Width = 140;
+            // 
+            // SearchList_LastReplyTime
+            // 
+            this.SearchList_LastReplyTime.DataPropertyName = "LastReplyTime";
+            this.SearchList_LastReplyTime.HeaderText = "最終リプ";
+            this.SearchList_LastReplyTime.Name = "SearchList_LastReplyTime";
+            this.SearchList_LastReplyTime.Width = 140;
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1143,13 +1152,14 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewReserveSchedule_AccountId;
         private System.Windows.Forms.DataGridViewTextBoxColumn CommentId;
         private System.Windows.Forms.DataGridViewTextBoxColumn ReserveDate;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Mode;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
-        private System.Windows.Forms.DataGridViewTextBoxColumn CheckDate;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_Id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_SearchUserName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_CheckDate;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_PostEnable;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_ReplyEnable;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_MonomaneEnable;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_LastPostTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_LastReplyTime;
     }
 }
 
