@@ -690,7 +690,7 @@ namespace DbotManager
         {
             Console.WriteLine("監視処理が完了しました。追加処理を行います。");
 
-            var list = _tweetTask.CheckAccountList.OrderBy(x => x.CheckDate).ToList();
+            var list = _tweetTask.CheckSearchList.OrderBy(x => x.CheckDate).ToList();
 
             // メインスレッドで UI を更新する
             if (dataGridView監視.InvokeRequired)
@@ -707,7 +707,7 @@ namespace DbotManager
         }
 
         // UI を更新する処理を別メソッドにまとめる
-        private void UpdateUI(List<CheckAccountList> list)
+        private void UpdateUI(List<SearchList> list)
         {
             dataGridView監視.DataSource = list;
             label監視件数.Text = $"({list.Count}件)";
@@ -727,7 +727,7 @@ namespace DbotManager
           
             _tweetTask.Init監視list(first_flag);
 
-            var list = _tweetTask.CheckAccountList.OrderBy(x => x.CheckDate).ToList();
+            var list = _tweetTask.CheckSearchList.OrderBy(x => x.CheckDate).ToList();
             dataGridView監視.DataSource = list;
             label監視件数.Text = $"({list.Count}件)";
 

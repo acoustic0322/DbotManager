@@ -153,7 +153,7 @@ namespace DbotManager
                 TweetProcType = (radioButton監視.Checked ? TweetProcTypes.CHECK : (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE)),
                 UserId = userId,
                 AccountId = accountId,
-                CheckListId = checkAccountId               
+                SearchId = checkAccountId               
                 }
             );
 

@@ -48,7 +48,7 @@ namespace DbotManager
         public int? CommentId { get; set; }
         public string TweetId { get; set; }
 
-        public int? CheckListId { get; set; }
+        public int? SearchId { get; set; }
         public string CheckAccountName { get; set; }
         public DateTime DateTime { get; set; }
 
@@ -60,8 +60,10 @@ namespace DbotManager
 
     public class TweetResult
     {
-        public bool result { get; set; }
-        public string contents { get; set; }
+        public bool result1 { get; set; }
+        public string contents1 { get; set; }
+        public bool result2 { get; set; }
+        public string contents2 { get; set; }
     }
 
     public class TweetTask
@@ -75,7 +77,7 @@ namespace DbotManager
             this.logAction = logAction;
             dbConnectin = dbConnection;
 
-            CheckAccountList = new List<CheckAccountList>();
+            CheckSearchList = new List<SearchList>();
         }
 
         public int UserId { get; set; }
@@ -95,7 +97,7 @@ namespace DbotManager
         public List<AccountMaster> RepostAccountList { get; set; }
         public List<AccountMaster> ReplyAccountList { get; set; }
 
-        public List<CheckAccountList> CheckAccountList = new List<CheckAccountList>();
+        public List<SearchList> CheckSearchList = new List<SearchList>();
 
 
         List<CommentMaster> _replyCommentList = new List<CommentMaster>();
@@ -435,31 +437,29 @@ namespace DbotManager
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster()
                 .Where(x => x.PostEnable && x.Enable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
 
-            List<CheckAccountList> checkAccountList = dataAccess.GetCheckAccountList()
-                .Where(x => x.Enable && accountMasterList.Any(y => y.Id == x.AccountId)).ToList();
+//            List<CheckAccountList> checkAccountList = dataAccess.GetCheckAccountList()
+//                .Where(x => x.Enable && accountMasterList.Any(y => y.Id == x.AccountId)).ToList();
+
+            List<SearchList> searchList = dataAccess.GetSearchList()
+                .Where(x => (bool)x.Enable && accountMasterList.Any(y => y.Id == x.SearchAccountId)).ToList();
 
             DateTime dtNow = DateTime.Now;
-            CheckAccountList.Clear();
+            CheckSearchList.Clear();
 
-            foreach(var item in checkAccountList)
+            foreach(var item in searchList)
             {
-                var account = accountMasterList.Where(x => x.Id == item.AccountId).FirstOrDefault();
+                var account = accountMasterList.Where(x => x.Id == item.SearchAccountId).FirstOrDefault();
 
-                item.CheckInterval = item.Mode == TweetProcTypes.CHECK ? account.CheckInterval : item.Mode == TweetProcTypes.CHECKREP ? account.CheckRepInterval : account.MonomaneInterval;
+                //有料API : 5分  無料API : 15分
+                item.CheckInterval = account.Paid ? 300 : 9000;
                 item.CheckDate = dtNow.AddSeconds(item.CheckInterval);
-                item.TargetAccountName = item.TargetAccountName.Replace("@", "");
 
-                if (item.CheckAccountId == 0) 
-                    item.CheckAccountId = item.AccountId;
-
-                var checkaccount = accountMasterList.Where(x => x.Id == item.CheckAccountId).FirstOrDefault();
-
-                item.AccountName = account.Name;
-                item.CheckAccountName = checkaccount.Name;
+//                item.AccountName = account.Name;
+//                item.CheckAccountName = checkaccount.Name;
 
                 if (first_flag) item.FirstFlag = true;
 
-                CheckAccountList.Add(item);
+                CheckSearchList.Add(item);
             }
 
             _replyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
@@ -510,8 +510,8 @@ namespace DbotManager
 
             bool renewFlag = false;
 
-            var list = new List<CheckAccountList>();
-            list.AddRange(CheckAccountList);
+            var list = new List<SearchList>();
+            list.AddRange(CheckSearchList);
 
             DateTime dtNow = DateTime.Now;
 
@@ -521,20 +521,22 @@ namespace DbotManager
                 if (item.CheckDate >= dtNow) continue;
 
                 var tweetResult = TweetProc(new TweetCommand() { 
-                    TweetProcType = item.Mode,// TweetProcTypes.CHECK, 
-                    AccountId = item.CheckAccountId, 
-                    CheckAccountName = item.TargetAccountName, 
-                    CheckListId = item.Id,
-                    TweetId = item.SinceTweetId 
+                    TweetProcType = TweetProcTypes.CHECK, 
+                    SearchId = item.Id,
                 });
 
                 item.CheckDate = dtNow.AddSeconds(item.CheckInterval);
 
                 if(item.FirstFlag == false)
                 {
-                    if (tweetResult != null && tweetResult.result == true)
+                    if (tweetResult != null && (bool)item.PostEnable && tweetResult.result1 == true)
                     {
                         TweetProcReply(item, tweetResult);
+                    }
+
+                    if (tweetResult != null && (bool)item.ReplyEnable && tweetResult.result2 == true)
+                    {
+                        TweetProcReplyToReply(item, tweetResult);
                     }
                 }
 
@@ -558,23 +560,23 @@ namespace DbotManager
 
         #region TweetProc関連
 
-        public void TweetProcReply(CheckAccountList checkAccountList, TweetResult result)
+        public void TweetProcReply(SearchList searchList, TweetResult result)
         {
             //            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
-            int accountId = checkAccountList.AccountId;
+            int accountId = searchList.SearchAccountId;
 
             if (_replyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
 
             var commentItem = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList());
             if (commentItem == null) return;
             var commentId = commentItem.Id;
-            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents });
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents1 });
         }
 
-        public void TweetProcReplyToReply(CheckAccountList checkAccountList, TweetResult result)
+        public void TweetProcReplyToReply(SearchList searchList, TweetResult result)
         {
             //            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
-            int accountId = checkAccountList.AccountId;
+            int accountId = searchList.SearchAccountId;
 
             if (_replyToReplyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
 
@@ -582,7 +584,7 @@ namespace DbotManager
             if (commentItem == null) return;
             var commentId = commentItem.Id;
 
-            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents });
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents1 });
         }
 
         private string GetNameList(List<AccountMaster> accountMasterList, List<int> list)
@@ -676,7 +678,8 @@ namespace DbotManager
                 case TweetProcTypes.CHECK:
                 case TweetProcTypes.CHECKREP:
                 case TweetProcTypes.MONOMANE:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_account_name={tweetCommand.CheckAccountName.Replace("@","")} check_list_id={tweetCommand.CheckListId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} search_id={tweetCommand.SearchId}";
+//                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_account_name={tweetCommand.CheckAccountName.Replace("@","")} check_list_id={tweetCommand.SearchId}";
                     /*
                     if (tweetCommand.DebugMode)
                         pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)}_debug account_id={tweetCommand.CheckAccountName} check_list_id={tweetCommand.CheckListId}";
@@ -722,25 +725,14 @@ namespace DbotManager
                 string debugMessage = process.StandardError.ReadToEnd();   // Pythonスクリプトの標準エラー
                 process.WaitForExit();
 
-                /*
-                if (!string.IsNullOrEmpty(debugMessage))
-                {
-                    Console.WriteLine($"Error: {debugMessage}");
-                    return;
-                }
-                */
-
-                // PythonスクリプトからのJSON結果をデシリアライズ
-                //                var result = JsonSerializer.Deserialize<PythonResult>(output);
-
                 // PythonスクリプトからのJSON結果をデシリアライズ (Newtonsoft.Json)
                 tweetResult = JsonConvert.DeserializeObject<TweetResult>(output);
 
                 if (tweetResult != null)
                 {
-                    Console.WriteLine($"{DateTime.Now.ToString()} < [{tweetResult.result}]{tweetResult.contents}");
+                    Console.WriteLine($"{DateTime.Now.ToString()} < [{tweetResult.result1}]{tweetResult.contents1} [{tweetResult.result2}]{tweetResult.contents2}");
 
-                    logAction?.Invoke($"{DateTime.Now.ToString()} < [{tweetResult.result}]{tweetResult.contents}");
+                    logAction?.Invoke($"{DateTime.Now.ToString()} < [{tweetResult.result1}]{tweetResult.contents1} [{tweetResult.result2}]{tweetResult.contents2}");
                 }
                 else
                 {
@@ -755,71 +747,6 @@ namespace DbotManager
             }
 
             return tweetResult;
-
-            /*
-            switch (tweetCommand.TweetProcType)
-            {
-                case TweetProcTypes.POST:
-                case TweetProcTypes.LIKE:
-                case TweetProcTypes.BOOKMARK:
-                case TweetProcTypes.REPOST:
-                case TweetProcTypes.REPLY:
-                case TweetProcTypes.GET_ACCESSTOKEN:
-                case TweetProcTypes.GET_REFRESHTOKEN:
-                    break;
-
-                case TweetProcTypes.CHECK:
-                case TweetProcTypes.CHECKREP:
-                case TweetProcTypes.MONOMANE:
-                    return tweetResult;
-                    break;
-            }
-
-            return null;
-            */
-
-
-            /*
-            // プロセス情報の設定
-            ProcessStartInfo psi = new ProcessStartInfo
-            {
-                FileName = pythonExePath,
-                Arguments = pythonScriptPath,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using (Process process = new Process())
-            {
-                process.StartInfo = psi;
-
-                process.OutputDataReceived += (s, ea) => logAction?.Invoke(ea.Data);
-                process.ErrorDataReceived += (s, ea) => logAction?.Invoke("ERROR: " + ea.Data);
-
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                // タイムアウトを設定して待機（例えば5秒）
-                bool exited = process.WaitForExit(5000);
-                if (!exited)
-                {
-                    logAction?.Invoke("タイムアウト: プロセスが5秒以内に終了しませんでした");
-                    process.Kill();
-                }
-
-                //                process.WaitForExit();
-            }
-
-
-            // pythonの実行結果を受けて次動作を行うモードの実装
-            {
-
-            }
-            */
-
         }
 
         public string GetTweetCommand(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)

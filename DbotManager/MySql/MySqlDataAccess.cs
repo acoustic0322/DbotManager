@@ -579,6 +579,230 @@ public class MySqlDataAccess
 
     #endregion
 
+    #region SearchList
+
+    public int InsertSearchList(SearchList search)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+            INSERT INTO search_list 
+            (
+                search_user_name, search_user_id, enable, search_account_id, 
+                post_account_id, post_enable, last_post_id, last_post_time, 
+                reply_account_id, reply_enable, last_reply_id, last_reply_time, 
+                monomane_account_id, monomane_enable, last_monomane_id, last_monomane_time
+            )
+            VALUES 
+            (
+                @SearchUserName, @SearchUserId, @Enable , @SearchAccountId, 
+                @PostAccountId, @PostEnable, @LastPostId, @LastPostTime, 
+                @ReplyAccountId, @ReplyEnable, @LastReplyId, @LastReplyTime, 
+                @MonomaneAccountId, @MonomaneEnable, @LastMonomaneId, @LastMonomaneTime
+            );
+            SELECT LAST_INSERT_ID();";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    // パラメータの設定
+                    command.Parameters.AddWithValue("@SearchUserName", search.SearchUserName);
+                    command.Parameters.AddWithValue("@SearchUserId", search.SearchUserId);
+                    command.Parameters.AddWithValue("@Enable", search.Enable.HasValue ? (search.Enable.Value ? "1" : "0") : null);
+                    command.Parameters.AddWithValue("@SearchAccountId", search.SearchAccountId);
+                    command.Parameters.AddWithValue("@PostAccountId", search.PostAccountId);
+                    command.Parameters.AddWithValue("@PostEnable", search.PostEnable.HasValue ? (search.PostEnable.Value ? "1" : "0") : null);
+                    command.Parameters.AddWithValue("@LastPostId", search.LastPostId);
+                    command.Parameters.AddWithValue("@LastPostTime", search.LastPostTime?.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.Parameters.AddWithValue("@ReplyAccountId", search.ReplyAccountId);
+                    command.Parameters.AddWithValue("@ReplyEnable", search.ReplyEnable.HasValue ? (search.ReplyEnable.Value ? "1" : "0") : null);
+                    command.Parameters.AddWithValue("@LastReplyId", search.LastReplyId);
+                    command.Parameters.AddWithValue("@LastReplyTime", search.LastReplyTime?.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.Parameters.AddWithValue("@MonomaneAccountId", search.MonomaneAccountId);
+                    command.Parameters.AddWithValue("@MonomaneEnable", search.MonomaneEnable.HasValue ? (search.MonomaneEnable.Value ? "1" : "0") : null);
+                    command.Parameters.AddWithValue("@LastMonomaneId", search.LastMonomaneId);
+                    command.Parameters.AddWithValue("@LastMonomaneTime", search.LastMonomaneTime?.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                    // クエリを実行して挿入されたIDを取得
+                    int insertedId = Convert.ToInt32(command.ExecuteScalar());
+                    return insertedId;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+
+            return -1;
+        }
+    }
+
+
+    public List<SearchList> GetSearchList()
+    {
+        List<SearchList> searchList = new List<SearchList>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                SELECT 
+                    id, enable, search_user_name, search_user_id, search_account_id,
+                    post_account_id, post_enable, last_post_id, last_post_time,
+                    reply_account_id, reply_enable, last_reply_id, last_reply_time,
+                    monomane_account_id, monomane_enable, last_monomane_id, last_monomane_time
+                FROM search_list";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            SearchList searchItem = new SearchList()
+                            {
+                                Id = reader["id"] != DBNull.Value ? Convert.ToInt32(reader["id"]) : 0,
+                                Enable = reader["enable"] != DBNull.Value ? reader["enable"].ToString() == "1" : (bool?)null,
+                                SearchUserName = reader["search_user_name"].ToString(),
+                                SearchUserId = reader["search_user_id"] != DBNull.Value ? Convert.ToInt32(reader["search_user_id"]) : 0,
+                                SearchAccountId = reader["search_account_id"] != DBNull.Value ? Convert.ToInt32(reader["search_account_id"]) : 0,
+                                PostAccountId = reader["post_account_id"] != DBNull.Value ? Convert.ToInt32(reader["post_account_id"]) : 0,
+                                PostEnable = reader["post_enable"] != DBNull.Value ? reader["post_enable"].ToString() == "1" : (bool?)null,
+                                LastPostId = reader["last_post_id"].ToString(),
+                                LastPostTime = reader["last_post_time"] != DBNull.Value
+                                    ? DateTime.Parse(reader["last_post_time"].ToString())
+                                    : (DateTime?)null,
+                                ReplyAccountId = reader["reply_account_id"] != DBNull.Value ? Convert.ToInt32(reader["reply_account_id"]) : 0,
+                                ReplyEnable = reader["reply_enable"] != DBNull.Value ? reader["reply_enable"].ToString() == "1" : (bool?)null,
+                                LastReplyId = reader["last_reply_id"].ToString(),
+                                LastReplyTime = reader["last_reply_time"] != DBNull.Value
+                                    ? DateTime.Parse(reader["last_reply_time"].ToString())
+                                    : (DateTime?)null,
+                                MonomaneAccountId = reader["monomane_account_id"] != DBNull.Value ? Convert.ToInt32(reader["monomane_account_id"]) : 0,
+                                MonomaneEnable = reader["monomane_enable"] != DBNull.Value ? reader["monomane_enable"].ToString() == "1" : (bool?)null,
+                                LastMonomaneId = reader["last_monomane_id"].ToString(),
+                                LastMonomaneTime = reader["last_monomane_time"] != DBNull.Value
+                                    ? DateTime.Parse(reader["last_monomane_time"].ToString())
+                                    : (DateTime?)null,
+                            };
+
+                            searchList.Add(searchItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return searchList;
+    }
+
+
+    public void UpdateSearchList(SearchList item)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                UPDATE search_list 
+                SET 
+                    search_user_name = @SearchUserName,
+                    search_user_id = @SearchUserId,
+                    enable = @ Enable,
+                    search_account_id = @SearchAccountId,
+                    post_account_id = @PostAccountId,
+                    post_enable = @PostEnable,
+                    last_post_id = @LastPostId,
+                    last_post_time = @LastPostTime,
+                    reply_account_id = @ReplyAccountId,
+                    reply_enable = @ReplyEnable,
+                    last_reply_id = @LastReplyId,
+                    last_reply_time = @LastReplyTime,
+                    monomane_account_id = @MonomaneAccountId,
+                    monomane_enable = @MonomaneEnable,
+                    last_monomane_id = @LastMonomaneId,
+                    last_monomane_time = @LastMonomaneTime
+                WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", item.Id);
+                    command.Parameters.AddWithValue("@SearchUserName", item.SearchUserName ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@SearchUserId", item.SearchUserId != 0 ? item.SearchUserId : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@Enable", item.Enable.HasValue ? (item.Enable.Value ? 1 : 0) : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@SearchAccountId", item.SearchAccountId != 0 ? item.SearchAccountId : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@PostAccountId", item.PostAccountId != 0 ? item.PostAccountId : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@PostEnable", item.PostEnable.HasValue ? (item.PostEnable.Value ? 1 : 0) : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@LastPostId", item.LastPostId ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@LastPostTime", item.LastPostTime.HasValue ? item.LastPostTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@ReplyAccountId", item.ReplyAccountId != 0 ? item.ReplyAccountId : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@ReplyEnable", item.ReplyEnable.HasValue ? (item.ReplyEnable.Value ? 1 : 0) : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@LastReplyId", item.LastReplyId ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@LastReplyTime", item.LastReplyTime.HasValue ? item.LastReplyTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@MonomaneAccountId", item.MonomaneAccountId != 0 ? item.MonomaneAccountId : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@MonomaneEnable", item.MonomaneEnable.HasValue ? (item.MonomaneEnable.Value ? 1 : 0) : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@LastMonomaneId", item.LastMonomaneId ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@LastMonomaneTime", item.LastMonomaneTime.HasValue ? item.LastMonomaneTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : (object)DBNull.Value);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+
+    public bool DeleteSearchList(int id)
+    {
+        bool isDeleted = false;
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = "DELETE FROM search_list WHERE id = @Id;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    // 削除された行数が1以上で成功とみなす
+                    isDeleted = rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return isDeleted;
+    }
+
+
+
+    #endregion
+
+
     #region CheckUserMaster
 
     public int InsertCheckUserMaster(CheckUserMaster row)

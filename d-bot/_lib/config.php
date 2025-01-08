@@ -64,8 +64,7 @@ function current_user($conn){
         $_SESSION['sensyuken_enable'] = $user['sensyuken_enable'];
         $_SESSION['post_enable'] = $user['post_enable'];
         $_SESSION['reserve_enable'] = $user['reserve_enable'];
-        $_SESSION['photo_enable'] = $user['photo_enable'];
-        $_SESSION['movie_enable'] = $user['movie_enable'];
+        $_SESSION['media_enable'] = $user['media_enable'];
 
         $re = true;
     }
@@ -77,7 +76,7 @@ function get_user($conn,$id){
     $re = null;
 
     $stmt = $conn->prepare("SELECT id,username,admin,password,enable,memo,
-    like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,photo_enable,movie_enable
+    like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,media_enable
      FROM user_master WHERE id = ?");
     if ($stmt) {
         $stmt->bind_param("i",$id);
@@ -97,8 +96,7 @@ function get_user($conn,$id){
             $sensyuken_enable,
             $post_enable,
             $reserve_enable,
-            $photo_enable,
-            $movie_enable
+            $media_enable
         );
         $stmt->fetch();
 
@@ -117,8 +115,7 @@ function get_user($conn,$id){
                 'sensyuken_enable' => $sensyuken_enable,
                 'post_enable' => $post_enable,
                 'reserve_enable' => $reserve_enable,
-                'photo_enable' => $photo_enable,
-                'movie_enable' => $movie_enable
+                'media_enable' => $media_enable
                 ];
         }
 
@@ -351,7 +348,7 @@ function get_check_account($conn, $id)
         account_id,
         enable,
         mode,
-        check_account
+        target_account_name
     FROM check_account_list
     WHERE id = ?;
     ";
@@ -379,7 +376,7 @@ function get_check_account($conn, $id)
                 'account_id' => $account_id,
                 'enable' => $enable,
                 'mode' => $mode,
-                'check_account' => $check_account
+                'target_account_name' => $check_account
             ];
         }
     }

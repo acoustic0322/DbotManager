@@ -233,8 +233,7 @@ $result_replytoreply = $stmt->get_result();
             リプライtoリプライ
         </label><br>
 
-        <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-        <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+        <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
 
         動画/画像
         <label>
@@ -249,7 +248,6 @@ $result_replytoreply = $stmt->get_result();
             <input type="radio" name="new_mediatype" value="photo">
             画像
         </label>
-        <?php endif; ?>
         <?php endif; ?>
         <br>
 
@@ -295,10 +293,8 @@ $result_replytoreply = $stmt->get_result();
             <tr>
                 <th>有効</th>
                 <th>コメント</th>
-                <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+                <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
                 <th>動画/画像</th>
-                <?php endif; ?>
                 <?php endif; ?>                
                 <th>時間帯</th>
 
@@ -312,10 +308,8 @@ $result_replytoreply = $stmt->get_result();
                     <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
                     <td><?php echo htmlspecialchars($row['comment']); ?></td>
 
-                    <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                    <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+                    <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
                             <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '動画' : (htmlspecialchars($row['photo_enable']) == 1 ? '画像' : 'なし'); ?></td>
-                    <?php endif; ?>                
                     <?php endif; ?>               
 
                     <!-- 時間帯の表示 -->
@@ -365,10 +359,8 @@ $result_replytoreply = $stmt->get_result();
             <tr>
                 <th>有効</th>
                 <th>コメント</th>
-                <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+                <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
                 <th>動画/画像</th>
-                <?php endif; ?>
                 <?php endif; ?>   
 <!--                <th>ChatGPT</th> -->
                 <th>操作</th>
@@ -424,10 +416,8 @@ $result_replytoreply = $stmt->get_result();
                     <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
                     <td><?php echo htmlspecialchars($row['comment']); ?></td>
 
-                    <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                    <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+                    <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
                             <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '動画' : (htmlspecialchars($row['photo_enable']) == 1 ? '画像' : 'なし'); ?></td>
-                    <?php endif; ?>                
                     <?php endif; ?>                
 
                     <td class="hidden"><?php echo htmlspecialchars($row['chatgpt']) == 1 ? '〇' : '×'; ?></td>

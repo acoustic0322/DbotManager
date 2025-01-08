@@ -40,11 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $client_id = trim($_POST['client_id'] ?? '');
     $client_secret = trim($_POST['client_secret'] ?? '');
 
-    /*
     $api_key = trim($_POST['api_key'] ?? '');
     $api_key_secret = trim($_POST['api_key_secret'] ?? '');
     $access_token = trim($_POST['access_token'] ?? '');
     $access_token_secret = trim($_POST['access_token_secret'] ?? '');
+
+    /*
     $bearer_token = trim($_POST['bearer_token'] ?? '');
     $refresh_token = trim($_POST['refresh_token'] ?? '');
     */
@@ -272,22 +273,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!--
         <div class="input-group">
-            <label for="name">APIキー:</label><br>
-            <input type="text" name="api_key" placeholder="ApiKey" value="<?php echo htmlspecialchars($edit_account['api_key'] ?? '') ?>">
-        </div>
-        <div class="input-group">
-            <label for="name">APIキーシークレット:</label><br>
-            <input type="text" name="api_key_secret" placeholder="ApiKeySecret" value="<?php echo htmlspecialchars($edit_account['api_key_secret'] ?? '') ?>">
-        </div>
-        <div class="input-group">
-            <label for="name">access_token:</label>
-            <input type="text" name="access_token" placeholder="AccessToken" value="<?php echo htmlspecialchars($edit_account['access_token'] ?? '') ?>">
-        </div>
-        <div class="input-group">
-            <label for="name">access_token_secret:</label>
-            <input type="text" name="access_token_secret" placeholder="AccessTokenSecret" value="<?php echo htmlspecialchars($edit_account['access_token_secret'] ?? '') ?>">
-        </div>
-        <div class="input-group">
             <label for="name">bearer_token:</label>
             <input type="text" name="bearer_token" placeholder="BearerToken" value="<?php echo htmlspecialchars($edit_account['bearer_token'] ?? '') ?>">
         </div>
@@ -351,6 +336,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </label><br>
             <?php endif; ?>
         </div>
+
+        <br>
+        【メディアポスト関連】
+        <br>
+        <div class="input-group">
+            <label for="name">ApiKey:</label><br>
+            <input type="text" name="api_key" placeholder="ApiKey" value="<?php echo htmlspecialchars($edit_account['api_key'] ?? '') ?>">
+        </div>
+        <div class="input-group">
+            <label for="name">ApiKeySecret:</label><br>
+            <input type="text" name="api_key_secret" placeholder="ApiKeySecret" value="<?php echo htmlspecialchars($edit_account['api_key_secret'] ?? '') ?>">
+        </div>
+        <div class="input-group">
+            <label for="name">AccessToken:</label><br>
+            <input type="text" name="access_token" placeholder="AccessToken" value="<?php echo htmlspecialchars($edit_account['access_token'] ?? '') ?>">
+        </div>
+        <div class="input-group">
+            <label for="name">AccessTokenSecret:</label><br>
+            <input type="text" name="access_token_secret" placeholder="AccessTokenSecret" value="<?php echo htmlspecialchars($edit_account['access_token_secret'] ?? '') ?>">
+        </div>
+
 
         <br>
         【ポスト予約設定】

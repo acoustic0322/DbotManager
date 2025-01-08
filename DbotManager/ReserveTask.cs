@@ -263,13 +263,13 @@ namespace DbotManager
 
                 if(result != null)
                 {
-                    if (result.result == true)
+                    if (result.result1 == true)
                     {
                         reserveSchedule.Result = true;
                     }
                     else
                     {
-                        if(result.contents.Contains("Too Many Requests"))
+                        if(result.contents1.Contains("Too Many Requests"))
                         {
                             reserveSchedule.Result = true;
                         }

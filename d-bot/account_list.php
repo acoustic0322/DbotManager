@@ -57,12 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_login_pass = $_POST['new_login_pass'];
         $new_client_id = $_POST['new_client_id'];
         $new_client_secret = $_POST['new_client_secret'];
-
-        /*
         $new_api_key = $_POST['new_api_key'];
         $new_api_key_secret = $_POST['new_api_key_secret'];
         $new_access_token = $_POST['new_access_token'];
         $new_access_token_secret = $_POST['new_access_token_secret'];
+        /*
         $new_bearer_token = $_POST['new_bearer_token'];
         $new_refresh_token = $_POST['new_refresh_token'];
         */
@@ -98,6 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 login_password,
                 client_id,
                 client_secret,
+                api_key,
+                api_key_secret,
+                access_token,
+                access_token_secret, 
                 enable,
                 like_enable,
                 reply_enable,
@@ -107,21 +110,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 paid,
                 paid_like,
                 paid_bookmark
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
             
             $stmt->bind_param(
-                "ssssssiiiiiiiii",
+                "ssssssssssiiiiiiiii",
                 $current_userid,
                 $new_name,
                 $new_login_id,
                 $new_login_pass,
                 $new_client_id,
                 $new_client_secret,
-                /*
                 $new_api_key,
                 $new_api_key_secret,
                 $new_access_token,
                 $new_access_token_secret, 
+                /*
                 $new_bearer_token,
                 $new_refresh_token,
                 */
@@ -260,20 +263,6 @@ $result = $stmt->get_result();
 
         <!--
         <div class="input-group">
-            <input type="text" name="new_api_key" placeholder="ApiKey" required>
-        </div>
-        <div class="input-group">
-            <input type="text" name="new_api_key_secret" placeholder="ApiKeySecret" required>
-        </div>
-
-        <div class="input-group">
-            <input type="text" id="new_access_token" name="new_access_token" placeholder="AccessToken">
-        </div>        
-
-        <div class="input-group">
-            <input type="text" name="new_access_token_secret" placeholder="AccessSecret">
-        </div>
-        <div class="input-group">
             <input type="text" name="new_bearer_token" placeholder="BearerToken">
         </div>
         <div class="input-group">
@@ -337,6 +326,25 @@ $result = $stmt->get_result();
             </label><br>
             <?php endif; ?>
         </div>
+
+        <br>
+        【メディアポスト関連】
+        <br>
+        <div class="input-group">
+            <input type="text" name="new_api_key" placeholder="ApiKey" required>
+        </div>
+        <div class="input-group">
+            <input type="text" name="new_api_key_secret" placeholder="ApiKeySecret" required>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="new_access_token" name="new_access_token" placeholder="AccessToken">
+        </div>        
+
+        <div class="input-group">
+            <input type="text" name="new_access_token_secret" placeholder="AccessSecret">
+        </div>
+
 
         <br>
         【ポスト予約設定】

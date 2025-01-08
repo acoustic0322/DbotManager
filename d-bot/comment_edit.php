@@ -224,23 +224,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </label>
                 <br>            
 
-                <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
+                <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
 
                 動画/画像
                 <label>
-                    <input type="radio" name="new_mediatype" value="" <?php echo ($edit_account['movie_enable'] === 0 && $edit_account['photo_enable'] === 0) ? 'checked' : ''; ?>>
+                    <input type="radio" name="new_mediatype" value="" <?php echo ($edit_account['media_enable'] === 0) ? 'checked' : ''; ?>>
                     なし
                 </label>
                 <label>
-                <input type="radio" name="new_mediatype" value="video" <?php echo ($edit_account['movie_enable'] === 1) ? 'checked' : ''; ?>>
+                <input type="radio" name="new_mediatype" value="video" <?php echo ($edit_account['media_enable'] === 1) ? 'checked' : ''; ?>>
                     動画
                 </label>
                 <label>
-                <input type="radio" name="new_mediatype" value="photo" <?php echo ($edit_account['photo_enable'] === 1) ? 'checked' : ''; ?>>
+                <input type="radio" name="new_mediatype" value="photo" <?php echo ($edit_account['media_enable'] === 1) ? 'checked' : ''; ?>>
                     画像
                 </label>
-                <?php endif; ?>
                 <?php endif; ?>
                 <br>            
             </div>
