@@ -7,7 +7,6 @@ import sys
 import os
 import base64
 import pymysql
-from datetime import datetime  # datetime モジュールをインポート
 
 from mysql import get_comment_by_id
 from mysql import get_account_master_for_update_refresh
@@ -15,45 +14,10 @@ from mysql import update_refresh_token
 from mysql import save_tweet_history
 from mysql import get_user_id_from_db
 from mysql import update_user_id_from_db
-from mysql import get_last_tweet_id_from_check_account_list
-from mysql import update_last_tweet_id_from_check_account_list
-from mysql import update_search_list
+from mysql import get_slice_id_from_db
+from mysql import update_since_id_from_db
 
 import config
-from config import convert_tweet_datetime
-from config import outputLog
-
-import tweepy
-
-def createClient(credentials):
-    try:
-        client = tweepy.Client(
-            bearer_token=credentials['bearer_token']
-        )
-
-#        client = tweepy.Client(
-#            bearer_token=credentials['bearer_token'], 
-#            consumer_key=credentials['api_key'], 
-#            consumer_secret=credentials['api_key_secret'], 
-#            access_token=credentials['access_token'], 
-#            access_token_secret=credentials['access_token_secret']
-#            )
-
-        outputLog("Tweepy Client を正常に作成しました")
-
-        return client
-
-    except tweepy.errors.TweepyException as e:
-        outputLog("Tweepy Client 作成中にエラーが発生しました:")
-        outputLog(e)
-    except KeyError as ke:
-        outputLog("認証情報 (credentials) のキーが不足しています:")
-        outputLog(ke)
-    except Exception as ex:
-        outputLog("予期しないエラーが発生しました:")
-        outputLog(ex)    
-
-    return None
 
 def get_user_id(credentials):
 
@@ -73,10 +37,10 @@ def get_user_id(credentials):
     if response.status_code == 200:
         user_data = response.json()
         user_id = user_data["data"]["id"]
-#        print(f"get_user_id {username}のユーザーID: {user_id}")
+        print(f"get_user_id {username}のユーザーID: {user_id}")
         return user_id
     else:
-#        print(f"get_user_idエラー: {response.status_code}, {response.text}")
+        print(f"get_user_idエラー: {response.status_code}, {response.text}")
         return None
 
 def check_access_token(credentials):
@@ -93,7 +57,7 @@ def check_access_token(credentials):
 
 def proc_update_refresh_token():
     print("proc_update_refresh_token")
-    credentials_list = get_account_master_for_update_refresh()
+#    credentials_list = get_account_master_for_update_refresh()
     for credentials in credentials_list:
 #        print("target=",credentials['id'])
         result , access_token , refresh_token = refresh_access_token(credentials)
@@ -189,17 +153,43 @@ def check_access_token_validity(access_token):
         print(response.json())  # エラーメッセージを表示
         return response.status_code , json.dumps(response.json())
 
-def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
+def proc_post_v2_old(credentials):
+    access_token = credentials['bearer_token']
 
-    if config.debug == True:
-        print("proc_post_v2 Start")
-        print("comment_id=",comment_id)
-        print("reply_to_tweet_id=",reply_to_tweet_id)
+    # エンドポイントURL
+    url = "https://api.twitter.com/2/tweets"
+    # 投稿するデータ
+    data = {
+        "text": "[test]Twitter APIを使って投稿しています！"
+    }
+
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    # POSTリクエストを送信
+    response = requests.post(url, headers=headers, json=data)
+    # レスポンスを確認
+    if response.status_code == 201:
+        print("ツイートが成功しました:")
+        print(response.json())  # 投稿成功時のレスポンス
+    else:
+        print(f"エラー: {response.status_code}")
+        print(response.json())    
+
+    response_str = json.dumps(response.json())  # json.dumps を使用
+    return response.status_code in (201), response_str    
+
+def proc_post_v2(credentials ,comment_id, media_type , media_id, reply_to_tweet_id):
+
+#    print("media_type=",media_type)
+#    print("media_id=",media_id)
+#    print("comment_id=",comment_id)
+#    print("reply_to_tweet_id=",reply_to_tweet_id)
 
     # コメントの取得
     comment = get_comment_by_id(comment_id)
-
-#    print("comment=",comment)
 
     # コメントが取得できなかった場合、処理を終了
     if comment is None:
@@ -210,10 +200,22 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
     # エンドポイントURL
     url = "https://api.twitter.com/2/tweets"
     
+    # メディアが指定されている場合、メディアをアップロード
+    upload_id = None
+    if media_id and media_type:
+        upload_id = upload_media(credentials, media_id, media_type)
+        if not media_id:
+            return False, "メディアアップロードに失敗しました"
+
     # 投稿するデータ
     data = {
         "text": comment
     }
+
+    if upload_id:
+        data["media"] = {
+            "media_ids": [upload_id]
+        }
 
     if reply_to_tweet_id:
         data["reply"] = {
@@ -226,25 +228,20 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
         "Content-Type": "application/json"
     }
 
-    if config.debug == True:
-        print(headers)
-        print(data)
-        print(comment)
+#    print(headers)
+#    print(data)
+#    print(comment)
 
     # POSTリクエストを送信
     response = requests.post(url, headers=headers, json=data)
-
-    if config.debug == True:
-        print(response.json())
 
     try:
         # レスポンスを JSON としてパース
         response_data = response.json()
     except ValueError as e:
-        if config.debug == True:
         # JSON パースエラー時の処理
-            print("JSON パースエラー:", str(e))
-            print("Raw response text:", response.text)  # 生データを確認
+#        print("JSON パースエラー:", str(e))
+#        print("Raw response text:", response.text)  # 生データを確認
         return False, f"JSON パースエラー: {str(e)}"
 
 #    # レスポンスコードを確認
@@ -266,6 +263,73 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
     response_str = json.dumps(response_data)  # json.dumps を使用
     return response.status_code in (200, 201), response_str
 
+
+def upload_media(credentials, media_id, media_type):
+
+    # INIファイルのパス
+#    config_file = "config.ini"
+
+#    # ConfigParserを使ってINIファイルを読み込む
+##    config = configparser.ConfigParser()
+#    config.read(config_file, encoding="utf-8")
+
+    # INIファイルからbase_dirを取得 (デフォルトは現在のスクリプトの場所)
+#    base_dir = config.get("Paths", "base_dir", fallback=os.path.dirname(os.path.abspath(__file__)))
+
+    media_dir = config.media_dir
+
+    account_id = credentials['id']
+
+    media_ext = "jpg"
+    if media_type == "video":
+        media_ext = "mp4"
+
+    # 環境変数からベースディレクトリを取得 (デフォルトは現在のスクリプトの場所)
+#    base_dir = os.getenv("BASE_DIR", os.path.dirname(os.path.abspath(__file__)))
+
+    # メディアパスを生成
+    media_path = os.path.join(media_dir, "media", media_type, account_id, f"{media_id}.{media_ext}")
+
+#    # 現在のスクリプトがあるディレクトリのパスを取得
+#    current_dir = os.path.dirname(os.path.abspath(__file__))
+#    print(current_dir)#
+
+#    # 一つ上の階層に移動
+#    parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
+#    print(parent_dir)
+
+#    media_path = os.path.join(parent_dir, "media", media_type, account_id, f"{media_id}.{media_ext}")
+
+
+    access_token = credentials['bearer_token']
+
+    # エンドポイントURL
+    url = "https://upload.twitter.com/1.1/media/upload.json"
+    
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    
+    # ファイルをバイナリ形式で開く
+    with open(media_path, "rb") as media_file:
+        files = {
+            "media": media_file
+        }
+        data = {
+            "media_category": "tweet_video" if media_type == "video" else "tweet_image"
+        }
+        # POSTリクエストを送信
+        response = requests.post(url, headers=headers, files=files, data=data)
+
+    # レスポンスを確認
+    if response.status_code == 200:
+        media_id = response.json().get("media_id_string")
+        return media_id
+    else:
+        print(f"メディアアップロードエラー: {response.status_code}")
+        print(response.json())
+        return None
 
 def proc_like_v2(credentials, tweet_id):
     """
@@ -395,74 +459,141 @@ def proc_repost_v2(credentials, tweet_id):
 
     return response.status_code in (200, 201), response_str
 
+def proc_check_v2(credentials, username):
+    """
+    特定アカウントのツイートを監視し、新しいツイートをリツイートする関数。
 
-def proc_check_v2(credentials , search_row , mode):
+    Args:
+        credentials (dict): API認証情報。
+        username (str): 監視対象のTwitterユーザー名。
+        interval (int): 監視間隔（秒）。
+    """
 
-    if mode == 'post':
-        datetime_column = 'last_post_time'
-        serach_reply = False
-    elif mode == 'reply':
-        datetime_column = 'last_reply_time'
-        serach_reply = True
-    elif mode == 'monomane':
-        datetime_column = 'last_monomane_time'
-        serach_reply = False
-
-    search_user_name = search_row['search_user_name']
-    search_id = search_row['search_account_id']
-
-    client = createClient(credentials)
-    tweet = get_latest_tweet(client , search_row['search_user_name'] , serach_reply)
-
-    if tweet is None:
-        return False , ''
-
-    latest_tweet_datetime = convert_tweet_datetime(tweet.data['created_at'])
-
-    # 古いツイートに関しては処理しない
-    if datetime_column in search_row and search_row[datetime_column] is not None:
-        if search_row[datetime_column] >= latest_tweet_datetime:
-            return False , tweet.data['id']
-
-    update_search_list(search_row['id'] , tweet.data['id'] , latest_tweet_datetime , mode)
-    
-    return True , tweet.data['id']
+    last_tweet_id = get_slice_id_from_db(username)
 
 
-def get_latest_tweet(client , search_user_name , search_replies=True):
+
     try:
-        tweets = client.search_recent_tweets(
-            f'from:{search_user_name} -is:retweet',
-            tweet_fields=["id", "text", "author_id", "created_at", "attachments", "referenced_tweets", "in_reply_to_user_id"],
-            expansions=['attachments.media_keys'],
-            media_fields=['url', 'type', 'variants'],
-            max_results=100  
-        )
-        if 'errors' in tweets:
-            outputLog("エラーが発生しました:")
-            outputLog(tweets['errors'])
-        else:
-#            outputLog("ツイートを取得しました:")
-#            outputLog(tweets.data)
+        latest_tweet_id = get_latest_tweet(credentials, username)
+#        print("last_tweet_id=",last_tweet_id)
+#        print("latest_tweet_id=",latest_tweet_id)
+        if (latest_tweet_id and latest_tweet_id != last_tweet_id ) or last_tweet_id is None:
+#            print(f"新しいツイートを検出: {latest_tweet_id}")
+#            success, response = proc_repost_v2(credentials, latest_tweet_id)
+#            if success:
+#                print("リツイート成功:", response)
+#            else:
+#                print("リツイート失敗:", response)
 
-            for tweet in tweets.data:
+#            last_tweet_id = latest_tweet_id
+            update_since_id_from_db(username ,latest_tweet_id )
 
-                #リプライツイート判定
-                in_reply_to_tweet_id = str(tweet.referenced_tweets[0]['id']) if tweet.referenced_tweets else ''
+#            print(json.dumps(output))
 
-#                if in_reply_to_tweet_id != "" and str(tweet.author_id) != userid:
-                if in_reply_to_tweet_id != "":
-                    if search_replies == True:
-                        outputLog(f"tweet.data={tweet.data}")
-                        return tweet
-                else:
-                    if search_replies == False:
-                        outputLog(f"tweet.data={tweet.data}")
-                        return tweet
+            return True , latest_tweet_id
+#        else:
+#            print("新しいツイートはありません。")
 
-            return None
+        return False , last_tweet_id
+
     except Exception as e:
-        outputLog("例外が発生しました:")
-        outputLog(e)    
+#        print(f"エラーが発生しました: {e}")
+        return False , last_tweet_id
 
-    return None
+def get_user_id_by_username(credentials, username):
+    """
+    ユーザー名からユーザーIDを取得する関数。
+
+    Args:
+        credentials (dict): API認証情報。
+        username (str): Twitterユーザー名。
+
+    Returns:
+        str: ユーザーID（成功時）。
+    """
+
+
+#    print("username=",username)
+    username_db = get_user_id_from_db(username)
+#    print("username_db=",username_db)
+
+    if username_db != "" and username_db is not None:
+#        print("username_db=",username_db)
+        return username_db
+
+#    return "1773941705605341184"
+
+
+
+    access_token = credentials['bearer_token']
+#    url = f"https://api.twitter.com/2/users/by/username/{username.lstrip('@')}"
+    url = f"https://api.twitter.com/2/users/by/username/{username}"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        user_data = response.json()
+#        print("ユーザーID:",user_data.get("data", {}).get("id"))
+        update_user_id_from_db(username , user_data.get("data", {}).get("id"))
+        return user_data.get("data", {}).get("id")
+    else:
+#        print(f"ユーザーIDの取得に失敗: {response.status_code}, {response.text}")
+        return None
+
+def get_latest_tweet(credentials, username, search_replies=False):
+    """
+    特定ユーザーの最新ツイートを取得する関数。
+
+    Args:
+        credentials (dict): API認証情報。
+        user_id (str): ユーザーID。
+
+    Returns:
+        str: 最新ツイートのID（成功時）。
+    """
+
+    user_id = get_user_id_by_username(credentials, username)
+
+    if not user_id:
+#        print("ユーザーIDの取得に失敗しました。終了します。")
+        return False , "ユーザーIDの取得に失敗"
+
+#    print("user_id",user_id)
+
+    access_token = credentials['bearer_token']
+    url = f"https://api.twitter.com/2/users/{user_id}/tweets?max_results=20"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        tweets = response.json().get("data", [])
+
+        # ポストのみのツイートを検索
+#        if not search_replies:
+#            # リプライではないツイート（referenced_tweetsがないもの）
+#            tweets = [tweet for tweet in tweets if "referenced_tweets" not in tweet]
+        
+        # リプライのみのツイートを検索
+#        elif search_replies:
+#            # 他のツイートへのリプライ（referenced_tweetsがあるもの）
+#            tweets = [tweet for tweet in tweets if "referenced_tweets" in tweet]
+
+        if tweets:
+#            print("最新ツイート:",tweets[0]["id"])
+            return tweets[0]["id"]
+
+        return  ""
+#        return  "" , False, response.text
+        
+    else:
+#        print(f"ツイートの取得に失敗: {response.status_code}, {response.text}")
+#        response_str = json.dumps(response.json())  # json.dumps を使用
+#        return "" , False, response.text
+        return ""
+
+
