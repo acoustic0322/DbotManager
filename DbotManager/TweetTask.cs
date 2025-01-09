@@ -451,7 +451,7 @@ namespace DbotManager
                 var account = accountMasterList.Where(x => x.Id == item.SearchAccountId).FirstOrDefault();
 
                 //有料API : 5分  無料API : 15分
-                item.CheckInterval = account.Paid ? 300 : 9000;
+                item.CheckInterval = account.Paid ? 300 : 900;
                 item.CheckDate = dtNow.AddSeconds(item.CheckInterval);
 
 //                item.AccountName = account.Name;
