@@ -26,7 +26,7 @@ public class MySqlDataAccess
         connectionString = $"Server={dbConnection.MachineName};Database={dbConnection.User};Uid={dbConnection.Root};Pwd={dbConnection.Pass};charset=utf8mb4;";
     }
 
-    public List<TweetHistory> GetTweetHistoryView()
+    public List<TweetHistory> GetTweetHistoryView(bool allFlag = false)
     {
         List<TweetHistory> tweetHistoryList = new List<TweetHistory>();
 
@@ -36,9 +36,36 @@ public class MySqlDataAccess
             {
                 connection.Open();
 
-                string query = "SELECT user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime FROM tweet_history_view order by updatetime desc;";
+                // 現在の日時を取得
+                DateTime currentDateTime = DateTime.Now;
+                // 24時間前の日時を計算
+                DateTime twentyFourHoursAgo = currentDateTime.AddHours(-24);
+
+                // SQLクエリにWHERE句を追加して24時間以内のデータを絞り込む
+                string query = @"
+                SELECT user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime 
+                FROM tweet_history_view 
+                WHERE updatetime >= @TwentyFourHoursAgo
+                ORDER BY updatetime DESC;";
+
+                if(allFlag)
+                {
+                    query = @"
+                    SELECT user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime 
+                    FROM tweet_history_view 
+                    ORDER BY updatetime DESC;";
+                }
+
+
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
+                    if(!allFlag)
+                    {
+                        // パラメータを設定
+                        command.Parameters.AddWithValue("@TwentyFourHoursAgo", twentyFourHoursAgo);
+
+                    }
+
                     using (MySqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
