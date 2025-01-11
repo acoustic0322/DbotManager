@@ -238,7 +238,7 @@ namespace DbotManager
                 MakeList_一括処理();
 
                 Exe一括処理();
-//                this.Close();
+                this.Close();
             }
         }
 
