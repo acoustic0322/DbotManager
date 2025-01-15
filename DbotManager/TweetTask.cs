@@ -103,6 +103,7 @@ namespace DbotManager
         List<CommentMaster> _replyCommentList = new List<CommentMaster>();
         List<CommentMaster> _replyToReplyCommentList = new List<CommentMaster>();
 
+        List<SearchHistory> _searchHistoryList = new List<SearchHistory>();
 
         public int いいね件数 { get; set; }
         public int ブックマーク件数 { get; set; }
@@ -369,7 +370,7 @@ namespace DbotManager
                                 var lastHistory = lastMyHistoryList.Where(x => x.Mode == TweetProcTypes.LIKE).ToList();
                                 if (lastHistory.Count > 0)
                                 {
-                                    if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalDays < 1) continue;
+                                    if ((dateNow - (DateTime)lastHistory.FirstOrDefault().UpdateTime).TotalDays < 1) continue;
                                 }
                             }
                         }
@@ -381,7 +382,7 @@ namespace DbotManager
                                 var lastHistory = lastMyHistoryList.Where(x => x.Mode == tweetProcType).ToList();
                                 if (lastHistory.Count > 0)
                                 {
-                                    if ((dateNow - lastHistory.FirstOrDefault().UpdateTime).TotalMinutes < 15) continue;
+                                    if ((dateNow - (DateTime)lastHistory.FirstOrDefault().UpdateTime).TotalMinutes < 15) continue;
                                 }
                             }
                         }
@@ -432,33 +433,26 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            List<UserMaster> userMasterList = dataAccess.GetUserMaster().Where(x => x.PostEnable && x.Enable).ToList();
+            List<UserMaster> userMasterList = dataAccess.GetUserMaster().Where(x => x.Enable).ToList();
 
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster()
-                .Where(x => x.PostEnable && x.Enable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
+                .Where(x => x.Enable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
 
-//            List<CheckAccountList> checkAccountList = dataAccess.GetCheckAccountList()
-//                .Where(x => x.Enable && accountMasterList.Any(y => y.Id == x.AccountId)).ToList();
-
+            // 監視、監視toRep、モノマネアカウントリストの取得
             List<SearchList> searchList = dataAccess.GetSearchList()
                 .Where(x => (bool)x.Enable && accountMasterList.Any(y => y.Id == x.SearchAccountId)).ToList();
+
+            InitSearchHistory(accountMasterList);
 
             DateTime dtNow = DateTime.Now;
             CheckSearchList.Clear();
 
             foreach(var item in searchList)
             {
-                var account = accountMasterList.Where(x => x.Id == item.SearchAccountId).FirstOrDefault();
-
-                //有料API : 5分  無料API : 15分
-                item.CheckInterval = account.Paid ? 300 : 900;
+                // 60秒周期にチェック
+                item.CheckInterval = 60;
                 item.CheckDate = dtNow.AddSeconds(item.CheckInterval);
-
-//                item.AccountName = account.Name;
-//                item.CheckAccountName = checkaccount.Name;
-
                 if (first_flag) item.FirstFlag = true;
-
                 CheckSearchList.Add(item);
             }
 
@@ -466,6 +460,81 @@ namespace DbotManager
             _replyToReplyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.ReplyToReply).ToList();
 
             _監視list作成日時 = DateTime.Now;
+        }
+
+        public void InitSearchHistory(List<AccountMaster> accountMasterList)
+        {
+            _searchHistoryList.Clear();
+
+            // MySQLデータアクセスの初期化
+            var dataAccess = new MySqlDataAccess(dbConnectin);
+
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Mode == TweetProcTypes.CHECK).ToList();
+
+            foreach (var row in accountMasterList.Where(x => x.SearchEnable == true))
+            {
+                var lastCheck = (tweetHistoryList.Where(x => x.AccountId == row.Id))?.OrderByDescending(x=>x.UpdateTime).FirstOrDefault();
+
+                _searchHistoryList.Add(
+                    new SearchHistory() { 
+                        AccountId = row.Id ,
+                        UserId = row.UserId ,
+                        SearchDatetime = lastCheck == null ? DateTime.Now : lastCheck.UpdateTime ,
+                        Interval = (row.Paid ? 300 : 900)   //有料API=5分 無料API=15分
+                    });
+            }
+
+        }
+
+        public void OrderSearchHistory()
+        {
+            // 並べ替え処理
+            var now = DateTime.Now;
+            _searchHistoryList = _searchHistoryList
+                .OrderByDescending(sh =>
+                {
+                    if (sh.SearchDatetime == null)
+                    {
+                        return TimeSpan.MaxValue.TotalSeconds; // nullは一番大きい値として扱う
+                    }
+
+                    var targetTime = sh.SearchDatetime.Value.AddSeconds(sh.Interval);
+                    return (now - targetTime).TotalSeconds;
+                })
+                .ToList();
+
+            // 結果を表示
+            foreach (var item in _searchHistoryList)
+            {
+                Console.WriteLine($"UserId: {item.UserId}, AccountId: {item.AccountId}, SearchDatetime: {item.SearchDatetime}, Interval: {item.Interval}");
+            }
+
+        }
+
+        private SearchHistory GetSearchHistoryRow(SearchList item , DateTime dtNow)
+        {
+            // 利用者の履歴に絞る
+            var userSearchHistoryList = _searchHistoryList.Where(x => x.UserId == item.SearchUserId).ToList();
+
+            if (userSearchHistoryList.Count == 0) return null;
+
+            // 監視インターバルが過ぎているもののみ絞り込み
+            var timeSearchHistoryList = userSearchHistoryList.Where(x => ((DateTime)x.SearchDatetime).AddSeconds(x.Interval) < dtNow).ToList();
+
+            if (timeSearchHistoryList.Count == 0) return null;
+
+            return timeSearchHistoryList.FirstOrDefault();
+        }
+
+        private void RenewSearchDateTime(SearchHistory item)
+        {
+            foreach(var row in _searchHistoryList)
+            {
+                if(row.AccountId == item.AccountId)
+                {
+                    row.SearchDatetime = DateTime.Now.AddSeconds(row.Interval);
+                }
+            }
         }
 
 
@@ -510,24 +579,30 @@ namespace DbotManager
 
             bool renewFlag = false;
 
-            var list = new List<SearchList>();
-            list.AddRange(CheckSearchList);
-
             DateTime dtNow = DateTime.Now;
 
-            foreach (var item in list)
+            // 検索履歴を並べ替え
+            OrderSearchHistory();
+
+            foreach (var item in CheckSearchList)
             {
                 // チェック時間に達していない場合はスルー
                 if (item.CheckDate >= dtNow) continue;
 
+                var searchHistoryRow = GetSearchHistoryRow(item , dtNow);
+
+                if (searchHistoryRow == null) continue;
+
                 var tweetResult = TweetProc(new TweetCommand() { 
                     TweetProcType = TweetProcTypes.CHECK, 
                     SearchId = item.Id,
+                    AccountId = searchHistoryRow.AccountId
                 });
 
                 item.CheckDate = dtNow.AddSeconds(item.CheckInterval);
+                RenewSearchDateTime(searchHistoryRow);
 
-                if(item.FirstFlag == false)
+                if (item.FirstFlag == false)
                 {
                     if (tweetResult != null && (bool)item.PostEnable && tweetResult.result1 == true)
                     {
@@ -554,6 +629,7 @@ namespace DbotManager
             _監視Timer.Enabled = true;
 
         }
+
 
 
         #endregion
@@ -678,7 +754,7 @@ namespace DbotManager
                 case TweetProcTypes.CHECK:
                 case TweetProcTypes.CHECKREP:
                 case TweetProcTypes.MONOMANE:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} search_id={tweetCommand.SearchId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} search_id={tweetCommand.SearchId}";
 //                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_account_name={tweetCommand.CheckAccountName.Replace("@","")} check_list_id={tweetCommand.SearchId}";
                     /*
                     if (tweetCommand.DebugMode)

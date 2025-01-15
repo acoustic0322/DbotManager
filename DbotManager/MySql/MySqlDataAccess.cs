@@ -232,6 +232,7 @@ public class MySqlDataAccess
                     ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
                     ,am.paid_like,am.paid_bookmark
                     ,am.check_interval,am.checkrep_interval,am.monomane_interval
+                    ,am.search_enable
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
                     ";
@@ -296,6 +297,8 @@ public class MySqlDataAccess
                                 CheckInterval = int.Parse(reader["check_interval"].ToString()),
                                 CheckRepInterval = int.Parse(reader["checkrep_interval"].ToString()),
                                 MonomaneInterval = int.Parse(reader["monomane_interval"].ToString()),
+
+                                SearchEnable = reader["search_enable"].ToString() == "1",
                             };
                 
                             accountMasterList.Add(accountItem);
@@ -619,14 +622,14 @@ public class MySqlDataAccess
                 string query = @"
             INSERT INTO search_list 
             (
-                search_user_name, search_user_id, enable, search_account_id, 
+                search_user_name, search_user_id, enable,  
                 post_account_id, post_enable, last_post_id, last_post_time, 
                 reply_account_id, reply_enable, last_reply_id, last_reply_time, 
                 monomane_account_id, monomane_enable, last_monomane_id, last_monomane_time
             )
             VALUES 
             (
-                @SearchUserName, @SearchUserId, @Enable , @SearchAccountId, 
+                @SearchUserName, @SearchUserId, @Enable ,  
                 @PostAccountId, @PostEnable, @LastPostId, @LastPostTime, 
                 @ReplyAccountId, @ReplyEnable, @LastReplyId, @LastReplyTime, 
                 @MonomaneAccountId, @MonomaneEnable, @LastMonomaneId, @LastMonomaneTime
@@ -639,7 +642,6 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@SearchUserName", search.SearchUserName);
                     command.Parameters.AddWithValue("@SearchUserId", search.SearchUserId);
                     command.Parameters.AddWithValue("@Enable", search.Enable.HasValue ? (search.Enable.Value ? "1" : "0") : null);
-                    command.Parameters.AddWithValue("@SearchAccountId", search.SearchAccountId);
                     command.Parameters.AddWithValue("@PostAccountId", search.PostAccountId);
                     command.Parameters.AddWithValue("@PostEnable", search.PostEnable.HasValue ? (search.PostEnable.Value ? "1" : "0") : null);
                     command.Parameters.AddWithValue("@LastPostId", search.LastPostId);
@@ -680,7 +682,7 @@ public class MySqlDataAccess
 
                 string query = @"
                 SELECT 
-                    id, enable, search_user_name, search_user_id, search_account_id,
+                    id, enable, search_user_name, search_user_id, 
                     post_account_id, post_enable, last_post_id, last_post_time,
                     reply_account_id, reply_enable, last_reply_id, last_reply_time,
                     monomane_account_id, monomane_enable, last_monomane_id, last_monomane_time
@@ -698,7 +700,6 @@ public class MySqlDataAccess
                                 Enable = reader["enable"] != DBNull.Value ? reader["enable"].ToString() == "1" : (bool?)null,
                                 SearchUserName = reader["search_user_name"].ToString(),
                                 SearchUserId = reader["search_user_id"] != DBNull.Value ? Convert.ToInt32(reader["search_user_id"]) : 0,
-                                SearchAccountId = reader["search_account_id"] != DBNull.Value ? Convert.ToInt32(reader["search_account_id"]) : 0,
                                 PostAccountId = reader["post_account_id"] != DBNull.Value ? Convert.ToInt32(reader["post_account_id"]) : 0,
                                 PostEnable = reader["post_enable"] != DBNull.Value ? reader["post_enable"].ToString() == "1" : (bool?)null,
                                 LastPostId = reader["last_post_id"].ToString(),
@@ -748,7 +749,6 @@ public class MySqlDataAccess
                     search_user_name = @SearchUserName,
                     search_user_id = @SearchUserId,
                     enable = @ Enable,
-                    search_account_id = @SearchAccountId,
                     post_account_id = @PostAccountId,
                     post_enable = @PostEnable,
                     last_post_id = @LastPostId,
@@ -769,7 +769,6 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@SearchUserName", item.SearchUserName ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@SearchUserId", item.SearchUserId != 0 ? item.SearchUserId : (object)DBNull.Value);
                     command.Parameters.AddWithValue("@Enable", item.Enable.HasValue ? (item.Enable.Value ? 1 : 0) : (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@SearchAccountId", item.SearchAccountId != 0 ? item.SearchAccountId : (object)DBNull.Value);
                     command.Parameters.AddWithValue("@PostAccountId", item.PostAccountId != 0 ? item.PostAccountId : (object)DBNull.Value);
                     command.Parameters.AddWithValue("@PostEnable", item.PostEnable.HasValue ? (item.PostEnable.Value ? 1 : 0) : (object)DBNull.Value);
                     command.Parameters.AddWithValue("@LastPostId", item.LastPostId ?? (object)DBNull.Value);
