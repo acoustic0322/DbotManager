@@ -440,7 +440,7 @@ namespace DbotManager
 
             // 監視、監視toRep、モノマネアカウントリストの取得
             List<SearchList> searchList = dataAccess.GetSearchList()
-                .Where(x => (bool)x.Enable && accountMasterList.Any(y => y.Id == x.SearchAccountId)).ToList();
+                .Where(x => (bool)x.Enable && accountMasterList.Any(y => y.Id == x.PostAccountId)).ToList();
 
             InitSearchHistory(accountMasterList);
 
@@ -639,7 +639,7 @@ namespace DbotManager
         public void TweetProcReply(SearchList searchList, TweetResult result)
         {
             //            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
-            int accountId = searchList.SearchAccountId;
+            int accountId = searchList.PostAccountId;
 
             if (_replyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
 
@@ -652,7 +652,7 @@ namespace DbotManager
         public void TweetProcReplyToReply(SearchList searchList, TweetResult result)
         {
             //            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
-            int accountId = searchList.SearchAccountId;
+            int accountId = searchList.ReplyAccountId;
 
             if (_replyToReplyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
 
