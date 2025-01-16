@@ -48,7 +48,17 @@ namespace DbotManager
             foreach (var account in accountList)
             {
                 var reserve = dataAccess.GetReserveMaster(account.Id);
-                if(reserve != null) reserveMasterList.Add(reserve);
+
+                if (reserve.Reserve1StartHour > reserve.Reserve1EndHour)
+                    reserve.Reserve1EndHour += 24;
+                if (reserve.Reserve2StartHour > reserve.Reserve2EndHour)
+                    reserve.Reserve2EndHour += 24;
+                if (reserve.Reserve3StartHour > reserve.Reserve3EndHour)
+                    reserve.Reserve3EndHour += 24;
+                if (reserve.Reserve4StartHour > reserve.Reserve4EndHour)
+                    reserve.Reserve4EndHour += 24;
+
+                if (reserve != null) reserveMasterList.Add(reserve);
             }
 
             List<ReserveSchedule> reserveScheduleList = new List<ReserveSchedule>();
