@@ -42,10 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $api_key = trim($_POST['api_key'] ?? '');
     $api_key_secret = trim($_POST['api_key_secret'] ?? '');
-    $access_token = trim($_POST['access_token'] ?? '');
-    $access_token_secret = trim($_POST['access_token_secret'] ?? '');
 
     /*
+    $access_token = trim($_POST['access_token'] ?? '');
+    $access_token_secret = trim($_POST['access_token_secret'] ?? '');
     $bearer_token = trim($_POST['bearer_token'] ?? '');
     $refresh_token = trim($_POST['refresh_token'] ?? '');
     */
@@ -82,12 +82,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $reserve4_end_hour = $_POST['reserve4_end_hour'] ?? 0;
     $reserve4_count = $_POST['reserve4_count'] ?? 0;
 
+    $dmm_id = $_POST['dmm_id'];
+
+    $search_enable = isset($_POST['search_enable']) ? 1 : 0;
+    $proxy_enable = isset($_POST['proxy_enable']) ? 1 : 0;
+    $proxy_url = $_POST['proxy_url'];
+
     // 入力値のバリデーション
 //    if (empty($name) || empty($login_id) || empty($login_password)) {
     if (empty($name) || empty($login_id)) {
             echo '必須項目を全て入力してください';
         exit;
     }
+
+    echo $login_password,
 
     // パスワードをハッシュ化
     $hashed_password = password_hash($login_password, PASSWORD_DEFAULT);
@@ -127,16 +135,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             reserve4_enable = ?, 
             reserve4_start_hour = ?, 
             reserve4_end_hour = ?, 
-            reserve4_count = ?
+            reserve4_count = ?,
+            dmm_id = ? ,
+            search_enable = ? ,
+            proxy_enable = ? ,
+            proxy_url = ? 
         WHERE id = ?
     ");
 
 //    "sssssssssssiiiiiiiiiiiiiiiiiiiiiiiiii", // 型指定
     $stmt->bind_param(
-        "sssssssiiiiiiiiiiiiiiiiiiiiiiiiii", // 型指定
+        "sssssssiiiiiiiiiiiiiiiiiiiiiiiiisiiss", // 型指定
         $name, 
         $login_id, 
-        $hashed_password, 
+#        $hashed_password, 
+        $login_password,
         $client_id, 
         $client_secret, 
         $api_key, 
@@ -166,6 +179,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reserve4_start_hour, 
         $reserve4_end_hour, 
         $reserve4_count,
+        $dmm_id,
+        $search_enable ,
+        $proxy_enable ,
+        $proxy_url ,
         $id
     );
     
@@ -260,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <div class="input-group">
             <label for="name">ログインパス:</label><br>
-            <input type="text" id="login_pass" name="login_pass" placeholder="ログインパス" value="<?php echo htmlspecialchars($edit_account['login_password'] ?? '') ?>">
+            <input type="text" id="login_pass" name="login_password" placeholder="ログインパス" value="<?php echo htmlspecialchars($edit_account['login_password'] ?? '') ?>">
         </div>
         <div class="input-group">
             <label for="name">クライアントID:</label><br>
@@ -317,6 +334,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </label><br>
             <?php endif; ?>
 
+            <label>
+                <input type="checkbox" name="search_enable" value="0" <?php echo !empty($edit_account['search_enable']) ? 'checked' : '' ?>>監視実施
+            </label><br>
+
+            <label>
+                <input type="checkbox" name="proxy_enable" value="0" <?php echo !empty($edit_account['proxy_enable']) ? 'checked' : '' ?>>プロキシ
+            </label><br>
+            <input type="text" name="proxy_url" placeholder="プロキシURL" value="<?php echo htmlspecialchars($edit_account['proxy_url'] ?? '') ?>">
+            <br>
+
             <?php if ((isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1) || 
               (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1)): ?>
             <label>
@@ -337,6 +364,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
         </div>
 
+        <div class="input-group">
+            DMM ID:<br>
+            <input type="text" id="dmm_id" name="dmm_id" placeholder="DMM ID" value="<?php echo htmlspecialchars($edit_account['dmm_id'] ?? '') ?>">
+        </div>
+
         <br>
         【メディアポスト関連】
         <br>
@@ -348,6 +380,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="name">ApiKeySecret:</label><br>
             <input type="text" name="api_key_secret" placeholder="ApiKeySecret" value="<?php echo htmlspecialchars($edit_account['api_key_secret'] ?? '') ?>">
         </div>
+        
+        <!--
         <div class="input-group">
             <label for="name">AccessToken:</label><br>
             <input type="text" name="access_token" placeholder="AccessToken" value="<?php echo htmlspecialchars($edit_account['access_token'] ?? '') ?>">
@@ -356,7 +390,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="name">AccessTokenSecret:</label><br>
             <input type="text" name="access_token_secret" placeholder="AccessTokenSecret" value="<?php echo htmlspecialchars($edit_account['access_token_secret'] ?? '') ?>">
         </div>
-
+            -->
 
         <br>
         【ポスト予約設定】

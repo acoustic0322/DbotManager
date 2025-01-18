@@ -48,6 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $repostCount
     );
 
+    // カレントディレクトリを変更
+    chdir(WORK_FOLDER);
+
     // 外部アプリの実行
     exec($command, $output, $returnVar);
 

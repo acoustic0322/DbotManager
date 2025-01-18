@@ -2,7 +2,15 @@
 <!-- サイドメニュー -->
 <div class="sidebar">
     <h2>設定メニュー</h2>
+    <?php if (
+        (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1) ||
+        (isset($_SESSION['reply_enable']) && $_SESSION['reply_enable'] == 1) ||
+        (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1) ||
+        (isset($_SESSION['repost_enable']) && $_SESSION['repost_enable'] == 1)
+    ): ?>    
     <a href="tweet.php">いいね・ﾌﾞｯｸﾏｰｸ</a>
+    <?php endif; ?>
+        
     <a href="account_list.php">Xアカウント設定</a>
 <!--    <a href="comment_list.php">コメント設定</a>  -->
     <a href="password.php">パスワード変更</a>

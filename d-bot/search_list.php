@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$stmt = $conn->prepare("SELECT * FROM search_list WHERE search_account_id = ? ");
+$stmt = $conn->prepare("SELECT * FROM search_list WHERE post_account_id = ? ");
 $stmt->bind_param("i", $account_id);
 $stmt->execute();
 $result_check = $stmt->get_result();

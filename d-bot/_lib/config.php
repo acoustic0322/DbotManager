@@ -4,7 +4,12 @@ require __DIR__.'/twitteroauth/vendor/autoload.php';
 
 //define('OAUTH_CALLBACK' , 'http://localhost:8000/callback.php');
 define('OAUTH_CALLBACK' , 'https://d-bot.happywinds.net/d-bot/callback.php');
-define('MANAGER_PATH' , 'C:\\Users\\winserverroot\\Desktop\\DbotManager\\DbotManager\\bin\\Debug\\DbotManager.exe');
+//define('MANAGER_PATH' , 'C:\\Users\\winserverroot\\Desktop\\DbotManager\\DbotManager\\bin\\Debug\\DbotManager.exe');
+define('MANAGER_PATH' , 'C:\\Users\\winserverroot\\Desktop\\DbotManager\\DbotManager\\bin\\fromDbot\\DbotManager.exe');
+define('WORK_FOLDER' , 'C:\\Users\\winserverroot\\Desktop\\DbotManager\\DbotManager\\bin\\fromDbot');
+//define('MANAGER_PATH' , 'Debug\\DbotManager.exe');
+//define('WORK_FOLDER' , 'Debug');
+
 
 $config = [
     'servername' => 'localhost',
@@ -169,7 +174,11 @@ function get_account($conn, $id)
         reserve4_enable,
         reserve4_start_hour,
         reserve4_end_hour,
-        reserve4_count 
+        reserve4_count ,
+        dmm_id ,
+        search_enable ,
+        proxy_enable ,
+        proxy_url
     FROM account_master 
     WHERE id = ?;
     ";
@@ -220,7 +229,11 @@ function get_account($conn, $id)
             $reserve4_enable,
             $reserve4_start_hour,
             $reserve4_end_hour,
-            $reserve4_count
+            $reserve4_count,
+            $dmm_id,
+            $search_enable,
+            $proxy_enable,
+            $proxy_url
         );
 
         if ($stmt->fetch()) {
@@ -264,6 +277,10 @@ function get_account($conn, $id)
                 'reserve4_start_hour' => $reserve4_start_hour,
                 'reserve4_end_hour' => $reserve4_end_hour,
                 'reserve4_count' => $reserve4_count,
+                'dmm_id' => $dmm_id,
+                'search_enable' => $search_enable,
+                'proxy_enable' => $proxy_enable,
+                'proxy_url' => $proxy_url,
             ];
         }
     }
@@ -380,15 +397,345 @@ function get_check_account($conn, $id)
             ];
         }
     }
+    $stmt->close();
+    return $re; // データがない場合はnullを返す
+}
+
+function get_search_list_row($conn, $id)
+{
+    $re = null;
+
+    $query = "
+    SELECT 
+        search_user_name, 
+        enable, 
+        post_enable , 
+        reply_enable , 
+        monomane_enable, 
+        post_account_id , 
+        reply_account_id , 
+        monomane_account_id 
+    FROM search_list
+    WHERE id = ?;
+    ";
+
+    $stmt = $conn->prepare($query);
+    if ($stmt) {
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->store_result();
 
 
+        // 結果をバインド
+        $stmt->bind_result(
+            $search_user_name, $enable, 
+            $post_enable, $reply_enable, $monomane_enable,
+            $post_account_id, $reply_account_id, $monomane_account_id
+            );
 
+        if ($stmt->fetch()) {
+            // データが取得できた場合
+            $re = [
+                'id' => $id,
+                'search_user_name' => $search_user_name,
+                'enable' => $enable,
+                'post_enable' => $post_enable ,
+                'reply_enable' => $reply_enable ,
+                'monomane_enable' => $monomane_enable, 
+                'post_account_id' => $post_account_id , 
+                'reply_account_id' => $reply_account_id , 
+                'monomane_account_id'  => $monomane_account_id
+            ];
+        }
+    }
     $stmt->close();
     return $re; // データがない場合はnullを返す
 }
 
 
+
 function e($value, $doubleEncode = false){
     if (is_null($value)) {return '';}
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8', $doubleEncode);
+}
+
+
+
+function duplicateData_comment($conn, $accountId, $formAccountId) {
+    // 取得するデータ
+    $query = "
+    SELECT 
+        user_id, 
+        comment, 
+        enable, 
+        chatgpt, 
+        mode, 
+        movie_enable, 
+        photo_enable, 
+        reserve_mode  
+    FROM comment_master
+    WHERE account_id = ?;
+    ";
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        return ['success' => false, 'message' => "クエリ準備失敗: " . $conn->error];
+    }
+
+    $stmt->bind_param("i", $formAccountId);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        $conn->close();
+        return ['success' => false, 'message' => "ID $formAccountId に該当するデータが見つかりません。"];
+    }
+
+    // 全レコードを取得
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // 挿入処理
+    $query = "
+    INSERT INTO comment_master (
+        user_id, 
+        account_id, 
+        comment, 
+        enable, 
+        chatgpt, 
+        mode, 
+        movie_enable, 
+        photo_enable, 
+        reserve_mode
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        return ['success' => false, 'message' => "挿入クエリ準備失敗: " . $conn->error];
+    }
+
+    // 挿入結果をまとめる
+    $successCount = 0;
+    $errors = [];
+
+    foreach ($rows as $row) {
+        $stmt->bind_param(
+            "sssssssss",
+            $row['user_id'], 
+            $accountId, // 新しい account_id を使用
+            $row['comment'], 
+            $row['enable'], 
+            $row['chatgpt'], 
+            $row['mode'], 
+            $row['movie_enable'], 
+            $row['photo_enable'], 
+            $row['reserve_mode']
+        );
+
+        if ($stmt->execute()) {
+            $successCount++;
+        } else {
+            $errors[] = "挿入失敗 (ユーザーID: {$row['user_id']}): " . $stmt->error;
+        }
+    }
+
+    $stmt->close();
+    $conn->close();
+
+    return [
+        'success' => true,
+        'message' => "$successCount 件のレコードを複製しました。",
+        'errors' => $errors
+    ];
+}
+
+
+function duplicateData_search($conn, $accountId, $formAccountId) {
+    // 取得するデータ
+    $query = "
+    SELECT 
+        id,
+        search_user_name,
+        search_user_id,
+        search_account_id,
+        enable,
+        post_account_id,
+        post_enable,
+        last_post_id,
+        last_post_time,
+        reply_account_id,
+        reply_enable,
+        last_reply_id,
+        last_reply_time,
+        monomane_account_id,
+        monomane_enable,
+        last_monomane_id,
+        last_monomane_time
+    FROM search_list
+    WHERE post_account_id = ?;
+    ";
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        return ['success' => false, 'message' => "クエリ準備失敗: " . $conn->error];
+    }
+
+    $stmt->bind_param("i", $formAccountId);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        $conn->close();
+        return ['success' => false, 'message' => "ID $formAccountId に該当するデータが見つかりません。"];
+    }
+
+    // 全レコードを取得
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // 挿入処理
+    $query = "
+    INSERT INTO search_list (
+        search_user_name,
+        search_user_id,
+        search_account_id,
+        enable,
+        post_account_id,
+        post_enable,
+        last_post_id,
+        last_post_time,
+        reply_account_id,
+        reply_enable,
+        last_reply_id,
+        last_reply_time,
+        monomane_account_id,
+        monomane_enable,
+        last_monomane_id,
+        last_monomane_time
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        return ['success' => false, 'message' => "挿入クエリ準備失敗: " . $conn->error];
+    }
+
+    // 挿入結果をまとめる
+    $successCount = 0;
+    $errors = [];
+
+    foreach ($rows as $row) {
+        $stmt->bind_param(
+            "ssssssssssssssss",
+            $row['search_user_name'],
+            $row['search_user_id'],
+//            $row['search_account_id'],
+            $accountId,
+            $row['enable'],
+            $accountId,
+            $row['post_enable'],
+            $row['last_post_id'],
+            $row['last_post_time'],
+            $accountId,
+            $row['reply_enable'],
+            $row['last_reply_id'],
+            $row['last_reply_time'],
+            $accountId,
+            $row['monomane_enable'],
+            $row['last_monomane_id'],
+            $row['last_monomane_time']            
+        );
+
+        if ($stmt->execute()) {
+            $successCount++;
+        } else {
+            $errors[] = "挿入失敗 (ユーザーID: {$row['id']}): " . $stmt->error;
+        }
+    }
+
+    $stmt->close();
+    $conn->close();
+
+    return [
+        'success' => true,
+        'message' => "$successCount 件のレコードを複製しました。",
+        'errors' => $errors
+    ];
+}
+
+function deleteData_comment($conn, $accountId) {
+    // 取得するデータ
+    $query = "
+    DELETE FROM comment_master
+    WHERE account_id = ?;
+    ";
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        return ['success' => false, 'message' => "クエリ準備失敗: " . $conn->error];
+    }
+
+    $stmt->bind_param("i", $accountId);
+    $stmt->execute();
+    $stmt->close();
+    $conn->close();
+
+    return [
+        'success' => true,
+        'message' => "レコードを削除しました。",
+        'errors' => ''
+    ];
+}
+
+
+function deleteData_search($conn, $accountId) {
+    // 取得するデータ
+    $query = "
+    DELETE FROM search_list
+    WHERE post_account_id = ?;
+    ";
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        return ['success' => false, 'message' => "クエリ準備失敗: " . $conn->error];
+    }
+
+    $stmt->bind_param("i", $accountId);
+    $stmt->execute();
+    $stmt->close();
+    $conn->close();
+
+    return [
+        'success' => true,
+        'message' => "レコードを削除しました。",
+        'errors' => ''
+    ];
+}
+
+function updatesSearchEnable_AccountMaster($conn, $accountId , $value) {
+    // 取得するデータ
+    $query = "
+    UPDATE account_master 
+    SET search_enable = ?
+    WHERE id = ?;
+    ";
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        return ['success' => false, 'message' => "クエリ準備失敗: " . $conn->error];
+    }
+
+    $stmt->bind_param("ii", $value, $accountId);
+    $stmt->execute();
+    $stmt->close();
+    $conn->close();
+
+    return [
+        'success' => true,
+        'message' => "監視実施設定を更新しました",
+        'errors' => ''
+    ];
 }
