@@ -660,7 +660,7 @@ namespace DbotManager
             if (commentItem == null) return;
             var commentId = commentItem.Id;
 
-            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents1 });
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents2 });
         }
 
         private string GetNameList(List<AccountMaster> accountMasterList, List<int> list)
