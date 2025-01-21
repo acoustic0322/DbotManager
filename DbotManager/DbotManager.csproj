@@ -150,6 +150,7 @@
     <Compile Include="Table\ReserveScheduleView.cs" />
     <Compile Include="Table\ReserveMaster.cs" />
     <Compile Include="Table\TweetHistory.cs" />
+    <Compile Include="Table\VpsMaster.cs" />
     <Compile Include="Table\UserMaster.cs" />
     <Compile Include="TweetTask.cs" />
     <EmbeddedResource Include="AccountDialog.resx">

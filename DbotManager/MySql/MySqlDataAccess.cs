@@ -232,7 +232,7 @@ public class MySqlDataAccess
                     ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
                     ,am.paid_like,am.paid_bookmark
                     ,am.check_interval,am.checkrep_interval,am.monomane_interval
-                    ,am.search_enable
+                    ,am.search_enable,am.vps_id
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
                     ";
@@ -299,6 +299,7 @@ public class MySqlDataAccess
                                 MonomaneInterval = int.Parse(reader["monomane_interval"].ToString()),
 
                                 SearchEnable = reader["search_enable"].ToString() == "1",
+                                VpsId = int.Parse(reader["vps_id"].ToString()),
                             };
                 
                             accountMasterList.Add(accountItem);
@@ -362,6 +363,7 @@ public class MySqlDataAccess
                     reserve4_count = @Reserve4Count
                     ,paid_like = @PaidLike
                     ,paid_bookmark = @PaidBookmark
+                    ,vps_id = @VpsId
                 WHERE id = @Id;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -404,6 +406,7 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@Reserve4StartHour", account.Reserve4StartHour);
                     command.Parameters.AddWithValue("@Reserve4EndHour", account.Reserve4EndHour);
                     command.Parameters.AddWithValue("@Reserve4Count", account.Reserve4Count);
+                    command.Parameters.AddWithValue("@VpsId", account.VpsId);
 
                     command.ExecuteNonQuery();
                 }
@@ -1816,4 +1819,59 @@ public class MySqlDataAccess
 
 
     #endregion
+
+
+
+
+    public List<VpsMaster> GetVpsMaster()
+    {
+        List<VpsMaster> vpsList = new List<VpsMaster>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                SELECT 
+                    id,
+                    ip_address, 
+                    port, 
+                    name,
+                    username,
+                    pass,
+                    memo
+                FROM vps_master";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            VpsMaster searchItem = new VpsMaster()
+                            {
+                                Id = reader["id"] != DBNull.Value ? Convert.ToInt32(reader["id"]) : 0,
+                                IpAddress = reader["ip_address"].ToString(),
+                                Port = reader["port"].ToString(),
+                                Name = reader["name"].ToString(),
+                                Username = reader["username"].ToString(),
+                                Pass = reader["pass"].ToString(),
+                                Memo = reader["memo"].ToString(),
+                            };
+
+                            vpsList.Add(searchItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return vpsList;
+    }
 }

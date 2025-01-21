@@ -13,6 +13,8 @@ using System.Timers;
 
 using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
+using System.Net.Http;
+
 
 namespace DbotManager
 {
@@ -56,6 +58,17 @@ namespace DbotManager
         public int? MediaId { get; set; }
 
         public bool DebugMode { get; set; }
+    }
+
+    public class TweetVpsCommand
+    {
+        public string VpsIp { get; set; }
+        public string VpsPort { get; set; }
+        public string TweetId { get; set; }
+        public List<int> LikeList { get; set; }
+        public List<int> BookmarkList { get; set; }
+        public List<int> RepostList { get; set; }
+        public List<int> ReplyList { get; set; }
     }
 
     public class TweetResult
@@ -154,40 +167,98 @@ namespace DbotManager
 
         public void Exe_一括処理()
         {
-            int maxLength = Math.Max(ReplyAccountList.Count,
-                            Math.Max(LikeAccountList.Count,
-                             Math.Max(BookmarkAccountList.Count, RepostAccountList.Count)));
+            // MySQLデータアクセスの初期化
+            var dataAccess = new MySqlDataAccess(dbConnectin);
+            List<VpsMaster> vpsMasterList = dataAccess.GetVpsMaster();
 
-            for (int i = 0; i < maxLength; i++)
+            /*
+            foreach(var row in LikeAccountList)
             {
-                // LIKE処理
-                if (i < LikeAccountList.Count)
-                {
-                    var likeItem = LikeAccountList[i];
-                    TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.LIKE, UserId = likeItem.UserId, AccountId = likeItem.Id, TweetId = TargetTweetID });
-                }
-
-                // REPLY処理
-                if (i < ReplyAccountList.Count)
-                {
-                    var replyItem = ReplyAccountList[i];
-                    TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, UserId = replyItem.UserId, AccountId = replyItem.Id, CommentId = replyItem.CommentId, TweetId = TargetTweetID });
-                }
-
-                // BOOKMARK処理
-                if (i < BookmarkAccountList.Count)
-                {
-                    var bookmarkItem = BookmarkAccountList[i];
-                    TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.BOOKMARK, UserId = bookmarkItem.UserId, AccountId = bookmarkItem.Id, TweetId = TargetTweetID });
-                }
-
-                // REPOST処理
-                if (i < RepostAccountList.Count)
-                {
-                    var replyItem = RepostAccountList[i];
-                    TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPOST, UserId = replyItem.UserId, AccountId = replyItem.Id, TweetId = TargetTweetID });
-                }
+                row.VpsId = 0;
             }
+            foreach (var row in ReplyAccountList)
+            {
+                row.VpsId = 0;
+            }
+            foreach (var row in BookmarkAccountList)
+            {
+                row.VpsId = 0;
+            }
+            foreach (var row in RepostAccountList)
+            {
+                row.VpsId = 0;
+            }
+            */
+
+            foreach (var vps in vpsMasterList)
+            {
+                if (vps.Id == 0) continue;
+
+                var likeList = LikeAccountList.Where(x => x.VpsId == vps.Id).ToList();
+                var bookmarkList = BookmarkAccountList.Where(x => x.VpsId == vps.Id).ToList();
+                var repostList = RepostAccountList.Where(x => x.VpsId == vps.Id).ToList();
+                var replyList = ReplyAccountList.Where(x => x.VpsId == vps.Id).ToList();
+
+                if (likeList.Count == 0 && bookmarkList.Count == 0 && repostList.Count == 0 && repostList.Count == 0) continue;
+
+                TweetVpsCommand tweetVpsCommand = new TweetVpsCommand()
+                {
+                    VpsIp = vps.IpAddress,
+                    VpsPort = vps.Port,
+                    LikeList = likeList.Select(x => x.Id).ToList(),
+                    BookmarkList = bookmarkList.Select(x => x.Id).ToList(),
+                    RepostList = repostList.Select(x => x.Id).ToList(),
+                    ReplyList = replyList.Select(x => x.Id).ToList(),
+                    TweetId = TargetTweetID
+                };
+
+                TweetVpsProc(tweetVpsCommand);
+
+            }
+
+            {
+                var likeList = LikeAccountList.Where(x => x.VpsId == 0).ToList();
+                var bookmarkList = BookmarkAccountList.Where(x => x.VpsId == 0).ToList();
+                var repostList = RepostAccountList.Where(x => x.VpsId == 0).ToList();
+                var replyList = ReplyAccountList.Where(x => x.VpsId == 0).ToList();
+
+                int maxLength = Math.Max(replyList.Count,
+                                Math.Max(likeList.Count,
+                                 Math.Max(bookmarkList.Count, repostList.Count)));
+
+                for (int i = 0; i < maxLength; i++)
+                {
+                    // LIKE処理
+                    if (i < likeList.Count)
+                    {
+                        var likeItem = likeList[i];
+                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.LIKE, UserId = likeItem.UserId, AccountId = likeItem.Id, TweetId = TargetTweetID });
+                    }
+
+                    // REPLY処理
+                    if (i < replyList.Count)
+                    {
+                        var replyItem = replyList[i];
+                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, UserId = replyItem.UserId, AccountId = replyItem.Id, CommentId = replyItem.CommentId, TweetId = TargetTweetID });
+                    }
+
+                    // BOOKMARK処理
+                    if (i < bookmarkList.Count)
+                    {
+                        var bookmarkItem = bookmarkList[i];
+                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.BOOKMARK, UserId = bookmarkItem.UserId, AccountId = bookmarkItem.Id, TweetId = TargetTweetID });
+                    }
+
+                    // REPOST処理
+                    if (i < repostList.Count)
+                    {
+                        var replyItem = repostList[i];
+                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPOST, UserId = replyItem.UserId, AccountId = replyItem.Id, TweetId = TargetTweetID });
+                    }
+                }
+
+            }
+
         }
 
         private (List<AccountMaster>, List<AccountMaster>, List<AccountMaster>, List<AccountMaster>) SelectBalancedItems(
@@ -823,6 +894,39 @@ namespace DbotManager
             }
 
             return tweetResult;
+        }
+
+
+        public async Task TweetVpsProc(TweetVpsCommand tweetVpsCommand)
+        {
+            var httpClient = new HttpClient();
+            var url = $"http://{tweetVpsCommand.VpsIp}:{tweetVpsCommand.VpsPort}/run";
+
+            // JSONデータを作成
+            var requestData = new
+            {
+                tweet_id = tweetVpsCommand.TweetId ,
+                like_list = string.Join(",", tweetVpsCommand.LikeList),
+                bookmark_list = string.Join(",", tweetVpsCommand.BookmarkList),
+                repost_list = string.Join(",", tweetVpsCommand.RepostList),
+                reply_list = string.Join(",", tweetVpsCommand.ReplyList)
+            };
+            string json = JsonConvert.SerializeObject(requestData);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            try
+            {
+                // POSTリクエストを送信
+                var response = await httpClient.PostAsync(url, content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"Response: {responseBody}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+
         }
 
         public string GetTweetCommand(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)

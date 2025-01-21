@@ -9,6 +9,7 @@ namespace DbotManager.Table
     public class AccountMaster
     {
         public int Id { get; set; }
+        public int VpsId { get; set; }
         public int UserId { get; set; }
         public string Name { get; set; }
         public string LoginId { get; set; }
