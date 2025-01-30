@@ -1258,7 +1258,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = "SELECT id, username , password , admin , enable ,memo , " +
-                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,media_enable" +
+                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,media_enable,check_enable" +
                     " FROM user_master;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1282,6 +1282,7 @@ public class MySqlDataAccess
                                 PostEnable = reader["post_enable"].ToString() == "1",
                                 ReserveEnable = reader["reserve_enable"].ToString() == "1",
                                 MediaEnable = reader["media_enable"].ToString() == "1",
+                                CheckEnable = reader["check_enable"].ToString() == "1",
                             };
 
                             userList.Add(user);

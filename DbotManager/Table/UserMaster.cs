@@ -22,6 +22,7 @@ namespace DbotManager.Table
         public bool PostEnable { get; set; }
         public bool ReserveEnable { get; set; }
         public bool MediaEnable { get; set; }
+        public bool CheckEnable { get; set; }
 
 
 

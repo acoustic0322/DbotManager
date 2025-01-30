@@ -504,7 +504,7 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            List<UserMaster> userMasterList = dataAccess.GetUserMaster().Where(x => x.Enable).ToList();
+            List<UserMaster> userMasterList = dataAccess.GetUserMaster().Where(x => x.Enable && x.CheckEnable).ToList();
 
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster()
                 .Where(x => x.Enable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
