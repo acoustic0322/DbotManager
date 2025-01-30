@@ -47,7 +47,7 @@ namespace DbotManager
             InitializeComponent();
 
 
-            DbConnection.MachineName = "203.137.102.211";
+            DbConnection.MachineName = "203.137.53.205";
             DbConnection.User = "d_bot";
             DbConnection.Root = "root";
             DbConnection.Pass = "abcd1234";
