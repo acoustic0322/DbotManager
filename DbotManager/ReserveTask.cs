@@ -114,8 +114,7 @@ namespace DbotManager
                 }
             }
 
-            dataAccess.DeleteReserveSchedule(DateTime.Today);
-
+//            dataAccess.DeleteReserveSchedule(DateTime.Today);
 
             foreach (var item in reserveScheduleList)
             {
@@ -135,7 +134,7 @@ namespace DbotManager
 
             foreach (var item in reserveScheduleList)
             {
-                dataAccess.InsertReserveSchedule(item);
+//                dataAccess.InsertReserveSchedule(item);
             }
 
             if (reserveScheduleList.Count > 0) 作成済 = true;
@@ -151,8 +150,6 @@ namespace DbotManager
             var schedules = new List<ReserveSchedule>();
             var random = new Random();
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
-
-            int randWait = 0;
 
             // 今日の日付
             var today = DateTime.Today;
@@ -173,8 +170,7 @@ namespace DbotManager
 
                 do
                 {
-                    randWait = random.Next(100, 300);
-                    Thread.Sleep(randWait);
+                    Thread.Sleep(1);
 
                     // ランダムな時刻を生成
                     var totalMinutes = (int)(endDateTime - startDateTime).TotalMinutes;
@@ -187,8 +183,7 @@ namespace DbotManager
 
                 if (commentList_重複除外.Count == 0) continue;
 
-                randWait = random.Next(100, 300);
-                Thread.Sleep(randWait);
+                Thread.Sleep(1);
 
                 // CommentMaster からランダムに1つ選択
                 var randomComment = commentList_重複除外[random.Next(commentList_重複除外.Count)];
