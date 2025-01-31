@@ -1,3 +1,5 @@
+#2025.01.31 処理順をID単位でまとめてlike,bookmark,repost,replyするように修正
+
 import subprocess
 from flask import Flask, request, jsonify
 import threading
@@ -18,11 +20,24 @@ def process_list(item_list, mode , tweet_id):
 def background_task(tweet_id, like_list, bookmark_list, repost_list, reply_list):
     # 各リストを処理
     print(f"Processing tweet_id: {tweet_id}")
-    
-    process_list(like_list, "like" , tweet_id)
-    process_list(bookmark_list, "bookmark" , tweet_id)
-    process_list(repost_list, "repost" , tweet_id)
-    process_list(reply_list, "reply" , tweet_id)
+
+    # 全ての tweet_id を取得
+    all_tweet_ids = sorted(set(like_list) | set(bookmark_list) | set(repost_list) | set(reply_list))
+
+    for tweet_id in all_tweet_ids:
+        print(f"Processing tweet_id: {tweet_id}")
+        
+        if tweet_id in like_list:
+            process_list([tweet_id], "like", tweet_id)
+        
+        if tweet_id in bookmark_list:
+            process_list([tweet_id], "bookmark", tweet_id)
+
+        if tweet_id in repost_list:
+            process_list([tweet_id], "repost", tweet_id)
+
+        if tweet_id in reply_list:
+            process_list([tweet_id], "reply", tweet_id)
 
 def tweet_task(account_id, mode, tweet_id):
     try:
