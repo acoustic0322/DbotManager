@@ -94,6 +94,7 @@ namespace DbotManager
         }
 
         public int UserId { get; set; }
+        public int CheckUserId { get; set; }
 
         public bool LikeEnable { get; set; }
         public bool BookmarkEnable { get; set; }
@@ -505,6 +506,8 @@ namespace DbotManager
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
             List<UserMaster> userMasterList = dataAccess.GetUserMaster().Where(x => x.Enable && x.CheckEnable).ToList();
+
+            if(CheckUserId != 0) userMasterList = userMasterList.Where(x => x.Id == CheckUserId).ToList();
 
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster()
                 .Where(x => x.Enable && userMasterList.Any(user => user.Id == x.UserId)).ToList();

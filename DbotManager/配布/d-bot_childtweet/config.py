@@ -67,4 +67,4 @@ media_dir = config.get("Paths", "media_dir", fallback=os.path.dirname(os.path.ab
 
 debug = True
 
-db_host = "203.137.102.211"
+db_host = "203.137.53.205"

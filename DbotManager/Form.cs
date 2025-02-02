@@ -734,7 +734,7 @@ namespace DbotManager
 
         private void MakeList_監視(bool first_flag = false)
         {
-          
+            _tweetTask.CheckUserId = checkBox監視UserId.Checked ? int.Parse(comboBox監視UserMaster.SelectedValue.ToString()) : 0;
             _tweetTask.Init監視list(first_flag);
 
             var list = _tweetTask.CheckSearchList.OrderBy(x => x.CheckDate).ToList();
