@@ -18,10 +18,14 @@ from mysql import update_user_id_from_db
 from mysql import get_last_tweet_id_from_check_account_list
 from mysql import update_last_tweet_id_from_check_account_list
 from mysql import update_search_list
+from mysql import insert_tweet_history_monomane
+
 
 import config
 from config import convert_tweet_datetime
 from config import outputLog
+
+from twitter_api_v1 import proc_monomane
 
 import tweepy
 
@@ -30,6 +34,10 @@ def createClient(credentials):
         client = tweepy.Client(
             bearer_token=credentials['bearer_token']
         )
+
+        if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+            outputLog(f"proxy_url={credentials['proxy_url']}")
+            client.session.proxies = {"http": credentials['proxy_url'],"https": credentials['proxy_url']}        
 
 #        client = tweepy.Client(
 #            bearer_token=credentials['bearer_token'], 
@@ -67,16 +75,31 @@ def get_user_id(credentials):
 
     # ユーザーIDを取得するURL
     url = f"https://api.twitter.com/2/users/by/username/{username}"
-    
-    response = requests.get(url, headers=headers)
+
+    outputLog(f"credentials['proxy_enable']  {credentials['proxy_enable'] }")    
+    outputLog(f"credentials['proxy_url']  {credentials['proxy_url']}")    
+
+    # POSTリクエストを送信
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.get(url, headers=headers ,proxies=proxies)
+    else:
+        outputLog(f"proxy_url None")
+        response = requests.get(url, headers=headers)
+
+#    response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
         user_data = response.json()
         user_id = user_data["data"]["id"]
-#        print(f"get_user_id {username}のユーザーID: {user_id}")
+        outputLog(f"get_user_id {username}のユーザーID: {user_id}")
         return user_id
     else:
-#        print(f"get_user_idエラー: {response.status_code}, {response.text}")
+        outputLog(f"get_user_idエラー: {response.status_code}, {response.text}")
         return None
 
 def check_access_token(credentials):
@@ -92,10 +115,10 @@ def check_access_token(credentials):
     return bearer_token , refresh_token 
 
 def proc_update_refresh_token():
-    print("proc_update_refresh_token")
+    outputLog("proc_update_refresh_token")
     credentials_list = get_account_master_for_update_refresh()
     for credentials in credentials_list:
-#        print("target=",credentials['id'])
+#        outputLog("target=",credentials['id'])
         result , access_token , refresh_token = refresh_access_token(credentials)
 
         save_tweet_history(credentials['id'], '' , 'check_refresh' , '' , result , f"refresh:{refresh_token} access:{access_token}")
@@ -107,7 +130,7 @@ def refresh_access_token(credentials):
         client_secret = credentials['client_secret']
         refresh_token = credentials['refresh_token']
 
-#        print("refresh_token=", refresh_token)
+#        outputLog("refresh_token=", refresh_token)
 
         url = "https://api.twitter.com/2/oauth2/token"
 
@@ -125,26 +148,36 @@ def refresh_access_token(credentials):
             "grant_type": "refresh_token"
         }
 
+        # POSTリクエストを送信
+#        if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+#            outputLog(f"proxy_url={credentials['proxy_url']}")
+#            proxies = {
+#                "http": credentials['proxy_url'],
+#                "https": credentials['proxy_url']
+#            }
+#            response = requests.post(url, headers=headers, json=data, proxies=proxies)
+#        else:
+#            response = requests.post(url, headers=headers, json=data)
         response = requests.post(url, headers=headers, data=data)
 
         # HTTPエラーの場合の処理
         if response.status_code == 200:
             response_data = response.json()  # JSONデータを取得
-            print("response.json()=", response_data)
+            outputLog(f"response.json()={response_data}")
 
             # access_token を抜き出す
             access_token = response_data.get("access_token")
-            print("access_token=", access_token)
+            outputLog(f"access_token={access_token}")
 
             refresh_token = response_data.get("refresh_token")
-            print("refresh_token=", refresh_token)
+            outputLog(f"refresh_token={refresh_token}")
 
             # スコープを確認する
             scope = response_data.get("scope")
             if scope:
-                print("付与されたスコープ=", scope)
+                outputLog(f"付与されたスコープ={scope}")
             else:
-                print("スコープ情報が返されていません")
+                outputLog("スコープ情報が返されていません")
 
             credentials['refresh_token'] = refresh_token
             credentials['bearer_token'] = access_token
@@ -153,19 +186,19 @@ def refresh_access_token(credentials):
 
             return True, access_token, refresh_token
         else:
-            print(f"refresh_access_tokenエラー: {response.status_code}, {response.text}")
+            outputLog(f"refresh_access_tokenエラー:ID {credentials['id']} {response.status_code}, {response.text}")
             return False, None, None
 
     except requests.exceptions.RequestException as req_err:
-        print(f"リクエストエラーが発生しました: {req_err}")
+        outputLog(f"リクエストエラーが発生しました: {req_err}")
         return False, None, None
 
     except KeyError as key_err:
-        print(f"キーエラーが発生しました: 必要なキーが見つかりません: {key_err}")
+        outputLog(f"キーエラーが発生しました: 必要なキーが見つかりません: {key_err}")
         return False, None, None
 
     except Exception as e:
-        print(f"予期しないエラーが発生しました: {e}")
+        outputLog(f"予期しないエラーが発生しました: {e}")
         return False, None, None
 
 
@@ -179,27 +212,27 @@ def check_access_token_validity(access_token):
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        print("check_access_token_validity アクセストークンは有効です。")
+        outputLog("check_access_token_validity アクセストークンは有効です。")
         return response.status_code , ""
     elif response.status_code == 401:
-        print("check_access_token_validity アクセストークンが無効です。再認証が必要です。")
+        outputLog("check_access_token_validity アクセストークンが無効です。再認証が必要です。")
         return response.status_code , json.dumps(response.json())
     else:
-        print(f"check_access_token_validity エラー: {response.status_code}")
-        print(response.json())  # エラーメッセージを表示
+        outputLog(f"check_access_token_validity エラー: {response.status_code}")
+        outputLog(response.json())  # エラーメッセージを表示
         return response.status_code , json.dumps(response.json())
 
 def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
 
     if config.debug == True:
-        print("proc_post_v2 Start")
-        print("comment_id=",comment_id)
-        print("reply_to_tweet_id=",reply_to_tweet_id)
+        outputLog("proc_post_v2 Start")
+        outputLog(f"comment_id={comment_id}")
+        outputLog(f"reply_to_tweet_id={reply_to_tweet_id}")
 
     # コメントの取得
     comment = get_comment_by_id(comment_id)
 
-#    print("comment=",comment)
+#    outputLog("comment=",comment)
 
     # コメントが取得できなかった場合、処理を終了
     if comment is None:
@@ -227,15 +260,24 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
     }
 
     if config.debug == True:
-        print(headers)
-        print(data)
-        print(comment)
+        outputLog(headers)
+        outputLog(data)
+        outputLog(comment)
+
 
     # POSTリクエストを送信
-    response = requests.post(url, headers=headers, json=data)
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.post(url, headers=headers, json=data, proxies=proxies)
+    else:
+        response = requests.post(url, headers=headers, json=data)
 
     if config.debug == True:
-        print(response.json())
+        outputLog(response.json())
 
     try:
         # レスポンスを JSON としてパース
@@ -243,24 +285,24 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
     except ValueError as e:
         if config.debug == True:
         # JSON パースエラー時の処理
-            print("JSON パースエラー:", str(e))
-            print("Raw response text:", response.text)  # 生データを確認
+            outputLog(f"JSON パースエラー:{ str(e)}")
+            outputLog(f"Raw response text:{response.text}")  # 生データを確認
         return False, f"JSON パースエラー: {str(e)}"
 
 #    # レスポンスコードを確認
 #    if response.status_code == 201:
-#        print("ツイートが成功しました:", response_data)
+#        outputLog("ツイートが成功しました:", response_data)
 #    else:
-#        print(f"エラー: {response.status_code}")
-#        print(response_data)
+#        outputLog(f"エラー: {response.status_code}")
+#        outputLog(response_data)
 
     # レスポンスを確認
 #    if response.status_code == 201:
-#        print("proc_post_v2 ポスト/リプライしました:")
-#        print(response_data)  # 成功時のレスポンス
+#        outputLog("proc_post_v2 ポスト/リプライしました:")
+#        outputLog(response_data)  # 成功時のレスポンス
 #    else:
-#        print(f"proc_post_v2 エラー: {response.status_code}")
-#        print(response_data)
+#        outputLog(f"proc_post_v2 エラー: {response.status_code}")
+#        outputLog(response_data)
 
 
     response_str = json.dumps(response_data)  # json.dumps を使用
@@ -292,15 +334,23 @@ def proc_like_v2(credentials, tweet_id):
     }
 
     # POSTリクエストを送信
-    response = requests.post(url, headers=headers, json=data)
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.post(url, headers=headers, json=data, proxies=proxies)
+    else:
+        response = requests.post(url, headers=headers, json=data)
 
     # レスポンスを確認
 #    if response.status_code == 200:
-#        print("proc_like_v2 ツイートにいいねを付けました:")
-#        print(response.json())  # 成功時のレスポンス
+#        outputLog("proc_like_v2 ツイートにいいねを付けました:")
+#        outputLog(response.json())  # 成功時のレスポンス
 #    else:
-#        print(f"proc_like_v2 エラー: {response.status_code}")
-#        print(response.json())
+#        outputLog(f"proc_like_v2 エラー: {response.status_code}")
+#        outputLog(response.json())
 
     response_str = json.dumps(response.json())  # json.dumps を使用
 
@@ -315,7 +365,7 @@ def proc_bookmark_v2(credentials, tweet_id):
     :param tweet_id: ブックマークする対象のツイートID
     """
 
-#    print("login_id:",credentials['login_id'])
+#    outputLog("login_id:",credentials['login_id'])
 
     access_token = credentials['bearer_token']
 
@@ -336,15 +386,23 @@ def proc_bookmark_v2(credentials, tweet_id):
     }
 
     # POSTリクエストを送信
-    response = requests.post(url, headers=headers, json=data)
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.post(url, headers=headers, json=data, proxies=proxies)
+    else:
+        response = requests.post(url, headers=headers, json=data)
 
 #    # レスポンスを確認
 #    if response.status_code == 200:
-#        print("ツイートをブックマークしました:")
-#        print(response.json())  # 成功時のレスポンス
+#        outputLog("ツイートをブックマークしました:")
+#        outputLog(response.json())  # 成功時のレスポンス
 #    else:
-#        print(f"エラー: {response.status_code}")
-#        print(response.json())
+#        outputLog(f"エラー: {response.status_code}")
+#        outputLog(response.json())
 
     response_str = json.dumps(response.json())  # json.dumps を使用
 
@@ -381,15 +439,23 @@ def proc_repost_v2(credentials, tweet_id):
     }
 
     # POSTリクエストを送信
-    response = requests.post(url, headers=headers, json=data)
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.post(url, headers=headers, json=data, proxies=proxies)
+    else:
+        response = requests.post(url, headers=headers, json=data)
 
 #    # レスポンスを確認
 #    if response.status_code in (200, 201):
-#        print("リポストが成功しました:")
-#        print(response.json())  # 投稿成功時のレスポンス
+#        outputLog("リポストが成功しました:")
+#        outputLog(response.json())  # 投稿成功時のレスポンス
 #    else:
-#        print(f"エラー: {response.status_code}")
-#        print(response.json())  # エラー時のレスポンス
+#        outputLog(f"エラー: {response.status_code}")
+#        outputLog(response.json())  # エラー時のレスポンス
 
     response_str = json.dumps(response.json())  # json.dumps を使用
 
@@ -412,25 +478,33 @@ def proc_check_v2(credentials , search_row , mode):
     search_id = search_row['search_account_id']
 
     client = createClient(credentials)
-    tweet = get_latest_tweet(client , search_row['search_user_name'] , serach_reply)
+    if client is None:
+        return False , None,None,None
+
+    result , tweet , tweets = get_latest_tweet(client , search_row['search_user_name'] , serach_reply)
+
+    if result == False:
+        return False , tweet,None,None
 
     if tweet is None:
-        return False , ''
+        return False , None,None,None
 
     latest_tweet_datetime = convert_tweet_datetime(tweet.data['created_at'])
 
     # 古いツイートに関しては処理しない
     if datetime_column in search_row and search_row[datetime_column] is not None:
         if search_row[datetime_column] >= latest_tweet_datetime:
-            return False , tweet.data['id']
+            return False , tweet.data['id'] , tweet.data , tweets
+#            return True , tweet.data['id'] , tweet.data , tweets
 
     update_search_list(search_row['id'] , tweet.data['id'] , latest_tweet_datetime , mode)
     
-    return True , tweet.data['id']
+    return True , tweet.data['id'] , tweet.data , tweets
 
 
 def get_latest_tweet(client , search_user_name , search_replies=True):
     try:
+        
         tweets = client.search_recent_tweets(
             f'from:{search_user_name} -is:retweet',
             tweet_fields=["id", "text", "author_id", "created_at", "attachments", "referenced_tweets", "in_reply_to_user_id"],
@@ -454,15 +528,181 @@ def get_latest_tweet(client , search_user_name , search_replies=True):
                 if in_reply_to_tweet_id != "":
                     if search_replies == True:
                         outputLog(f"tweet.data={tweet.data}")
-                        return tweet
+                        return True , tweet , tweets
                 else:
                     if search_replies == False:
                         outputLog(f"tweet.data={tweet.data}")
-                        return tweet
+                        return True , tweet , tweets
 
-            return None
+            return False , None , None
     except Exception as e:
         outputLog("例外が発生しました:")
-        outputLog(e)    
+        outputLog(e)  
+        outputLog(e)  
+        return False , e , None
+
+    return False , None , None
+
+def proc_check_v2_2(credentials , search_row):
+
+    check_post = True
+    check_reply = True
+
+    client = createClient(credentials)
+
+    tweets , log = get_latest_tweets(client , search_row['search_user_name'])
+
+    if tweets is None:
+        return False , None ,False ,None ,None , log
+
+    # ツイートが取得できなかった時
+    if tweets.data is None:
+        outputLog(f"tweets={tweets}")
+        return False , None ,False ,None ,None , log
+
+    tweet_post = get_latest_tweet2(tweets , False)
+    outputLog(f"tweet_post={tweet_post}")
+    if tweet_post is not None:
+        latest_tweet_datetime = convert_tweet_datetime(tweet_post.data['created_at'])
+
+        # 古いツイートに関しては処理しない
+        if 'last_post_time' in search_row and search_row['last_post_time'] is not None:
+            if search_row['last_post_time'] >= latest_tweet_datetime:
+                check_post = False
+
+        if check_post == True:
+            update_search_list(search_row['id'] , tweet_post.data['id'] , latest_tweet_datetime , 'post')
+
+    tweet_reply = get_latest_tweet2(tweets , True)
+    if tweet_reply is not None:
+        latest_tweet_datetime = convert_tweet_datetime(tweet_reply.data['created_at'])
+
+        # 古いツイートに関しては処理しない
+        if 'last_reply_time' in search_row and search_row['last_reply_time'] is not None:
+            if search_row['last_reply_time'] >= latest_tweet_datetime:
+                check_reply = False
+    
+        if check_reply == True:
+            update_search_list(search_row['id'] , tweet_reply.data['id'] , latest_tweet_datetime , 'reply')
+
+
+    tweets_monomane , log = get_latest_monomane_tweets(tweets , search_row)
+
+    return check_post , tweet_post , check_reply , tweet_reply , tweets , None
+
+
+def get_latest_tweets(client , search_user_name):
+    try:
+        tweets = client.search_recent_tweets(
+            f'from:{search_user_name} -is:retweet',
+            tweet_fields=["id", "text", "author_id", "created_at", "attachments", "referenced_tweets", "in_reply_to_user_id"],
+            expansions=['attachments.media_keys'],
+            media_fields=['url', 'type', 'variants'],
+            max_results=100  
+        )
+        outputLog("search_user_name:")
+        outputLog(search_user_name)
+        outputLog(tweets)
+        if 'errors' in tweets:
+            outputLog("エラーが発生しました:")
+            outputLog(tweets['errors'])
+        else:
+            return tweets , None
+    except Exception as e:
+        outputLog("例外が発生しました:")
+        outputLog(e)  
+        outputLog(e)  
+        return None , str(e)
+
+    return None , None
+
+def get_latest_tweet2(tweets , search_replies):
+
+    try:
+        outputLog("tweets")
+        outputLog(tweets)
+        for tweet in tweets.data:
+
+            #リプライツイート判定
+            in_reply_to_tweet_id = str(tweet.referenced_tweets[0]['id']) if tweet.referenced_tweets else ''
+
+#           if in_reply_to_tweet_id != "" and str(tweet.author_id) != userid:
+            if in_reply_to_tweet_id != "":
+                if search_replies == True:
+                    outputLog(f"tweet.data={tweet.data}")
+                    return tweet
+            else:
+                if search_replies == False:
+                    outputLog(f"tweet.data={tweet.data}")
+                    return tweet
+
+        return None
+    except Exception as e:
+        outputLog("例外が発生しました:")
+        outputLog(e)  
+        outputLog(e)  
+        return e
 
     return None
+
+
+def get_latest_monomane_tweets(tweets , search_row):
+
+    last_monomane_time = search_row['last_monomane_time']
+    outputLog(f"last_monomane_time={last_monomane_time}")
+
+    outputLog(f"tweets={tweets}")
+
+    updated_tweets = []  # 更新ツイートを格納するリスト
+
+    try:
+        for tweet in tweets.data:
+
+            #　削除
+#            insert_tweet_history_monomane(search_row , tweet.data , None)
+
+            tweet_datetime = convert_tweet_datetime(tweet.data['created_at'])
+
+            # 他人宛てのリプライを除外
+            # リプライタグが含まれている -> リプライポスト
+            # author_idとin_reply_to_user_idが異なる -> 別のアカウントへのリプライ
+            if 'in_reply_to_user_id' in tweet.data and tweet.data['in_reply_to_user_id'] is not None:
+                if 'author_id' in tweet.data and tweet.data['author_id'] is not None:
+                    if tweet.data['in_reply_to_user_id'] != tweet.data['author_id']:
+#                        outputLog(f"他人宛てリプライを除外 tweet.data={tweet.data}")
+                        continue
+
+            # 古いツイートに関しては処理しない
+            if last_monomane_time is not None:
+                if last_monomane_time >= tweet_datetime:
+#                    outputLog(f"旧ツイート tweet.data={tweet.data}")
+                    continue
+
+
+            outputLog(f"更新ツイート tweet.data={tweet.data}")
+            updated_tweets.append(tweet)  # 更新ツイートをリストに追加
+
+    except Exception as e:
+        outputLog("例外が発生しました:")
+        return updated_tweets , e
+
+
+    # 古い順に並べ替え
+    updated_tweets.sort(key=lambda t: convert_tweet_datetime(t.data['created_at']))
+
+    # 更新履歴がある時のみ実行
+    if search_row['monomane_enable'] == True:
+        if 'last_monomane_time' in search_row and search_row['last_monomane_time'] is not None:
+            for updated_tweet in updated_tweets:
+                result , log = proc_monomane(search_row , updated_tweet.data , updated_tweets)
+                #コメントアウト解除 2025.02.02
+                if result == True:
+                    update_search_list(search_row['id'] , updated_tweet.data['id'] , convert_tweet_datetime(updated_tweet.data['created_at']) , 'monomane')
+
+#    # リストが空でない場合、最新のツイートを取得
+#    latest_tweet = max(updated_tweets, key=lambda t: convert_tweet_datetime(t.data['created_at'])) if updated_tweets else None
+#    if latest_tweet is not None:
+#        update_search_list(search_row['id'] , latest_tweet.data['id'] , convert_tweet_datetime(latest_tweet.data['created_at']) , 'monomane')
+
+
+    return updated_tweets , None

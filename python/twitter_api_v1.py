@@ -8,7 +8,7 @@ import os
 import base64
 import pymysql
 import pytz
-from datetime import datetime  # datetime モジュールをインポート
+from datetime import datetime, timedelta
 
 import tweepy
 
@@ -21,8 +21,50 @@ from mysql import get_user_id_from_db
 from mysql import update_user_id_from_db
 from mysql import get_last_tweet_id_from_check_account_list
 from mysql import update_last_tweet_id_from_check_account_list
+from mysql import get_account_master
+from mysql import insert_tweet_history_monomane
+from mysql import getOwnTweetId
 
 import config
+from config import outputLog
+
+import re
+from urllib.parse import urlparse, parse_qs
+import urllib.parse
+import random
+import string
+
+
+#from twitter_api_v2 import createClient
+
+def createClient(credentials):
+    try:
+#        client = tweepy.Client(
+#            bearer_token=credentials['bearer_token']
+#        )
+
+        client = tweepy.Client(
+            consumer_key=credentials['api_key'], 
+            consumer_secret=credentials['api_key_secret'], 
+            access_token=credentials['access_token'], 
+            access_token_secret=credentials['access_token_secret']
+            )
+
+        outputLog("Tweepy Client を正常に作成しました")
+
+        return client
+
+    except tweepy.errors.TweepyException as e:
+        outputLog("Tweepy Client 作成中にエラーが発生しました:")
+        outputLog(e)
+    except KeyError as ke:
+        outputLog("認証情報 (credentials) のキーが不足しています:")
+        outputLog(ke)
+    except Exception as ex:
+        outputLog("予期しないエラーが発生しました:")
+        outputLog(ex)    
+
+    return None
 
 def proc_post_v10a(credentials ,comment_id, media_type , media_id, reply_to_tweet_id):
 
@@ -36,14 +78,22 @@ def proc_post_v10a(credentials ,comment_id, media_type , media_id, reply_to_twee
         access_token_secret=credentials['access_token_secret']
     )
 
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        client.session.proxies = {"http": credentials['proxy_url'],"https": credentials['proxy_url']}
+
     # コメントの取得
     comment = get_comment_by_id(comment_id)
 
     # 認証
     auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
     auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])    
-    api = tweepy.API(auth)
 
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        api = tweepy.API(auth, proxy=credentials['proxy_url'])
+    else:
+        api = tweepy.API(auth)
+        
     if config.debug == True:
         print("media_type=",media_type)
         print("media_id=",media_id)
@@ -147,107 +197,6 @@ def get_media_ids(api, account_id, media_type, media_id):
             print(f"Unexpected error: {e}")
         return []  # その他の予期しないエラーの場合も空のリストを返す
 
-
-def proc_post_v10a_gomi(credentials ,comment_id, media_type , media_id, reply_to_tweet_id):
-
-    if config.debug == True:
-        print("media_type=",media_type)
-        print("media_id=",media_id)
-        print("comment_id=",comment_id)
-        print("reply_to_tweet_id=",reply_to_tweet_id)
-
-    # コメントの取得
-    comment = get_comment_by_id(comment_id)
-
-#    print("comment=",comment)
-
-    # コメントが取得できなかった場合、処理を終了
-    if comment is None:
-        return False       
-
-    access_token = credentials['bearer_token']
-
-    # エンドポイントURL
-#    url = "https://api.twitter.com/2/tweets"
-    # エンドポイントURL
-    url = "https://api.twitter.com/1.1/statuses/update.json"
-
-    # OAuth1の設定
-    auth = OAuth1(
-        credentials['consumer_key'],
-        credentials['consumer_secret'],
-        credentials['access_token'],
-        credentials['access_token_secret']
-    )    
-    
-    # メディアが指定されている場合、メディアをアップロード
-    upload_id = None
-    if media_id != "" and media_type != "":
-        upload_id = upload_media(credentials, media_id, media_type)
-        if not upload_id:
-            return False, "メディアアップロードに失敗しました"
-
-    # 投稿するデータ
-    data = {
-        "text": comment
-    }
-
-    if upload_id:
-        data["media"] = {
-            "media_ids": [upload_id]
-        }
-
-    if reply_to_tweet_id:
-        data["reply"] = {
-            "in_reply_to_tweet_id": reply_to_tweet_id
-        }
-
-    # ヘッダー
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    if config.debug == True:
-        print(headers)
-        print(data)
-        print(comment)
-
-    # POSTリクエストを送信
-    response = requests.post(url, headers=headers, json=data)
-
-    if config.debug == True:
-        print(response.json())
-
-    try:
-        # レスポンスを JSON としてパース
-        response_data = response.json()
-    except ValueError as e:
-        if config.debug == True:
-        # JSON パースエラー時の処理
-            print("JSON パースエラー:", str(e))
-            print("Raw response text:", response.text)  # 生データを確認
-        return False, f"JSON パースエラー: {str(e)}"
-
-#    # レスポンスコードを確認
-#    if response.status_code == 201:
-#        print("ツイートが成功しました:", response_data)
-#    else:
-#        print(f"エラー: {response.status_code}")
-#        print(response_data)
-
-    # レスポンスを確認
-#    if response.status_code == 201:
-#        print("proc_post_v2 ポスト/リプライしました:")
-#        print(response_data)  # 成功時のレスポンス
-#    else:
-#        print(f"proc_post_v2 エラー: {response.status_code}")
-#        print(response_data)
-
-
-    response_str = json.dumps(response_data)  # json.dumps を使用
-    return response.status_code in (200, 201), response_str
-
-
 def convert_tweet_datetime(iso_format_date):
     try:
         # ミリ秒部分とZを無視してパース
@@ -272,5 +221,316 @@ def convert_tweet_datetime(iso_format_date):
     # フォーマット変更
     return japan_time.strftime("%Y-%m-%d %H:%M:%S")            
 
+def download_url(media_type,media_url):
+    try:
+        print("download_url")
+
+        # ファイル名生成の処理
+        try:
+            filename = f"{generate_random_string(10)}.{media_url.split('.')[-1].split('?')[0]}"
+        except Exception as e:
+            print(f"Error in filename generation: {e}")
+            raise  # 例外を再送出して外側でキャッチ
+
+        print(f"filename:{filename}")
+        r = requests.get(media_url, stream=True)
+        r.raise_for_status()
+        with open(filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+                    f.flush()
+        return filename
+    except:
+        return ""
+
+def dmmurl変換(input: str, replacement: str) -> str:
+    # URLを抜き出すための正規表現パターン
+    url_pattern = r'(https?://[^\s]+|www\.[^\s]+)'
+
+    # URLのパラメータ `af_id` の置換パターン
+    # param_pattern = r"(?<=af_id=)[^&]+"
+
+    # 抜き出されたURLを元に戻す関数
+    def get_original_url(short_url):
+        try:
+            # リダイレクトを追跡して元のURLを取得
+            response = requests.head(short_url, allow_redirects=True)
+            return response.url
+        except requests.RequestException:
+            # 失敗した場合はそのまま返す
+            return short_url
+
+    # URLを抽出して処理
+    def replace_urls_in_text(text):
+        # 元のテキストから全てのURLを抽出
+        urls = re.findall(url_pattern, text)
+        
+        for url in urls:
+            # 短縮URLのリダイレクト先を取得
+            original_url = get_original_url(url)
+
+            # URLを解析
+            parsed_url = urlparse(original_url)
+
+            # クエリパラメータを取得
+            query_params = parse_qs(parsed_url.query)
+
+            # lurlパラメータを取得
+            lurl_value = query_params.get('lurl', [None])[0]
+
+            if lurl_value != None:
+                # URLデコード
+                decoded_str = urllib.parse.unquote(lurl_value)
+
+                modified_url = "https://al.dmm.com/?lurl="+urllib.parse.quote(decoded_str.split("?")[0], safe='')+"&af_id="+replacement
+
+                # af_idパラメータを置換
+                # modified_url = re.sub(param_pattern, replacement, original_url)
+            
+            # 元のテキストのURLを置換されたURLに置き換える
+            text = text.replace(url, modified_url)
+        
+        return text
+
+    # 実行して結果を表示
+    result_text = replace_urls_in_text(input)
+    return result_text
+
+def sanitize_filename(filename):
+    # ファイル名に使えない文字を定義
+    forbidden_chars = r'[<>:"/\\|?*]'
+    # 正規表現でファイル名から使えない文字を削除
+    sanitized = re.sub(forbidden_chars, '', filename)
+    return sanitized
+
+def generate_random_string(length):
+    # 使用する文字のセットを定義（英数字）
+    characters = string.ascii_letters + string.digits
+    # 指定された長さのランダムな文字列を生成
+    random_string = ''.join(random.choice(characters) for _ in range(length))
+    return random_string
+
+def proc_monomane(search_row , tweet_data, tweets):
+
+    # Twitterのcreated_atはUTCなので、パースしてUTCタイムゾーンを適用
+    tweet_time = datetime.strptime(tweet_data['created_at'], '%Y-%m-%dT%H:%M:%S.000Z')
+    tweet_time = tweet_time.replace(tzinfo=pytz.UTC)
+
+    # 現在時刻（UTC）
+    now = datetime.now(pytz.UTC)
+
+    # １時間以上前のツイートはモノマネ対象にしないが、search_listのモノマネ履歴には登録する
+    if now - tweet_time >= timedelta(hours=1):
+        print(f"ツイートは1時間以上前のためスルーします。 tweet_data={tweet_data}")
+        return True , None
+
+    # モノマネ実施のアカウントID取得
+    account_id = search_row['monomane_account_id']
+
+    # リプライツイートの判定
+    replyFlag = False
+    if 'in_reply_to_user_id' in tweet_data and tweet_data['in_reply_to_user_id'] is not None:
+        reply_target_tweet_id = tweet_data['referenced_tweets'][0]['id']
+        reply_tweet_id = tweet_data['id']
+        own_twweet_result , own_tweet_id = getOwnTweetId(account_id , reply_target_tweet_id)
+        outputLog(f"reply_target_tweet_id={reply_target_tweet_id}")
+        outputLog(f"reply_tweet_id={reply_tweet_id}")
+        outputLog(f"own_tweet_id={own_tweet_id}")
+        replyFlag = True
+
+        #履歴にリプ先のツイート情報が無かったらリターン
+        if own_twweet_result == False:
+            outputLog(f"履歴にリプ先のツイート情報が無かったらリターン")
+#            return True , None
+            return False , None
+
+    outputLog(account_id)
+
+    credentials = get_account_master(account_id)
+    dmmid = credentials['dmm_id']
+
+    client = createClient(credentials)
+
+    # 認証
+    auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
+    auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
+
+    api = tweepy.API(auth)
+#        if proxy_url!="":
+#            api = tweepy.API(auth, proxy=proxy_url)
+#        else:
+#            api = tweepy.API(auth)    
+
+    media_files = []
+
+    try:
+        # print(tweet_data['attachments'])
+
+        # includes からメディア情報を取得する処理
+        if 'attachments' in tweet_data and 'media_keys' in tweet_data['attachments']:
+
+            media_keys = tweet_data['attachments']['media_keys']
+            media = {m.media_key: m for m in tweets.includes['media']}
+                    
+            for key in media_keys:
+                media_type = media[key].type
+                if media_type == 'photo':
+                    outputLog(f"Image URL: {media[key].url}")
+                    file = download_url(media_type,media[key].url)
+                    if os.path.isfile(file):
+                        media_files.append(file)
+                elif media_type == 'video':
+                    video_url = None
+                    for variant in media[key].variants:
+                        if variant.get('content_type') == 'video/mp4':
+                            video_url = variant.get('url')
+                            if video_url:
+                                outputLog(f"tweet_data:{tweet_data}")
+                                outputLog(f"Video URL: {video_url}")
+                                file = download_url(media_type,video_url)
+                                outputLog(f"video file:{file}")
+                                if os.path.isfile(file):
+                                    media_files.append(file)
+                                    break
+                    else:
+                        outputLog("Video URL not found.")
+
+        outputLog(f"tweet_data={tweet_data}")
+        # スペースで分割して配列に変換
+        words = tweet_data['text'].replace("\n","【改行】").split(' ')
+
+        # 最後の配列要素を削除
+        if len(media_files)>0:
+            words.pop()
 
 
+        # 配列をスペースで結合して文字列に戻す
+        result = " ".join(words).replace("【改行】","\n")
+        result = dmmurl変換(result, dmmid)
+                # print(result)
+                # input()
+                # print(media_files)
+                # print(f"{tweet.id}:{result}:{tweet.created_at}")
+                # input()
+                # ツイートの再投稿
+                # print("in_reply_to_tweet_id:"+in_reply_to_tweet_id)
+
+        response = None
+
+        outputLog(f"result = {result}")  
+
+
+#        if False:
+        try:
+
+            # モノマネツイート処理(モノマネ処理は行わない)
+            if media_files:
+                media_ids = [api.media_upload(file).media_id for file in media_files]
+                if replyFlag == True:
+                    outputLog("media reply")  
+                    response = client.create_tweet(
+                        text=result,
+                        media_ids=media_ids,
+                        in_reply_to_tweet_id =own_tweet_id  # 返信先のユーザーIDを指定
+                    )
+                else:
+                    outputLog("media tweet")  
+                    response = client.create_tweet(text=result, media_ids=media_ids)
+            else:
+                
+                if replyFlag == True:
+                    outputLog("media no reply")  
+                    outputLog(f"result={result}")  
+                    outputLog(f"own_tweet_id={own_tweet_id}")  
+
+                    response = client.create_tweet(
+                        text=result,
+                        in_reply_to_tweet_id =own_tweet_id  # 返信先のユーザーIDを指定0
+                    )
+                else:
+                    outputLog("media no tweet")  
+                    response = client.create_tweet(text=result)
+
+        except Exception as ex:
+            outputLog(str(ex))   
+            return False , str(ex)
+
+
+        time.sleep(5)
+
+
+        # モノマネツイート処理(モノマネ処理は行わない)
+#        if media_files:
+#            media_ids = [api.media_upload(file).media_id for file in media_files]
+#            response = client.create_tweet(text=result, media_ids=media_ids)
+#        else:
+#            response = client.create_tweet(text=result)
+
+        try:
+           outputLog(f"search_row={search_row}")
+           outputLog(f"tweet_data={tweet_data}")
+           outputLog(f"response={response.data}")
+#           outputLog(f"response[data]={response['data']}")
+           insert_tweet_history_monomane(search_row , tweet_data , response.data)
+#            insert_tweet_history_monomane(search_row , tweet_data , None)
+        except Exception as ex:
+            outputLog(str(ex))
+
+        # レスポンス内容を出力
+        outputLog("Response from client.create_tweet:")
+        outputLog(response)                
+
+
+        try:
+            # レスポンスからデータを取得
+            if response.data is not None:
+                response_data = response.data #.data  # ツイートに関する情報
+            else:
+                response_data = {}  # データがない場合は空の辞書にする
+        except Exception as ex:
+            outputLog(ex)
+
+
+#                outputLog("last_monomane_time")
+#                outputLog(search_row['last_monomane_time'])
+
+#                outputLog("created_at_str")
+#                outputLog(created_at_str)
+
+        response_str = json.dumps(response_data)  # JSON 文字列に変換
+
+        outputLog(f"Tweet created successfully:{response_data}")
+        outputLog(f"response.errors:{response.errors}")
+        outputLog(f"response_str:{response_str}")
+
+        # ステータスコードの代わりにエラーを確認
+        return response.errors is None or len(response.errors) == 0, response_str
+                
+    except Exception as ex:
+        outputLog(str(ex))
+    finally:
+        # ダウンロードしたファイルを削除
+        for file in media_files:
+            try:
+                outputLog(f"delete file:{file}")
+                os.remove(file)
+            except:
+                pass
+
+    return False,None
+                
+#        
+#                if since_id=="":
+#                    break
+
+#        if len(tweeted_ids)>0:
+#            with open(os.path.join(folder, f"{path_tmp_screen_name}_sinceid3.txt"), 'w', encoding='utf-8') as file:
+#                for tweet in tweets.data:
+#                    file.write(f"{tweet.id}\n")
+#            with open(os.path.join(folder, f"{path_tmp_screen_name}_tweeted3.csv"), 'a', newline='', encoding='utf-8') as file:
+#                writer = csv.writer(file)
+#                for tweet in tweeted_ids:
+#                    writer.writerow(tweet)
+    
+#    time.sleep(waittime)
