@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //echo "<script>alert('{$account_id}');</script>";
 
 
-    $new_account_id = $edit_account['search_account_id'];
+    $new_account_id = $edit_account['post_account_id'];
     $new_search_user_name = $_POST['search_user_name'];
 //        $new_search_user_name = "test";
     $new_enable = isset($_POST['enable']) ? 1 : 0;
@@ -50,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             post_enable = ? ,
             reply_enable = ? ,
             monomane_enable = ?, 
-            search_account_id = ? ,
             post_account_id = ? , 
             reply_account_id = ? , 
             monomane_account_id  = ?
@@ -58,10 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
 
     $stmt->bind_param(
-        "siiiisssss",
+        "siiiissss",
         $new_search_user_name, $new_enable, 
         $new_post_enable, $new_reply_enable, $new_monomane_enable,
-        $new_account_id, $new_account_id, $new_account_id, $new_account_id,
+        $new_account_id, $new_account_id, $new_account_id,
         $id
     );
     
@@ -75,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     // 登録後にリダイレクト
-    header("Location: search_list.php?account_id={$edit_account['search_account_id']}");
+    header("Location: search_list.php?account_id={$edit_account['post_account_id']}");
     exit; 
 }
 

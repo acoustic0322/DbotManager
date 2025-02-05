@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_comment10 = $_POST['new_comment10'];
 
 //        echo "<script>alert('new_comment1: {$new_comment1}');</script>"; // デバッグ用
-        echo $new_comment1; // デバッグ用
+//        echo $new_comment1; // デバッグ用
 
 //        echo "<script>alert('てすと２');</script>";
 //        echo $new_comment1;

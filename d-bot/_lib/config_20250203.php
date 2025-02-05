@@ -562,13 +562,20 @@ function duplicateData_search($conn, $accountId, $formAccountId) {
         id,
         search_user_name,
         search_user_id,
+        search_account_id,
         enable,
         post_account_id,
         post_enable,
+        last_post_id,
+        last_post_time,
         reply_account_id,
         reply_enable,
+        last_reply_id,
+        last_reply_time,
         monomane_account_id,
-        monomane_enable
+        monomane_enable,
+        last_monomane_id,
+        last_monomane_time
     FROM search_list
     WHERE post_account_id = ?;
     ";
@@ -597,15 +604,22 @@ function duplicateData_search($conn, $accountId, $formAccountId) {
     INSERT INTO search_list (
         search_user_name,
         search_user_id,
+        search_account_id,
         enable,
         post_account_id,
         post_enable,
+        last_post_id,
+        last_post_time,
         reply_account_id,
         reply_enable,
+        last_reply_id,
+        last_reply_time,
         monomane_account_id,
-        monomane_enable
+        monomane_enable,
+        last_monomane_id,
+        last_monomane_time
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($query);
     if (!$stmt) {
@@ -618,19 +632,24 @@ function duplicateData_search($conn, $accountId, $formAccountId) {
 
     foreach ($rows as $row) {
         $stmt->bind_param(
-//            "ssssssssss",
-            "ssiiiiiii",
+            "ssssssssssssssss",
             $row['search_user_name'],
             $row['search_user_id'],
 //            $row['search_account_id'],
-//            $accountId,
+            $accountId,
             $row['enable'],
             $accountId,
             $row['post_enable'],
+            $row['last_post_id'],
+            $row['last_post_time'],
             $accountId,
             $row['reply_enable'],
+            $row['last_reply_id'],
+            $row['last_reply_time'],
             $accountId,
-            $row['monomane_enable']
+            $row['monomane_enable'],
+            $row['last_monomane_id'],
+            $row['last_monomane_time']            
         );
 
         if ($stmt->execute()) {

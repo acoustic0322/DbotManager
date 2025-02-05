@@ -228,15 +228,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 動画/画像
                 <label>
-                    <input type="radio" name="new_mediatype" value="" <?php echo ($edit_account['media_enable'] === 0) ? 'checked' : ''; ?>>
+                    <input type="radio" name="new_mediatype" value="" <?php echo ($edit_account['movie_enable'] === 0 && $edit_account['photo_enable'] === 0) ? 'checked' : ''; ?>>
                     なし
                 </label>
                 <label>
-                <input type="radio" name="new_mediatype" value="video" <?php echo ($edit_account['media_enable'] === 1) ? 'checked' : ''; ?>>
+                <input type="radio" name="new_mediatype" value="video" <?php echo ($edit_account['movie_enable'] === 1) ? 'checked' : ''; ?>>
                     動画
                 </label>
                 <label>
-                <input type="radio" name="new_mediatype" value="photo" <?php echo ($edit_account['media_enable'] === 1) ? 'checked' : ''; ?>>
+                <input type="radio" name="new_mediatype" value="photo" <?php echo ($edit_account['photo_enable'] === 1) ? 'checked' : ''; ?>>
                     画像
                 </label>
                 <?php endif; ?>

@@ -51,14 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // コメントをデータベースに登録
         $stmt = $conn->prepare("INSERT INTO search_list (
-            search_user_id, search_user_name, enable, post_enable , reply_enable , monomane_enable, search_account_id , post_account_id , reply_account_id , monomane_account_id 
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
+            search_user_id, search_user_name, enable, post_enable , reply_enable , monomane_enable, post_account_id , reply_account_id , monomane_account_id 
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? )");
 
         $stmt->bind_param(
-            "isiiiissss",
+            "isiiiisss",
             $_SESSION['user_id'],$new_search_user_name, $new_enable, 
             $new_post_enable, $new_reply_enable, $new_monomane_enable,
-            $new_account_id, $new_account_id, $new_account_id, $new_account_id
+            $new_account_id, $new_account_id, $new_account_id
         );
 
         $stmt->execute();
@@ -161,7 +161,6 @@ $result_check = $stmt->get_result();
     </form>
 
     <h2>監視一覧</h2>
-    ※１アカウントまでの登録を推奨します
     <table>
         <thead>
             <tr>

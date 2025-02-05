@@ -68,7 +68,7 @@ elseif ($command == 'search')
                 continue; // エラーが発生しても次のIDの処理を続行
             }        
         }
-        echo json_encode(['message' => '複製処理を完了しました。']);
+        echo json_encode(['message' => "監視,リプライ設定 複製処理を完了しました。"]);
     } elseif ($action1 == 'delete') { // 削除処理
         foreach ($selectedIds as $id) {   
             try {

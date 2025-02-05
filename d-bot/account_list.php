@@ -107,6 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         */
 
         $new_enable = isset($_POST['new_enable']) ? 1 : 0;
+
         $new_like_enable = isset($_POST['new_like_enable']) ? 1 : 0;
         $new_reply_enable = isset($_POST['new_reply_enable']) ? 1 : 0;
         $new_bookmark_enable = isset($_POST['new_bookmark_enable']) ? 1 : 0;
@@ -372,11 +373,19 @@ $result = $stmt->get_result();
             <label>
                 <input type="checkbox" name="new_like_enable" value="1" checked>いいね機能
             </label><br>
+            <?php else: ?>
+                <label>
+                <input type="hidden" name="new_like_enable" value="1" checked>
+            </label><br>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
                 <label>
                 <input type="checkbox" name="new_bookmark_enable" value="1" checked>ブックマーク機能
+            </label><br>
+            <?php else: ?>
+                <label>
+                <input type="hidden" name="new_bookmark_enable" value="1" checked>
             </label><br>
             <?php endif; ?>
 
@@ -392,9 +401,11 @@ $result = $stmt->get_result();
             </label><br>
             <?php endif; ?>
 
+            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
             <label>
                 <input type="checkbox" name="new_search_enable" value="0">監視実施
             </label><br>
+            <?php endif; ?>
 
             <label>
                 <input type="checkbox" name="new_proxy_enable" value="0">プロキシ
@@ -502,8 +513,12 @@ $result = $stmt->get_result();
         <input type="hidden" name="type" value="<?php echo e($type); ?>">
         <select id="command_option" name="command" onchange="toggleCommandSource()">
             <option value="comment">コメント設定</option>
+
+            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
             <option value="search">監視リプ,モノマネ</option>
             <option value="searchFrom">監視実施</option>
+            <?php endif; ?>
+            
         </select>
     </form>
 
@@ -666,8 +681,10 @@ $result = $stmt->get_result();
             <th>ログインID</th>
             <th>ﾎﾟｽﾄｺﾒﾝﾄ</th>
             <th>ﾘﾌﾟﾗｲﾄｺﾒﾝﾄ</th>
+            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
             <th>自動ﾘﾌﾟ,ﾓﾉﾏﾈ</th>
             <th>監視実施</th>
+            <?php endif; ?>
             <th>通常認証</th>
             <th>メディア認証</th>
             <th>操作</th>
@@ -683,15 +700,23 @@ $result = $stmt->get_result();
             <td><?php echo htmlspecialchars($row['login_id']); ?></td>
             <td><?php echo htmlspecialchars($row['post_comment_count']); ?>件</td>
             <td><?php echo htmlspecialchars($row['reply_comment_count']); ?>件</td>
+
+            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
             <td><?php echo htmlspecialchars($row['search_list_count']); ?>件</td>
             <td><?php echo !empty($row['search_enable']) ? '〇' : '×'; ?></td>
+            <?php endif; ?>
+            
             <td><?php echo (!empty($row['bearer_token']) && !empty($row['refresh_token']))  ? '〇' : '×'; ?></td>
             <td><?php echo !empty($row['access_token']) ? '〇' : '×'; ?></td>
             <td>
                 <button onclick="editAccountMaster(<?php echo $row['id']; ?>)">編集</button>
                 <button onclick="editComment(<?php echo $row['id']; ?>)">ｺﾒﾝﾄ一覧</button>
                 <button onclick="registComment(<?php echo $row['id']; ?>)">ｺﾒﾝﾄ登録</button>
+
+                <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
                 <button onclick="editCheckAccount(<?php echo $row['id']; ?>)">自動ﾘﾌﾟ,ﾓﾉﾏﾈ編集</button>
+                <?php endif; ?>
+
                 <button onclick="editXLogin2(<?php echo $row['id']; ?>)">通常認証</button>
                 <button onclick="editXLogin1(<?php echo $row['id']; ?>)">ﾒﾃﾞｨｱ認証</button>
                 <form class="button_form" method="POST" action="?">
