@@ -730,7 +730,7 @@ namespace DbotManager
 
             if (_replyToReplyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
 
-            var commentItem = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList());
+            var commentItem = SupportUtil.GetRandomItem(_replyToReplyCommentList.Where(x => x.AccountId == accountId).ToList());
             if (commentItem == null) return;
             var commentId = commentItem.Id;
 
