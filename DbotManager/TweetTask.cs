@@ -554,7 +554,9 @@ namespace DbotManager
                         AccountId = row.Id ,
                         UserId = row.UserId ,
                         SearchDatetime = lastCheck == null ? DateTime.Now : lastCheck.UpdateTime ,
-                        Interval = (row.Paid ? 300 : 900)   //有料API=5分 無料API=15分
+
+//                        Interval = (row.Paid ? 300 : 900)    //有料API=5分 無料API=60分
+                        Interval = (row.CheckInterval < 5 ? 5 : row.CheckInterval) * 60   //アカウントで設定している検索周期を反映(最低5分)
                     });
             }
 
@@ -662,6 +664,13 @@ namespace DbotManager
             {
                 // チェック時間に達していない場合はスルー
                 if (item.CheckDate >= dtNow) continue;
+
+                // 時間帯を絞っていて時間外の場合はスルー
+                if((bool)item.TimeEnable)
+                {
+                    if (item.StartHour > dtNow.Hour) continue;
+                    if (item.EndHour <= dtNow.Hour) continue;
+                }
 
                 var searchHistoryRow = GetSearchHistoryRow(item , dtNow);
 

@@ -688,7 +688,8 @@ public class MySqlDataAccess
                     id, enable, search_user_name, search_user_id, 
                     post_account_id, post_enable, last_post_id, last_post_time,
                     reply_account_id, reply_enable, last_reply_id, last_reply_time,
-                    monomane_account_id, monomane_enable, last_monomane_id, last_monomane_time
+                    monomane_account_id, monomane_enable, last_monomane_id, last_monomane_time,
+                    time_enable , start_hour , end_hour
                 FROM search_list";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -721,6 +722,9 @@ public class MySqlDataAccess
                                 LastMonomaneTime = reader["last_monomane_time"] != DBNull.Value
                                     ? DateTime.Parse(reader["last_monomane_time"].ToString())
                                     : (DateTime?)null,
+                                TimeEnable = reader["time_enable"] != DBNull.Value ? reader["time_enable"].ToString() == "1" : (bool?)null,
+                                StartHour = reader["start_hour"] != DBNull.Value ? Convert.ToInt32(reader["start_hour"]) : 0,
+                                EndHour = reader["end_hour"] != DBNull.Value ? Convert.ToInt32(reader["end_hour"]) : 0,
                             };
 
                             searchList.Add(searchItem);
