@@ -113,8 +113,11 @@ if credentials:
     elif mode == "check":
         search_row = get_search_list(search_id)
         result1 , tweet1 , result2 , tweet2 , tweets , log = proc_check_v2_2(credentials , search_row)
-        contents1 = tweet1.data['id'] if tweet1 else None
-        contents2 = tweet2.data['id'] if tweet2 else None
+
+#        contents1 = tweet1.data['id'] if tweet1 else None
+#        contents2 = tweet2.data['id'] if tweet2 else None
+        contents1 = tweet1['id'] if tweet1 else None
+        contents2 = tweet2['id'] if tweet2 else None
 
         if contents1 is None:
             contents1 = log

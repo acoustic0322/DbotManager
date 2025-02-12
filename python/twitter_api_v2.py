@@ -8,6 +8,7 @@ import os
 import base64
 import pymysql
 from datetime import datetime  # datetime モジュールをインポート
+import re
 
 from mysql import get_comment_by_id
 from mysql import get_account_master_for_update_refresh
@@ -551,39 +552,48 @@ def proc_check_v2_2(credentials , search_row):
     client = createClient(credentials)
 
     tweets , log = get_latest_tweets(client , search_row['search_user_name'])
+    
 
     if tweets is None:
         return False , None ,False ,None ,None , log
 
+#    outputLog(f"tweets={tweets}")
+
     # ツイートが取得できなかった時
-    if tweets.data is None:
+#    if tweets.data is None:
+    if tweets is None:
         outputLog(f"tweets={tweets}")
         return False , None ,False ,None ,None , log
 
     tweet_post = get_latest_tweet2(tweets , False)
     outputLog(f"tweet_post={tweet_post}")
     if tweet_post is not None:
-        latest_tweet_datetime = convert_tweet_datetime(tweet_post.data['created_at'])
+
+        outputLog(f"tweet_post['created_at']={tweet_post['created_at']}")
+
+        latest_tweet_datetime = convert_tweet_datetime(tweet_post['created_at'])
+#        latest_tweet_datetime = convert_tweet_datetime(str(tweet_post['created_at']))
+#        latest_tweet_datetime = tweet_post['created_at']
 
         # 古いツイートに関しては処理しない
         if 'last_post_time' in search_row and search_row['last_post_time'] is not None:
-            if search_row['last_post_time'] >= latest_tweet_datetime:
+            if search_row['last_post_time'] >= latest_tweet_datetime.strftime("%Y-%m-%d %H:%M:%S")  :
                 check_post = False
 
         if check_post == True:
-            update_search_list(search_row['id'] , tweet_post.data['id'] , latest_tweet_datetime , 'post')
+            update_search_list(search_row['id'] , tweet_post['id'] , latest_tweet_datetime , 'post')
 
     tweet_reply = get_latest_tweet2(tweets , True)
     if tweet_reply is not None:
-        latest_tweet_datetime = convert_tweet_datetime(tweet_reply.data['created_at'])
+        latest_tweet_datetime = convert_tweet_datetime(tweet_reply['created_at'])
 
         # 古いツイートに関しては処理しない
         if 'last_reply_time' in search_row and search_row['last_reply_time'] is not None:
-            if search_row['last_reply_time'] >= latest_tweet_datetime:
+            if search_row['last_reply_time'] >= latest_tweet_datetime.strftime("%Y-%m-%d %H:%M:%S")  :
                 check_reply = False
     
         if check_reply == True:
-            update_search_list(search_row['id'] , tweet_reply.data['id'] , latest_tweet_datetime , 'reply')
+            update_search_list(search_row['id'] , tweet_reply['id'] , latest_tweet_datetime , 'reply')
 
 
     tweets_monomane , log = get_latest_monomane_tweets(tweets , search_row)
@@ -597,17 +607,54 @@ def get_latest_tweets(client , search_user_name):
             f'from:{search_user_name} -is:retweet',
             tweet_fields=["id", "text", "author_id", "created_at", "attachments", "referenced_tweets", "in_reply_to_user_id"],
             expansions=['attachments.media_keys'],
-            media_fields=['url', 'type', 'variants'],
+#            media_fields=['url', 'type', 'variants'],
+            media_fields=["media_key", "type", "url", "variants"],
+#            max_results=10  
             max_results=100  
         )
-        outputLog("search_user_name:")
-        outputLog(search_user_name)
-        outputLog(tweets)
-        if 'errors' in tweets:
+
+        # 取得したtweetsのmedia_listを取得
+        media_data = tweets.includes.get("media", []) if tweets.includes else []
+#        outputLog(f"media_data=: {media_data}")  # includesがあるか確認
+
+        # Reaponseの中身をリスト化
+        tweet_list = tweets.data if tweets.data else []
+#        outputLog(f"tweet_list: {tweet_list}")  # 全体をログ出力
+
+        # 動画・画像判別用の独自属性を追加
+        tweet_list2 = []  # ここで初期化
+        for tweet in tweet_list:
+            tweet_dict = vars(tweet) if hasattr(tweet, "__dict__") else dict(tweet)
+            tweet_dict["media_key"] = None  # ここで新しい属性を追加
+            tweet_dict["type"] = None  # ここで新しい属性を追加
+            tweet_dict["url"] = None  # ここでurl属性を追加
+#            outputLog(f"tweet_dict=: {tweet_dict}")  # includesがあるか確認
+            tweet_list2.append(tweet_dict)
+
+#        outputLog(f"tweets_wk1=: {tweets_wk1}")  # includesがあるか確認
+
+        # 紐づけ処理
+        media_index = 0
+        for tweet in tweet_list2:  # .data に Tweet オブジェクトが入っている
+            # textに https://t.co が含まれている場合、画像・動画ありと見なす
+            if "https://t.co" in tweet["text"] and media_index < len(media_data):
+                tweet["media_key"] = media_data[media_index]["media_key"]  # ここで新しい属性を追加
+                tweet["type"] = media_data[media_index]["type"]  # ここで新しい属性を追加
+
+                # text内のURLを正規表現で抽出してtweet["url"]にセット
+                urls = re.findall(r'https://t\.co/\S+', tweet["text"])  # https://t.co で始まるURLを全て抽出
+                if urls:
+                    tweet["url"] = urls[0]  # 最初に見つかったURLをセット（必要に応じて他のロジックに変更可能）
+
+                media_index += 1  # 次のメディアを使う
+
+#            outputLog(f"tweet(media_data): {tweet}")  # ログ出力
+            
+        if 'errors' in tweet_list2:
             outputLog("エラーが発生しました:")
-            outputLog(tweets['errors'])
+            outputLog(tweet_list2['errors'])
         else:
-            return tweets , None
+            return tweet_list2 , None
     except Exception as e:
         outputLog("例外が発生しました:")
         outputLog(e)  
@@ -619,21 +666,26 @@ def get_latest_tweets(client , search_user_name):
 def get_latest_tweet2(tweets , search_replies):
 
     try:
-        outputLog("tweets")
-        outputLog(tweets)
-        for tweet in tweets.data:
+#        outputLog(f"tweets: {tweets}")  # ログ出力
+
+#        for tweet in tweets.data:
+        for tweet in tweets:
+
+            # tweetが辞書の場合に対応
+            referenced_tweets = tweet.get("referenced_tweets", [])
+            in_reply_to_tweet_id = str(referenced_tweets[0]["id"]) if referenced_tweets else ""
 
             #リプライツイート判定
-            in_reply_to_tweet_id = str(tweet.referenced_tweets[0]['id']) if tweet.referenced_tweets else ''
+#            in_reply_to_tweet_id = str(tweet.referenced_tweets[0]['id']) if tweet.referenced_tweets else ''
 
 #           if in_reply_to_tweet_id != "" and str(tweet.author_id) != userid:
             if in_reply_to_tweet_id != "":
                 if search_replies == True:
-                    outputLog(f"tweet.data={tweet.data}")
+                    outputLog(f"in_reply_to_tweet_id != '' and search_replies == True , tweet={tweet}")
                     return tweet
             else:
                 if search_replies == False:
-                    outputLog(f"tweet.data={tweet.data}")
+                    outputLog(f"in_reply_to_tweet_id = '' and search_replies == False , tweet={tweet}")
                     return tweet
 
         return None
@@ -651,24 +703,32 @@ def get_latest_monomane_tweets(tweets , search_row):
     last_monomane_time = search_row['last_monomane_time']
     outputLog(f"last_monomane_time={last_monomane_time}")
 
-    outputLog(f"tweets={tweets}")
+#    outputLog(f"tweets={tweets}")
 
     updated_tweets = []  # 更新ツイートを格納するリスト
 
     try:
-        for tweet in tweets.data:
+        for tweet in tweets:
 
             #　削除
 #            insert_tweet_history_monomane(search_row , tweet.data , None)
 
-            tweet_datetime = convert_tweet_datetime(tweet.data['created_at'])
+#            tweet_datetime = convert_tweet_datetime(tweet.data['created_at'])
+            tweet_datetime = convert_tweet_datetime(tweet['created_at']).strftime("%Y-%m-%d %H:%M:%S")  
 
             # 他人宛てのリプライを除外
             # リプライタグが含まれている -> リプライポスト
             # author_idとin_reply_to_user_idが異なる -> 別のアカウントへのリプライ
-            if 'in_reply_to_user_id' in tweet.data and tweet.data['in_reply_to_user_id'] is not None:
-                if 'author_id' in tweet.data and tweet.data['author_id'] is not None:
-                    if tweet.data['in_reply_to_user_id'] != tweet.data['author_id']:
+
+#            if 'in_reply_to_user_id' in tweet.data and tweet.data['in_reply_to_user_id'] is not None:
+            if 'in_reply_to_user_id' in tweet and tweet['in_reply_to_user_id'] is not None:
+
+#                if 'author_id' in tweet.data and tweet.data['author_id'] is not None:
+                if 'author_id' in tweet and tweet['author_id'] is not None:
+
+#                    if tweet.data['in_reply_to_user_id'] != tweet.data['author_id']:
+                    if tweet['in_reply_to_user_id'] != tweet['author_id']:
+
 #                        outputLog(f"他人宛てリプライを除外 tweet.data={tweet.data}")
                         continue
 
@@ -679,25 +739,33 @@ def get_latest_monomane_tweets(tweets , search_row):
                     continue
 
 
-            outputLog(f"更新ツイート tweet.data={tweet.data}")
+#            outputLog(f"更新ツイート tweet.data={tweet.data}")
+            outputLog(f"更新ツイート tweet={tweet}")
+
             updated_tweets.append(tweet)  # 更新ツイートをリストに追加
 
     except Exception as e:
         outputLog("例外が発生しました:")
+        outputLog(e)  
         return updated_tweets , e
 
 
     # 古い順に並べ替え
-    updated_tweets.sort(key=lambda t: convert_tweet_datetime(t.data['created_at']))
+#    updated_tweets.sort(key=lambda t: convert_tweet_datetime(t.data['created_at']))
+    updated_tweets.sort(key=lambda t: convert_tweet_datetime(t['created_at']))
 
     # 更新履歴がある時のみ実行
     if search_row['monomane_enable'] == True:
         if 'last_monomane_time' in search_row and search_row['last_monomane_time'] is not None:
             for updated_tweet in updated_tweets:
-                result , log = proc_monomane(search_row , updated_tweet.data , updated_tweets)
+
+#                result , log = proc_monomane(search_row , updated_tweet.data , updated_tweets)
+                result , log = proc_monomane(search_row , updated_tweet , updated_tweets)
+
                 #コメントアウト解除 2025.02.02
                 if result == True:
-                    update_search_list(search_row['id'] , updated_tweet.data['id'] , convert_tweet_datetime(updated_tweet.data['created_at']) , 'monomane')
+#                    update_search_list(search_row['id'] , updated_tweet.data['id'] , convert_tweet_datetime(updated_tweet.data['created_at']) , 'monomane')
+                    update_search_list(search_row['id'] , updated_tweet['id'] , convert_tweet_datetime(updated_tweet['created_at']) , 'monomane')
 
 #    # リストが空でない場合、最新のツイートを取得
 #    latest_tweet = max(updated_tweets, key=lambda t: convert_tweet_datetime(t.data['created_at'])) if updated_tweets else None

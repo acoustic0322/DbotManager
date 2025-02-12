@@ -38,6 +38,9 @@ import urllib.parse
 import random
 import string
 
+
+#from twitter_api_v2 import createClient
+
 def createClient(credentials):
     try:
 #        client = tweepy.Client(
@@ -360,14 +363,22 @@ def generate_random_string(length):
 
 def proc_monomane(search_row , tweet_data, tweets):
 
+    outputLog(tweet_data)
+
+    # Twitterのcreated_atはUTCなので、パースしてUTCタイムゾーンを適用
+#    tweet_time = datetime.strptime(tweet_data['created_at'], '%Y-%m-%dT%H:%M:%S.000Z')
+#    tweet_time = tweet_time.replace(tzinfo=pytz.UTC)
     tweet_time = convert_tweet_datetime(tweet_data['created_at'])
+
+    print("tweet_time=",tweet_time)
 
     # 現在時刻（UTC）
     now = convert_tweet_datetime(datetime.now(pytz.UTC))
+    print("now=",now)
 
     # １時間以上前のツイートはモノマネ対象にしないが、search_listのモノマネ履歴には登録する
-    if now - tweet_time >= timedelta(hours=3):
-        outputLog(f"ツイートは3時間以上前のためスルーします。 tweet_data={tweet_data}")
+    if now - tweet_time >= timedelta(hours=1):
+        outputLog(f"ツイートは1時間以上前のためスルーします。 tweet_data={tweet_data}")
         return True , None
 
     # モノマネ実施のアカウントID取得
@@ -405,6 +416,7 @@ def proc_monomane(search_row , tweet_data, tweets):
     media_files = []
 
     try:
+        # print(tweet_data['attachments'])
         media_files = []
         try:
             # includes からメディア情報を取得する処理
@@ -413,6 +425,7 @@ def proc_monomane(search_row , tweet_data, tweets):
                     outputLog(f"{tweet_data['type']} URL: {tweet_data['url']}")
 
                     outputLog(f"credentials[bearer_token]={credentials['bearer_token']}")
+#                    file = download_url(tweet_data['type'],tweet_data['url'])
                     file = download_media(tweet_data['type'],tweet_data['id'],credentials['bearer_token'])
 
                     if os.path.isfile(file):
@@ -438,8 +451,20 @@ def proc_monomane(search_row , tweet_data, tweets):
         result = " ".join(words).replace("【改行】","\n")
         outputLog(f"result={result}")
         result = dmmurl変換(result, dmmid)
+                # print(result)
+                # input()
+                # print(media_files)
+                # print(f"{tweet.id}:{result}:{tweet.created_at}")
+                # input()
+                # ツイートの再投稿
+                # print("in_reply_to_tweet_id:"+in_reply_to_tweet_id)
+
         response = None
 
+        outputLog(f"result = {result}")  
+
+
+#        if False:
         try:
 
             api = tweepy.API(auth)
@@ -502,19 +527,31 @@ def proc_monomane(search_row , tweet_data, tweets):
             outputLog(str(ex))   
             return False , str(ex)
 
+
         time.sleep(5)
+
+
+        # モノマネツイート処理(モノマネ処理は行わない)
+#        if media_files:
+#            media_ids = [api.media_upload(file).media_id for file in media_files]
+#            response = client.create_tweet(text=result, media_ids=media_ids)
+#        else:
+#            response = client.create_tweet(text=result)
 
         try:
            outputLog(f"search_row={search_row}")
            outputLog(f"tweet_data={tweet_data}")
            outputLog(f"response={response.data}")
+#           outputLog(f"response[data]={response['data']}")
            insert_tweet_history_monomane(search_row , tweet_data , response.data)
+#            insert_tweet_history_monomane(search_row , tweet_data , None)
         except Exception as ex:
             outputLog(str(ex))
 
         # レスポンス内容を出力
         outputLog("Response from client.create_tweet:")
         outputLog(response)                
+
 
         response_str = json.dumps(response.data)  # JSON 文字列に変換
 
@@ -538,3 +575,17 @@ def proc_monomane(search_row , tweet_data, tweets):
 
     return False,None
                 
+#        
+#                if since_id=="":
+#                    break
+
+#        if len(tweeted_ids)>0:
+#            with open(os.path.join(folder, f"{path_tmp_screen_name}_sinceid3.txt"), 'w', encoding='utf-8') as file:
+#                for tweet in tweets.data:
+#                    file.write(f"{tweet.id}\n")
+#            with open(os.path.join(folder, f"{path_tmp_screen_name}_tweeted3.csv"), 'a', newline='', encoding='utf-8') as file:
+#                writer = csv.writer(file)
+#                for tweet in tweeted_ids:
+#                    writer.writerow(tweet)
+    
+#    time.sleep(waittime)
