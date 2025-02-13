@@ -46,7 +46,29 @@ def get_account_master(id):
     try:
         with connection.cursor() as cursor:
             # 認証情報を格納しているテーブルからデータを取得
-            sql = "SELECT api_key, api_key_secret, access_token, access_token_secret , bearer_token , client_id , client_secret , refresh_token , login_id , id ,dmm_id , search_enable , proxy_enable , proxy_url FROM account_master WHERE id = %s"
+            sql = """SELECT 
+            am.api_key, 
+            am.api_key_secret, 
+            am.access_token, 
+            am.access_token_secret , 
+            am.bearer_token , 
+            case am.api_master_id when '0' then am.client_id 
+            else api.client_id end as client_id,
+            case am.api_master_id when '0' then am.client_secret 
+            else api.client_secret end as client_secret,           
+            am.refresh_token , 
+            am.login_id , 
+            am.id ,
+            am.dmm_id , 
+            am.search_enable , 
+            am.proxy_enable , 
+            am.proxy_url ,
+            am.api_master_id
+            FROM 
+            account_master am
+            left join api_master api on api.id = am.api_master_id
+            WHERE am.id = %s"""
+
 #            sql = "SELECT id , api_key, api_key_secret, access_token, access_token_secret , bearer_token , client_id , client_secret , refresh_token , login_id FROM account_master WHERE id = %s"
             cursor.execute(sql, (id,))
             credentials = cursor.fetchone()
@@ -69,12 +91,21 @@ def get_account_master_for_update_refresh():
         with connection.cursor() as cursor:
             # 30分以上経過したデータを取得
             sql = """
-            SELECT id, client_id, client_secret, refresh_token , proxy_enable , proxy_url
-            FROM account_master
+            SELECT 
+            am.id, 
+            case am.api_master_id when '0' then am.client_id 
+            else api.client_id end as client_id,
+            case am.api_master_id when '0' then am.client_secret 
+            else api.client_secret end as client_secret, 
+            am.refresh_token , 
+            am.proxy_enable , 
+            am.proxy_url
+            FROM account_master am
             WHERE 
-                refresh_token IS NOT NULL 
-                AND refresh_updatetime IS NOT NULL
-                AND TIMESTAMPDIFF(MINUTE, refresh_updatetime, NOW()) > 60
+                am.refresh_token IS NOT NULL 
+                AND am.refresh_updatetime IS NOT NULL
+                AND TIMESTAMPDIFF(MINUTE, am.refresh_updatetime, NOW()) > 60
+            left join api_master api on api.id = am.api_master_id
             """
             cursor.execute(sql)
             result = cursor.fetchall()

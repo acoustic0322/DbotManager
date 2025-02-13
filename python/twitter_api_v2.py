@@ -131,7 +131,9 @@ def refresh_access_token(credentials):
         client_secret = credentials['client_secret']
         refresh_token = credentials['refresh_token']
 
-#        outputLog("refresh_token=", refresh_token)
+        outputLog(f"client_id={client_id}")
+        outputLog(f"client_secret={client_secret}")
+        outputLog(f"refresh_token={refresh_token}")
 
         url = "https://api.twitter.com/2/oauth2/token"
 
@@ -333,6 +335,8 @@ def proc_like_v2(credentials, tweet_id):
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
+
+    outputLog(f"client_id={credentials['client_id']}")
 
     # POSTリクエストを送信
     if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:

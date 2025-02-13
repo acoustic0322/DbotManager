@@ -17,6 +17,7 @@ from twitter_api_v2 import proc_repost_v2
 from twitter_api_v2 import proc_check_v2
 from twitter_api_v2 import proc_check_v2_2
 from twitter_api_v2 import get_latest_tweet
+from twitter_api_v2 import refresh_access_token
 from twitter_api_v1 import proc_post_v10a
 
 
@@ -128,6 +129,9 @@ if credentials:
 #            outputLog(f"tweet1={tweet1.data}")
 #            result_wk , contents_wk = proc_monomane(search_row , tweet1.data , tweets)
 #            save_tweet_history(search_row['monomane_account_id'], None , 'monomane' , None , result_wk , contents_wk , None , None )
+
+    elif mode == "refresh":
+        result1 , contents1 , contents2= refresh_access_token(credentials)
 
     else:
         # エラーメッセージを標準エラーに出力
