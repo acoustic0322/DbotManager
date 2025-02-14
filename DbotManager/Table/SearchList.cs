@@ -28,6 +28,10 @@ namespace DbotManager.Table
         public DateTime? LastReplyTime { get; set; }
         public DateTime? LastMonomaneTime { get; set; }
 
+        public bool? TimeEnable { get; set; }
+        public int? StartHour { get; set; }
+        public int? EndHour { get; set; }
+
 
         // データベース非管理
         public int CheckInterval { get; set; }
