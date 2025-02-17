@@ -231,7 +231,7 @@ public class MySqlDataAccess
                     ,am.reserve3_enable,am.reserve3_start_hour,am.reserve3_end_hour,am.reserve3_count
                     ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
                     ,am.paid_like,am.paid_bookmark
-                    ,am.check_interval,am.checkrep_interval,am.monomane_interval
+                    ,am.check_interval
                     ,am.search_enable,am.vps_id
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
@@ -295,8 +295,6 @@ public class MySqlDataAccess
                                 PaidBookmark = reader["paid_bookmark"].ToString() == "1",
 
                                 CheckInterval = int.Parse(reader["check_interval"].ToString()),
-                                CheckRepInterval = int.Parse(reader["checkrep_interval"].ToString()),
-                                MonomaneInterval = int.Parse(reader["monomane_interval"].ToString()),
 
                                 SearchEnable = reader["search_enable"].ToString() == "1",
                                 VpsId = int.Parse(reader["vps_id"].ToString()),
