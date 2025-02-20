@@ -116,6 +116,7 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
+            this.checkBoxWeb一括処理 = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -493,6 +494,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.checkBoxWeb一括処理);
             this.groupBox3.Controls.Add(this.checkBoxDuplicate);
             this.groupBox3.Controls.Add(this.comboBoxUserMaster);
             this.groupBox3.Controls.Add(this.checkBoxUserID);
@@ -542,9 +544,9 @@
             // 
             // textBoxUrlTweetID
             // 
-            this.textBoxUrlTweetID.Location = new System.Drawing.Point(120, 28);
+            this.textBoxUrlTweetID.Location = new System.Drawing.Point(308, 28);
             this.textBoxUrlTweetID.Name = "textBoxUrlTweetID";
-            this.textBoxUrlTweetID.Size = new System.Drawing.Size(470, 27);
+            this.textBoxUrlTweetID.Size = new System.Drawing.Size(319, 27);
             this.textBoxUrlTweetID.TabIndex = 5;
             // 
             // buttonExeList
@@ -560,7 +562,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 31);
+            this.label2.Location = new System.Drawing.Point(192, 28);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(108, 19);
             this.label2.TabIndex = 4;
@@ -1018,6 +1020,17 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
+            // checkBoxWeb一括処理
+            // 
+            this.checkBoxWeb一括処理.AutoSize = true;
+            this.checkBoxWeb一括処理.Location = new System.Drawing.Point(10, 27);
+            this.checkBoxWeb一括処理.Name = "checkBoxWeb一括処理";
+            this.checkBoxWeb一括処理.Size = new System.Drawing.Size(163, 23);
+            this.checkBoxWeb一括処理.TabIndex = 10;
+            this.checkBoxWeb一括処理.Text = "WEB一括処理を許可";
+            this.checkBoxWeb一括処理.UseVisualStyleBackColor = true;
+            this.checkBoxWeb一括処理.CheckedChanged += new System.EventHandler(this.checkBoxWeb一括処理_CheckedChanged);
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1156,6 +1169,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_MonomaneEnable;
         private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_LastPostTime;
         private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_LastReplyTime;
+        private System.Windows.Forms.CheckBox checkBoxWeb一括処理;
     }
 }
 
