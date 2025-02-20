@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Timers;
 
 namespace DbotManager
 {
@@ -676,6 +677,47 @@ namespace DbotManager
             */
         }
 
+        #region Web一括処理
+
+        private static System.Timers.Timer _Web監視Timer;
+
+        private void checkBoxWeb一括処理_CheckedChanged(object sender, EventArgs e)
+        {
+            if(checkBoxWeb一括処理.Checked)
+            {
+                StartTask_Web監視();
+
+            }
+            else
+            {
+                EndTask_Web監視();
+            }
+        }
+
+        private void EndTask_Web監視()
+        {
+            _Web監視Timer.Enabled = false;
+        }
+
+        private void StartTask_Web監視()
+        {
+            // タイマーを設定（1000msごと = 1秒ごと）
+            _Web監視Timer = new System.Timers.Timer(5000);
+            _Web監視Timer.Elapsed += (sender, e) => OnTimedEvent_監視(sender, e, null); //OnTimedEvent_監視(null,null, );
+            _Web監視Timer.AutoReset = true; // 繰り返し実行
+            _Web監視Timer.Enabled = true;
+        }
+
+        public void OnTimedEvent_監視(object sender, ElapsedEventArgs e, Action callback)
+        {
+            Console.WriteLine($"OnTimedEvent_監視処理を実行中: {DateTime.Now}");
+        }
+
+
+
+
+        #endregion
+
         #region 監視・モノマネ
 
         private void button監視Start_Click(object sender, EventArgs e)
@@ -820,6 +862,7 @@ namespace DbotManager
                 }
             }
         }
+
 
         #endregion
 
