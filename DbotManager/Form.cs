@@ -236,7 +236,16 @@ namespace DbotManager
 
                 checkBoxDuplicate.Checked = _webCommand.Duplicate;
 
-                MakeList_一括処理();
+                MakeList_一括処理(
+                    checkBoxいいね.Checked, checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0,
+                    checkBoxリプライ.Checked, checkBoxリプライ.Checked ? int.Parse(textBoxリプライ件数.Text) : 0,
+                    checkBoxブックマーク.Checked, checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク件数.Text) : 0,
+                    checkBoxリポスト.Checked, checkBoxリポスト.Checked ? int.Parse(textBoxリポスト件数.Text) : 0,
+                    checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
+                    checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
+                    checkBoxDuplicate.Checked ,
+                    GetTweetId()
+                );
 
                 Exe一括処理();
                 this.Close();
@@ -332,7 +341,17 @@ namespace DbotManager
 
         private void buttonMakeList_Click(object sender, EventArgs e)
         {
-            MakeList_一括処理();
+
+            MakeList_一括処理(
+                checkBoxいいね.Checked, checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0,
+                checkBoxリプライ.Checked, checkBoxリプライ.Checked ? int.Parse(textBoxリプライ件数.Text) : 0,
+                checkBoxブックマーク.Checked, checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク件数.Text) : 0,
+                checkBoxリポスト.Checked, checkBoxリポスト.Checked ? int.Parse(textBoxリポスト件数.Text) : 0,
+                checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
+                checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
+                checkBoxDuplicate.Checked,
+                GetTweetId()
+            );
         }
 
         private void buttonExeList_Click(object sender, EventArgs e)
@@ -392,23 +411,32 @@ namespace DbotManager
 
         #region TweetTask関連
 
-        private void MakeList_一括処理()
+        private void MakeList_一括処理(
+            bool likeChecked, int likeCount,
+            bool replyChecked, int replyCount,
+            bool bookmarkChecked, int bookmarkCount,
+            bool repostChecked, int repostCount,
+            bool excludeFreeAccount, int userId,
+            bool duplicateChecked, string tweetId,
+            bool fillControl = true
+            
+            )
         {
-            _tweetTask.いいね件数 = checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0;
-            _tweetTask.リプライ件数 = checkBoxリプライ.Checked ? int.Parse(textBoxリプライ件数.Text) : 0;
-            _tweetTask.ブックマーク件数 = checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク件数.Text) : 0;
-            _tweetTask.リポスト件数 = checkBoxリポスト.Checked ? int.Parse(textBoxリポスト件数.Text) : 0;
+            _tweetTask.いいね件数 = likeChecked ? likeCount : 0;
+            _tweetTask.リプライ件数 = replyChecked ? replyCount : 0;
+            _tweetTask.ブックマーク件数 = bookmarkChecked ? bookmarkCount : 0;
+            _tweetTask.リポスト件数 = repostChecked ? repostCount : 0;
 
-            _tweetTask.制限時間以内に履歴ありの無料アカウントを排除 = checkBox_15分以内に履歴のある無料アカウントを除外する.Checked;
-            _tweetTask.TargetTweetID = GetTweetId();
+            _tweetTask.制限時間以内に履歴ありの無料アカウントを排除 = excludeFreeAccount;
+            _tweetTask.TargetTweetID = tweetId;// GetTweetId();
 
-            _tweetTask.LikeEnable = checkBoxいいね.Checked;
-            _tweetTask.ReplyEnable = checkBoxリプライ.Checked;
-            _tweetTask.BookmarkEnable = checkBoxブックマーク.Checked;
-            _tweetTask.RepostEnable = checkBoxリポスト.Checked;
-            _tweetTask.DuplicateEnable = checkBoxDuplicate.Checked;
+            _tweetTask.LikeEnable = likeChecked;
+            _tweetTask.ReplyEnable = replyChecked;
+            _tweetTask.BookmarkEnable = bookmarkChecked;
+            _tweetTask.RepostEnable = repostChecked;
+            _tweetTask.DuplicateEnable = duplicateChecked;
 
-            _tweetTask.UserId = checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0;
+            _tweetTask.UserId = userId;
 
             _tweetTask.Init一括処理list();
 
@@ -427,8 +455,12 @@ namespace DbotManager
                         UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
                     });
                 }
-                dataGridViewいいね.DataSource = list.OrderBy(x => x.ID).ToList();
-                labelいいね件数.Text = $"({list.Count}件)";
+
+                if(fillControl)
+                {
+                    dataGridViewいいね.DataSource = list.OrderBy(x => x.ID).ToList();
+                    labelいいね件数.Text = $"({list.Count}件)";
+                }
             }
 
             {
@@ -455,8 +487,12 @@ namespace DbotManager
                         Media = photoName + movieName
                     }) ;
                 }
-                dataGridViewリプライ.DataSource = list.OrderBy(x => x.ID).ToList();
-                labelリプライ.Text = $"({list.Count}件)";
+
+                if(fillControl)
+                {
+                    dataGridViewリプライ.DataSource = list.OrderBy(x => x.ID).ToList();
+                    labelリプライ.Text = $"({list.Count}件)";
+                }
             }
 
             {
@@ -470,8 +506,13 @@ namespace DbotManager
                         UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
                     });
                 }
-                dataGridViewブックマーク.DataSource = list.OrderBy(x => x.ID).ToList();
-                labelブックマーク件数.Text = $"({list.Count}件)";
+
+                if(fillControl)
+                {
+                    dataGridViewブックマーク.DataSource = list.OrderBy(x => x.ID).ToList();
+                    labelブックマーク件数.Text = $"({list.Count}件)";
+
+                }
             }
 
             {
@@ -485,8 +526,13 @@ namespace DbotManager
                         UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
                     });
                 }
-                dataGridViewリポスト.DataSource = list.OrderBy(x => x.ID).ToList();
-                labelリポスト件数.Text = $"({list.Count}件)";
+
+                if(fillControl)
+                {
+                    dataGridViewリポスト.DataSource = list.OrderBy(x => x.ID).ToList();
+                    labelリポスト件数.Text = $"({list.Count}件)";
+
+                }
             }
         }
 
@@ -710,7 +756,34 @@ namespace DbotManager
 
         public void OnTimedEvent_監視(object sender, ElapsedEventArgs e, Action callback)
         {
+            _Web監視Timer.Enabled = false;
             Console.WriteLine($"OnTimedEvent_監視処理を実行中: {DateTime.Now}");
+            var item = dataAccess.GetTargetTweetProcess();
+            if(item != null)
+            {
+
+                MakeList_一括処理(
+                    item.LikeEnable,
+                    item.LikeCount,
+                    item.ReplyEnable,
+                    item.ReplyCount,
+                    item.BookmarkEnable,
+                    item.BookmarkCount,
+                    item.RepostEnable,
+                    item.RepostCount,
+                    checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
+                    item.UserId,
+                    item.Dumplicate,
+                    item.TweetId,
+                    false
+                );
+
+                item.ExeFlag = true;
+
+                dataAccess.UpdateTweetProcess(item);
+            }
+            _Web監視Timer.Enabled = true;
+
         }
 
 

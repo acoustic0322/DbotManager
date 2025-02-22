@@ -7,6 +7,8 @@ using MySql.Data.MySqlClient;
 using System.ComponentModel.Design;
 using DbotManager.MySql;
 using DbotManager;
+using static Mysqlx.Crud.UpdateOperation.Types;
+using System.Linq;
 
 public class DbConnectionInfo
 {
@@ -450,6 +452,137 @@ public class MySqlDataAccess
 
 
     #endregion
+
+    #region TweetProcessList
+    public TweetProcessList GetTargetTweetProcess()
+    {
+        List<TweetProcessList> list = new List<TweetProcessList>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                    SELECT `tweet_process_list`.`id`,
+                        `tweet_process_list`.`user_id`,
+                        `tweet_process_list`.`updatetime`,
+                        `tweet_process_list`.`tweet_id`,
+                        `tweet_process_list`.`like_enable`,
+                        `tweet_process_list`.`bookmark_enable`,
+                        `tweet_process_list`.`reply_enable`,
+                        `tweet_process_list`.`repost_enable`,
+                        `tweet_process_list`.`like_count`,
+                        `tweet_process_list`.`bookmark_count`,
+                        `tweet_process_list`.`reply_count`,
+                        `tweet_process_list`.`repost_count`,
+                        `tweet_process_list`.`dumplicate`,
+                        `tweet_process_list`.`exe_flag`
+                    FROM tweet_process_list 
+                    WHERE exe_flag = '0'
+                    AND updatetime >= NOW() - INTERVAL 6 HOUR
+                    ORDER BY updatetime
+
+                    ";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            TweetProcessList item = new TweetProcessList()
+                            {
+                                Id = int.Parse(reader["id"].ToString()),
+                                UserId = int.Parse(reader["user_id"].ToString()),
+                                UpdateTime = Convert.ToDateTime(reader["updatetime"]),
+                                TweetId = reader["tweet_id"].ToString(),
+                                LikeEnable = reader["like_enable"].ToString() == "1",
+                                BookmarkEnable = reader["bookmark_enable"].ToString() == "1",
+                                ReplyEnable = reader["reply_enable"].ToString() == "1",
+                                RepostEnable = reader["repost_enable"].ToString() == "1",
+                                LikeCount = int.Parse(reader["like_count"].ToString()),
+                                BookmarkCount = int.Parse(reader["bookmark_count"].ToString()),
+                                RepostCount = int.Parse(reader["repost_count"].ToString()),
+                                ReplyCount = int.Parse(reader["reply_count"].ToString()),
+                                Dumplicate = reader["dumplicate"].ToString() == "1",
+                                ExeFlag = reader["exe_flag"].ToString() == "1",
+                            };
+
+                            list.Add(item);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return list.Count == 0 ? null : list.FirstOrDefault();
+    }
+
+    public void UpdateTweetProcess(TweetProcessList tweetProcess)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"
+                UPDATE tweet_process_list SET 
+                    user_id = @UserId,
+                    updatetime = @UpdateTime,
+                    tweet_id = @TweetId,
+                    like_enable = @LikeEnable,
+                    bookmark_enable = @BookmarkEnable,
+                    reply_enable = @ReplyEnable,
+                    repost_enable = @RepostEnable,
+                    like_count = @LikeCount,
+                    bookmark_count = @BookmarkCount,
+                    reply_count = @ReplyCount,
+                    repost_count = @RepostCount,
+                    dumplicate = @Dumplicate,
+                    exe_flag = @ExeFlag
+                WHERE id = @Id";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserId", tweetProcess.UserId);
+                    command.Parameters.AddWithValue("@UpdateTime", tweetProcess.UpdateTime);
+                    command.Parameters.AddWithValue("@TweetId", tweetProcess.TweetId);
+                    command.Parameters.AddWithValue("@LikeEnable", tweetProcess.LikeEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@BookmarkEnable", tweetProcess.BookmarkEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@ReplyEnable", tweetProcess.ReplyEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@RepostEnable", tweetProcess.RepostEnable ? 1 : 0);
+                    command.Parameters.AddWithValue("@LikeCount", tweetProcess.LikeCount);
+                    command.Parameters.AddWithValue("@BookmarkCount", tweetProcess.BookmarkCount);
+                    command.Parameters.AddWithValue("@ReplyCount", tweetProcess.ReplyCount);
+                    command.Parameters.AddWithValue("@RepostCount", tweetProcess.RepostCount);
+                    command.Parameters.AddWithValue("@Dumplicate", tweetProcess.Dumplicate ? 1 : 0);
+                    command.Parameters.AddWithValue("@ExeFlag", tweetProcess.ExeFlag ? 1 : 0);
+                    command.Parameters.AddWithValue("@Id", tweetProcess.Id);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    if (rowsAffected == 0)
+                    {
+                        Console.WriteLine("更新対象のレコードが見つかりませんでした。");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+    }
+
+
+    #endregion TweetProcessList
 
     #region CheckAccountList
 
