@@ -510,11 +510,18 @@ namespace DbotManager
             if(CheckUserId != 0) userMasterList = userMasterList.Where(x => x.Id == CheckUserId).ToList();
 
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster()
-                .Where(x => x.Enable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
+                .Where(x => x.Enable && (bool)x.SearchEnable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
 
             // 監視、監視toRep、モノマネアカウントリストの取得
-            List<SearchList> searchList = dataAccess.GetSearchList()
-                .Where(x => (bool)x.Enable && accountMasterList.Any(y => y.Id == x.PostAccountId)).ToList();
+
+            //            List <SearchList> searchList = dataAccess.GetSearchList()
+            //                .Where(x => (bool)x.Enable && accountMasterList.Any(y => y.Id == x.PostAccountId)).ToList();
+
+            List<SearchList> wk1 = dataAccess.GetSearchList().Where(x => (bool)x.Enable).ToList();
+            List<SearchList> wk2 = wk1.Where(x => userMasterList.Any(user => user.Id == x.SearchUserId)).ToList();
+            List<SearchList> searchList = wk2.Where(x => accountMasterList.Any(y => (bool)y.Enable)).ToList();
+
+            //            List<SearchList> searchList = dataAccess.GetSearchList().Where(x => (bool)x.Enable && accountMasterList.Any(y => (bool)y.Enable && (bool)y.SearchEnable )).ToList();
 
             InitSearchHistory(accountMasterList);
 
