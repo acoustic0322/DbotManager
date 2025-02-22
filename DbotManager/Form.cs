@@ -42,6 +42,14 @@ namespace DbotManager
 
         List<TweetHistory> _tweetHistoryList;
 
+        private enum 処理モードTypes
+        {
+            一括処理,
+            監視_予約ツイート
+        }
+
+        private  処理モードTypes 処理モードType { get; set; }
+
 
         public Form(string[] args)
         {
@@ -189,7 +197,50 @@ namespace DbotManager
             col3.DefaultCellStyle.Format = "HH:mm:ss";
 
             FillControls();
+
+            if (処理モードType == 処理モードTypes.一括処理)
+            {
+                // 予約タブ削除
+                HideTab(2);
+
+                // 履歴タブ削除
+                HideTab(1);
+
+                this.Text += "(一括処理)";
+            }
+            else
+            {
+                // 一括処理タブ削除
+                HideTab(0);
+
+                this.Text += "(監視・予約ポスト)";
+            }
+
+
             _isLoading = false;
+        }
+
+        // 非表示にしたいタブを保持するための変数
+        TabPage hiddenTabPage;
+
+        // タブを非表示にする
+        private void HideTab(int index)
+        {
+            if (tabControl.TabPages.Count > index)
+            {
+                hiddenTabPage = tabControl.TabPages[index];
+                tabControl.TabPages.RemoveAt(index);
+            }
+        }
+
+        // 非表示にしたタブを再表示する
+        private void ShowTab(int index)
+        {
+            if (hiddenTabPage != null && !tabControl.TabPages.Contains(hiddenTabPage))
+            {
+                tabControl.TabPages.Insert(index, hiddenTabPage);
+                hiddenTabPage = null; // 再表示後はクリア
+            }
         }
 
         private void Form_FormClosing(object sender, FormClosingEventArgs e)
@@ -869,6 +920,7 @@ namespace DbotManager
 
         private void SaveIniファイル()
         {
+            /*
             string filePath = "config.ini";
 
             string account = comboBox監視実施アカウント.SelectedValue == null ? "" : comboBox監視実施アカウント.SelectedValue.ToString();
@@ -878,7 +930,7 @@ namespace DbotManager
 ";
             // ファイルに書き込み
             File.WriteAllText(filePath, iniContent.Trim());
-
+            */
         }
 
         private void ReadIniファイル()
@@ -912,26 +964,12 @@ namespace DbotManager
                     }
                 }
 
-                // 設定を確認
-                if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("監視実施アカウント"))
+                if (settings.ContainsKey("全体設定") && settings["全体設定"].ContainsKey("処理モード"))
                 {
-                    string account = settings["監視設定"]["監視実施アカウント"];
-                    comboBox監視実施アカウント.SelectedValue = int.Parse(account);
-                }
-                // 設定を確認
-                if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("監視周期"))
-                {
-                    string account = settings["監視設定"]["監視周期"];
-                }
-                // 設定を確認
-                if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("監視toRep周期"))
-                {
-                    string account = settings["監視設定"]["監視toRep周期"];
-                }
-                // 設定を確認
-                if (settings.ContainsKey("監視設定") && settings["監視設定"].ContainsKey("モノマネ周期"))
-                {
-                    string account = settings["監視設定"]["モノマネ周期"];
+                    if (settings["全体設定"]["処理モード"] == "一括処理")
+                        処理モードType = 処理モードTypes.一括処理;
+                    else
+                        処理モードType = 処理モードTypes.監視_予約ツイート;
                 }
             }
         }
