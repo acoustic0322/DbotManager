@@ -816,12 +816,29 @@ public class MySqlDataAccess
 
                 string query = @"
                 SELECT 
-                    id, enable, search_user_name, search_user_id, 
-                    post_account_id, post_enable, last_post_id, last_post_time,
-                    reply_account_id, reply_enable, last_reply_id, last_reply_time,
-                    monomane_account_id, monomane_enable, last_monomane_id, last_monomane_time,
-                    time_enable , start_hour , end_hour
-                FROM search_list";
+                    sl.id,
+                    sl.enable,
+                    sl.search_user_name,
+                    sl.search_user_id, 
+                    sl.post_account_id,
+                    sl.post_enable,
+                    sl.last_post_id,
+                    sl.last_post_time,
+                    sl.reply_account_id,
+                    sl.reply_enable,
+                    sl.last_reply_id, 
+                    sl.last_reply_time,
+                    sl.monomane_account_id,
+                    sl.monomane_enable,
+                    sl.last_monomane_id,
+                    sl.last_monomane_time,
+                    sl.time_enable ,
+                    sl.start_hour ,
+                    sl.end_hour ,
+                    um.searchrep_enable
+                FROM search_list sl
+                LEFT JOIN user_master um on um.id = sl.search_user_id
+";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -857,6 +874,13 @@ public class MySqlDataAccess
                                 StartHour = reader["start_hour"] != DBNull.Value ? Convert.ToInt32(reader["start_hour"]) : 0,
                                 EndHour = reader["end_hour"] != DBNull.Value ? Convert.ToInt32(reader["end_hour"]) : 0,
                             };
+
+                            // ユーザー設定で監視向こうの場合はフラグをOFFに固定
+                            if( (reader["searchrep_enable"] != DBNull.Value ? reader["searchrep_enable"].ToString() == "1" : false ) == false)
+                            {
+                                searchItem.PostEnable = false;
+                                searchItem.ReplyEnable = false;
+                            }
 
                             searchList.Add(searchItem);
                         }
@@ -1393,7 +1417,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = "SELECT id, username , password , admin , enable ,memo , " +
-                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,media_enable,check_enable" +
+                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,media_enable,check_enable,searchrep_enable" +
                     " FROM user_master;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1418,6 +1442,7 @@ public class MySqlDataAccess
                                 ReserveEnable = reader["reserve_enable"].ToString() == "1",
                                 MediaEnable = reader["media_enable"].ToString() == "1",
                                 CheckEnable = reader["check_enable"].ToString() == "1",
+                                SearchRepEnable = reader["searchrep_enable"].ToString() == "1",
                             };
 
                             userList.Add(user);
