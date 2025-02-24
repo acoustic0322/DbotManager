@@ -200,6 +200,8 @@ namespace DbotManager
 
             if (処理モードType == 処理モードTypes.一括処理)
             {
+                checkBoxWeb一括処理.Checked = true;
+
                 // 予約タブ削除
                 HideTab(2);
 

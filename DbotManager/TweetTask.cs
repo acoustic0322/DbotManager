@@ -217,6 +217,9 @@ namespace DbotManager
 
             }
 
+            // VPS_ID=0は使用禁止
+            return;
+
             {
                 var likeList = LikeAccountList.Where(x => x.VpsId == 0).ToList();
                 var bookmarkList = BookmarkAccountList.Where(x => x.VpsId == 0).ToList();
@@ -935,10 +938,13 @@ namespace DbotManager
 
             try
             {
-                // POSTリクエストを送信
+                // ヘッダー設定
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+
                 var response = await httpClient.PostAsync(url, content);
                 var responseBody = await response.Content.ReadAsStringAsync();
-
                 Console.WriteLine($"Response: {responseBody}");
             }
             catch (Exception ex)
