@@ -837,7 +837,7 @@ namespace DbotManager
                     checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
                     item.UserId,
                     item.Dumplicate,
-                    item.TweetId,
+                    ExtractNumber(item.TweetId),
                     false
                     
                 );
