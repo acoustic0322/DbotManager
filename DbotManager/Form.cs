@@ -403,7 +403,9 @@ namespace DbotManager
                 checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
                 checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
                 checkBoxDuplicate.Checked,
-                GetTweetId()
+                GetTweetId(),
+                true,
+                true
             );
         }
 
@@ -471,7 +473,8 @@ namespace DbotManager
             bool repostChecked, int repostCount,
             bool excludeFreeAccount, int userId,
             bool duplicateChecked, string tweetId,
-            bool fillControl = true
+            bool fillControl = true,
+            bool ユーザー権限無視 = false
             
             )
         {
@@ -491,7 +494,7 @@ namespace DbotManager
 
             _tweetTask.UserId = userId;
 
-            _tweetTask.Init一括処理list();
+            _tweetTask.Init一括処理list(ユーザー権限無視);
 
             var userList = dataAccess.GetUserMaster();
             var commentList = dataAccess.GetCommentMaster();
@@ -829,6 +832,7 @@ namespace DbotManager
                     item.Dumplicate,
                     item.TweetId,
                     false
+                    
                 );
 
                 Exe一括処理();

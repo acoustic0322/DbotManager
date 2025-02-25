@@ -135,7 +135,7 @@ namespace DbotManager
 
         #region 一括処理
 
-        public void Init一括処理list()
+        public void Init一括処理list(bool ユーザー権限無視)
         {
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
@@ -152,10 +152,10 @@ namespace DbotManager
                 accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
             }
 
-            List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.LIKE);
-            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPLY);
-            List<AccountMaster> bookMarkList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK);
-            List<AccountMaster> repostList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPOST);
+            List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.LIKE , ユーザー権限無視);
+            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPLY, ユーザー権限無視);
+            List<AccountMaster> bookMarkList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK, ユーザー権限無視);
+            List<AccountMaster> repostList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPOST, ユーザー権限無視);
 
             var selectedItems = SelectBalancedItems(likeList, replyList, bookMarkList, repostList, いいね件数, リプライ件数, ブックマーク件数, リポスト件数);
 
@@ -388,7 +388,9 @@ namespace DbotManager
             List<TweetHistory> tweetHistoryList,
             List<CommentMaster> commentMasterList,
             List<MediaMaster> mediaMasterList,
-            TweetProcTypes tweetProcType)
+            TweetProcTypes tweetProcType,
+            bool ユーザー権限無視
+            )
         {
             List<AccountMaster> retList = new List<AccountMaster>();
 
@@ -404,9 +406,9 @@ namespace DbotManager
                 var userMasterRow = userMasterList.Where(x => x.Id == account.UserId).FirstOrDefault();
 
                 if (userMasterRow.Enable == false) continue;
-                if (tweetProcType == TweetProcTypes.LIKE && !userMasterRow.LikeEnable) continue;
-                else if (tweetProcType == TweetProcTypes.BOOKMARK && !userMasterRow.BookmarkEnable) continue;
-                else if (tweetProcType == TweetProcTypes.REPOST && !userMasterRow.RepostEnable) continue;
+                if (tweetProcType == TweetProcTypes.LIKE && !userMasterRow.LikeEnable && !ユーザー権限無視) continue;
+                else if (tweetProcType == TweetProcTypes.BOOKMARK && !userMasterRow.BookmarkEnable && !ユーザー権限無視) continue;
+                else if (tweetProcType == TweetProcTypes.REPOST && !userMasterRow.RepostEnable && !ユーザー権限無視) continue;
                 else if (tweetProcType == TweetProcTypes.REPLY && !userMasterRow.ReplyEnable) continue;
 
                 // 処理無効アカウントはスルー
