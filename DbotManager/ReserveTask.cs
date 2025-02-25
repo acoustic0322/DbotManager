@@ -151,6 +151,10 @@ namespace DbotManager
             var random = new Random();
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
 
+            // ランダムな件数を設定 (0 ～ count)
+            int randomCount = random.Next(count + 1); // countを含めるため +1
+
+
             // 今日の日付
             var today = DateTime.Today;
 
@@ -164,7 +168,7 @@ namespace DbotManager
                 : today.AddHours(endHour);                // 当日の時間
 
             // ランダムな時間を生成する
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < randomCount; i++)
             {
                 DateTime randomTime;
 
