@@ -831,6 +831,8 @@ namespace DbotManager
                     false
                 );
 
+                Exe一括処理();
+
                 item.ExeFlag = true;
 
                 dataAccess.UpdateTweetProcess(item);
