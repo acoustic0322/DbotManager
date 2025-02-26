@@ -200,6 +200,8 @@ namespace DbotManager
 
             if (処理モードType == 処理モードTypes.一括処理)
             {
+                checkBoxWeb一括処理.Checked = true;
+
                 // 予約タブ削除
                 HideTab(2);
 
@@ -212,6 +214,13 @@ namespace DbotManager
             {
                 // 一括処理タブ削除
                 HideTab(0);
+
+                // 予約ポストの自動開始
+                button予約作成_Click(sender, e);
+                button予約Start_Click(sender, e);
+
+                // 監視モードの自動開始
+                button監視Start_Click(sender, e);
 
                 this.Text += "(監視・予約ポスト)";
             }
@@ -401,7 +410,9 @@ namespace DbotManager
                 checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
                 checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
                 checkBoxDuplicate.Checked,
-                GetTweetId()
+                GetTweetId(),
+                true,
+                true
             );
         }
 
@@ -469,7 +480,8 @@ namespace DbotManager
             bool repostChecked, int repostCount,
             bool excludeFreeAccount, int userId,
             bool duplicateChecked, string tweetId,
-            bool fillControl = true
+            bool fillControl = true,
+            bool ユーザー権限無視 = false
             
             )
         {
@@ -489,7 +501,7 @@ namespace DbotManager
 
             _tweetTask.UserId = userId;
 
-            _tweetTask.Init一括処理list();
+            _tweetTask.Init一括処理list(ユーザー権限無視);
 
             var userList = dataAccess.GetUserMaster();
             var commentList = dataAccess.GetCommentMaster();
@@ -827,7 +839,10 @@ namespace DbotManager
                     item.Dumplicate,
                     item.TweetId,
                     false
+                    
                 );
+
+                Exe一括処理();
 
                 item.ExeFlag = true;
 
