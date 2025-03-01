@@ -398,6 +398,12 @@ namespace DbotManager
 
             foreach (var account in accountMasterList)
             {
+                if(account.Id == 584)
+                {
+                    int a = 1;
+                }
+
+
                 // 無効アカウントはスルー
                 if (!account.Enable) continue;
 
@@ -409,7 +415,7 @@ namespace DbotManager
                 if (tweetProcType == TweetProcTypes.LIKE && !userMasterRow.LikeEnable && !ユーザー権限無視) continue;
                 else if (tweetProcType == TweetProcTypes.BOOKMARK && !userMasterRow.BookmarkEnable && !ユーザー権限無視) continue;
                 else if (tweetProcType == TweetProcTypes.REPOST && !userMasterRow.RepostEnable && !ユーザー権限無視) continue;
-                else if (tweetProcType == TweetProcTypes.REPLY && !userMasterRow.ReplyEnable) continue;
+                else if (tweetProcType == TweetProcTypes.REPLY && !userMasterRow.ReplyEnable && !ユーザー権限無視) continue;
 
                 // 処理無効アカウントはスルー
                 if (tweetProcType == TweetProcTypes.LIKE && !account.LikeEnable) continue;

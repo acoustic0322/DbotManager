@@ -40,6 +40,7 @@ namespace DbotManager
 
             var accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable);
 
+
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
@@ -63,6 +64,8 @@ namespace DbotManager
 
             List<ReserveSchedule> reserveScheduleList = new List<ReserveSchedule>();
 
+            int noCommentCnt = 0;
+
             foreach (var reserve in reserveMasterList)
             {
                 // ランダム指定済みのコメントは除外する
@@ -71,7 +74,11 @@ namespace DbotManager
                     .Where(x => x.TweetModeType == TweetModeTypes.Post)
                     .ToList();
 
-                if (commentList.Count == 0) continue;
+                if (commentList.Count == 0)
+                {
+                    noCommentCnt++;
+                    continue;
+                }
 
                 if (reserve.Reserve1Enable)
                 {
@@ -152,7 +159,8 @@ namespace DbotManager
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
 
             // ランダムな件数を設定 (0 ～ count)
-            int randomCount = random.Next(count + 1); // countを含めるため +1
+            int randomCount = random.Next(count) + 1; // countを含めるため +1
+            //int randomCount = 1;
 
 
             // 今日の日付
