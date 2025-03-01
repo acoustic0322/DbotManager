@@ -65,6 +65,8 @@
             this.textBoxいいね件数 = new System.Windows.Forms.TextBox();
             this.checkBoxいいね = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.checkBox一括処理禁止権限無視 = new System.Windows.Forms.CheckBox();
+            this.checkBoxWeb一括処理 = new System.Windows.Forms.CheckBox();
             this.checkBoxDuplicate = new System.Windows.Forms.CheckBox();
             this.comboBoxUserMaster = new System.Windows.Forms.ComboBox();
             this.checkBoxUserID = new System.Windows.Forms.CheckBox();
@@ -116,7 +118,6 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.checkBoxWeb一括処理 = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -494,6 +495,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.checkBox一括処理禁止権限無視);
             this.groupBox3.Controls.Add(this.checkBoxWeb一括処理);
             this.groupBox3.Controls.Add(this.checkBoxDuplicate);
             this.groupBox3.Controls.Add(this.comboBoxUserMaster);
@@ -510,6 +512,29 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "基本設定";
             // 
+            // checkBox一括処理禁止権限無視
+            // 
+            this.checkBox一括処理禁止権限無視.AutoSize = true;
+            this.checkBox一括処理禁止権限無視.Checked = true;
+            this.checkBox一括処理禁止権限無視.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox一括処理禁止権限無視.Location = new System.Drawing.Point(472, 90);
+            this.checkBox一括処理禁止権限無視.Name = "checkBox一括処理禁止権限無視";
+            this.checkBox一括処理禁止権限無視.Size = new System.Drawing.Size(178, 23);
+            this.checkBox一括処理禁止権限無視.TabIndex = 11;
+            this.checkBox一括処理禁止権限無視.Text = "一括処理禁止権限無視";
+            this.checkBox一括処理禁止権限無視.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxWeb一括処理
+            // 
+            this.checkBoxWeb一括処理.AutoSize = true;
+            this.checkBoxWeb一括処理.Location = new System.Drawing.Point(10, 27);
+            this.checkBoxWeb一括処理.Name = "checkBoxWeb一括処理";
+            this.checkBoxWeb一括処理.Size = new System.Drawing.Size(163, 23);
+            this.checkBoxWeb一括処理.TabIndex = 10;
+            this.checkBoxWeb一括処理.Text = "WEB一括処理を許可";
+            this.checkBoxWeb一括処理.UseVisualStyleBackColor = true;
+            this.checkBoxWeb一括処理.CheckedChanged += new System.EventHandler(this.checkBoxWeb一括処理_CheckedChanged);
+            // 
             // checkBoxDuplicate
             // 
             this.checkBoxDuplicate.AutoSize = true;
@@ -517,9 +542,9 @@
             this.checkBoxDuplicate.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBoxDuplicate.Location = new System.Drawing.Point(344, 90);
             this.checkBoxDuplicate.Name = "checkBoxDuplicate";
-            this.checkBoxDuplicate.Size = new System.Drawing.Size(157, 23);
+            this.checkBoxDuplicate.Size = new System.Drawing.Size(122, 23);
             this.checkBoxDuplicate.TabIndex = 9;
-            this.checkBoxDuplicate.Text = "モード重複を許容する";
+            this.checkBoxDuplicate.Text = "モード重複許容";
             this.checkBoxDuplicate.UseVisualStyleBackColor = true;
             // 
             // comboBoxUserMaster
@@ -551,9 +576,9 @@
             // 
             // buttonExeList
             // 
-            this.buttonExeList.Location = new System.Drawing.Point(633, 71);
+            this.buttonExeList.Location = new System.Drawing.Point(666, 71);
             this.buttonExeList.Name = "buttonExeList";
-            this.buttonExeList.Size = new System.Drawing.Size(103, 44);
+            this.buttonExeList.Size = new System.Drawing.Size(70, 44);
             this.buttonExeList.TabIndex = 3;
             this.buttonExeList.Text = "実行";
             this.buttonExeList.UseVisualStyleBackColor = true;
@@ -570,11 +595,11 @@
             // 
             // buttonMakeList
             // 
-            this.buttonMakeList.Location = new System.Drawing.Point(633, 18);
+            this.buttonMakeList.Location = new System.Drawing.Point(651, 18);
             this.buttonMakeList.Name = "buttonMakeList";
-            this.buttonMakeList.Size = new System.Drawing.Size(103, 44);
+            this.buttonMakeList.Size = new System.Drawing.Size(85, 44);
             this.buttonMakeList.TabIndex = 1;
-            this.buttonMakeList.Text = "リスト作成";
+            this.buttonMakeList.Text = "ﾘｽﾄ作成";
             this.buttonMakeList.UseVisualStyleBackColor = true;
             this.buttonMakeList.Click += new System.EventHandler(this.buttonMakeList_Click);
             // 
@@ -1020,17 +1045,6 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // checkBoxWeb一括処理
-            // 
-            this.checkBoxWeb一括処理.AutoSize = true;
-            this.checkBoxWeb一括処理.Location = new System.Drawing.Point(10, 27);
-            this.checkBoxWeb一括処理.Name = "checkBoxWeb一括処理";
-            this.checkBoxWeb一括処理.Size = new System.Drawing.Size(163, 23);
-            this.checkBoxWeb一括処理.TabIndex = 10;
-            this.checkBoxWeb一括処理.Text = "WEB一括処理を許可";
-            this.checkBoxWeb一括処理.UseVisualStyleBackColor = true;
-            this.checkBoxWeb一括処理.CheckedChanged += new System.EventHandler(this.checkBoxWeb一括処理_CheckedChanged);
-            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1170,6 +1184,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_LastPostTime;
         private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_LastReplyTime;
         private System.Windows.Forms.CheckBox checkBoxWeb一括処理;
+        private System.Windows.Forms.CheckBox checkBox一括処理禁止権限無視;
     }
 }
 

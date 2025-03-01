@@ -412,7 +412,7 @@ namespace DbotManager
                 checkBoxDuplicate.Checked,
                 GetTweetId(),
                 true,
-                true
+                checkBox一括処理禁止権限無視.Checked
             );
         }
 
