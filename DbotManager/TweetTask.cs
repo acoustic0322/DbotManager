@@ -100,6 +100,7 @@ namespace DbotManager
         public bool BookmarkEnable { get; set; }
         public bool RepostEnable { get; set; }
         public bool ReplyEnable { get; set; }
+        public bool ReplyToRep { get; set; }
         public bool DuplicateEnable { get; set; }
 
         public int 件数 { get; set; }
@@ -153,7 +154,7 @@ namespace DbotManager
             }
 
             List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.LIKE , ユーザー権限無視);
-            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPLY, ユーザー権限無視);
+            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPLY, ユーザー権限無視 , ReplyToRep);
             List<AccountMaster> bookMarkList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK, ユーザー権限無視);
             List<AccountMaster> repostList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPOST, ユーザー権限無視);
 
@@ -389,7 +390,8 @@ namespace DbotManager
             List<CommentMaster> commentMasterList,
             List<MediaMaster> mediaMasterList,
             TweetProcTypes tweetProcType,
-            bool ユーザー権限無視
+            bool ユーザー権限無視,
+            bool repToRep = false
             )
         {
             List<AccountMaster> retList = new List<AccountMaster>();
@@ -475,7 +477,8 @@ namespace DbotManager
 
                 if (tweetProcType == TweetProcTypes.REPLY)
                 {
-                    var commentMasterListWk = commentMasterList.Where(x => x.AccountId == account.Id && x.TweetModeType == TweetModeTypes.Replay).ToList();
+                    var commentMasterListWk = commentMasterList.Where(x => x.AccountId == account.Id && x.TweetModeType == (repToRep ? TweetModeTypes.ReplyToReply : TweetModeTypes.Replay)).ToList();
+
                     if (commentMasterListWk.Count == 0) continue;
 
                     var commentItem = SupportUtil.GetRandomItem(commentMasterListWk.Where(x => x.AccountId == account.Id).ToList());
