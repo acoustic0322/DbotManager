@@ -35,6 +35,7 @@ namespace DbotManager.Table
         public bool LikeEnable { get; set; }
         public bool BookmarkEnable { get; set; }
         public bool ReplyEnable { get; set; }
+        public bool RepToRep { get; set; }
         public bool RepostEnable { get; set; }
         public int LikeCount { get; set; }
         public int BookmarkCount { get; set; }

@@ -299,6 +299,7 @@ namespace DbotManager
                 MakeList_一括処理(
                     checkBoxいいね.Checked, checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0,
                     checkBoxリプライ.Checked, checkBoxリプライ.Checked ? int.Parse(textBoxリプライ件数.Text) : 0,
+                    checkBoxRepToRep.Checked,
                     checkBoxブックマーク.Checked, checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク件数.Text) : 0,
                     checkBoxリポスト.Checked, checkBoxリポスト.Checked ? int.Parse(textBoxリポスト件数.Text) : 0,
                     checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
@@ -405,6 +406,7 @@ namespace DbotManager
             MakeList_一括処理(
                 checkBoxいいね.Checked, checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0,
                 checkBoxリプライ.Checked, checkBoxリプライ.Checked ? int.Parse(textBoxリプライ件数.Text) : 0,
+                checkBoxRepToRep.Checked,
                 checkBoxブックマーク.Checked, checkBoxブックマーク.Checked ? int.Parse(textBoxブックマーク件数.Text) : 0,
                 checkBoxリポスト.Checked, checkBoxリポスト.Checked ? int.Parse(textBoxリポスト件数.Text) : 0,
                 checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
@@ -476,6 +478,7 @@ namespace DbotManager
         private void MakeList_一括処理(
             bool likeChecked, int likeCount,
             bool replyChecked, int replyCount,
+            bool repToRep,
             bool bookmarkChecked, int bookmarkCount,
             bool repostChecked, int repostCount,
             bool excludeFreeAccount, int userId,
@@ -495,6 +498,7 @@ namespace DbotManager
 
             _tweetTask.LikeEnable = likeChecked;
             _tweetTask.ReplyEnable = replyChecked;
+            _tweetTask.ReplyToRep = repToRep;
             _tweetTask.BookmarkEnable = bookmarkChecked;
             _tweetTask.RepostEnable = repostChecked;
             _tweetTask.DuplicateEnable = duplicateChecked;
@@ -830,6 +834,7 @@ namespace DbotManager
                     item.LikeCount,
                     item.ReplyEnable,
                     item.ReplyCount,
+                    item.RepToRep,
                     item.BookmarkEnable,
                     item.BookmarkCount,
                     item.RepostEnable,

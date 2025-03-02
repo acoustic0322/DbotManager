@@ -118,6 +118,7 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
+            this.checkBoxRepToRep = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -169,6 +170,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.checkBoxRepToRep);
             this.groupBox4.Controls.Add(this.labelリプライ);
             this.groupBox4.Controls.Add(this.dataGridViewリプライ);
             this.groupBox4.Controls.Add(this.textBoxリプライ件数);
@@ -183,7 +185,7 @@
             // labelリプライ
             // 
             this.labelリプライ.AutoSize = true;
-            this.labelリプライ.Location = new System.Drawing.Point(137, 30);
+            this.labelリプライ.Location = new System.Drawing.Point(147, 35);
             this.labelリプライ.Name = "labelリプライ";
             this.labelリプライ.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.labelリプライ.Size = new System.Drawing.Size(47, 19);
@@ -243,9 +245,9 @@
             // 
             // textBoxリプライ件数
             // 
-            this.textBoxリプライ件数.Location = new System.Drawing.Point(43, 22);
+            this.textBoxリプライ件数.Location = new System.Drawing.Point(27, 22);
             this.textBoxリプライ件数.Name = "textBoxリプライ件数";
-            this.textBoxリプライ件数.Size = new System.Drawing.Size(71, 27);
+            this.textBoxリプライ件数.Size = new System.Drawing.Size(57, 27);
             this.textBoxリプライ件数.TabIndex = 0;
             this.textBoxリプライ件数.Text = "110";
             // 
@@ -1045,6 +1047,16 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
+            // checkBoxRepToRep
+            // 
+            this.checkBoxRepToRep.AutoSize = true;
+            this.checkBoxRepToRep.Location = new System.Drawing.Point(89, 9);
+            this.checkBoxRepToRep.Name = "checkBoxRepToRep";
+            this.checkBoxRepToRep.Size = new System.Drawing.Size(101, 23);
+            this.checkBoxRepToRep.TabIndex = 10;
+            this.checkBoxRepToRep.Text = "RepToRep";
+            this.checkBoxRepToRep.UseVisualStyleBackColor = true;
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1185,6 +1197,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn SearchList_LastReplyTime;
         private System.Windows.Forms.CheckBox checkBoxWeb一括処理;
         private System.Windows.Forms.CheckBox checkBox一括処理禁止権限無視;
+        private System.Windows.Forms.CheckBox checkBoxRepToRep;
     }
 }
 
