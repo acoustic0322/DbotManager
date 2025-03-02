@@ -9,6 +9,8 @@ import time
 import datetime
 import configparser
 
+from mysql import get_random_comment_id
+
 def get_now():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
