@@ -72,6 +72,8 @@ def run_script():
         reply_list = data.get("reply_list")
         reptorep = data.get("rep_to_rep")
         
+        print("data",data)
+        
         # レスポンスを即座に返す
         response = {"status": "success", "message": "Request received"}
         threading.Thread(target=background_task, args=(tweet_id, like_list, bookmark_list, repost_list, reply_list, reptorep)).start()
