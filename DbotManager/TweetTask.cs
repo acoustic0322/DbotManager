@@ -69,7 +69,7 @@ namespace DbotManager
         public List<int> BookmarkList { get; set; }
         public List<int> RepostList { get; set; }
         public List<int> ReplyList { get; set; }
-    }
+        public bool RepToRep { get; set; }   }
 
     public class TweetResult
     {
@@ -201,7 +201,7 @@ namespace DbotManager
                 var repostList = RepostAccountList.Where(x => x.VpsId == vps.Id).ToList();
                 var replyList = ReplyAccountList.Where(x => x.VpsId == vps.Id).ToList();
 
-                if (likeList.Count == 0 && bookmarkList.Count == 0 && repostList.Count == 0 && repostList.Count == 0) continue;
+                if (likeList.Count == 0 && bookmarkList.Count == 0 && repostList.Count == 0 && replyList.Count == 0) continue;
 
                 TweetVpsCommand tweetVpsCommand = new TweetVpsCommand()
                 {
@@ -211,7 +211,8 @@ namespace DbotManager
                     BookmarkList = bookmarkList.Select(x => x.Id).ToList(),
                     RepostList = repostList.Select(x => x.Id).ToList(),
                     ReplyList = replyList.Select(x => x.Id).ToList(),
-                    TweetId = TargetTweetID
+                    TweetId = TargetTweetID,
+                    RepToRep = ReplyToRep
                 };
 
                 TweetVpsProc(tweetVpsCommand);
@@ -942,7 +943,8 @@ namespace DbotManager
                 like_list = string.Join(",", tweetVpsCommand.LikeList),
                 bookmark_list = string.Join(",", tweetVpsCommand.BookmarkList),
                 repost_list = string.Join(",", tweetVpsCommand.RepostList),
-                reply_list = string.Join(",", tweetVpsCommand.ReplyList)
+                reply_list = string.Join(",", tweetVpsCommand.ReplyList),
+                rep_to_rep = string.Join(",", tweetVpsCommand.RepToRep),
             };
             string json = JsonConvert.SerializeObject(requestData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
