@@ -692,6 +692,8 @@ namespace DbotManager
         {
             var list = _reserveTask.MakeScheduleList().OrderBy(x => x.ReserveTime).ToList();
 
+            label予約ポスト件数.Text = $"({list.Count}件)";
+
             dataGridViewReserveSchedule.DataSource = list;
         }
 

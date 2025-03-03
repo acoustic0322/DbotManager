@@ -159,8 +159,8 @@ namespace DbotManager
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
 
             // ランダムな件数を設定 (0 ～ count)
-            int randomCount = random.Next(count) + 1; // countを含めるため +1
-            //int randomCount = 1;
+            int randomCount = random.Next(count+1); // countを含めるため +1
+//            randomCount = 0;
 
 
             // 今日の日付

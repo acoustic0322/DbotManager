@@ -31,6 +31,7 @@
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPage一括処理 = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.checkBoxRepToRep = new System.Windows.Forms.CheckBox();
             this.labelリプライ = new System.Windows.Forms.Label();
             this.dataGridViewリプライ = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -118,7 +119,7 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.checkBoxRepToRep = new System.Windows.Forms.CheckBox();
+            this.label予約ポスト件数 = new System.Windows.Forms.Label();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -181,6 +182,16 @@
             this.groupBox4.TabIndex = 7;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "リプライ";
+            // 
+            // checkBoxRepToRep
+            // 
+            this.checkBoxRepToRep.AutoSize = true;
+            this.checkBoxRepToRep.Location = new System.Drawing.Point(89, 9);
+            this.checkBoxRepToRep.Name = "checkBoxRepToRep";
+            this.checkBoxRepToRep.Size = new System.Drawing.Size(101, 23);
+            this.checkBoxRepToRep.TabIndex = 10;
+            this.checkBoxRepToRep.Text = "RepToRep";
+            this.checkBoxRepToRep.UseVisualStyleBackColor = true;
             // 
             // labelリプライ
             // 
@@ -817,6 +828,7 @@
             // 
             // tabPage予約
             // 
+            this.tabPage予約.Controls.Add(this.label予約ポスト件数);
             this.tabPage予約.Controls.Add(this.button予約End);
             this.tabPage予約.Controls.Add(this.button予約Start);
             this.tabPage予約.Controls.Add(this.dataGridViewReserveSchedule);
@@ -1047,15 +1059,15 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // checkBoxRepToRep
+            // label予約ポスト件数
             // 
-            this.checkBoxRepToRep.AutoSize = true;
-            this.checkBoxRepToRep.Location = new System.Drawing.Point(89, 9);
-            this.checkBoxRepToRep.Name = "checkBoxRepToRep";
-            this.checkBoxRepToRep.Size = new System.Drawing.Size(101, 23);
-            this.checkBoxRepToRep.TabIndex = 10;
-            this.checkBoxRepToRep.Text = "RepToRep";
-            this.checkBoxRepToRep.UseVisualStyleBackColor = true;
+            this.label予約ポスト件数.AutoSize = true;
+            this.label予約ポスト件数.Location = new System.Drawing.Point(690, 35);
+            this.label予約ポスト件数.Name = "label予約ポスト件数";
+            this.label予約ポスト件数.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label予約ポスト件数.Size = new System.Drawing.Size(47, 19);
+            this.label予約ポスト件数.TabIndex = 11;
+            this.label予約ポスト件数.Text = "(0件)";
             // 
             // Form
             // 
@@ -1096,6 +1108,7 @@
             this.groupBox監視.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView監視)).EndInit();
             this.tabPage予約.ResumeLayout(false);
+            this.tabPage予約.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewReserveSchedule)).EndInit();
             this.tabPage履歴.ResumeLayout(false);
             this.tabPage履歴.PerformLayout();
@@ -1198,6 +1211,7 @@
         private System.Windows.Forms.CheckBox checkBoxWeb一括処理;
         private System.Windows.Forms.CheckBox checkBox一括処理禁止権限無視;
         private System.Windows.Forms.CheckBox checkBoxRepToRep;
+        private System.Windows.Forms.Label label予約ポスト件数;
     }
 }
 
