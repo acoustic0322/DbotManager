@@ -4,9 +4,14 @@ require __DIR__.'/twitteroauth/vendor/autoload.php';
 
 //define('OAUTH_CALLBACK' , 'http://localhost:8000/callback.php');
 define('OAUTH_CALLBACK' , 'https://d-bot.happywinds.net/d-bot/callback.php');
+//define('OAUTH_CALLBACK' , 'https://d-bot.happywinds.net/callback.php');
 //define('MANAGER_PATH' , 'C:\\Users\\winserverroot\\Desktop\\DbotManager\\DbotManager\\bin\\Debug\\DbotManager.exe');
-define('MANAGER_PATH' , 'C:\\Users\\winserverroot\\Desktop\\DbotManager\\DbotManager\\bin\\fromDbot\\DbotManager.exe');
-define('WORK_FOLDER' , 'C:\\Users\\winserverroot\\Desktop\\DbotManager\\DbotManager\\bin\\fromDbot');
+
+define('CERT_FILE_PATH' , 'C:/pem/d-bot.pem');
+
+
+define('MANAGER_PATH' , 'C:\\DbotManager\\DbotManager.exe');
+define('WORK_FOLDER' , 'C:\\DbotManager');
 //define('MANAGER_PATH' , 'Debug\\DbotManager.exe');
 //define('WORK_FOLDER' , 'Debug');
 
@@ -71,6 +76,8 @@ function current_user($conn){
         $_SESSION['reserve_enable'] = $user['reserve_enable'];
         $_SESSION['media_enable'] = $user['media_enable'];
         $_SESSION['check_enable'] = $user['check_enable'];
+        $_SESSION['api_master_id'] = $user['api_master_id'];
+        $_SESSION['searchrep_enable'] = $user['searchrep_enable'];
 
         $re = true;
     }
@@ -81,9 +88,28 @@ function current_user($conn){
 function get_user($conn,$id){
     $re = null;
 
-    $stmt = $conn->prepare("SELECT id,username,admin,password,enable,memo,
-    like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_enable,post_enable,reserve_enable,media_enable,check_enable
-     FROM user_master WHERE id = ?");
+    $stmt = $conn->prepare(
+        "SELECT 
+        id,
+        username,
+        admin,
+        password,
+        enable,
+        memo,
+        like_enable,
+        bookmark_enable,
+        reply_enable,
+        repost_enable,
+        sensyuken_enable,
+        post_enable,
+        reserve_enable,
+        media_enable,
+        check_enable,
+        api_master_id,
+        searchrep_enable
+     FROM user_master WHERE id = ?"
+     );
+
     if ($stmt) {
         $stmt->bind_param("i",$id);
         $stmt->execute();
@@ -103,7 +129,9 @@ function get_user($conn,$id){
             $post_enable,
             $reserve_enable,
             $media_enable,
-            $check_enable
+            $check_enable,
+            $api_master_id,
+            $seachrep_enable
         );
         $stmt->fetch();
 
@@ -123,7 +151,9 @@ function get_user($conn,$id){
                 'post_enable' => $post_enable,
                 'reserve_enable' => $reserve_enable,
                 'media_enable' => $media_enable,
-                'check_enable' => $check_enable
+                'check_enable' => $check_enable,
+                'api_master_id' => $api_master_id,
+                'searchrep_enable' => $seachrep_enable
                 ];
         }
 
@@ -140,50 +170,54 @@ function get_account($conn, $id)
 
     $query = "
     SELECT 
-        id,
-        user_id,
-        name,
-        login_id,
-        login_password,
-        client_id,
-        client_secret,
-        api_key,
-        api_key_secret,
-        access_token,
-        access_token_secret,
-        bearer_token,
-        refresh_token,
-        enable,
-        like_enable,
-        reply_enable,
-        bookmark_enable,
-        repost_enable , 
-        post_enable,
-        paid,
-        paid_like ,
-        paid_bookmark ,
-        reserve1_enable,
-        reserve1_start_hour,
-        reserve1_end_hour,
-        reserve1_count,
-        reserve2_enable,
-        reserve2_start_hour,
-        reserve2_end_hour,
-        reserve2_count,
-        reserve3_enable,
-        reserve3_start_hour,
-        reserve3_end_hour,
-        reserve3_count,
-        reserve4_enable,
-        reserve4_start_hour,
-        reserve4_end_hour,
-        reserve4_count ,
-        dmm_id ,
-        search_enable ,
-        proxy_enable ,
-        proxy_url
-    FROM account_master 
-    WHERE id = ?;
+        am.id,
+        am.user_id,
+        am.name,
+        am.login_id,
+        am.login_password,
+        case when am.api_master_id != 0 then api.client_id else am.client_id end as client_id,
+        case when am.api_master_id != 0 then api.client_secret else am.client_secret end as client_secret,
+        am.api_key,
+        am.api_key_secret,
+        am.access_token,
+        am.access_token_secret,
+        am.bearer_token,
+        am.refresh_token,
+        am.enable,
+        am.like_enable,
+        am.reply_enable,
+        am.bookmark_enable,
+        am.repost_enable , 
+        am.post_enable,
+        am.paid,
+        am.paid_like ,
+        am.paid_bookmark ,
+        am.reserve1_enable,
+        am.reserve1_start_hour,
+        am.reserve1_end_hour,
+        am.reserve1_count,
+        am.reserve2_enable,
+        am.reserve2_start_hour,
+        am.reserve2_end_hour,
+        am.reserve2_count,
+        am.reserve3_enable,
+        am.reserve3_start_hour,
+        am.reserve3_end_hour,
+        am.reserve3_count,
+        am.reserve4_enable,
+        am.reserve4_start_hour,
+        am.reserve4_end_hour,
+        am.reserve4_count ,
+        am.dmm_id ,
+        am.search_enable ,
+        am.proxy_enable ,
+        am.proxy_url ,
+        am.check_interval ,
+        am.api_master_id ,
+        am.use_admin_api
+    FROM account_master am
+    LEFT JOIN api_master api ON api.id = am.api_master_id
+    WHERE am.id = ?;
     ";
 
     $stmt = $conn->prepare($query);
@@ -236,7 +270,10 @@ function get_account($conn, $id)
             $dmm_id,
             $search_enable,
             $proxy_enable,
-            $proxy_url
+            $proxy_url ,
+            $check_interval,
+            $api_master_id,
+            $use_admin_api
         );
 
         if ($stmt->fetch()) {
@@ -284,6 +321,9 @@ function get_account($conn, $id)
                 'search_enable' => $search_enable,
                 'proxy_enable' => $proxy_enable,
                 'proxy_url' => $proxy_url,
+                'check_interval' => $check_interval,
+                'api_master_id' => $api_master_id,
+                'use_admin_api' => $use_admin_api,
             ];
         }
     }

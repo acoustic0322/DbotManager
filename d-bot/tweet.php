@@ -15,52 +15,44 @@ $current_userid = $_SESSION['user_id'];
 
 // POSTリクエストの場合
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 外部アプリのパス（環境に応じて変更してください）
-    $externalAppPath = MANAGER_PATH;
 
     // 引数の準備
-    $tweetId = isset($_POST['tweet_id']) ? escapeshellarg($_POST['tweet_id']) : '';
-    $likeEnable = isset($_POST['like_enable']) ? 'True' : 'False';
-    $bookmarkEnable = isset($_POST['bookmark_enable']) ? 'True' : 'False';
-    $replyEnable = isset($_POST['reply_enable']) ? 'True' : 'False';
-    $repostEnable = isset($_POST['repost_enable']) ? 'True' : 'False';
+    $tweetId = isset($_POST['tweet_id']) ? $_POST['tweet_id'] : '';
+
+    // フラグを 0 か 1 に正規化
+    $likeEnable = (!empty($_POST['like_enable'])) ? 1 : 0;
+    $bookmarkEnable = (!empty($_POST['bookmark_enable'])) ? 1 : 0;
+    $replyEnable = (!empty($_POST['reply_enable'])) ? 1 : 0;
+    $repostEnable = (!empty($_POST['repost_enable'])) ? 1 : 0;
+    $repToRep = (!empty($_POST['rep_to_rep'])) ? 1 : 0;
+
+    echo $repToRep;
 
     // 件数を取得
     $likeCount = isset($_POST['like_count']) ? intval($_POST['like_count']) : 0;
     $bookmarkCount = isset($_POST['bookmark_count']) ? intval($_POST['bookmark_count']) : 0;
     $replyCount = isset($_POST['reply_count']) ? intval($_POST['reply_count']) : 0;
     $repostCount = isset($_POST['repost_count']) ? intval($_POST['repost_count']) : 0;
-   
 
-    // コマンドの構築
-    $command = sprintf(
-        '"%s" UserId=%d TweetID=%s Like=%s Bookmark=%s Reply=%s Repost=%s LikeCount=%d BookmarkCount=%d ReplyCount=%d RepostCount=%d Duplicate=True',
-        $externalAppPath,
-        $current_userid,
-        $tweetId,
-        $likeEnable,
-        $bookmarkEnable,
-        $replyEnable,
-        $repostEnable,
-        $likeCount,
-        $bookmarkCount,
-        $replyCount,
-        $repostCount
-    );
+    // INSERT文
+    $sql = "INSERT INTO tweet_process_list (
+        user_id, tweet_id, like_enable, bookmark_enable, reply_enable, repost_enable, 
+        like_count, bookmark_count, reply_count, repost_count, updatetime , rep_to_rep
+    ) 
+    VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW() , ?
+    )";    
 
-    // カレントディレクトリを変更
-    chdir(WORK_FOLDER);
+    // プリペアドステートメント
+    $stmt = $conn->prepare($sql);
 
-    // 外部アプリの実行
-    exec($command, $output, $returnVar);
+    // バインド（型指定修正）
+    $stmt->bind_param('isiiiiiiiii', $current_userid, $tweetId, $likeEnable, $bookmarkEnable, $replyEnable, $repostEnable, $likeCount, $bookmarkCount, $replyCount, $repostCount , $repToRep);
 
-    // 実行結果を処理
-    if ($returnVar === 0) {
-//        echo '<p>外部アプリを正常に実行しました。</p>';
-    } else {
-//        echo '<p>外部アプリの実行中にエラーが発生しました。</p>';
-        echo '<pre>' . implode("\n", $output) . '</pre>';
-    }
+    // 実行
+    $stmt->execute();    
+    $stmt->close();
+    $conn->close();    
 
 }
 ?>
@@ -133,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="input-group" checkbox-group">
             <label>
-                <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートID" required>
+                <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートID" required size="80" maxlength="100">>
             </label><br>
 
             <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
@@ -154,6 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label>
                 <input type="checkbox" name="reply_enable" value="1">リプライ
                 <input type="number" name="reply_count" min="1" value="10" placeholder="件数" style="width: 60px; margin-left: 5px;">                
+
+                <input type="checkbox" name="rep_to_rep" value="1">(リプライへのリプライ)
+
             </label><br>
             <?php endif; ?>
 
