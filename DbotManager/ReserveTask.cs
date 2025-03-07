@@ -147,7 +147,9 @@ namespace DbotManager
             if (reserveScheduleList.Count > 0) 作成済 = true;
 
             _reserveScheduleList.Clear();
-            _reserveScheduleList.AddRange(reserveScheduleList);
+            _reserveScheduleList.AddRange(reserveScheduleList.OrderBy(x => x.ReserveDate).ThenBy(x => x.ReserveTime));
+
+            var test = reserveMasterList.Where(x => x.AccountId == 42).ToList();
 
             return reserveScheduleList;
         }
@@ -158,10 +160,10 @@ namespace DbotManager
             var random = new Random();
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
 
+            Thread.Sleep(10);
             // ランダムな件数を設定 (0 ～ count)
             int randomCount = random.Next(count+1); // countを含めるため +1
-//            randomCount = 0;
-
+            Thread.Sleep(10);
 
             // 今日の日付
             var today = DateTime.Today;

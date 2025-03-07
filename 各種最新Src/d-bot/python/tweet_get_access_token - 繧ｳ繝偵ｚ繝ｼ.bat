@@ -1,0 +1,1 @@
+python tweet.py account_id=1 mode=get_access_token

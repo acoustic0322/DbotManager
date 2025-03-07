@@ -3,9 +3,12 @@
 $local_user_id = (string)$edit_account['id'];
 $client_id = $edit_account['client_id'];
 
+//echo $client_id;
+//exit;
+
 $authorization_endpoint = 'https://twitter.com/i/oauth2/authorize';
 
-$scope = 'tweet.read tweet.write users.read offline.access bookmark.read bookmark.write like.write'; // 
+$scope = 'list.read list.write users.read offline.access tweet.read tweet.write like.read like.write tweet.moderate.write follows.read follows.write bookmark.read bookmark.write'; // 
 // ランダムなCSRF用トークン生成
 
 $hmac_secret_key = bin2hex(random_bytes(32));

@@ -101,11 +101,11 @@ def get_account_master_for_update_refresh():
             am.proxy_enable , 
             am.proxy_url
             FROM account_master am
+            left join api_master api on api.id = am.api_master_id            
             WHERE 
                 am.refresh_token IS NOT NULL 
                 AND am.refresh_updatetime IS NOT NULL
                 AND TIMESTAMPDIFF(MINUTE, am.refresh_updatetime, NOW()) > 60
-            left join api_master api on api.id = am.api_master_id
             """
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -558,6 +558,100 @@ def getOwnTweetId(account_id , reply_target_tweet_id):
 
             outputLog(f"credentials['tweet_id']={credentials['tweet_id']}")
             return True , credentials['tweet_id']
+
+    finally:
+        connection.close()
+
+    return False , None
+
+
+def insert_search_history(search_row , tweet_data , mode):
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        outputLog(f"search_row={search_row}")
+        outputLog(f"tweet_data={tweet_data}")
+
+        search_id = search_row['id']
+        search_user_name = search_row['search_user_name']
+        search_user_id = search_row['search_user_id']
+        tweet_id = tweet_data['id']
+        created_at = tweet_data['created_at']
+        contents = tweet_data['text']
+
+        outputLog(f"search_id={search_id}")
+        outputLog(f"search_user_name={search_user_name}")
+        outputLog(f"created_at={created_at}")
+
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO search_history (
+                `search_id`,
+                `search_user_name`,
+                `search_user_id`,
+                `mode`,
+                `tweet_id`,
+                `created_at`,
+                `contents`)
+                 VALUES (%s, %s, %s, %s, %s, %s, %s )
+            """
+            cursor.execute(sql, (
+                search_id,
+                search_user_name,
+                search_user_id,
+                mode,
+                tweet_id,
+                created_at,
+                contents
+            ))
+            connection.commit()
+
+    except Exception as ex:
+        outputLog("予期しないエラーが発生しました:")
+        outputLog(str(ex)) 
+
+
+
+    except Exception as ex:
+        outputLog("予期しないエラーが発生しました:")
+        outputLog(str(ex))                
+    finally:
+        connection.close() 
+
+
+
+def get_search_history(mode):
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',           # ユーザー名
+        password='abcd1234',   # パスワード
+        database='d_bot',      # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+    try:
+        with connection.cursor() as cursor:
+            # 認証情報を格納しているテーブルからデータを取得
+            sql = "SELECT * FROM search_history WHERE mode = %s"
+            cursor.execute(sql, (mode))
+            records = cursor.fetchall()  # すべてのレコードを取得
+            credentials = cursor.fetchone()
+            
+            # データが取得できなかった場合は空リストを返す
+            if not records:
+                outputLog(f"mode '{mode}' に対応するデータが見つかりませんでした。")
+                return False, []
+
+            outputLog(f"取得したレコード数: {len(records)}")
+            return True, records  # すべてのレコードを返す
 
     finally:
         connection.close()

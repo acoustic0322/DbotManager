@@ -10,8 +10,19 @@
     ): ?>    
     <a href="tweet.php">いいね・ﾌﾞｯｸﾏｰｸ</a>
     <?php endif; ?>
-        
+
+    <!--
     <a href="account_list.php">Xアカウント設定</a>
+    -->
+
+    <a href="account_list.php">Xアカウント一覧</a>
+
+    <a href="account_regist.php">Xアカウント登録</a>
+
+    <?php if (isset($_SESSION['api_master_id']) && $_SESSION['api_master_id'] != 0): ?>
+    <a href="account_regist2.php">Xアカウント登録(貸出)</a>
+    <?php endif; ?>
+
 <!--    <a href="comment_list.php">コメント設定</a>  -->
     <a href="password.php">パスワード変更</a>
     <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
