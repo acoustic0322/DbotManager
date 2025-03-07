@@ -30,7 +30,6 @@ from twitter_api_v2 import proc_update_refresh_token
 #from twitter_api_v2 import proc_check_latest_tweet
 from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
-from mysql import get_search_history
 
 
 from tweet_copy_dmm import tweet_copy_dmm
@@ -92,11 +91,6 @@ contents2 = None
 if mode ==  "check_refresh":
     outputLog("check_refresh")
     proc_update_refresh_token()
-    sys.exit(0)
-
-elif mode == "get_search_history":
-    result1 , list1 = get_search_history("post")
-    outputLog(list1)
     sys.exit(0)
 
 # 認証情報を取得

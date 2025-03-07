@@ -1,0 +1,63 @@
+#いいねを行うサンプル
+
+
+import tweepy
+
+# Twitter API v2の認証情報
+BEARER_TOKEN = "YOUR_BEARER_TOKEN"
+API_KEY = "YOUR_API_KEY"
+API_SECRET = "YOUR_API_SECRET"
+ACCESS_TOKEN = "YOUR_ACCESS_TOKEN"
+ACCESS_TOKEN_SECRET = "YOUR_ACCESS_TOKEN_SECRET"
+
+# クライアントを作成
+client = tweepy.Client(
+    bearer_token=BEARER_TOKEN,
+    consumer_key=API_KEY,
+    consumer_secret=API_SECRET,
+    access_token=ACCESS_TOKEN,
+    access_token_secret=ACCESS_TOKEN_SECRET
+)
+
+# いいねを行うツイートID
+tweet_id = "TWEET_ID"  # いいねしたいツイートのID
+
+try:
+    # like関数でツイートを「いいね」
+    response = client.like(tweet_id)
+    if response.data is not None:
+        print("ツイートをいいねしました!")
+    else:
+        print("リクエストが成功しましたが、レスポンスデータがありません。")
+except tweepy.TweepyException as e:
+    print("エラーが発生しました:", e)
+
+
+
+
+# ツイートをブックマークに追加する関数
+def proc_bookmark(credentials, tweet_id, account_id):
+    try:
+        client_id = credentials['client_id']
+        client_secret = credentials['client_secret']
+        refresh_token = credentials['refresh_token']
+
+        new_bearer_token,new_refresh_token = refresh_access_token(client_id,client_secret,refresh_token)
+        outputLog(f"new_bearer_token= {new_bearer_token}")
+        outputLog(f"new_refresh_token= {new_refresh_token}")
+        update_refresh_token(account_id, new_bearer_token , new_refresh_token)
+
+        client = tweepy.Client(
+            bearer_token=new_bearer_token,
+            consumer_key=credentials['api_key'],
+            consumer_secret=credentials['api_key_secret'],
+            access_token=credentials['access_token'],
+            access_token_secret=credentials['access_token_secret']             
+        )
+        client.bookmark(tweet_id=tweet_id)
+        outputLog("ツイートをブックマークに追加しました。")
+        return True , ""
+    except Exception as e:
+#        return outputLog(f"ブックマークエラー: {e}")
+        outputLog(f"ブックマークエラー: {e}")
+        return False , f"{e}"

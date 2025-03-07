@@ -20,7 +20,6 @@ from mysql import get_last_tweet_id_from_check_account_list
 from mysql import update_last_tweet_id_from_check_account_list
 from mysql import update_search_list
 from mysql import insert_tweet_history_monomane
-from mysql import insert_search_history
 
 
 import config
@@ -240,8 +239,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
 
     # コメントが取得できなかった場合、処理を終了
     if comment is None:
-        outputLog("comment is None")
-        return False , ""
+        return False       
 
     access_token = credentials['bearer_token']
 
@@ -588,7 +586,6 @@ def proc_check_v2_2(credentials , search_row):
 
         if check_post == True:
             update_search_list(search_row['id'] , tweet_post['id'] , latest_tweet_datetime , 'post')
-            insert_search_history(search_row , tweet_post , 'post')
 
     tweet_reply = get_latest_tweet2(tweets , True)
     if tweet_reply is not None:
@@ -601,7 +598,6 @@ def proc_check_v2_2(credentials , search_row):
     
         if check_reply == True:
             update_search_list(search_row['id'] , tweet_reply['id'] , latest_tweet_datetime , 'reply')
-            insert_search_history(search_row , tweet_reply , 'reply')
 
 
     tweets_monomane , log = get_latest_monomane_tweets(tweets , search_row)
