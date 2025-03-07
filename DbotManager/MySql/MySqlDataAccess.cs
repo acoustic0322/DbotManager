@@ -250,59 +250,68 @@ public class MySqlDataAccess
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-
                     using (MySqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            AccountMaster accountItem = new AccountMaster() { 
-                                Id = int.Parse(reader["id"].ToString()),
-                                UserId = int.Parse(reader["user_id"].ToString()),
-                                Name = reader["name"].ToString(),
-                                LoginId = reader["login_id"].ToString(),
-                                LoginPass = reader["login_password"].ToString(),
-                                ApiKey = reader["api_key"].ToString(),
-                                ApiKeySecret = reader["api_key_secret"].ToString(),
-                                ClientId = reader["client_id"].ToString(),
-                                ClientSecret = reader["client_secret"].ToString(),
-                                AccessToken = reader["access_token"].ToString(),
-                                AccessTokenSecret = reader["access_token_secret"].ToString(),
-                                BearerToken = reader["bearer_token"].ToString(),
-                                RefreshToken = reader["refresh_token"].ToString(),
-                                Enable = reader["enable"].ToString() == "1" ,
-                                LikeEnable = reader["like_enable"].ToString() == "1",
-                                ReplyEnable = reader["reply_enable"].ToString() == "1",
-                                BookMarkEnable = reader["bookmark_enable"].ToString() == "1",
-                                RepostEnable = reader["repost_enable"].ToString() == "1",
-                                PostEnable = reader["post_enable"].ToString() == "1",
+                            try
+                            {
+                                AccountMaster accountItem = new AccountMaster()
+                                {
+                                    Id = int.Parse(reader["id"].ToString()),
+                                    UserId = int.Parse(reader["user_id"].ToString()),
+                                    Name = reader["name"].ToString(),
+                                    LoginId = reader["login_id"].ToString(),
+                                    LoginPass = reader["login_password"].ToString(),
+                                    ApiKey = reader["api_key"].ToString(),
+                                    ApiKeySecret = reader["api_key_secret"].ToString(),
+                                    ClientId = reader["client_id"].ToString(),
+                                    ClientSecret = reader["client_secret"].ToString(),
+                                    AccessToken = reader["access_token"].ToString(),
+                                    AccessTokenSecret = reader["access_token_secret"].ToString(),
+                                    BearerToken = reader["bearer_token"].ToString(),
+                                    RefreshToken = reader["refresh_token"].ToString(),
+                                    Enable = reader["enable"].ToString() == "1",
+                                    LikeEnable = reader["like_enable"].ToString() == "1",
+                                    ReplyEnable = reader["reply_enable"].ToString() == "1",
+                                    BookMarkEnable = reader["bookmark_enable"].ToString() == "1",
+                                    RepostEnable = reader["repost_enable"].ToString() == "1",
+                                    PostEnable = reader["post_enable"].ToString() == "1",
 
-                                Reserve1Count= int.Parse(reader["reserve1_count"].ToString()),
-                                Reserve2Count = int.Parse(reader["reserve2_count"].ToString()),
-                                Reserve3Count = int.Parse(reader["reserve3_count"].ToString()),
-                                Reserve4Count = int.Parse(reader["reserve4_count"].ToString()),
-                                Reserve1StartHour = int.Parse(reader["reserve1_start_hour"].ToString()),
-                                Reserve2StartHour = int.Parse(reader["reserve2_start_hour"].ToString()),
-                                Reserve3StartHour = int.Parse(reader["reserve3_start_hour"].ToString()),
-                                Reserve4StartHour = int.Parse(reader["reserve4_start_hour"].ToString()),
-                                Reserve1EndHour = int.Parse(reader["reserve1_end_hour"].ToString()),
-                                Reserve2EndHour = int.Parse(reader["reserve2_end_hour"].ToString()),
-                                Reserve3EndHour = int.Parse(reader["reserve3_end_hour"].ToString()),
-                                Reserve4EndHour = int.Parse(reader["reserve4_end_hour"].ToString()),
-                                Reserve1Enable = reader["reserve1_enable"].ToString() == "1",
-                                Reserve2Enable = reader["reserve2_enable"].ToString() == "1",
-                                Reserve3Enable = reader["reserve3_enable"].ToString() == "1",
-                                Reserve4Enable = reader["reserve4_enable"].ToString() == "1",
-                                Paid = reader["paid"].ToString() == "1",
-                                PaidLike = reader["paid_like"].ToString() == "1",
-                                PaidBookmark = reader["paid_bookmark"].ToString() == "1",
+                                    Reserve1Count = SupportUtil.ParseOrDefault(reader["reserve1_count"],0),
+                                    Reserve2Count = SupportUtil.ParseOrDefault(reader["reserve2_count"], 0),
+                                    Reserve3Count = SupportUtil.ParseOrDefault(reader["reserve3_count"], 0),
+                                    Reserve4Count = SupportUtil.ParseOrDefault(reader["reserve4_count"], 0),
+                                    Reserve1StartHour = SupportUtil.ParseOrDefault(reader["reserve1_start_hour"], 0),
+                                    Reserve2StartHour = SupportUtil.ParseOrDefault(reader["reserve2_start_hour"], 0),
+                                    Reserve3StartHour = SupportUtil.ParseOrDefault(reader["reserve3_start_hour"], 0),
+                                    Reserve4StartHour = SupportUtil.ParseOrDefault(reader["reserve4_start_hour"], 0),
+                                    Reserve1EndHour = SupportUtil.ParseOrDefault(reader["reserve1_end_hour"], 0),
+                                    Reserve2EndHour = SupportUtil.ParseOrDefault(reader["reserve2_end_hour"], 0),
+                                    Reserve3EndHour = SupportUtil.ParseOrDefault(reader["reserve3_end_hour"], 0),
+                                    Reserve4EndHour = SupportUtil.ParseOrDefault(reader["reserve4_end_hour"], 0),
+                                    Reserve1Enable = reader["reserve1_enable"].ToString() == "1",
+                                    Reserve2Enable = reader["reserve2_enable"].ToString() == "1",
+                                    Reserve3Enable = reader["reserve3_enable"].ToString() == "1",
+                                    Reserve4Enable = reader["reserve4_enable"].ToString() == "1",
+                                    Paid = reader["paid"].ToString() == "1",
+                                    PaidLike = reader["paid_like"].ToString() == "1",
+                                    PaidBookmark = reader["paid_bookmark"].ToString() == "1",
 
-                                CheckInterval = int.Parse(reader["check_interval"].ToString()),
 
-                                SearchEnable = reader["search_enable"].ToString() == "1",
-                                VpsId = int.Parse(reader["vps_id"].ToString()),
-                            };
-                
-                            accountMasterList.Add(accountItem);
+                                    CheckInterval = SupportUtil.ParseOrDefault(reader["check_interval"], 60),
+
+                                    SearchEnable = reader["search_enable"].ToString() == "1",
+                                    VpsId = SupportUtil.ParseOrDefault(reader["vps_id"], 0),
+                                };
+
+                                accountMasterList.Add(accountItem);
+
+                            }
+                            catch(Exception ex) 
+                            {
+                                Console.WriteLine("エラーが発生しました: " + ex.Message);
+                            }
                         }
                     }
                 }
@@ -505,10 +514,10 @@ public class MySqlDataAccess
                                 ReplyEnable = reader["reply_enable"].ToString() == "1",
                                 RepToRep = reader["rep_to_rep"].ToString() == "1",
                                 RepostEnable = reader["repost_enable"].ToString() == "1",
-                                LikeCount = int.Parse(reader["like_count"].ToString()),
-                                BookmarkCount = int.Parse(reader["bookmark_count"].ToString()),
-                                RepostCount = int.Parse(reader["repost_count"].ToString()),
-                                ReplyCount = int.Parse(reader["reply_count"].ToString()),
+                                LikeCount = SupportUtil.ParseOrDefault(reader["like_count"], 0),
+                                BookmarkCount = SupportUtil.ParseOrDefault(reader["bookmark_count"], 0),
+                                RepostCount = SupportUtil.ParseOrDefault(reader["repost_count"], 0),
+                                ReplyCount = SupportUtil.ParseOrDefault(reader["reply_count"], 0),
                                 Dumplicate = reader["dumplicate"].ToString() == "1",
                                 ExeFlag = reader["exe_flag"].ToString() == "1",
                             };
@@ -654,7 +663,7 @@ public class MySqlDataAccess
                             {
                                 Id = int.Parse(reader["id"].ToString()),
                                 AccountId = int.Parse(reader["account_id"].ToString()),
-                                CheckAccountId = int.Parse(reader["check_account_id"].ToString()),
+                                CheckAccountId = SupportUtil.ParseOrDefault(reader["check_account_id"], 0),
                                 Mode = GetTweetProcType(reader["mode"].ToString()),
                                 TargetAccountName = reader["target_account_name"].ToString().Replace("@",""),
                                 Enable = reader["enable"].ToString() == "1",
@@ -1177,7 +1186,7 @@ public class MySqlDataAccess
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
                                 TweetModeType = reader["mode"].ToString() == "post" ? TweetModeTypes.Post : reader["mode"].ToString() == "reply" ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
-                                ReserveMode = int.Parse(reader["reserve_mode"].ToString()),
+                                ReserveMode = SupportUtil.ParseOrDefault(reader["reserve_mode"], 0),
                             };
 
                             commentMasterList.Add(commentItem);
@@ -1229,7 +1238,7 @@ public class MySqlDataAccess
                                 Enable = reader["enable"].ToString() == "1",
                                 ChatGpt = reader["chatgpt"].ToString() == "1",
                                 TweetModeType = reader["mode"].ToString() == "post" ? TweetModeTypes.Post : reader["mode"].ToString() == "reply" ? TweetModeTypes.Replay : TweetModeTypes.ReplyToReply,
-                                ReserveMode = int.Parse(reader["reserve_mode"].ToString()),
+                                ReserveMode = SupportUtil.ParseOrDefault(reader["reserve_mode"], 0),
                             };
 
                             retList.Add(commentItem);

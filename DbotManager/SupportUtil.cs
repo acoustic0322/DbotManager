@@ -57,6 +57,15 @@ namespace DbotManager
             return null;
         }
 
+        public static int ParseOrDefault(object value, int defaultValue)
+        {
+            if (value != null && int.TryParse(value.ToString(), out int result))
+            {
+                return result;
+            }
+            return defaultValue;
+        }
+
         #region ファイル処理関連
 
         // TextBoxにログを表示するメソッド
