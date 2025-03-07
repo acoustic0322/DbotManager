@@ -160,10 +160,10 @@ namespace DbotManager
             var random = new Random();
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
 
-            Thread.Sleep(100);
+            Thread.Sleep(10);
             // ランダムな件数を設定 (0 ～ count)
             int randomCount = random.Next(count+1); // countを含めるため +1
-            Thread.Sleep(100);
+            Thread.Sleep(10);
 
             // 今日の日付
             var today = DateTime.Today;
