@@ -25,6 +25,8 @@ namespace DbotManager
 
         private DateTime dtBk = DateTime.Today;
 
+        List<AccountMaster> _accountList = new List<AccountMaster>();
+
         public ReserveTask(DbConnectionInfo dbConnection, Action<string> logAction = null)
         {
             this.logAction = logAction;
@@ -38,15 +40,13 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            var accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable);
-
+            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
 
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
-            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
             List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
 
-            foreach (var account in accountList)
+            foreach (var account in _accountList)
             {
                 var reserve = dataAccess.GetReserveMaster(account.Id);
 
@@ -131,7 +131,7 @@ namespace DbotManager
                     item.Comment = commentItem.FirstOrDefault().Comment;
                 }
 
-                var accountItem = accountMasterList.Where(x => x.Id == item.AccountId).ToList();
+                var accountItem = _accountList.Where(x => x.Id == item.AccountId).ToList();
                 if (accountItem.Count > 0)
                 {
                     item.AccountName = accountItem.FirstOrDefault().Name;
@@ -148,8 +148,6 @@ namespace DbotManager
 
             _reserveScheduleList.Clear();
             _reserveScheduleList.AddRange(reserveScheduleList.OrderBy(x => x.ReserveDate).ThenBy(x => x.ReserveTime));
-
-            var test = reserveMasterList.Where(x => x.AccountId == 42).ToList();
 
             return reserveScheduleList;
         }
@@ -277,6 +275,13 @@ namespace DbotManager
 
                 // 過去３分以上過ぎたものをスルー
                 if ((DateTime)reserveSchedule.ReserveTime.Value < dtNow.AddMinutes(-3)) continue;
+
+                // 無効ユーザーの処理は無視
+                if(_accountList.Where(x => x.Id == reserveSchedule.AccountId).Count() == 0)
+                {
+                    Console.WriteLine($"OnTimedEvent　無効ユーザーの処理は無視: {DateTime.Now}");
+                    continue;
+                }
 
                 TweetTask task = new TweetTask(dbConnectin, logAction);
                 var result = task.TweetProc(new TweetCommand() { 
