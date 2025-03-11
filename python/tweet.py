@@ -19,6 +19,7 @@ from twitter_api_v2 import proc_check_v2_2
 from twitter_api_v2 import get_latest_tweet
 from twitter_api_v2 import refresh_access_token
 from twitter_api_v1 import proc_post_v10a
+from twitter_api_v2 import check_replies
 
 
 
@@ -138,6 +139,9 @@ if credentials:
 
     elif mode == "refresh":
         result1 , contents1 , contents2= refresh_access_token(credentials)
+
+    elif mode == "check_replies":
+        result1 , contents1 = check_replies(credentials)
 
     else:
         # エラーメッセージを標準エラーに出力

@@ -1,1 +1,0 @@
-python tweet.py mode=like tweet_id=1870603120570741008 account_id=1

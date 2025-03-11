@@ -21,6 +21,8 @@ from mysql import update_last_tweet_id_from_check_account_list
 from mysql import update_search_list
 from mysql import insert_tweet_history_monomane
 from mysql import insert_search_history
+from mysql import update_account_master_by_twitter_user_id
+from mysql import update_account_master_by_check_rep_datetime
 
 
 import config
@@ -30,6 +32,18 @@ from config import outputLog
 from twitter_api_v1 import proc_monomane
 
 import tweepy
+from datetime import datetime, timezone
+
+print(f"Current Directory: {os.getcwd()}")
+
+# デバッグ用に sys.path を表示
+print(sys.path)
+
+#chatgpt フォルダを Python のパスに追加
+sys.path.append(os.path.abspath("chatgpt"))
+
+from chatgpt_reply import generate_reply, refine_tweet
+
 
 def createClient(credentials):
     try:
@@ -415,6 +429,47 @@ def proc_bookmark_v2(credentials, tweet_id):
 
     return response.status_code == 200, response_str
 
+def post_reply_v2(credentials, tweet_id, username, message):
+    """
+    OAuth 2.0 を使用して指定されたツイートにリプライを送信する
+
+    :param credentials: Twitter APIの認証情報を含む辞書
+    :param tweet_id: リプライを送る対象のツイートID
+    :param username: リプライ先のユーザー名
+    :param message: 返信メッセージ
+    :return: APIレスポンスのJSONデータ
+    """
+    access_token = credentials['bearer_token']
+
+    # リプライのエンドポイント
+    url = "https://api.twitter.com/2/tweets"
+
+    # リプライの内容を設定
+    payload = {
+        "text": f"@{username} {message}",  # リプライ内容
+        "reply": {
+            "in_reply_to_tweet_id": tweet_id  # 返信対象のツイートID
+        }
+    }
+
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    # APIリクエストを送信
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+    # レスポンスを解析
+    if response.status_code == 201:
+        print(f"返信成功: {response.json()}")
+        return response.json()
+    else:
+        print(f"返信失敗: {response.status_code} - {response.text}")
+        return None
+    
+
 def proc_repost_v2(credentials, tweet_id):
     """
     指定されたツイートIDをリツイートする関数。
@@ -782,3 +837,192 @@ def get_latest_monomane_tweets(tweets , search_row):
 
 
     return updated_tweets , None
+
+def get_replies_to_user(credentials, user_id, max_results=10):
+    """ 指定ユーザー (user_id) にリプライされたツイートを取得 """
+    url = "https://api.twitter.com/2/tweets/search/recent"  # 検索エンドポイントを使用
+    
+    headers = {
+        "Authorization": f"Bearer {credentials['bearer_token']}",
+        "Content-Type": "application/json"
+    }
+
+    params = {
+        "query": f"to:{user_id}",  # 自分宛のリプライを検索
+        "max_results": max_results,
+        "tweet.fields": "id,created_at,author_id,text,in_reply_to_user_id" ,
+        "expansions": "author_id",  # ユーザー情報を取得するために必要
+        "user.fields": "username"  # ユーザーの `username` を取得        
+    }
+
+    dt = credentials['check_rep_datetime']
+#    if not dt:  # dt が None または 空文字なら現在時刻に置き換え
+#        dt = datetime.now(timezone.utc)
+
+    if dt is None:
+        dt = datetime.now(timezone.utc)  # dt が空なら現在時刻
+    elif isinstance(dt, str):  
+        # 文字列なら datetime に変換し、Asia/Tokyo から UTC へ変換
+        dt = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.timezone('Asia/Tokyo'))
+        dt = dt.astimezone(timezone.utc)
+    elif isinstance(dt, datetime):
+        # datetime 型なら UTC に変換
+        dt = dt.astimezone(timezone.utc)
+
+#    outputLog(dt)
+
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        data = response.json()
+        
+        # ユーザー情報を辞書にマッピング
+        users = {user["id"]: user["username"] for user in data.get("includes", {}).get("users", [])}
+
+        replies = []
+        for tweet in data.get("data", []):
+            created_at = convert_tweet_datetime(tweet["created_at"])  # 日時変換
+            if created_at > dt:  # 条件を満たす場合のみ追加
+                author_id = tweet.get("author_id", "")
+                username = users.get(author_id, "")  # author_id に対応する username を取得
+                replies.append({
+                    "tweet_id": tweet["id"],
+                    "text": tweet["text"],
+                    "username": username,
+                    "created_at": created_at
+                })
+        
+        return replies
+    else:
+        print(f"❌ APIエラー: {response.status_code} - {response.text}")
+        return []
+
+def get_replies_to_user_bk(credentials, user_id, max_results=10):
+    """ 指定ユーザー (user_id) にリプライされたツイートを取得 """
+    url = "https://api.twitter.com/2/tweets/search/recent"  # 検索エンドポイントを使用
+    
+    headers = {
+        "Authorization": f"Bearer {credentials['bearer_token']}",
+        "Content-Type": "application/json"
+    }
+
+    params = {
+        "query": f"to:{user_id}",  # 自分宛のリプライを検索
+        "max_results": max_results,
+        "tweet.fields": "id,created_at,author_id,text,in_reply_to_user_id" ,
+        "expansions": "author_id",  # ユーザー情報を取得するために必要
+        "user.fields": "username"  # ユーザーの `username` を取得        
+    }
+
+    dt = credentials['check_rep_datetime']
+#    if not dt:  # dt が None または 空文字なら現在時刻に置き換え
+#        dt = datetime.now(timezone.utc)
+
+    if dt is None:
+        dt = datetime.now(timezone.utc)  # dt が空なら現在時刻
+    elif isinstance(dt, str):  
+        # 文字列なら datetime に変換し、Asia/Tokyo から UTC へ変換
+        dt = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.timezone('Asia/Tokyo'))
+        dt = dt.astimezone(timezone.utc)
+    elif isinstance(dt, datetime):
+        # datetime 型なら UTC に変換
+        dt = dt.astimezone(timezone.utc)
+
+#    outputLog(dt)
+
+    response = requests.get(url, headers=headers, params=params)
+
+    try:
+        response_data = response.json()
+        if "data" in response_data:
+#            outputLog("response_data[data]")
+#            outputLog(response_data["data"])
+
+            # 投稿者IDが user_id と異なるツイートのみ取得
+#            filtered_tweets = [tweet for tweet in response_data["data"] if tweet["author_id"] != user_id]
+            filtered_tweets = [
+                tweet for tweet in response_data["data"]
+                if tweet["author_id"] != user_id and convert_tweet_datetime(tweet['created_at']) > dt
+            ]
+
+#            for tweet in filtered_tweets:
+#                outputLog(f"ID: {tweet['id']}, 投稿日: {tweet['created_at']}, 投稿者ID: {tweet['author_id']}, 本文: {tweet['text']}")
+
+#            return [tweet["id"] for tweet in filtered_tweets]
+            return filtered_tweets
+
+        else:
+            return []
+    except ValueError as e:
+        outputLog(f"JSON パースエラー: {str(e)}")
+        return []
+
+
+def check_replies(credentials):
+
+    user_id = credentials['twitter_user_id']
+
+    if user_id is None:
+        user_id = get_user_id(credentials)
+        outputLog(f"user_id={user_id}")
+        update_account_master_by_twitter_user_id(credentials['id'] , user_id)
+
+    """ 指定ユーザーの全ポストに対するリプライをチェック """
+    reply_tweets = get_replies_to_user(credentials, user_id)
+
+    # リプチェック日時を更新
+#    update_account_master_by_check_rep_datetime(credentials['id'])
+
+    if not reply_tweets:
+        outputLog("新着リプはありませんでした")
+        return False, ''
+    
+    outputLog(f"reply_tweets={reply_tweets}")
+
+    for reply_tweet in reply_tweets:
+        outputLog(f"リプライ: {reply_tweet}")  # ここで各リプライを処理
+
+        #ユーザー情報の取得（usernameを使う）
+#        tweet_id = reply_tweet.get("id")
+#        username = reply_tweet.get("includes", {}).get("users", [{}])[0].get("username", "")
+#        text = reply_tweet.get("text", "")
+        tweet_id = reply_tweet["tweet_id"]
+        username = reply_tweet["username"]
+        text = reply_tweet["text"]
+
+        outputLog(tweet_id)
+        outputLog(username)
+        outputLog(text)
+
+        if not username or not tweet_id:
+            print("ツイートIDまたはユーザー名が取得できませんでした")
+            return
+
+        print(f"新しいリプライ: @{username}: {text}")  #ログ出力
+
+        #ChatGPT で返信を生成
+        reply_message = generate_reply(text)
+        refined_tweet = refine_tweet(reply_message)
+
+        #Twitter に返信
+        post_reply_v2(credentials, tweet_id, username, refined_tweet)
+
+
+    return True, ''
+
+
+
+def monitor_replies(credentials, user_id, interval=60):
+    """ 定期的にリプライを監視 """
+    seen_replies = set()
+
+    while True:
+        success, new_replies = check_replies(credentials, user_id)
+
+        if success:
+            for reply_id in new_replies:
+                if reply_id not in seen_replies:
+                    outputLog(f"新しいリプライ検出: {reply_id}")
+                    seen_replies.add(reply_id)
+
+        time.sleep(interval)  # 指定秒数待機（例: 60秒）

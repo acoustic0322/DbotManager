@@ -63,10 +63,20 @@ def get_account_master(id):
             am.search_enable , 
             am.proxy_enable , 
             am.proxy_url ,
-            am.api_master_id
+            am.api_master_id,
+            am.twitter_user_id,
+            am.check_rep_datetime,
+            am.ai_post_enable,
+            am.ai_reply_enable,
+            am.ai_post_prompt,
+            am.ai_reply_prompt,
+            am.user_id,
+            um.GROQ_API_KEY,
+            um.OPENAI_API_KEY
             FROM 
             account_master am
             left join api_master api on api.id = am.api_master_id
+            left join user_master um on um.id = am.user_id
             WHERE am.id = %s"""
 
 #            sql = "SELECT id , api_key, api_key_secret, access_token, access_token_secret , bearer_token , client_id , client_secret , refresh_token , login_id FROM account_master WHERE id = %s"
@@ -76,6 +86,56 @@ def get_account_master(id):
             return credentials
     finally:
         connection.close()
+
+def update_account_master_by_twitter_user_id(id , twitter_user_id ):
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+    try:
+        with connection.cursor() as cursor:
+
+            sql = """
+                UPDATE account_master set twitter_user_id = %s where id = %s
+            """
+
+#            outputLog(sql)
+#            outputLog("id=",id)
+#            outputLog("latest_tweet_id=",latest_tweet_id)
+#            outputLog("latest_tweet_dt=",latest_tweet_datetime)
+            cursor.execute(sql, (twitter_user_id , id ))
+            connection.commit()
+    finally:
+        connection.close()         
+
+def update_account_master_by_check_rep_datetime(id ):
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+    try:
+        with connection.cursor() as cursor:
+
+            sql = """
+                UPDATE account_master set check_rep_datetime = NOW() where id = %s
+            """
+
+            outputLog(sql)
+            outputLog(f"id={id}")
+            cursor.execute(sql, ( id ))
+            connection.commit()
+    finally:
+        connection.close()          
 
 def get_account_master_for_update_refresh():
     # MySQLデータベースに接続
