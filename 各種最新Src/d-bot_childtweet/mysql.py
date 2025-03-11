@@ -56,8 +56,6 @@ def get_random_comment_id(account_id , mode):
     if result is None:
         outputLog("エラー: 指定したコメントIDに対応するレコードが見つかりません。")
         return None
-
-    outputLog(result)
     
     return result["id"]  # コメントを返す
 
