@@ -153,16 +153,35 @@ namespace DbotManager
                 accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
             }
 
-            List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.LIKE , ユーザー権限無視);
-            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPLY, ユーザー権限無視 , ReplyToRep);
-            List<AccountMaster> bookMarkList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK, ユーザー権限無視);
+            // 「いいね」リスト抽出
+            {
+                List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.LIKE, ユーザー権限無視);
+                LikeAccountList = likeList.OrderBy(_ => Guid.NewGuid()).Take(いいね件数).ToList();
+            }
+
+            // 「ブックマーク」リスト抽出
+            {
+                // 「いいね」許可したアカウントからブックマークリスト作成
+                List<AccountMaster> list1 = FilterAccountList(userMasterList, LikeAccountList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK, ユーザー権限無視);
+                var bookmarkList1 = list1.OrderBy(_ => Guid.NewGuid()).Take(ブックマーク件数).ToList();
+
+                // 「ブックマーク」で追加済を除外したアカウントリスト
+                List<AccountMaster> filteredList = accountMasterList.Except(bookmarkList1).ToList();
+                List<AccountMaster> list2 = FilterAccountList(userMasterList, filteredList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK, ユーザー権限無視);
+                var 残り件数 = ブックマーク件数 - bookmarkList1.Count;
+                var bookmarkList2 = list2.OrderBy(_ => Guid.NewGuid()).Take(残り件数).ToList();
+
+                BookmarkAccountList = new List<AccountMaster>();
+                BookmarkAccountList.AddRange(bookmarkList1);
+                BookmarkAccountList.AddRange(bookmarkList2);
+            }
+
+            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPLY, ユーザー権限無視, ReplyToRep);
             List<AccountMaster> repostList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPOST, ユーザー権限無視);
 
-            var selectedItems = SelectBalancedItems(likeList, replyList, bookMarkList, repostList, いいね件数, リプライ件数, ブックマーク件数, リポスト件数);
+            var selectedItems = SelectBalancedItems(LikeAccountList, replyList, BookmarkAccountList, repostList, いいね件数, リプライ件数, ブックマーク件数, リポスト件数);
 
-            LikeAccountList = selectedItems.Item1;
             ReplyAccountList = selectedItems.Item2;
-            BookmarkAccountList = selectedItems.Item3;
             RepostAccountList = selectedItems.Item4;
         }
 
