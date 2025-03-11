@@ -185,12 +185,59 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="各種最新Src\d-bot_childtweet\check_refresh.bat" />
+    <None Include="各種最新Src\d-bot_childtweet\child_tweet.bat" />
+    <None Include="各種最新Src\d-bot_childtweet\config.ini" />
+    <None Include="各種最新Src\web\account_edit - コピー.php" />
+    <None Include="各種最新Src\web\account_edit.php" />
+    <None Include="各種最新Src\web\account_list.php" />
+    <None Include="各種最新Src\web\account_list_0212.php" />
+    <None Include="各種最新Src\web\account_list_0217.php" />
+    <None Include="各種最新Src\web\account_list_gomi.php" />
+    <None Include="各種最新Src\web\account_list_process.php" />
+    <None Include="各種最新Src\web\account_list_process.php.bak" />
+    <None Include="各種最新Src\web\account_list_search.php" />
+    <None Include="各種最新Src\web\account_process.php" />
+    <None Include="各種最新Src\web\callback.php" />
+    <None Include="各種最新Src\web\check_account_edit.php" />
+    <None Include="各種最新Src\web\check_account_list.php" />
+    <None Include="各種最新Src\web\comment_edit.php" />
+    <None Include="各種最新Src\web\comment_list.php" />
+    <None Include="各種最新Src\web\comment_regist.php" />
+    <None Include="各種最新Src\web\config.ini" />
+    <None Include="各種最新Src\web\login.php" />
+    <None Include="各種最新Src\web\logout.php" />
+    <None Include="各種最新Src\web\menu.php" />
+    <None Include="各種最新Src\web\password.php" />
+    <None Include="各種最新Src\web\redirect.php" />
+    <None Include="各種最新Src\web\run_dbotmanager.bat" />
+    <None Include="各種最新Src\web\search_list - コピー %282%29.php" />
+    <None Include="各種最新Src\web\search_list - コピー %283%29.php" />
+    <None Include="各種最新Src\web\search_list - コピー.php" />
+    <None Include="各種最新Src\web\search_list.php" />
+    <None Include="各種最新Src\web\search_list.php.bak" />
+    <None Include="各種最新Src\web\search_list_edit - コピー %282%29.php" />
+    <None Include="各種最新Src\web\search_list_edit - コピー.php" />
+    <None Include="各種最新Src\web\search_list_edit.php" />
+    <None Include="各種最新Src\web\tweet - コピー.php" />
+    <None Include="各種最新Src\web\tweet.php" />
+    <None Include="各種最新Src\web\upload.php" />
+    <None Include="各種最新Src\web\user_edit.php" />
+    <None Include="各種最新Src\web\user_list.php" />
+    <None Include="各種最新Src\web\web.config" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="python\tweet.py" />
+    <Content Include="各種最新Src\d-bot_childtweet\child_tweet.py" />
+    <Content Include="各種最新Src\d-bot_childtweet\config.py" />
+    <Content Include="各種最新Src\d-bot_childtweet\mysql.py" />
+    <Content Include="各種最新Src\d-bot_childtweet\tweet.py" />
+    <Content Include="各種最新Src\d-bot_childtweet\twitter_api_v1.py" />
+    <Content Include="各種最新Src\d-bot_childtweet\twitter_api_v2.py" />
+    <Content Include="各種最新Src\web\main.css" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
