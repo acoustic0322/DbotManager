@@ -38,6 +38,9 @@ def background_task(tweet_id, like_list, bookmark_list, repost_list, reply_list,
 
     print(f"[{get_now()}] {all_account_ids}")
 
+    # all_account_ids の順序をランダムにシャッフル
+    random.shuffle(all_account_ids)
+
     # 各アカウントIDごとにスレッドを開始
     for account_id in all_account_ids:
         print(f"Processing account_id: {account_id}")
