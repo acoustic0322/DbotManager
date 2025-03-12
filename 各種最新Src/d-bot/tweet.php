@@ -24,6 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bookmarkEnable = (!empty($_POST['bookmark_enable'])) ? 1 : 0;
     $replyEnable = (!empty($_POST['reply_enable'])) ? 1 : 0;
     $repostEnable = (!empty($_POST['repost_enable'])) ? 1 : 0;
+    $repToRep = (!empty($_POST['rep_to_rep'])) ? 1 : 0;
+
+    echo $repToRep;
 
     // 件数を取得
     $likeCount = isset($_POST['like_count']) ? intval($_POST['like_count']) : 0;
@@ -34,17 +37,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // INSERT文
     $sql = "INSERT INTO tweet_process_list (
         user_id, tweet_id, like_enable, bookmark_enable, reply_enable, repost_enable, 
-        like_count, bookmark_count, reply_count, repost_count, updatetime
+        like_count, bookmark_count, reply_count, repost_count, updatetime , rep_to_rep
     ) 
     VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW() , ?
     )";    
 
     // プリペアドステートメント
     $stmt = $conn->prepare($sql);
 
     // バインド（型指定修正）
-    $stmt->bind_param('isiiiiiiii', $current_userid, $tweetId, $likeEnable, $bookmarkEnable, $replyEnable, $repostEnable, $likeCount, $bookmarkCount, $replyCount, $repostCount);
+    $stmt->bind_param('isiiiiiiiii', $current_userid, $tweetId, $likeEnable, $bookmarkEnable, $replyEnable, $repostEnable, $likeCount, $bookmarkCount, $replyCount, $repostCount , $repToRep);
 
     // 実行
     $stmt->execute();    
@@ -143,6 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label>
                 <input type="checkbox" name="reply_enable" value="1">リプライ
                 <input type="number" name="reply_count" min="1" value="10" placeholder="件数" style="width: 60px; margin-left: 5px;">                
+
+                <input type="checkbox" name="rep_to_rep" value="1">(リプライへのリプライ)
+
             </label><br>
             <?php endif; ?>
 

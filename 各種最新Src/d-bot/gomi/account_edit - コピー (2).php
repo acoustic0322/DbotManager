@@ -12,8 +12,6 @@ if (!current_user($conn)) {
 }
 
 
-
-
 // idの確認
 //$id = $_GET['id'] ?? null;
 $id = $_POST['id'] ?? $_GET['id'] ?? null;
@@ -90,16 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $proxy_enable = isset($_POST['proxy_enable']) ? 1 : 0;
     $proxy_url = $_POST['proxy_url'];
     $check_interval = $_POST['check_interval'];
-
-    // api_master_id が 0 以外なら client_id を空にする
-    if (isset($edit_account['api_master_id']) && $edit_account['api_master_id'] != 0) {
-        $client_id = '';
-        $paid = 1;
-        $paid_like = 1;
-        $paid_bookmark = 1;
-        $search_enable = 0;
-        $check_interval = '';
-    }    
 
     // 入力値のバリデーション
 //    if (empty($name) || empty($login_id) || empty($login_password)) {
@@ -283,13 +271,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             -->
 
         <div class="input-group">
-
-            <label for="id">
-            ID:<?php echo htmlspecialchars($edit_account['id'] ?? '') ?>
-            </label>        
-        </div>
-
-        <div class="input-group">
             <label for="name">名前:</label><br>
             <input type="text" id="name" name="name" placeholder="名前" value="<?php echo htmlspecialchars($edit_account['name'] ?? '') ?>" required>
         </div>
@@ -301,9 +282,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="name">ログインパス:</label><br>
             <input type="text" id="login_pass" name="login_password" placeholder="ログインパス" value="<?php echo htmlspecialchars($edit_account['login_password'] ?? '') ?>">
         </div>
-
-    <!-- チェックボックス (通常モード用) -->
-        <?php if (isset($edit_account['api_master_id']) && $edit_account['api_master_id'] == 0): ?>     
         <div class="input-group">
             <label for="name">クライアントID:</label><br>
             <input type="text" name="client_id" placeholder="ClientID" value="<?php echo htmlspecialchars($edit_account['client_id'] ?? '') ?>">
@@ -312,7 +290,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="name">クライアントシークレット:</label><br>
             <input type="text" name="client_secret" placeholder="ClientSecret" value="<?php echo htmlspecialchars($edit_account['client_secret'] ?? '') ?>">
         </div>
-        <?php endif; ?>
 
         <!--
         <div class="input-group">
@@ -331,47 +308,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </label><br>
 
             <?php if (isset($_SESSION['post_enable']) && $_SESSION['post_enable'] == 1): ?>
-                <label>
+            <label>
                 <input type="checkbox" name="post_enable" value="1" <?php echo !empty($edit_account['post_enable']) ? 'checked' : '' ?>>ポスト機能
-                </label><br>
+            </label><br>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
-                <label>
-                    <input type="checkbox" name="like_enable" value="1" <?php echo !empty($edit_account['like_enable']) ? 'checked' : '' ?>>いいね機能
-                </label><br>
+            <label>
+                <input type="checkbox" name="like_enable" value="1" <?php echo !empty($edit_account['like_enable']) ? 'checked' : '' ?>>いいね機能
+            </label><br>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
-                <label>
-                    <input type="checkbox" name="bookmark_enable" value="1" <?php echo !empty($edit_account['bookmark_enable']) ? 'checked' : '' ?>>ブックマーク機能
-                </label><br>
+            <label>
+                <input type="checkbox" name="bookmark_enable" value="1" <?php echo !empty($edit_account['bookmark_enable']) ? 'checked' : '' ?>>ブックマーク機能
+            </label><br>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['reply_enable']) && $_SESSION['reply_enable'] == 1): ?>
-                <label>
-                    <input type="checkbox" name="reply_enable" value="1" <?php echo !empty($edit_account['reply_enable']) ? 'checked' : '' ?>>リプライ機能
-                </label><br>
+            <label>
+                <input type="checkbox" name="reply_enable" value="1" <?php echo !empty($edit_account['reply_enable']) ? 'checked' : '' ?>>リプライ機能
+            </label><br>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['repost_enable']) && $_SESSION['repost_enable'] == 1): ?>
-                <label>
-                    <input type="checkbox" name="repost_enable" value="1" <?php echo !empty($edit_account['repost_enable']) ? 'checked' : '' ?>>リポスト機能
-                </label><br>
+            <label>
+                <input type="checkbox" name="repost_enable" value="1" <?php echo !empty($edit_account['repost_enable']) ? 'checked' : '' ?>>リポスト機能
+            </label><br>
             <?php endif; ?>
 
-            <?php if (isset($edit_account['api_master_id']) && $edit_account['api_master_id'] == 0): ?>     
-            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
-                <label>
-                    <input type="checkbox" name="search_enable" value="0" <?php echo !empty($edit_account['search_enable']) ? 'checked' : '' ?>>監視実施
-                </label><br>
+            <label>
+                <input type="checkbox" name="search_enable" value="0" <?php echo !empty($edit_account['search_enable']) ? 'checked' : '' ?>>監視実施
+            </label><br>
 
-                <div class="input-group">
-                    <label for="check_interval">監視周期(分):</label>
-                    <input type="number" id="check_interval" name="check_interval" min="5" max="6000" step="1" value="<?php echo htmlspecialchars($edit_account['check_interval'] ?? '') ?>" style="width: 50px;">
-                </div>             
-            <?php endif; ?>
-            <?php endif; ?>
+            <div class="input-group">
+            <label for="check_interval">監視周期(分):</label>
+            <input type="number" id="check_interval" name="check_interval" min="5" max="6000" step="1" value="<?php echo htmlspecialchars($edit_account['check_interval'] ?? '') ?>" style="width: 50px;">
+            </div>             
 
             <label>
                 <input type="checkbox" name="proxy_enable" value="0" <?php echo !empty($edit_account['proxy_enable']) ? 'checked' : '' ?>>プロキシ
@@ -397,7 +370,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="checkbox" name="paid_bookmark" value="1" <?php echo !empty($edit_account['paid_bookmark']) ? 'checked' : '' ?>>有料API(ブックマーク)
             </label><br>
             <?php endif; ?>
-
         </div>
 
         <div class="input-group">
@@ -459,10 +431,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <br>
 
 
-        <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
-        <button type="submit">更新</button>
-    </form>
-</div>
+            <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
+            <button type="submit">更新</button>
+        </form>
+    </div>
 
 <style>
     /* テキストボックスの幅を80%に設定 */
@@ -481,7 +453,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         width: 40px; /* 必要に応じて調整 */
     }
 </style>
-
 
 </body>
 </html>
