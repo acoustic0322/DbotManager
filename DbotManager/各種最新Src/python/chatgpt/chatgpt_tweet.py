@@ -10,6 +10,8 @@ import schedule
 
 from prompt import PROMPT1
 from prompt import past_tweets_1
+from config import outputLog
+#config.debug = False
 
 # Twitter API 認証
 CONSUMER_KEY = ""
@@ -24,6 +26,8 @@ OPENAI_API_KEY = ""
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
+
+
 
 # 過去のツイート
 # 過去のツイート
@@ -95,7 +99,7 @@ def generate_tweet(api_key,prompt):
 
 
     else:
-        print(f"⚠️ エラー: {response.status_code}, {response.text}")
+        outputLog(f"⚠️ エラー: {response.status_code}, {response.text}")
         return f"エラー: {response.status_code}, {response.text}"
 
 
@@ -130,17 +134,17 @@ def refine_tweet(api_key,tweet):
     if response.status_code in [200, 201]:
         return response.json()["choices"][0]["message"]["content"].strip()
     else:
-        print(f"エラー: {response.status_code}, {response.text}")
+        outputLog(f"エラー: {response.status_code}, {response.text}")
         return tweet  # 修正できなかった場合は元のツイートを返す
 
 def post_tweet(tweet_content):
     """指定した内容のツイートを投稿"""
     try:
         response = api.update_status(tweet_content)
-        print(f"ツイート成功: {response.id} - {tweet_content}")
+        outputLog(f"ツイート成功: {response.id} - {tweet_content}")
         return response
     except tweepy.TweepyException as e:
-        print(f"ツイート失敗: {e}")
+        outputLog(f"ツイート失敗: {e}")
         return None
 
 
@@ -206,7 +210,7 @@ def generate_trend_tweet():
         return content
 
     else:
-        print(f"ChatGPT API エラー: {response.status_code}")
+        outputLog(f"ChatGPT API エラー: {response.status_code}")
         return "エラーが発生しました"
 
 
@@ -225,14 +229,14 @@ def auto_post_tweet():
                 refined_tweet += "\n#裏垢女子 #DMでいいね" #改行してハッシュタグ
 
             post_tweet(refined_tweet)  # ツイート生成 & 投稿
-            print("ツイートを投稿しました: ", refined_tweet)
+            outputLog("ツイートを投稿しました: ", refined_tweet)
         except Exception as e:
-            print("ツイートの投稿に失敗しました: ", e)
+            outputLog("ツイートの投稿に失敗しました: ", e)
             retry_count += 1
             time.sleep(300)  # 5分後に再試行
     
         # 再試行回数を超えた場合の処理
-    print("再試行回数を超えました。終了します。")
+    outputLog("再試行回数を超えました。終了します。")
     return  # 再試行回数を超えたら終了
 
       
@@ -246,7 +250,7 @@ def schedule_tasks():
 
 def main():
     """ツイート自動投稿のメイン処理"""
-    print("ツイート自動投稿を開始します...")
+    outputLog("ツイート自動投稿を開始します...")
     schedule_tasks()
 
 

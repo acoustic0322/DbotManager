@@ -72,9 +72,9 @@ def get_account_master(id):
             am.ai_reply_prompt,
             am.user_id,
             um.GROQ_API_KEY,
-            um.OPENAI_API_KEY
+            um.OPENAI_API_KEY,
             am.ai_mode,
-            am.ai_post_enable
+            am.ai_post_enable,
             am.ai_reply_enable,
             am.ai_post_prompt,
             am.ai_reply_prompt,

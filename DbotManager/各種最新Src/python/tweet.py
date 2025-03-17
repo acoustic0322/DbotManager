@@ -75,8 +75,10 @@ search_id = args.get("search_id","")
 config.debug = args.get("debug","").lower() == "true"
 dmmid = args.get("dmmid","")
 
-ai_mode = args.get("ai_mode","")
-ai_enable = args.get("ai_enable","")
+ai_mode = False if args.get("ai_mode","") == "0" else True
+ai_enable = False if args.get("ai_enable","") == "0" else True
+
+outputLog(ai_mode)
 
 #debug
 #search_row={'id': 1, 'search_user_name': 'MANGA549764083', 'search_user_id': '2', 'post_account_id': 239, 'post_enable': 0, 'last_post_id': '1886501259601174542', 'last_post_time': '2025-02-04 04:45:24', 'reply_account_id': 239, 'reply_enable': 0, 'last_reply_id': '1886385085647040800', 'last_reply_time': '2025-02-03 21:03:46', 'monomane_account_id': '239', 'monomane_enable': 1, 'last_monomane_id': '1886498846538338658', 'last_monomane_time': '2025-02-04 04:35:49'}

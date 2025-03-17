@@ -7,6 +7,10 @@ import json
 import time
 import re
 
+from config import outputLog
+#config.debug = False
+
+
 # Twitter API 認証
 CONSUMER_KEY = ""
 CONSUMER_SECRET = ""
@@ -88,7 +92,7 @@ def generate_reply(api_key,prompt,original_tweet):
 
         return content
     else:
-        print(f"⚠️ エラー: {response.status_code}, {response.text}")
+        outputLog(f"⚠️ エラー: {response.status_code}, {response.text}")
         return # 修正できなかった場合は元のツイートを返す
     
 
@@ -121,7 +125,7 @@ def refine_tweet(api_key,tweet):
     if response.status_code in [200, 201]:
         return response.json()["choices"][0]["message"]["content"].strip()
     else:
-        print(f"エラー: {response.status_code}, {response.text}")
+        outputLog(f"エラー: {response.status_code}, {response.text}")
         return tweet  # 修正できなかった場合は元のツイートを返す
 
 
@@ -150,10 +154,10 @@ class AutoReplyStream(tweepy.StreamingClient):
             text = tweet.get("text", "")
 
             if not username or not tweet_id:
-                print("ツイートIDまたはユーザー名が取得できませんでした")
+                outputLog("ツイートIDまたはユーザー名が取得できませんでした")
                 return
 
-            print(f"新しいリプライ: @{username}: {text}")  #ログ出力
+            outputLog(f"新しいリプライ: @{username}: {text}")  #ログ出力
 
             #ChatGPT で返信を生成
             reply_message = generate_reply(GROQ_API_KEY,REPLY_PROMPT1,text)
@@ -162,12 +166,12 @@ class AutoReplyStream(tweepy.StreamingClient):
 
             #Twitter に返信
             post_reply(tweet_id, username, refined_tweet)
-            print(f"自動返信: {refined_tweet}")  #ログ出力
+            outputLog(f"自動返信: {refined_tweet}")  #ログ出力
 
         except json.JSONDecodeError as e:
-            print(f"JSONデコードエラー: {e}")
+            outputLog(f"JSONデコードエラー: {e}")
         except Exception as e:
-            print(f"エラー発生: {str(e)}")
+            outputLog(f"エラー発生: {str(e)}")
 
 
 # `start_reply_stream()`（リプライ監視 & 自動返信を開始）
@@ -187,12 +191,12 @@ def start_reply_stream():
             # 新しいルールを追加（自分宛のリプライを取得）
             stream.add_rules(tweepy.StreamRule(f"to:{TWITTER_USERNAME}"))
 
-            print("リアルタイムリプライ監視を開始しました")
+            outputLog("リアルタイムリプライ監視を開始しました")
             stream.filter()  #ここでリアルタイム監視開始
 
         except Exception as e:
-            print(f"ストリームエラー発生: {e}")
-            print("5秒後に再接続します...")
+            outputLog(f"ストリームエラー発生: {e}")
+            outputLog("5秒後に再接続します...")
             time.sleep(5)  # 5秒待機して再接続
             continue  # **エラー発生時にループを再開**
 
@@ -210,18 +214,18 @@ def post_reply(tweet_id, username, message):
             auto_populate_reply_metadata=True  # メンションを自動的に設定
         )
 
-        print(f"返信成功: {response.id} - {reply_text}")
+        outputLog(f"返信成功: {response.id} - {reply_text}")
         return response
 
     except tweepy.TweepyException as e:
-        print(f"返信失敗: {e}")
+        outputLog(f"返信失敗: {e}")
         return None
     
 def main():
-    print("リプライ監視を開始します...")
+    outputLog("リプライ監視を開始します...")
     start_reply_stream()
 
 # メイン処理
 if __name__ == "__main__":
-    print("リプライ監視を開始します...")
+    outputLog("リプライ監視を開始します...")
     start_reply_stream()

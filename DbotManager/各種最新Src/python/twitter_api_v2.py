@@ -34,15 +34,10 @@ from twitter_api_v1 import proc_monomane
 import tweepy
 from datetime import datetime, timezone
 
-print(f"Current Directory: {os.getcwd()}")
-
-# デバッグ用に sys.path を表示
-print(sys.path)
-
 #chatgpt フォルダを Python のパスに追加
 sys.path.append(os.path.abspath("chatgpt"))
 
-from chatgpt_reply import generate_reply,refine_reply
+from chatgpt_reply import generate_reply
 from chatgpt_tweet import generate_tweet,refine_tweet
 
 
@@ -256,7 +251,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable , ai_mod
         comment = refine_tweet(credentials['GROQ_API_KEY'],tweet_content)
 
 
-    outputLog("comment=",comment)
+    outputLog(f"comment={comment}")
 
     # コメントが取得できなかった場合、処理を終了
     if comment is None:
@@ -331,6 +326,10 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable , ai_mod
 
 
     response_str = json.dumps(response_data)  # json.dumps を使用
+
+    if ai_enable == True:
+        return response.status_code in (200, 201), 'ai_post'
+
     return response.status_code in (200, 201), response_str
 
 
@@ -469,10 +468,10 @@ def post_reply_v2(credentials, tweet_id, username, message):
 
     # レスポンスを解析
     if response.status_code == 201:
-        print(f"返信成功: {response.json()}")
+        outputLog(f"返信成功: {response.json()}")
         return response.json()
     else:
-        print(f"返信失敗: {response.status_code} - {response.text}")
+        outputLog(f"返信失敗: {response.status_code} - {response.text}")
         return None
     
 
@@ -900,7 +899,7 @@ def get_replies_to_user(credentials, user_id, max_results=10):
         
         return replies
     else:
-        print(f"❌ APIエラー: {response.status_code} - {response.text}")
+        outputLog(f"❌ APIエラー: {response.status_code} - {response.text}")
         return []
 
 def get_replies_to_user_bk(credentials, user_id, max_results=10):
@@ -1001,10 +1000,10 @@ def check_replies(credentials):
         outputLog(text)
 
         if not username or not tweet_id:
-            print("ツイートIDまたはユーザー名が取得できませんでした")
+            outputLog("ツイートIDまたはユーザー名が取得できませんでした")
             return
 
-        print(f"新しいリプライ: @{username}: {text}")  #ログ出力
+        outputLog(f"新しいリプライ: @{username}: {text}")  #ログ出力
 
         #ChatGPT で返信を生成
 #        reply_message = generate_reply(credentials['GROQ_API_KEY'],text)
