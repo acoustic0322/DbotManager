@@ -22,6 +22,9 @@ namespace DbotManager.Table
         public MediaTypes MediaType { get; set; }
         public int? MediaId { get; set; }
 
+
+        public bool? AiEnable { get; set; }
+        public int? AiMode { get; set; }
     }
 
 }

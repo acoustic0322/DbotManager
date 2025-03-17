@@ -23,12 +23,12 @@ auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
-def generate_reply(original_tweet):
+def generate_reply(api_key,prompt,original_tweet):
 
     """Groqのmixtral-8x7b-32768を使ってツイートを生成する関数"""
     # ランダムなプロンプトを選択
 
-    USEPROMPT = REPLY_PROMPT1
+    USEPROMPT = prompt
 
 
     # 過去のツイートをランダムに2つ選択
@@ -52,7 +52,7 @@ def generate_reply(original_tweet):
 
     #Groq の API にアクセスするための認証情報を送信
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"#APIに送るフォーマット指定
     }
 
@@ -92,7 +92,7 @@ def generate_reply(original_tweet):
         return # 修正できなかった場合は元のツイートを返す
     
 
-def refine_tweet(tweet):
+def refine_tweet(api_key,tweet):
     """ツイートを再度AIにかけて、英語を日本語に、詩的な表現を抑えて自然にする"""
 
     messages = [
@@ -112,7 +112,7 @@ def refine_tweet(tweet):
     }
 
     headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}", 
+        "Authorization": f"Bearer {api_key}", 
         "Content-Type": "application/json"
     }
 
@@ -156,8 +156,8 @@ class AutoReplyStream(tweepy.StreamingClient):
             print(f"新しいリプライ: @{username}: {text}")  #ログ出力
 
             #ChatGPT で返信を生成
-            reply_message = generate_reply(text)
-            refined_tweet = refine_tweet(reply_message)
+            reply_message = generate_reply(GROQ_API_KEY,REPLY_PROMPT1,text)
+            refined_tweet = refine_tweet(OPENAI_API_KEY,reply_message)
 
 
             #Twitter に返信

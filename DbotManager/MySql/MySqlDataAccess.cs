@@ -234,7 +234,18 @@ public class MySqlDataAccess
                     ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
                     ,am.paid_like,am.paid_bookmark
                     ,am.check_interval
-                    ,am.search_enable,am.vps_id
+                    ,am.search_enable,am.vps_id,
+                    um.GROQ_API_KEY,
+                    um.OPENAI_API_KEY,
+                    am.ai_mode,
+                    am.ai_post_enable,
+                    am.ai_reply_enable,
+                    am.ai_post_prompt,
+                    am.ai_reply_prompt,
+                    am.reserve1_ai,
+                    am.reserve2_ai,
+                    am.reserve3_ai,
+                    am.reserve4_ai
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
                     ";
@@ -303,6 +314,23 @@ public class MySqlDataAccess
 
                                     SearchEnable = reader["search_enable"].ToString() == "1",
                                     VpsId = SupportUtil.ParseOrDefault(reader["vps_id"], 0),
+
+                                     GROQ_API_KEY = reader["GROQ_API_KEY"].ToString(),
+                                    OPENAI_API_KEY = reader["GROQ_API_KEY"].ToString(),
+
+                                    AiPostPrompt = reader["ai_post_prompt"].ToString(),
+                                    AiReplyPrompt = reader["ai_reply_prompt"].ToString(),
+                                    AiMode = SupportUtil.ParseOrDefault(reader["ai_mode"],0),
+                                    AiPostEnable = reader["ai_post_enable"].ToString() == "1",
+                                    AiReplyEnable = reader["ai_reply_enable"].ToString() == "1",
+
+                                    Reserve1Ai = reader["reserve1_ai"].ToString() == "1",
+                                    Reserve2Ai = reader["reserve2_ai"].ToString() == "1",
+                                    Reserve3Ai = reader["reserve3_ai"].ToString() == "1",
+                                    Reserve4Ai = reader["reserve4_ai"].ToString() == "1",
+
+
+
                                 };
 
                                 accountMasterList.Add(accountItem);

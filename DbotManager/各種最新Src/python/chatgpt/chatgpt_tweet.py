@@ -28,10 +28,10 @@ api = tweepy.API(auth)
 # 過去のツイート
 # 過去のツイート
 
-def generate_tweet():
+def generate_tweet(api_key,prompt):
     """Groqのmixtral-8x7b-32768を使ってツイートを生成する関数"""
 
-    USEPROMPT = PROMPT1
+    USEPROMPT = prompt
     # 過去のツイートをランダムに2つ選択
     random_past_tweets = random.sample(past_tweets_1, 2)
     # 改行で結合して、自然な文章にする
@@ -54,7 +54,7 @@ def generate_tweet():
 
     #Groq の API にアクセスするための認証情報を送信
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"#APIに送るフォーマット指定
     }
 
@@ -101,7 +101,7 @@ def generate_tweet():
 
 
 
-def refine_tweet(tweet):
+def refine_tweet(api_key,tweet):
     """ツイートを再度AIにかけて、英語を日本語に、詩的な表現を抑えて自然にする"""
 
     messages = [
@@ -121,7 +121,7 @@ def refine_tweet(tweet):
     }
 
     headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}", 
+        "Authorization": f"Bearer {api_key}", 
         "Content-Type": "application/json"
     }
 
@@ -218,8 +218,8 @@ def auto_post_tweet():
     while retry_count < 3:  # 最大再試行回数
         try:
              # 5回に1回の確率でハッシュタグを追加
-            tweet_content = generate_tweet()
-            refined_tweet = refine_tweet(tweet_content)
+            tweet_content = generate_tweet(GROQ_API_KEY,PROMPT1)
+            refined_tweet = refine_tweet(OPENAI_API_KEY,tweet_content)
 
             if random.randint(1, 5) == 1:  # 1, 2, 3 4 5のうち 1 の場合に追加
                 refined_tweet += "\n#裏垢女子 #DMでいいね" #改行してハッシュタグ

@@ -73,6 +73,15 @@ def get_account_master(id):
             am.user_id,
             um.GROQ_API_KEY,
             um.OPENAI_API_KEY
+            am.ai_mode,
+            am.ai_post_enable
+            am.ai_reply_enable,
+            am.ai_post_prompt,
+            am.ai_reply_prompt,
+            am.reserve1_ai,
+            am.reserve2_ai,
+            am.reserve3_ai,
+            am.reserve4_ai
             FROM 
             account_master am
             left join api_master api on api.id = am.api_master_id

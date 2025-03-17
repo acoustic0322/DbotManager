@@ -47,12 +47,27 @@ namespace DbotManager.Table
         public int Reserve2Count { get; set; }
         public int Reserve3Count { get; set; }
         public int Reserve4Count { get; set; }
+        public bool? Reserve1Ai { get; set; }
+        public bool? Reserve2Ai { get; set; }
+        public bool? Reserve3Ai { get; set; }
+        public bool? Reserve4Ai { get; set; }
 
         public int CheckInterval { get; set; }
         public int CheckRepInterval { get; set; }
         public int MonomaneInterval { get; set; }
 
         public bool? SearchEnable { get; set; }
+
+
+
+        public string GROQ_API_KEY { get; set; }
+        public string OPENAI_API_KEY { get; set; }
+        public int? AiMode { get; set; }
+        public bool? AiPostEnable { get; set; }
+        public bool? AiReplyEnable { get; set; }
+        public string AiPostPrompt { get; set; }
+        public string AiReplyPrompt { get; set; }
+
 
         // TweetTask用
         public int? CommentId { get; set; }

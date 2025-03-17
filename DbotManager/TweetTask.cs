@@ -49,6 +49,8 @@ namespace DbotManager
         public int? AccountId2 { get; set; }
         public int? CommentId { get; set; }
         public string TweetId { get; set; }
+        public bool AiEnable { get; set; }
+        public int AiMode { get; set; }
 
         public int? SearchId { get; set; }
         public string CheckAccountName { get; set; }
@@ -849,7 +851,7 @@ namespace DbotManager
             switch (tweetCommand.TweetProcType)
             {
                 case TweetProcTypes.POST:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} ai_mode={tweetCommand.AiMode} ai_enable={tweetCommand.AiEnable}";
 
                     if(tweetCommand.MediaType != MediaTypes.None)
                     {

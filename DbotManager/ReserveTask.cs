@@ -40,7 +40,8 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
+            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).Where(x => x.Id == 1).ToList();
+//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
 
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
@@ -48,74 +49,83 @@ namespace DbotManager
 
             foreach (var account in _accountList)
             {
-                var reserve = dataAccess.GetReserveMaster(account.Id);
+//              var reserve = dataAccess.GetReserveMaster(account.Id);
 
-                if (reserve.Reserve1StartHour > reserve.Reserve1EndHour)
-                    reserve.Reserve1EndHour += 24;
-                if (reserve.Reserve2StartHour > reserve.Reserve2EndHour)
-                    reserve.Reserve2EndHour += 24;
-                if (reserve.Reserve3StartHour > reserve.Reserve3EndHour)
-                    reserve.Reserve3EndHour += 24;
-                if (reserve.Reserve4StartHour > reserve.Reserve4EndHour)
-                    reserve.Reserve4EndHour += 24;
+                if (account.Reserve1StartHour > account.Reserve1EndHour)
+                    account.Reserve1EndHour += 24;
+                if (account.Reserve2StartHour > account.Reserve2EndHour)
+                    account.Reserve2EndHour += 24;
+                if (account.Reserve3StartHour > account.Reserve3EndHour)
+                    account.Reserve3EndHour += 24;
+                if (account.Reserve4StartHour > account.Reserve4EndHour)
+                    account.Reserve4EndHour += 24;
 
-                if (reserve != null) reserveMasterList.Add(reserve);
+//              if (account != null) reserveMasterList.Add(reserve);
             }
 
             List<ReserveSchedule> reserveScheduleList = new List<ReserveSchedule>();
 
             int noCommentCnt = 0;
 
-            foreach (var reserve in reserveMasterList)
+            foreach (var account in _accountList)
             {
                 // ランダム指定済みのコメントは除外する
                 var commentList = commentMasterList
-                    .Where(x => x.AccountId == reserve.AccountId)// && !withoutCommentIdList.Contains(x.Id))
+                    .Where(x => x.AccountId == account.Id)// && !withoutCommentIdList.Contains(x.Id))
                     .Where(x => x.TweetModeType == TweetModeTypes.Post)
                     .ToList();
 
+
+                /*
                 if (commentList.Count == 0)
                 {
                     noCommentCnt++;
                     continue;
                 }
+                */
 
-                if (reserve.Reserve1Enable)
+//                var targetAccount = _accountList.Where(x => x.Id == account.AccountId).FirstOrDefault();
+
+                if (account.Reserve1Enable)
                 {
                     var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 1).ToList();
-                    if(commentListWk.Count > 0)
+//                    if(commentListWk.Count > 0)
                     {
-                        var scheduleWk = MakeSchedule(reserve.Reserve1Count, reserve.Reserve1StartHour, reserve.Reserve1EndHour, reserve.UserId, reserve.AccountId, commentListWk, 1, reserveScheduleList, mediaMasterList);
+//                        var scheduleWk = MakeSchedule(reserve.Reserve1Count, reserve.Reserve1StartHour, reserve.Reserve1EndHour, reserve.UserId, reserve.AccountId,  commentListWk, 1, reserveScheduleList, mediaMasterList , targetAccount);
+                        var scheduleWk = MakeSchedule(account, commentListWk, 1, reserveScheduleList, mediaMasterList);
                         reserveScheduleList.AddRange(scheduleWk);
                     }
                 }
 
-                if (reserve.Reserve2Enable)
+                if (account.Reserve2Enable)
                 {
                     var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 2).ToList();
-                    if (commentListWk.Count > 0)
+//                    if (commentListWk.Count > 0)
                     {
-                        var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentListWk, 2, reserveScheduleList, mediaMasterList);
+//                        var scheduleWk = MakeSchedule(reserve.Reserve2Count, reserve.Reserve2StartHour, reserve.Reserve2EndHour, reserve.UserId, reserve.AccountId, commentListWk, 2, reserveScheduleList, mediaMasterList, targetAccount);
+                        var scheduleWk = MakeSchedule(account, commentListWk, 2, reserveScheduleList, mediaMasterList);
                         reserveScheduleList.AddRange(scheduleWk);
                     }
                 }
 
-                if (reserve.Reserve3Enable)
+                if (account.Reserve3Enable)
                 {
                     var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 3).ToList();
-                    if (commentListWk.Count > 0)
+//                    if (commentListWk.Count > 0)
                     {
-                        var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentListWk, 3, reserveScheduleList, mediaMasterList);
+//                        var scheduleWk = MakeSchedule(reserve.Reserve3Count, reserve.Reserve3StartHour, reserve.Reserve3EndHour, reserve.UserId, reserve.AccountId, commentListWk, 3, reserveScheduleList, mediaMasterList, targetAccount);
+                        var scheduleWk = MakeSchedule(account, commentListWk, 3, reserveScheduleList, mediaMasterList);
                         reserveScheduleList.AddRange(scheduleWk);
                     }
                 }
 
-                if (reserve.Reserve4Enable)
+                if (account.Reserve4Enable)
                 {
                     var commentListWk = commentList.Where(x => x.ReserveMode == 0 || x.ReserveMode == 4).ToList();
-                    if (commentListWk.Count > 0)
+//                    if (commentListWk.Count > 0)
                     {
-                        var scheduleWk = MakeSchedule(reserve.Reserve4Count, reserve.Reserve4StartHour, reserve.Reserve4EndHour, reserve.UserId, reserve.AccountId, commentListWk, 4, reserveScheduleList, mediaMasterList);
+//                        var scheduleWk = MakeSchedule(reserve.Reserve4Count, reserve.Reserve4StartHour, reserve.Reserve4EndHour, reserve.UserId, reserve.AccountId, commentListWk, 4, reserveScheduleList, mediaMasterList, targetAccount);
+                        var scheduleWk = MakeSchedule(account, commentListWk, 4, reserveScheduleList, mediaMasterList);
                         reserveScheduleList.AddRange(scheduleWk);
                     }
                 }
@@ -125,12 +135,16 @@ namespace DbotManager
 
             foreach (var item in reserveScheduleList)
             {
-                var commentItem = commentMasterList.Where(x => x.Id == item.CommentId).ToList();
-                if(commentItem.Count > 0)
-                {
-                    item.Comment = commentItem.FirstOrDefault().Comment;
-                }
 
+                if (!(bool)item.AiEnable)
+                { 
+                    var commentItem = commentMasterList.Where(x => x.Id == item.CommentId).ToList();
+                    if (commentItem.Count > 0)
+                    {
+                        item.Comment = commentItem.FirstOrDefault().Comment;
+                    }
+
+                }
                 var accountItem = _accountList.Where(x => x.Id == item.AccountId).ToList();
                 if (accountItem.Count > 0)
                 {
@@ -152,8 +166,42 @@ namespace DbotManager
             return reserveScheduleList;
         }
 
-        private List<ReserveSchedule> MakeSchedule(int count, int startHour, int endHour, int userId, int accountId, List<CommentMaster> commentList, int type , List<ReserveSchedule> reserveList , List<MediaMaster> mediaMasterList)
+//        private List<ReserveSchedule> MakeSchedule(int count, int startHour, int endHour, int userId, int accountId, List<CommentMaster> commentList, int type , List<ReserveSchedule> reserveList , List<MediaMaster> mediaMasterList, AccountMaster accountMaster)
+        private List<ReserveSchedule> MakeSchedule(AccountMaster account, List<CommentMaster> commentList, int type, List<ReserveSchedule> reserveList, List<MediaMaster> mediaMasterList)
         {
+            int count = 0, startHour = 0, endHour = 0, userId = account.UserId, accountId = account.Id;
+            bool ai_enable = false;
+
+            switch(type)
+            {
+                case 1:
+                    count = account.Reserve1Count;
+                    startHour = account.Reserve1StartHour;
+                    endHour = account.Reserve1EndHour;
+                    ai_enable = (bool)account.AiPostEnable && (bool)account.Reserve1Ai;
+                    break;
+                case 2:
+                    count = account.Reserve2Count;
+                    startHour = account.Reserve2StartHour;
+                    endHour = account.Reserve2EndHour;
+                    ai_enable = (bool)account.AiPostEnable && (bool)account.Reserve2Ai;
+                    break;
+                case 3:
+                    count = account.Reserve3Count;
+                    startHour = account.Reserve3StartHour;
+                    endHour = account.Reserve3EndHour;
+                    ai_enable = (bool)account.AiPostEnable && (bool)account.Reserve3Ai;
+                    break;
+                case 4:
+                    count = account.Reserve4Count;
+                    startHour = account.Reserve4StartHour;
+                    endHour = account.Reserve4EndHour;
+                    ai_enable = (bool)account.AiPostEnable && (bool)account.Reserve4Ai;
+                    break;
+            }
+
+
+
             var schedules = new List<ReserveSchedule>();
             var random = new Random();
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
@@ -191,32 +239,48 @@ namespace DbotManager
                 // 直前のスケジュールと5分以上の間隔を設ける
                 while (schedules.Any(s => Math.Abs(((DateTime)s.ReserveTime - randomTime).TotalMinutes) < 5));
 
-                var commentList_重複除外 = commentList.Where(x => !withoutCommentIdList.Contains(x.Id)).ToList();
-
-                if (commentList_重複除外.Count == 0) continue;
-
-                Thread.Sleep(1);
-
-                // CommentMaster からランダムに1つ選択
-                var randomComment = commentList_重複除外[random.Next(commentList_重複除外.Count)];
-
                 MediaMaster mediaRow = null;
-                if(randomComment.MovieEnable)
+                CommentMaster randomComment = null;
+
+                if (ai_enable)
                 {
-                    var mediaList = mediaMasterList.Where(x => x.AccountId == randomComment.AccountId && x.MediaType == MediaTypes.Photo).ToList();
-                    if(mediaList.Count > 0)
+
+                }
+                else
+                {
+                    if (commentList.Count == 0) continue;
+
+                    var commentList_重複除外 = commentList.Where(x => !withoutCommentIdList.Contains(x.Id)).ToList();
+
+                    if (commentList_重複除外.Count == 0) continue;
+
+                    Thread.Sleep(1);
+
+                    // CommentMaster からランダムに1つ選択
+                    randomComment = commentList_重複除外[random.Next(commentList_重複除外.Count)];
+
+
+                    
+                    if (randomComment.MovieEnable)
                     {
-                        mediaRow = mediaList[random.Next(mediaList.Count)];
+                        var mediaList = mediaMasterList.Where(x => x.AccountId == randomComment.AccountId && x.MediaType == MediaTypes.Photo).ToList();
+                        if (mediaList.Count > 0)
+                        {
+                            mediaRow = mediaList[random.Next(mediaList.Count)];
+                        }
+                    }
+                    else if (randomComment.MovieEnable)
+                    {
+                        var mediaList = mediaMasterList.Where(x => x.AccountId == randomComment.AccountId && x.MediaType == MediaTypes.Movie).ToList();
+                        if (mediaList.Count > 0)
+                        {
+                            mediaRow = mediaList[random.Next(mediaList.Count)];
+                        }
                     }
                 }
-                else if(randomComment.MovieEnable)
-                {
-                    var mediaList = mediaMasterList.Where(x => x.AccountId == randomComment.AccountId && x.MediaType == MediaTypes.Movie).ToList();
-                    if (mediaList.Count > 0)
-                    {
-                        mediaRow = mediaList[random.Next(mediaList.Count)];
-                    }
-                }
+
+
+
 
                 // スケジュールを追加
                 schedules.Add(new ReserveSchedule
@@ -225,15 +289,22 @@ namespace DbotManager
                     ReserveTime = randomTime,
                     UserId = userId,
                     AccountId = accountId,
-                    CommentId = randomComment.Id,
+                    CommentId = ai_enable ? 0 : randomComment.Id,
                     ReserveId = $"{accountId}-{type}-{(i + 1)}",
                     Result = false,
 
                     MediaType = mediaRow == null ? MediaTypes.None : mediaRow.MediaType,
                     MediaId = mediaRow == null ? null : (int?)mediaRow.MediaId,
+
+                    AiEnable = ai_enable,
+                    AiMode = account.AiMode
                 });
 
-                withoutCommentIdList.Add(randomComment.Id);
+                if (!ai_enable)
+                {
+                    withoutCommentIdList.Add(randomComment.Id);
+                }
+
             }
 
             return schedules;
@@ -289,8 +360,9 @@ namespace DbotManager
                     AccountId = (int)reserveSchedule.AccountId,
                     CommentId = (int)reserveSchedule.CommentId ,
                     MediaId = reserveSchedule.MediaId,
-                    MediaType = reserveSchedule.MediaType
-
+                    MediaType = reserveSchedule.MediaType,
+                    AiEnable = (bool)reserveSchedule.AiEnable,
+                    AiMode = (int)reserveSchedule.AiMode
                 }
                 );
 

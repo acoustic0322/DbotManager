@@ -42,7 +42,8 @@ print(sys.path)
 #chatgpt フォルダを Python のパスに追加
 sys.path.append(os.path.abspath("chatgpt"))
 
-from chatgpt_reply import generate_reply, refine_tweet
+from chatgpt_reply import generate_reply,refine_reply
+from chatgpt_tweet import generate_tweet,refine_tweet
 
 
 def createClient(credentials):
@@ -240,17 +241,22 @@ def check_access_token_validity(access_token):
         outputLog(response.json())  # エラーメッセージを表示
         return response.status_code , json.dumps(response.json())
 
-def proc_post_v2(credentials ,comment_id, reply_to_tweet_id):
+def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable , ai_mode):
 
     if config.debug == True:
         outputLog("proc_post_v2 Start")
         outputLog(f"comment_id={comment_id}")
         outputLog(f"reply_to_tweet_id={reply_to_tweet_id}")
 
-    # コメントの取得
-    comment = get_comment_by_id(comment_id)
+    if ai_enable == False:
+        # コメントの取得
+        comment = get_comment_by_id(comment_id)
+    else:
+        tweet_content = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'])
+        comment = refine_tweet(credentials['GROQ_API_KEY'],tweet_content)
 
-#    outputLog("comment=",comment)
+
+    outputLog("comment=",comment)
 
     # コメントが取得できなかった場合、処理を終了
     if comment is None:
@@ -1001,8 +1007,8 @@ def check_replies(credentials):
         print(f"新しいリプライ: @{username}: {text}")  #ログ出力
 
         #ChatGPT で返信を生成
-        reply_message = generate_reply(text)
-        refined_tweet = refine_tweet(reply_message)
+#        reply_message = generate_reply(credentials['GROQ_API_KEY'],text)
+#        refined_tweet = refine_tweet(credentials['GROQ_API_KEY'],reply_message)
 
         #Twitter に返信
         post_reply_v2(credentials, tweet_id, username, refined_tweet)
