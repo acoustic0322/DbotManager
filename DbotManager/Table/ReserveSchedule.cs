@@ -24,7 +24,6 @@ namespace DbotManager.Table
 
 
         public bool? AiEnable { get; set; }
-        public int? AiMode { get; set; }
     }
 
 }

@@ -1,8 +1,17 @@
 import tweepy
 import requests
 import random
-from prompt import REPLY_PROMPT1
+from prompt import REPLY_PROMPT1_FIX1
+from prompt import REPLY_PROMPT1_FIX2
+from prompt import REPLY_PROMPT1_FREE
+
 from prompt import past_tweets_2
+
+from prompt import payload_generate_tweet
+from prompt import payload_generate_reply
+from prompt import payload_refine_tweet
+from prompt import payload_generate_trend_tweet
+
 import json
 import time
 import re
@@ -27,7 +36,7 @@ auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
-def generate_reply(api_key,prompt,original_tweet):
+def generate_reply(open_ai_api_key,prompt,past_tweets,original_tweet):
 
     """Groqのmixtral-8x7b-32768を使ってツイートを生成する関数"""
     # ランダムなプロンプトを選択
@@ -36,32 +45,26 @@ def generate_reply(api_key,prompt,original_tweet):
 
 
     # 過去のツイートをランダムに2つ選択
-    random_past_tweets = random.sample(past_tweets_2, 2)
+    random_past_tweets = random.sample(past_tweets, 2)
     # 改行で結合して、自然な文章にする
     random_past_tweets = "\n".join(random_past_tweets)
 
-    messages = [
+    payload_generate_reply["messages"] = [
         {"role": "system", "content": "あなたはTwitterでお礼のリプライを作成するAIです。"},
         {"role": "user", "content": f"このツイートに対してリプライを作成してください: {original_tweet}"},
         {"role": "user", "content": f"{USEPROMPT}\n\n以下は過去のツイートの一例です。参考にしてください。\n\n{random_past_tweets}"}
     ]
 
-        # APIリクエスト用のデータ
-    payload = {
-        "model": "mixtral-8x7b-32768",
-        "messages": messages,
-        "max_tokens": 150,
-        "temperature": 0.6  # ランダム性
-    }
+
 
     #Groq の API にアクセスするための認証情報を送信
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {open_ai_api_key}",
         "Content-Type": "application/json"#APIに送るフォーマット指定
     }
 
         # APIリクエスト送信
-    response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
+    response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload_generate_reply)
 
     # 結果を取得
     if response.status_code in [200, 201]:
@@ -96,10 +99,10 @@ def generate_reply(api_key,prompt,original_tweet):
         return # 修正できなかった場合は元のツイートを返す
     
 
-def refine_tweet(api_key,tweet):
+def refine_tweet(groq_api_key,tweet):
     """ツイートを再度AIにかけて、英語を日本語に、詩的な表現を抑えて自然にする"""
 
-    messages = [
+    payload_refine_tweet["messages"] = [ 
         {"role": "system", "content": "あなたはツイートを修正するAIです。以下のルールを守ってツイートを自然な日本語に修正してください。\
             ・**英語の単語があれば、すべて自然な日本語に翻訳する。**\
             ・**詩的な表現を排除し、カジュアルな話し言葉に変換する。**\
@@ -108,19 +111,12 @@ def refine_tweet(api_key,tweet):
         {"role": "user", "content": f"修正してください: {tweet}"}
     ]
 
-    payload = {
-        "model": "gpt-3.5-turbo", 
-        "messages": messages,
-        "max_tokens": 140,
-        "temperature": 0.5 
-    }
-
     headers = {
-        "Authorization": f"Bearer {api_key}", 
+        "Authorization": f"Bearer {groq_api_key}", 
         "Content-Type": "application/json"
     }
 
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload_refine_tweet)
 
     if response.status_code in [200, 201]:
         return response.json()["choices"][0]["message"]["content"].strip()
@@ -160,7 +156,13 @@ class AutoReplyStream(tweepy.StreamingClient):
             outputLog(f"新しいリプライ: @{username}: {text}")  #ログ出力
 
             #ChatGPT で返信を生成
-            reply_message = generate_reply(GROQ_API_KEY,REPLY_PROMPT1,text)
+            reply_message = generate_reply(
+                GROQ_API_KEY,
+                REPLY_PROMPT1_FIX1 + REPLY_PROMPT1_FREE + REPLY_PROMPT1_FIX2,
+                past_tweets_2,
+                text
+                )
+
             refined_tweet = refine_tweet(OPENAI_API_KEY,reply_message)
 
 

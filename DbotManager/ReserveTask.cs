@@ -40,8 +40,8 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).Where(x => x.Id == 1).ToList();
             _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
+            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).Where(x => x.Id == 1).ToList();
 
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
@@ -297,7 +297,6 @@ namespace DbotManager
                     MediaId = mediaRow == null ? null : (int?)mediaRow.MediaId,
 
                     AiEnable = ai_enable,
-                    AiMode = account.AiMode
                 });
 
                 if (!ai_enable)
@@ -362,7 +361,6 @@ namespace DbotManager
                     MediaId = reserveSchedule.MediaId,
                     MediaType = reserveSchedule.MediaType,
                     AiEnable = (bool)reserveSchedule.AiEnable,
-                    AiMode = (int)reserveSchedule.AiMode
                 }
                 );
 

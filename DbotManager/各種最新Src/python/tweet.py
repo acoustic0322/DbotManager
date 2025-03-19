@@ -75,10 +75,7 @@ search_id = args.get("search_id","")
 config.debug = args.get("debug","").lower() == "true"
 dmmid = args.get("dmmid","")
 
-ai_mode = False if args.get("ai_mode","") == "0" else True
-ai_enable = False if args.get("ai_enable","") == "0" else True
-
-outputLog(ai_mode)
+ai_enable = False if args.get("ai_enable","") == "False" else True
 
 #debug
 #search_row={'id': 1, 'search_user_name': 'MANGA549764083', 'search_user_id': '2', 'post_account_id': 239, 'post_enable': 0, 'last_post_id': '1886501259601174542', 'last_post_time': '2025-02-04 04:45:24', 'reply_account_id': 239, 'reply_enable': 0, 'last_reply_id': '1886385085647040800', 'last_reply_time': '2025-02-03 21:03:46', 'monomane_account_id': '239', 'monomane_enable': 1, 'last_monomane_id': '1886498846538338658', 'last_monomane_time': '2025-02-04 04:35:49'}
@@ -111,9 +108,9 @@ credentials = get_account_master(account_id)
 if credentials:
     if mode == "post":
         if media_type != '':
-            result1 , contents1 = proc_post_v10a(credentials , comment_id , media_type , media_id , tweet_id , ai_enable , ai_mode)               
+            result1 , contents1 = proc_post_v10a(credentials , comment_id , media_type , media_id , tweet_id , ai_enable)               
         else:
-            result1 , contents1 = proc_post_v2(credentials , comment_id , "" , ai_enable , ai_mode)               
+            result1 , contents1 = proc_post_v2(credentials , comment_id , "" , ai_enable)               
     elif mode == "reply":
         result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id)               
 #        result1 , contents1 = True , "" #未実装

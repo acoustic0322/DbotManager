@@ -236,19 +236,49 @@ def check_access_token_validity(access_token):
         outputLog(response.json())  # エラーメッセージを表示
         return response.status_code , json.dumps(response.json())
 
-def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable , ai_mode):
+def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
     if config.debug == True:
         outputLog("proc_post_v2 Start")
         outputLog(f"comment_id={comment_id}")
         outputLog(f"reply_to_tweet_id={reply_to_tweet_id}")
 
-    if ai_enable == False:
-        # コメントの取得
-        comment = get_comment_by_id(comment_id)
+    outputLog(f"GROQ_API_KEY={credentials['GROQ_API_KEY']}")
+    outputLog(f"OPENAI_API_KEY={credentials['OPENAI_API_KEY']}")
+    outputLog(f"ai_post_prompt={credentials['ai_post_prompt']}")
+    outputLog(f"ai_post_example={credentials['ai_post_example']}")
+
+
+    ai_mode = credentials['ai_mode']
+    ai_post_enable = credentials['ai_post_enable']
+    ai_reply_enable = credentials['ai_reply_enable']
+
+    # リプライモード
+    if reply_to_tweet_id:
+        if ai_enable == False or ai_reply_enable == 0 or ai_mode == 0:
+            outputLog("固定コメント")
+            comment = get_comment_by_id(comment_id)
+        else:
+            outputLog("AIコメント")
+            comment = generate_reply(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],'')  #コメント内容
+
+            # 裏垢女子モード時は文章を整形
+            if ai_mode == 2:
+                outputLog("裏垢女子")
+                comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
+    # ポストモード
     else:
-        tweet_content = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'])
-        comment = refine_tweet(credentials['GROQ_API_KEY'],tweet_content)
+        if ai_enable == False or ai_post_enable == 0 or ai_mode == 0:
+            outputLog("固定コメント")
+            comment = get_comment_by_id(comment_id)
+        else:
+            outputLog("AIコメント")
+            comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
+
+            # 裏垢女子モード時は文章を整形
+            if ai_mode == 2:
+                outputLog("裏垢女子")
+                comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
 
 
     outputLog(f"comment={comment}")
@@ -283,6 +313,9 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable , ai_mod
         outputLog(headers)
         outputLog(data)
         outputLog(comment)
+
+    if 1==1:
+        return False , False
 
 
     # POSTリクエストを送信

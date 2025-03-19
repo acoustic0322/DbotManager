@@ -851,7 +851,7 @@ namespace DbotManager
             switch (tweetCommand.TweetProcType)
             {
                 case TweetProcTypes.POST:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} ai_mode={tweetCommand.AiMode} ai_enable={tweetCommand.AiEnable}";
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} ai_enable={tweetCommand.AiEnable}";
 
                     if(tweetCommand.MediaType != MediaTypes.None)
                     {

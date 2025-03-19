@@ -66,10 +66,6 @@ def get_account_master(id):
             am.api_master_id,
             am.twitter_user_id,
             am.check_rep_datetime,
-            am.ai_post_enable,
-            am.ai_reply_enable,
-            am.ai_post_prompt,
-            am.ai_reply_prompt,
             am.user_id,
             um.GROQ_API_KEY,
             um.OPENAI_API_KEY,
@@ -81,7 +77,9 @@ def get_account_master(id):
             am.reserve1_ai,
             am.reserve2_ai,
             am.reserve3_ai,
-            am.reserve4_ai
+            am.reserve4_ai,
+            am.ai_post_example,
+            am.ai_reply_example
             FROM 
             account_master am
             left join api_master api on api.id = am.api_master_id
