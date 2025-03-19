@@ -314,8 +314,8 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
         outputLog(data)
         outputLog(comment)
 
-    if 1==1:
-        return False , False
+#    if 1==1:
+#        return False , False
 
 
     # POSTリクエストを送信

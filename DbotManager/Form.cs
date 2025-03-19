@@ -713,6 +713,8 @@ namespace DbotManager
 
         private void button予約End_Click(object sender, EventArgs e)
         {
+            _reserveTask.EndTask();
+
             button予約Start.Enabled = true;
             button予約End.Enabled = false;
         }

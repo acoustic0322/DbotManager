@@ -316,7 +316,11 @@ namespace DbotManager
             _予約監視Timer.Elapsed += OnTimedEvent;
             _予約監視Timer.AutoReset = true; // 繰り返し実行
             _予約監視Timer.Enabled = true;
+        }
 
+        public void EndTask()
+        {
+            _予約監視Timer.Enabled = false;
         }
 
         public void OnTimedEvent(object sender, ElapsedEventArgs e)
