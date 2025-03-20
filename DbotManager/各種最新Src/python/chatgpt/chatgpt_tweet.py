@@ -36,6 +36,26 @@ auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
 
+def call_api_with_retry(url, payload, headers, retries=5, delay=2):
+    """503エラー時に指数バックオフでリトライするAPI呼び出し関数"""
+    for attempt in range(retries):
+        response = requests.post(url, headers=headers, json=payload)
+
+        if response.status_code in [200, 201]:  # 成功
+            return response.json()
+
+        elif response.status_code == 503:  # サーバー負荷エラー
+            wait_time = delay * (2 ** attempt)  # 2, 4, 8, 16秒...
+            print(f"503エラー発生: (試行 {attempt+1}/{retries}) - {wait_time}秒後に再試行")
+            time.sleep(wait_time)
+
+        else:  # その他のエラーは即終了
+            print(f"APIエラー: {response.status_code}, {response.text}")
+            break
+
+    print("最大リトライ回数を超えました。")
+    return None
+
 
 # 過去のツイート
 def generate_tweet(groq_api_key,prompt,past_tweets):
@@ -63,14 +83,19 @@ def generate_tweet(groq_api_key,prompt,past_tweets):
         "Content-Type": "application/json"#APIに送るフォーマット指定
     }
 
-    # APIリクエスト送信
-    response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload_generate_tweet)
+    url = "https://api.groq.com/openai/v1/chat/completions"
 
-    # 結果を取得
-    if response.status_code in [200, 201]:
-        content = response.json()["choices"][0]["message"]["content"].strip()
+    # APIリクエスト（503エラー時は自動リトライ）
 
-        # 余計な前置きを削除（複数パターン対応）
+
+    ##########ここを追加しました
+    response_data = call_api_with_retry(url, payload_generate_tweet, headers) 
+    ##########ここを追加しました
+    
+    if response_data:
+        content = response_data["choices"][0]["message"]["content"].strip()
+
+        # 余計な前置きを削除
         unwanted_phrases = [
             "あなたのために、新しいツイートを作成します。",
             "あなたのために、新しいえっちなツイートを作成します。",
@@ -92,11 +117,14 @@ def generate_tweet(groq_api_key,prompt,past_tweets):
             if content.startswith(phrase):
                 content = content[len(phrase):].strip()
 
-            # ハッシュタグ（`#〇〇`）を削除
+        # ハッシュタグ（`#〇〇`）を削除
         content = re.sub(r"#\S+", "", content).strip()
         content = re.sub(r"僕", "私", content)
 
-        return content  #成功したらツイートを返す
+        return content  # 成功したツイートを返す
+
+    print("ツイート生成に失敗しました。")
+    return "ツイート生成エラー"
 
 
     else:
@@ -123,13 +151,16 @@ def refine_tweet(open_ai_api_key,tweet):
         "Content-Type": "application/json"
     }
 
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload_refine_tweet)
+    url = "https://api.openai.com/v1/chat/completions"
 
-    if response.status_code in [200, 201]:
-        return response.json()["choices"][0]["message"]["content"].strip()
-    else:
-        outputLog(f"エラー: {response.status_code}, {response.text}")
-        return tweet  # 修正できなかった場合は元のツイートを返す
+    # APIリクエスト（503エラー時は自動リトライ）
+    response_data = call_api_with_retry(url, payload_refine_tweet, headers)
+
+    if response_data:
+        return response_data["choices"][0]["message"]["content"].strip()
+
+    print("最大リトライ回数を超えました。元のツイートを使用します。")
+    return tweet  # 失敗した場合は元のツイートを返す
 
 def post_tweet(tweet_content):
     """指定した内容のツイートを投稿"""
@@ -171,12 +202,13 @@ def generate_trend_tweet(open_ai_api_key,prompt):
         "Content-Type": "application/json"
     }
 
+    url = "https://api.openai.com/v1/chat/completions"
 
+    # APIリクエスト（503エラー時は自動リトライ）
+    response_data = call_api_with_retry(url, payload_generate_trend_tweet, headers)
 
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload_generate_trend_tweet)
-
-    if response.status_code == 200:
-        content = response.json()["choices"][0]["message"]["content"].strip()
+    if response_data:
+        content = response_data["choices"][0]["message"]["content"].strip()
 
         # 余計な前置きを削除
         unwanted_phrases = [
@@ -191,13 +223,10 @@ def generate_trend_tweet(open_ai_api_key,prompt):
             if content.startswith(phrase):
                 content = content[len(phrase):].strip()
 
-        return content
+        return content  # 成功した場合、ツイートを返す
 
-    else:
-        outputLog(f"ChatGPT API エラー: {response.status_code}")
-        return "エラーが発生しました"
-
-
+    print("最大リトライ回数を超えました。ツイート生成をスキップします。")
+    return "エラーが発生しました"
 
 
 #定期的にツイートをLLMで実行

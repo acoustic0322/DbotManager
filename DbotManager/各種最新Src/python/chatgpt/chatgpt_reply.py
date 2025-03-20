@@ -36,6 +36,29 @@ auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
+
+
+
+def call_api_with_retry(url, payload, headers, retries=5, delay=2):
+    """503エラー時に指数バックオフでリトライするAPI呼び出し関数"""
+    for attempt in range(retries):
+        response = requests.post(url, headers=headers, json=payload)
+
+        if response.status_code in [200, 201]:  # 成功
+            return response.json()
+
+        elif response.status_code == 503:  # サーバー負荷エラー
+            wait_time = delay * (2 ** attempt)  # 2, 4, 8, 16秒...
+            print(f"503エラー発生: (試行 {attempt+1}/{retries}) - {wait_time}秒後に再試行")
+            time.sleep(wait_time)
+
+        else:  # その他のエラーは即終了
+            print(f"APIエラー: {response.status_code}, {response.text}")
+            break
+
+    print("最大リトライ回数を超えました。")
+    return None
+
 def generate_reply(open_ai_api_key,prompt,past_tweets,original_tweet):
 
     """Groqのmixtral-8x7b-32768を使ってツイートを生成する関数"""
@@ -63,13 +86,15 @@ def generate_reply(open_ai_api_key,prompt,past_tweets,original_tweet):
         "Content-Type": "application/json"#APIに送るフォーマット指定
     }
 
-        # APIリクエスト送信
-    response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload_generate_reply)
+    url = "https://api.groq.com/openai/v1/chat/completions"
 
-    # 結果を取得
-    if response.status_code in [200, 201]:
-        content = response.json()["choices"][0]["message"]["content"].strip()
-        # 余計な前置きを削除（複数パターン対応）
+    # APIリクエスト（503エラー時は自動リトライ）
+    response_data = call_api_with_retry(url, payload_generate_reply, headers)
+
+    if response_data:
+        content = response_data["choices"][0]["message"]["content"].strip()
+
+        # 余計な前置きを削除
         unwanted_phrases = [
             "あなたのために、新しいツイートを作成します。",
             "あなたのために、新しいえっちなツイートを作成します。",
@@ -80,23 +105,22 @@ def generate_reply(open_ai_api_key,prompt,past_tweets,original_tweet):
             "エロティックなツイート:",
             "🔞 本日のツイート:",
             "新しいツイート:"
-        
         ]
 
         for phrase in unwanted_phrases:
             if content.startswith(phrase):
                 content = content[len(phrase):].strip()
 
-        
         # 余計な文字やフレーズを削除する
         content = re.sub(r"#\S+", "", content).strip()  # ハッシュタグを削除
         content = re.sub(r"僕", "私", content)  # 「僕」を「私」に変換
         content = re.sub(r'["\']', "", content).strip()  # ダブルクォートとシングルクォートを削除
 
         return content
-    else:
-        outputLog(f"⚠️ エラー: {response.status_code}, {response.text}")
-        return # 修正できなかった場合は元のツイートを返す
+
+    print("最大リトライ回数を超えました。リプライ生成をスキップします。")
+    return "リプライ生成エラー"
+
     
 
 def refine_tweet(groq_api_key,tweet):
@@ -115,6 +139,17 @@ def refine_tweet(groq_api_key,tweet):
         "Authorization": f"Bearer {groq_api_key}", 
         "Content-Type": "application/json"
     }
+
+    url = "https://api.openai.com/v1/chat/completions"
+
+    # APIリクエスト（503エラー時は自動リトライ）
+    response_data = call_api_with_retry(url, payload_refine_tweet, headers)
+
+    if response_data:
+        return response_data["choices"][0]["message"]["content"].strip()
+
+    print("最大リトライ回数を超えました。元のツイートを使用します。")
+    return tweet  # 失敗した場合は元のツイートを返す
 
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload_refine_tweet)
 
