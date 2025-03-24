@@ -41,7 +41,7 @@ namespace DbotManager
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
             _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
-            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).Where(x => x.Id == 1).ToList();
+//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).Where(x => x.Id == 1).ToList();
 
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
@@ -208,7 +208,8 @@ namespace DbotManager
 
             Thread.Sleep(10);
             // ランダムな件数を設定 (0 ～ count)
-            int randomCount = random.Next(count+1); // countを含めるため +1
+//            int randomCount = random.Next(count+1); // countを含めるため +1
+            int randomCount = random.Next(1 , count + 1); // 0を除外してランダムカウント生成
             Thread.Sleep(10);
 
             // 今日の日付
