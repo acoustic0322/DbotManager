@@ -27,6 +27,7 @@ from mysql import update_account_master_by_check_rep_datetime
 
 import config
 from config import convert_tweet_datetime
+from config import convert_tweet_datetime2
 from config import outputLog
 
 from twitter_api_v1 import proc_monomane
@@ -876,12 +877,15 @@ def get_latest_monomane_tweets(tweets , search_row):
 
     return updated_tweets , None
 
-def get_replies_to_user(credentials, user_id, max_results=10):
+def get_replies_to_user(search_account, reply_account, user_id, max_results=10):
+
+    outputLog(f"user_id={user_id}")
+
     """ 指定ユーザー (user_id) にリプライされたツイートを取得 """
     url = "https://api.twitter.com/2/tweets/search/recent"  # 検索エンドポイントを使用
     
     headers = {
-        "Authorization": f"Bearer {credentials['bearer_token']}",
+        "Authorization": f"Bearer {search_account['bearer_token']}",
         "Content-Type": "application/json"
     }
 
@@ -893,11 +897,12 @@ def get_replies_to_user(credentials, user_id, max_results=10):
         "user.fields": "username"  # ユーザーの `username` を取得        
     }
 
-    dt = credentials['check_rep_datetime']
+    dt = reply_account['check_rep_datetime']
 #    if not dt:  # dt が None または 空文字なら現在時刻に置き換え
 #        dt = datetime.now(timezone.utc)
 
     if dt is None:
+        outputLog("dt is none")
         dt = datetime.now(timezone.utc)  # dt が空なら現在時刻
     elif isinstance(dt, str):  
         # 文字列なら datetime に変換し、Asia/Tokyo から UTC へ変換
@@ -907,7 +912,8 @@ def get_replies_to_user(credentials, user_id, max_results=10):
         # datetime 型なら UTC に変換
         dt = dt.astimezone(timezone.utc)
 
-#    outputLog(dt)
+    outputLog("datetime")
+    outputLog(dt)
 
     response = requests.get(url, headers=headers, params=params)
 
@@ -919,8 +925,10 @@ def get_replies_to_user(credentials, user_id, max_results=10):
 
         replies = []
         for tweet in data.get("data", []):
-            created_at = convert_tweet_datetime(tweet["created_at"])  # 日時変換
+            created_at = convert_tweet_datetime2(tweet["created_at"])  # 日時変換
+            outputLog(created_at)
             if created_at > dt:  # 条件を満たす場合のみ追加
+#            if True:  # 条件を満たす場合のみ追加
                 author_id = tweet.get("author_id", "")
                 username = users.get(author_id, "")  # author_id に対応する username を取得
                 replies.append({
@@ -929,6 +937,8 @@ def get_replies_to_user(credentials, user_id, max_results=10):
                     "username": username,
                     "created_at": created_at
                 })
+#                outputLog(f"reply_text={tweet["text"]}")
+                outputLog(f"reply_text={tweet}")
         
         return replies
     else:
@@ -996,20 +1006,21 @@ def get_replies_to_user_bk(credentials, user_id, max_results=10):
         return []
 
 
-def check_replies(credentials):
+def check_replies(search_account , reply_account):
 
-    user_id = credentials['twitter_user_id']
+    user_id = reply_account['twitter_user_id']
 
-    if user_id is None:
-        user_id = get_user_id(credentials)
+    if user_id is None or user_id == "":
+        user_id = get_user_id(reply_account)
         outputLog(f"user_id={user_id}")
-        update_account_master_by_twitter_user_id(credentials['id'] , user_id)
-
-    """ 指定ユーザーの全ポストに対するリプライをチェック """
-    reply_tweets = get_replies_to_user(credentials, user_id)
+        update_account_master_by_twitter_user_id(reply_account['id'] , user_id)
 
     # リプチェック日時を更新
-#    update_account_master_by_check_rep_datetime(credentials['id'])
+    update_account_master_by_check_rep_datetime(reply_account['id'])
+
+    """ 指定ユーザーの全ポストに対するリプライをチェック """
+    reply_tweets = get_replies_to_user(search_account, reply_account , user_id)
+
 
     if not reply_tweets:
         outputLog("新着リプはありませんでした")
@@ -1039,11 +1050,20 @@ def check_replies(credentials):
         outputLog(f"新しいリプライ: @{username}: {text}")  #ログ出力
 
         #ChatGPT で返信を生成
-#        reply_message = generate_reply(credentials['GROQ_API_KEY'],text)
-#        refined_tweet = refine_tweet(credentials['GROQ_API_KEY'],reply_message)
+        reply_message = generate_reply(
+            reply_account['GROQ_API_KEY'],
+            reply_account['ai_reply_prompt'],
+            reply_account['ai_reply_example'],
+            text
+            )
+
+        refined_tweet = refine_tweet(
+            reply_account['OPENAI_API_KEY'],
+            reply_message
+            )
 
         #Twitter に返信
-        post_reply_v2(credentials, tweet_id, username, refined_tweet)
+        post_reply_v2(reply_account, tweet_id, username, refined_tweet)
 
 
     return True, ''

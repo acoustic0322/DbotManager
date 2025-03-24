@@ -32,6 +32,7 @@ namespace DbotManager.Table
         public int? StartHour { get; set; }
         public int? EndHour { get; set; }
 
+        public bool CheckAiRepMode { get; set; }
 
         // データベース非管理
         public int CheckInterval { get; set; }

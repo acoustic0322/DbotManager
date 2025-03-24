@@ -40,6 +40,9 @@ api = tweepy.API(auth)
 
 
 def call_api_with_retry(url, payload, headers, retries=5, delay=2):
+
+    print("payload=",payload)
+
     """503エラー時に指数バックオフでリトライするAPI呼び出し関数"""
     for attempt in range(retries):
         response = requests.post(url, headers=headers, json=payload)
@@ -59,12 +62,14 @@ def call_api_with_retry(url, payload, headers, retries=5, delay=2):
     print("最大リトライ回数を超えました。")
     return None
 
-def generate_reply(open_ai_api_key,prompt,past_tweets,original_tweet):
+def generate_reply(groq_api_key,prompt,past_tweets,original_tweet):
 
     """Groqのmixtral-8x7b-32768を使ってツイートを生成する関数"""
     # ランダムなプロンプトを選択
 
     USEPROMPT = prompt
+
+    print(prompt)
 
 
     # 過去のツイートをランダムに2つ選択
@@ -82,7 +87,7 @@ def generate_reply(open_ai_api_key,prompt,past_tweets,original_tweet):
 
     #Groq の API にアクセスするための認証情報を送信
     headers = {
-        "Authorization": f"Bearer {open_ai_api_key}",
+        "Authorization": f"Bearer {groq_api_key}",
         "Content-Type": "application/json"#APIに送るフォーマット指定
     }
 
@@ -123,7 +128,7 @@ def generate_reply(open_ai_api_key,prompt,past_tweets,original_tweet):
 
     
 
-def refine_tweet(groq_api_key,tweet):
+def refine_tweet(open_ai_api_key,tweet):
     """ツイートを再度AIにかけて、英語を日本語に、詩的な表現を抑えて自然にする"""
 
     payload_refine_tweet["messages"] = [ 
@@ -136,7 +141,7 @@ def refine_tweet(groq_api_key,tweet):
     ]
 
     headers = {
-        "Authorization": f"Bearer {groq_api_key}", 
+        "Authorization": f"Bearer {open_ai_api_key}", 
         "Content-Type": "application/json"
     }
 

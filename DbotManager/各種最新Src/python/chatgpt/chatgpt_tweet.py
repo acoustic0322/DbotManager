@@ -123,10 +123,6 @@ def generate_tweet(groq_api_key,prompt,past_tweets):
 
         return content  # 成功したツイートを返す
 
-    print("ツイート生成に失敗しました。")
-    return "ツイート生成エラー"
-
-
     else:
         outputLog(f"⚠️ エラー: {response.status_code}, {response.text}")
         return f"エラー: {response.status_code}, {response.text}"

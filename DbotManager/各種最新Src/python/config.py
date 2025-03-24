@@ -1,6 +1,6 @@
 ﻿import os
 import configparser
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytz
 import inspect
@@ -62,6 +62,11 @@ def convert_tweet_datetime(iso_format_date):
     # フォーマット変更
 #    return japan_time.strftime("%Y-%m-%d %H:%M:%S")  
     return japan_time
+
+def convert_tweet_datetime2(tweet_datetime_str):
+    """ツイートの created_at (ISO8601形式の文字列) を UTC の datetime に変換"""
+    dt_jst = datetime.fromisoformat(tweet_datetime_str.replace("Z", "+00:00"))  # ISO8601をパース
+    return dt_jst.astimezone(timezone.utc)  # UTC に変換
 
 def outputLog(message):
 

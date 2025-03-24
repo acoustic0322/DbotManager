@@ -142,8 +142,8 @@ if credentials:
     elif mode == "refresh":
         result1 , contents1 , contents2= refresh_access_token(credentials)
 
-    elif mode == "check_replies":
-        result1 , contents1 = check_replies(credentials)
+    elif mode == "checkairep":
+        result1 , contents1 = check_replies(credentials , get_account_master(account_id2))
 
     else:
         # エラーメッセージを標準エラーに出力

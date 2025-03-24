@@ -164,17 +164,28 @@ REPLY_PROMPT1_FIX2 ="""
 
 """
 
+PREFERRED_MODELS = [
+    "llama-3.3-70b-versatile",   # Meta最新・128K対応・高精度・多用途
+    "llama3-70b-8192",           # Meta安定版・高精度
+    "mixtral-8x7b-instruct",     # 高性能で安定、処理も早い
+    "gemma2-9b-it",              # Google製、instruction特化・比較的安定
+    "llama-3.1-8b-instant",      # 軽量・高速（精度はやや落ちる）
+    "llama3-8b-8192",            # 軽量・安定（処理優先向け）
+    "llama-guard-3-8b",          # モデレーション特化（特殊用途）
+]
+
 # APIリクエスト用のデータ
 payload_generate_tweet = {
-    "model": "mixtral-8x7b-32768",
+#    "model": "mixtral-8x7b-32768",
+    "model": PREFERRED_MODELS[0],
     "messages": "",
     "max_tokens": 150,
     "temperature": 0.7  # ランダム性
 }
 
-# APIリクエスト用のデータ
 payload_generate_reply = {
-    "model": "mixtral-8x7b-32768",
+#    "model": "mixtral-8x7b",
+    "model": PREFERRED_MODELS[0],
     "messages": "",
     "max_tokens": 150,
     "temperature": 0.6  # ランダム性

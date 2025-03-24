@@ -30,7 +30,8 @@ namespace DbotManager
         MONOMANE,
         NONE,
         CHECK,
-        CHECKREP
+        CHECKREP,
+        CHECKAIREP
     }
 
     public enum CheckAccountModes
@@ -60,6 +61,7 @@ namespace DbotManager
         public int? MediaId { get; set; }
 
         public bool DebugMode { get; set; }
+        public bool CheckAiRepMode { get; set; }
     }
 
     public class TweetVpsCommand
@@ -545,21 +547,54 @@ namespace DbotManager
 
             if(CheckUserId != 0) userMasterList = userMasterList.Where(x => x.Id == CheckUserId).ToList();
 
-            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster()
-                .Where(x => x.Enable && (bool)x.SearchEnable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
-
-            // 監視、監視toRep、モノマネアカウントリストの取得
-
-            //            List <SearchList> searchList = dataAccess.GetSearchList()
-            //                .Where(x => (bool)x.Enable && accountMasterList.Any(y => y.Id == x.PostAccountId)).ToList();
+            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
+            var 監視対象アカウント = accountMasterList.Where(x => x.Enable && (bool)x.SearchEnable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
 
             List<SearchList> wk1 = dataAccess.GetSearchList().Where(x => (bool)x.Enable).ToList();
             List<SearchList> wk2 = wk1.Where(x => userMasterList.Any(user => user.Id == x.SearchUserId)).ToList();
-            List<SearchList> searchList = wk2.Where(x => accountMasterList.Any(y => (bool)y.Enable)).ToList();
+            List<SearchList> searchList_通常 = wk2.Where(x => 監視対象アカウント.Any(y => (bool)y.Enable)).ToList();
 
-            //            List<SearchList> searchList = dataAccess.GetSearchList().Where(x => (bool)x.Enable && accountMasterList.Any(y => (bool)y.Enable && (bool)y.SearchEnable )).ToList();
+//            searchList_通常.Clear();
 
-            InitSearchHistory(accountMasterList);
+            var 自動AIリプライアカウント = accountMasterList
+                .Where(x => x.Enable &&
+                (bool)x.AiReplyEnable &&
+                x.AiMode == 2 &&
+                x.GROQ_API_KEY != null &&
+                x.OPENAI_API_KEY != null &&
+                x.AiReplyPrompt != null).ToList();
+
+            List<SearchList> searchList_自動リプ = new List<SearchList>();
+            foreach (var item in 自動AIリプライアカウント)
+            {
+                SearchList searchItem = new SearchList()
+                {
+                    SearchUserId = item.UserId,
+                    Enable = true,
+                    LastReplyTime = DateTime.Now,
+                    CheckInterval = item.CheckInterval,
+                    CheckDate = DateTime.Now,
+                    FirstFlag = true,
+                    TimeEnable = false,
+                    CheckAiRepMode = true,
+                    ReplyAccountId = item.Id
+
+                };
+
+                searchList_自動リプ.Add(searchItem);
+            }
+
+            List<SearchList> searchList = new List<SearchList>();
+
+            searchList.AddRange(searchList_通常);
+            searchList.AddRange(searchList_自動リプ);
+
+            List<AccountMaster> accountList = new List<AccountMaster>();
+            accountList.AddRange(監視対象アカウント);
+            accountList.AddRange(自動AIリプライアカウント);
+
+
+            InitSearchHistory(accountList);
 
             DateTime dtNow = DateTime.Now;
             CheckSearchList.Clear();
@@ -720,9 +755,10 @@ namespace DbotManager
                 if (searchHistoryRow == null) continue;
 
                 var tweetResult = TweetProc(new TweetCommand() { 
-                    TweetProcType = TweetProcTypes.CHECK, 
+                    TweetProcType = item.CheckAiRepMode ? TweetProcTypes.CHECKAIREP : TweetProcTypes.CHECK, 
                     SearchId = item.Id,
-                    AccountId = searchHistoryRow.AccountId
+                    AccountId = searchHistoryRow.AccountId,
+                    AccountId2 = item.ReplyAccountId
                 });
 
                 item.CheckDate = dtNow.AddSeconds(item.CheckInterval);
@@ -836,6 +872,10 @@ namespace DbotManager
                 case TweetProcTypes.CHECKREP:
                     return "checkrep";
                     break;
+
+                case TweetProcTypes.CHECKAIREP:
+                    return "checkairep";
+                    break;
             }
             return string.Empty;
         }
@@ -891,9 +931,13 @@ namespace DbotManager
 
                     //                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_list_id={tweetCommand.CheckListId}";
                     break;
+
+                case TweetProcTypes.CHECKAIREP:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} account_id2={tweetCommand.AccountId2}";
+                    break;
             }
 
-//            pythonScriptPath += " debug=True";
+            //            pythonScriptPath += " debug=True";
             pythonScriptPath += " debug=False";
 
             // Pythonの実行ファイルのパスを指定（通常 "python" または "python3" でOK）
