@@ -66,6 +66,8 @@
             this.textBoxいいね件数 = new System.Windows.Forms.TextBox();
             this.checkBoxいいね = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.textBoxJAPいいね件数 = new System.Windows.Forms.TextBox();
+            this.checkBoxJAPいいね = new System.Windows.Forms.CheckBox();
             this.checkBox一括処理禁止権限無視 = new System.Windows.Forms.CheckBox();
             this.checkBoxWeb一括処理 = new System.Windows.Forms.CheckBox();
             this.checkBoxDuplicate = new System.Windows.Forms.CheckBox();
@@ -120,8 +122,6 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.textBoxJAPいいね件数 = new System.Windows.Forms.TextBox();
-            this.checkBoxJAPいいね = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -528,6 +528,24 @@
             this.groupBox3.TabIndex = 0;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "基本設定";
+            // 
+            // textBoxJAPいいね件数
+            // 
+            this.textBoxJAPいいね件数.Location = new System.Drawing.Point(102, 117);
+            this.textBoxJAPいいね件数.Name = "textBoxJAPいいね件数";
+            this.textBoxJAPいいね件数.Size = new System.Drawing.Size(71, 27);
+            this.textBoxJAPいいね件数.TabIndex = 12;
+            this.textBoxJAPいいね件数.Text = "20";
+            // 
+            // checkBoxJAPいいね
+            // 
+            this.checkBoxJAPいいね.AutoSize = true;
+            this.checkBoxJAPいいね.Location = new System.Drawing.Point(10, 119);
+            this.checkBoxJAPいいね.Name = "checkBoxJAPいいね";
+            this.checkBoxJAPいいね.Size = new System.Drawing.Size(91, 23);
+            this.checkBoxJAPいいね.TabIndex = 13;
+            this.checkBoxJAPいいね.Text = "JAPいいね";
+            this.checkBoxJAPいいね.UseVisualStyleBackColor = true;
             // 
             // checkBox一括処理禁止権限無視
             // 
@@ -1072,26 +1090,6 @@
             this.buttonアカウント設定.Text = "アカウント設定";
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
-            // 
-            // textBoxJAPいいね件数
-            // 
-            this.textBoxJAPいいね件数.Location = new System.Drawing.Point(102, 117);
-            this.textBoxJAPいいね件数.Name = "textBoxJAPいいね件数";
-            this.textBoxJAPいいね件数.Size = new System.Drawing.Size(71, 27);
-            this.textBoxJAPいいね件数.TabIndex = 12;
-            this.textBoxJAPいいね件数.Text = "260";
-            // 
-            // checkBoxJAPいいね
-            // 
-            this.checkBoxJAPいいね.AutoSize = true;
-            this.checkBoxJAPいいね.Checked = true;
-            this.checkBoxJAPいいね.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxJAPいいね.Location = new System.Drawing.Point(10, 119);
-            this.checkBoxJAPいいね.Name = "checkBoxJAPいいね";
-            this.checkBoxJAPいいね.Size = new System.Drawing.Size(91, 23);
-            this.checkBoxJAPいいね.TabIndex = 13;
-            this.checkBoxJAPいいね.Text = "JAPいいね";
-            this.checkBoxJAPいいね.UseVisualStyleBackColor = true;
             // 
             // Form
             // 
