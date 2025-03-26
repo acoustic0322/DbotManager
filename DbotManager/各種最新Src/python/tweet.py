@@ -20,7 +20,9 @@ from twitter_api_v2 import get_latest_tweet
 from twitter_api_v2 import refresh_access_token
 from twitter_api_v1 import proc_post_v10a
 from twitter_api_v2 import check_replies
+from twitter_api_v2 import get_username_from_tweet_id_v2
 
+from jap_api import proc_like_jap
 
 
 from mysql import get_account_master
@@ -60,6 +62,7 @@ args = parse_arguments(sys.argv[1:])
 account_id = int(args.get("account_id","0"))
 account_id2 = int(args.get("account_id2","0"))
 tweet_id = args.get("tweet_id","")
+tweet_name = args.get("tweet_name","")
 mode = args.get("mode","")
 #tweet_text = args.get("text")
 comment_id = args.get("comment_id","")
@@ -74,6 +77,8 @@ search_id = args.get("search_id","")
 
 config.debug = args.get("debug","").lower() == "true"
 dmmid = args.get("dmmid","")
+
+quantity = args.get("quantity","")
 
 ai_enable = False if args.get("ai_enable","") == "False" else True
 
@@ -118,6 +123,10 @@ if credentials:
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)
     elif mode == "like":
         result1 , contents1 = proc_like_v2(credentials, tweet_id)
+    elif mode == "jap_like":
+        if not tweet_name:  # None または空文字列のときにTrue
+            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+        result1 , contents1 = proc_like_jap(tweet_name, tweet_id , quantity)
     elif mode == "bookmark":
         result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
     elif mode == "check":

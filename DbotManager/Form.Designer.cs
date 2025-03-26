@@ -97,6 +97,7 @@
             this.button監視End = new System.Windows.Forms.Button();
             this.button監視Start = new System.Windows.Forms.Button();
             this.tabPage予約 = new System.Windows.Forms.TabPage();
+            this.label予約ポスト件数 = new System.Windows.Forms.Label();
             this.button予約End = new System.Windows.Forms.Button();
             this.button予約Start = new System.Windows.Forms.Button();
             this.dataGridViewReserveSchedule = new System.Windows.Forms.DataGridView();
@@ -119,7 +120,8 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.label予約ポスト件数 = new System.Windows.Forms.Label();
+            this.textBoxJAPいいね件数 = new System.Windows.Forms.TextBox();
+            this.checkBoxJAPいいね = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -176,9 +178,9 @@
             this.groupBox4.Controls.Add(this.dataGridViewリプライ);
             this.groupBox4.Controls.Add(this.textBoxリプライ件数);
             this.groupBox4.Controls.Add(this.checkBoxリプライ);
-            this.groupBox4.Location = new System.Drawing.Point(194, 134);
+            this.groupBox4.Location = new System.Drawing.Point(194, 169);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(190, 505);
+            this.groupBox4.Size = new System.Drawing.Size(190, 470);
             this.groupBox4.TabIndex = 7;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "リプライ";
@@ -277,9 +279,9 @@
             this.groupBox6.Controls.Add(this.dataGridViewリポスト);
             this.groupBox6.Controls.Add(this.textBoxリポスト件数);
             this.groupBox6.Controls.Add(this.checkBoxリポスト);
-            this.groupBox6.Location = new System.Drawing.Point(576, 134);
+            this.groupBox6.Location = new System.Drawing.Point(576, 169);
             this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(190, 505);
+            this.groupBox6.Size = new System.Drawing.Size(190, 470);
             this.groupBox6.TabIndex = 6;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "リポスト";
@@ -354,9 +356,9 @@
             this.groupBox2.Controls.Add(this.dataGridViewブックマーク);
             this.groupBox2.Controls.Add(this.textBoxブックマーク件数);
             this.groupBox2.Controls.Add(this.checkBoxブックマーク);
-            this.groupBox2.Location = new System.Drawing.Point(385, 134);
+            this.groupBox2.Location = new System.Drawing.Point(385, 169);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(190, 505);
+            this.groupBox2.Size = new System.Drawing.Size(190, 470);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "ブックマーク";
@@ -433,9 +435,9 @@
             this.groupBox1.Controls.Add(this.dataGridViewいいね);
             this.groupBox1.Controls.Add(this.textBoxいいね件数);
             this.groupBox1.Controls.Add(this.checkBoxいいね);
-            this.groupBox1.Location = new System.Drawing.Point(3, 134);
+            this.groupBox1.Location = new System.Drawing.Point(3, 169);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(190, 505);
+            this.groupBox1.Size = new System.Drawing.Size(190, 470);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "いいね";
@@ -508,6 +510,8 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.textBoxJAPいいね件数);
+            this.groupBox3.Controls.Add(this.checkBoxJAPいいね);
             this.groupBox3.Controls.Add(this.checkBox一括処理禁止権限無視);
             this.groupBox3.Controls.Add(this.checkBoxWeb一括処理);
             this.groupBox3.Controls.Add(this.checkBoxDuplicate);
@@ -520,7 +524,7 @@
             this.groupBox3.Controls.Add(this.checkBox_15分以内に履歴のある無料アカウントを除外する);
             this.groupBox3.Location = new System.Drawing.Point(3, 3);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(742, 125);
+            this.groupBox3.Size = new System.Drawing.Size(742, 160);
             this.groupBox3.TabIndex = 0;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "基本設定";
@@ -840,6 +844,16 @@
             this.tabPage予約.Text = "予約ポスト";
             this.tabPage予約.UseVisualStyleBackColor = true;
             // 
+            // label予約ポスト件数
+            // 
+            this.label予約ポスト件数.AutoSize = true;
+            this.label予約ポスト件数.Location = new System.Drawing.Point(690, 35);
+            this.label予約ポスト件数.Name = "label予約ポスト件数";
+            this.label予約ポスト件数.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label予約ポスト件数.Size = new System.Drawing.Size(47, 19);
+            this.label予約ポスト件数.TabIndex = 11;
+            this.label予約ポスト件数.Text = "(0件)";
+            // 
             // button予約End
             // 
             this.button予約End.Enabled = false;
@@ -1059,15 +1073,25 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // label予約ポスト件数
+            // textBoxJAPいいね件数
             // 
-            this.label予約ポスト件数.AutoSize = true;
-            this.label予約ポスト件数.Location = new System.Drawing.Point(690, 35);
-            this.label予約ポスト件数.Name = "label予約ポスト件数";
-            this.label予約ポスト件数.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.label予約ポスト件数.Size = new System.Drawing.Size(47, 19);
-            this.label予約ポスト件数.TabIndex = 11;
-            this.label予約ポスト件数.Text = "(0件)";
+            this.textBoxJAPいいね件数.Location = new System.Drawing.Point(102, 117);
+            this.textBoxJAPいいね件数.Name = "textBoxJAPいいね件数";
+            this.textBoxJAPいいね件数.Size = new System.Drawing.Size(71, 27);
+            this.textBoxJAPいいね件数.TabIndex = 12;
+            this.textBoxJAPいいね件数.Text = "260";
+            // 
+            // checkBoxJAPいいね
+            // 
+            this.checkBoxJAPいいね.AutoSize = true;
+            this.checkBoxJAPいいね.Checked = true;
+            this.checkBoxJAPいいね.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxJAPいいね.Location = new System.Drawing.Point(10, 119);
+            this.checkBoxJAPいいね.Name = "checkBoxJAPいいね";
+            this.checkBoxJAPいいね.Size = new System.Drawing.Size(91, 23);
+            this.checkBoxJAPいいね.TabIndex = 13;
+            this.checkBoxJAPいいね.Text = "JAPいいね";
+            this.checkBoxJAPいいね.UseVisualStyleBackColor = true;
             // 
             // Form
             // 
@@ -1212,6 +1236,8 @@
         private System.Windows.Forms.CheckBox checkBox一括処理禁止権限無視;
         private System.Windows.Forms.CheckBox checkBoxRepToRep;
         private System.Windows.Forms.Label label予約ポスト件数;
+        private System.Windows.Forms.TextBox textBoxJAPいいね件数;
+        private System.Windows.Forms.CheckBox checkBoxJAPいいね;
     }
 }
 

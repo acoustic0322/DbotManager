@@ -421,6 +421,17 @@ namespace DbotManager
         private void buttonExeList_Click(object sender, EventArgs e)
         {
             Exe一括処理();
+
+            if(checkBoxJAPいいね.Checked)
+            {
+                TweetTask task = new TweetTask(DbConnection, AppendLog);
+                task.Exe_JAPいいね(
+                    GetTweetName(),
+                    GetTweetId(),
+                    int.Parse(textBoxJAPいいね件数.Text.ToString())
+                   
+                    );
+            }
         }
 
         private void buttonクリアlog_Click(object sender, EventArgs e)
@@ -455,6 +466,28 @@ namespace DbotManager
             }
 
             return extractedNumber;
+        }
+
+        private string GetTweetName()
+        {
+            string url = textBoxUrlTweetID.Text;
+
+            // 正規表現でユーザー名を抽出
+            Match match = Regex.Match(url, @"x\.com/([^/]+)/status");
+
+            string tweetname = string.Empty;
+
+            if (match.Success)
+            {
+                tweetname = match.Groups[1].Value;
+                Console.WriteLine($"Username: {tweetname}");
+            }
+            else
+            {
+                Console.WriteLine("Username not found.");
+            }
+
+            return tweetname;
         }
 
         private string ExtractNumber(string input)

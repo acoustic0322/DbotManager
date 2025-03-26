@@ -1068,6 +1068,19 @@ def check_replies(search_account , reply_account):
 
     return True, ''
 
+def get_username_from_tweet_id_v2(credentials,tweet_id):
+    url = f"https://api.twitter.com/2/tweets/{tweet_id}?expansions=author_id&user.fields=username"
+    headers = {"Authorization": f"Bearer {credentials['bearer_token']}"}
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        if 'includes' in data and 'users' in data['includes']:
+            outputLog(f"username = {data['includes']['users'][0]['username']}")
+            return data['includes']['users'][0]['username']
+    
+    return None  # 取得失敗時
 
 
 def monitor_replies(credentials, user_id, interval=60):

@@ -31,7 +31,8 @@ namespace DbotManager
         NONE,
         CHECK,
         CHECKREP,
-        CHECKAIREP
+        CHECKAIREP,
+        JAP_LIKE
     }
 
     public enum CheckAccountModes
@@ -50,6 +51,8 @@ namespace DbotManager
         public int? AccountId2 { get; set; }
         public int? CommentId { get; set; }
         public string TweetId { get; set; }
+        public string TweetName { get; set; }
+        public int Quantity { get; set; }
         public bool AiEnable { get; set; }
         public int AiMode { get; set; }
 
@@ -190,8 +193,25 @@ namespace DbotManager
         }
 
 
+        public void Exe_JAPいいね(string tweet_name , string tweet_id , int quantity)
+        {
+            TweetProc(
+                new TweetCommand() {
+                    TweetProcType = TweetProcTypes.JAP_LIKE, 
+                    AccountId = 1, 
+                    TweetId = tweet_id,
+                    TweetName = tweet_name,
+                    Quantity = quantity
+                });
+        }
+
         public void Exe_一括処理()
         {
+            if (LikeAccountList == null) return;
+            if (BookmarkAccountList == null) return;
+            if (RepostAccountList == null) return;
+            if (ReplyAccountList == null) return;
+
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
             List<VpsMaster> vpsMasterList = dataAccess.GetVpsMaster();
@@ -845,6 +865,9 @@ namespace DbotManager
                 case TweetProcTypes.LIKE:
                     return "like";
                     break;
+                case TweetProcTypes.JAP_LIKE:
+                    return "jap_like";
+                    break;
                 case TweetProcTypes.REPLY:
                     return "reply";
                     break;
@@ -904,6 +927,10 @@ namespace DbotManager
                 case TweetProcTypes.BOOKMARK:
                 case TweetProcTypes.REPOST:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId}";
+                    break;
+
+                case TweetProcTypes.JAP_LIKE:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity}";
                     break;
 
                 case TweetProcTypes.REPLY:
