@@ -107,3 +107,9 @@ media_dir = config.get("Paths", "media_dir", fallback=os.path.dirname(os.path.ab
 debug = True
 
 db_host = "203.137.53.205"
+
+# リリース用API
+#jap_api_key = '7f7dc877aadbc0b7c996d6e48e95f1bf'
+# デバッグ用API
+jap_api_key = '026e7a18d6426b6bad09801b5e203883'
+
