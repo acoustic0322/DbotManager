@@ -416,6 +416,45 @@ def proc_like_v2(credentials, tweet_id):
 
     return response.status_code == 200, response_str
 
+def proc_search_v2(credentials):
+
+    # 検索したいキーワード（複数可）
+    keywords = ["FX", "為替", "傾向"]
+    query = " OR ".join(keywords)  # OR でキーワードを連結
+
+    # Twitter API v2 のエンドポイント
+    url = "https://api.twitter.com/2/tweets/search/recent"
+
+    # リクエストヘッダー
+    headers = {
+        "Authorization": f"Bearer {credentials['bearer_token']}",
+        "Content-Type": "application/json"
+    }
+
+    # クエリパラメータ設定
+    params = {
+        "query": query,         # 検索ワード
+        "max_results": 10,      # 取得件数（最大100）
+        "tweet.fields": "created_at,author_id,text"  # 必要なデータを指定
+    }
+
+    # APIリクエスト
+    response = requests.get(url, headers=headers, params=params)
+
+    # レスポンスの確認
+    if response.status_code == 200:
+        tweets = response.json()
+#        outputLog(f"tweets={tweets}")
+
+        for tweet in tweets.get("data", []):
+#            print(f"{tweet['created_at']} - {tweet['text']}\n")
+            outputLog(f"検索結果：{tweet['text']}")
+        return True , tweets
+    else:
+        print(f"Error: {response.status_code}, {response.text}")    
+
+    return response.status_code == 200, response_str
+
 
 def proc_bookmark_v2(credentials, tweet_id):
     """
