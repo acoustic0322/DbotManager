@@ -118,7 +118,7 @@ if credentials:
         else:
             result1 , contents1 = proc_post_v2(credentials , comment_id , "" , ai_enable)               
     elif mode == "reply":
-        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id)               
+        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id , False)               
 #        result1 , contents1 = True , "" #未実装
     elif mode == "repost":
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)

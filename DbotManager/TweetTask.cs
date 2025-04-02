@@ -609,6 +609,8 @@ namespace DbotManager
             searchList.AddRange(searchList_通常);
             searchList.AddRange(searchList_自動リプ);
 
+//            searchList = searchList.Where(x => x.PostAccountId == 239).ToList();
+
             List<AccountMaster> accountList = new List<AccountMaster>();
             accountList.AddRange(監視対象アカウント);
             accountList.AddRange(自動AIリプライアカウント);
@@ -784,7 +786,7 @@ namespace DbotManager
                 item.CheckDate = dtNow.AddSeconds(item.CheckInterval);
                 RenewSearchDateTime(searchHistoryRow);
 
-                if (item.FirstFlag == false)
+//                if (item.FirstFlag == false)
                 {
                     if (tweetResult != null && (bool)item.PostEnable && tweetResult.result1 == true)
                     {
@@ -914,6 +916,8 @@ namespace DbotManager
             switch (tweetCommand.TweetProcType)
             {
                 case TweetProcTypes.POST:
+
+                    return null;
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} ai_enable={tweetCommand.AiEnable}";
 
                     if(tweetCommand.MediaType != MediaTypes.None)

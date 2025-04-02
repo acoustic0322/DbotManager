@@ -914,12 +914,15 @@ public class MySqlDataAccess
                                 EndHour = reader["end_hour"] != DBNull.Value ? Convert.ToInt32(reader["end_hour"]) : 0,
                             };
 
+                            // 2025.04.03 コメントアウト
+                            /*
                             // ユーザー設定で監視向こうの場合はフラグをOFFに固定
                             if( (reader["searchrep_enable"] != DBNull.Value ? reader["searchrep_enable"].ToString() == "1" : false ) == false)
                             {
                                 searchItem.PostEnable = false;
                                 searchItem.ReplyEnable = false;
                             }
+                            */
 
                             searchList.Add(searchItem);
                         }
