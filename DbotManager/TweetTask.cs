@@ -67,6 +67,12 @@ namespace DbotManager
         public bool CheckAiRepMode { get; set; }
     }
 
+    public class ReplyEntry
+    {
+        public int AccountId { get; set; }
+        public int CommentId { get; set; }
+    }
+
     public class TweetVpsCommand
     {
         public string VpsIp { get; set; }
@@ -75,8 +81,9 @@ namespace DbotManager
         public List<int> LikeList { get; set; }
         public List<int> BookmarkList { get; set; }
         public List<int> RepostList { get; set; }
-        public List<int> ReplyList { get; set; }
-        public bool RepToRep { get; set; }   }
+        public List<ReplyEntry> ReplyList { get; set; }
+        public bool RepToRep { get; set; }   
+    }
 
     public class TweetResult
     {
@@ -253,7 +260,11 @@ namespace DbotManager
                     LikeList = likeList.Select(x => x.Id).ToList(),
                     BookmarkList = bookmarkList.Select(x => x.Id).ToList(),
                     RepostList = repostList.Select(x => x.Id).ToList(),
-                    ReplyList = replyList.Select(x => x.Id).ToList(),
+                    ReplyList = replyList.Select(x => new ReplyEntry
+                    {
+                        AccountId = x.Id,
+                        CommentId = (int)x.CommentId
+                    }).ToList(),
                     TweetId = TargetTweetID,
                     RepToRep = ReplyToRep
                 };
@@ -1034,12 +1045,20 @@ namespace DbotManager
             // JSONデータを作成
             var requestData = new
             {
+                tweet_id = tweetVpsCommand.TweetId,
+                like_list = tweetVpsCommand.LikeList,
+                bookmark_list = tweetVpsCommand.BookmarkList,
+                repost_list = tweetVpsCommand.RepostList,
+                reply_list = tweetVpsCommand.ReplyList,  // ここはそのままリストで渡す
+                rep_to_rep = tweetVpsCommand.RepToRep    // これは bool 型なのでそのままでOK
+                /*
                 tweet_id = tweetVpsCommand.TweetId ,
                 like_list = string.Join(",", tweetVpsCommand.LikeList),
                 bookmark_list = string.Join(",", tweetVpsCommand.BookmarkList),
                 repost_list = string.Join(",", tweetVpsCommand.RepostList),
                 reply_list = string.Join(",", tweetVpsCommand.ReplyList),
                 rep_to_rep = string.Join(",", tweetVpsCommand.RepToRep),
+                */
             };
             string json = JsonConvert.SerializeObject(requestData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
