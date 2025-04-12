@@ -4,6 +4,7 @@ import config
 from datetime import datetime  # datetime モジュールをインポート
 from config import outputLog
 from config import convert_tweet_datetime
+import random
 
 def get_comment_by_id(comment_id):
 
@@ -724,3 +725,39 @@ def get_search_history(mode):
         connection.close()
 
     return False , None
+
+
+def get_trend_list_keyword():
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',           # ユーザー名
+        password='abcd1234',   # パスワード
+        database='d_bot',      # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            # 1時間以内のユニークなキーワードを取得
+            sql = "SELECT DISTINCT keyword FROM trend_list WHERE retrieved_at >= NOW() - INTERVAL 1 HOUR"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+    finally:
+        connection.close()
+
+    if not results:
+        outputLog("エラー: トレンドキーワードが見つかりません。")
+        return None
+
+    # キーワードだけのリストにする
+    keywords = [row["keyword"] for row in results]
+
+    if len(keywords) < 2:
+        outputLog("エラー: キーワードが2つ未満です。")
+        return None
+
+    # ランダムに2つ選ぶ
+    return random.sample(keywords, 2)

@@ -19,8 +19,6 @@ from twitter_api_v2 import proc_check_v2_2
 from twitter_api_v2 import get_latest_tweet
 from twitter_api_v1 import proc_post_v10a
 
-
-
 from mysql import get_account_master
 from mysql import get_check_account_list
 from mysql import save_tweet_history
@@ -90,7 +88,6 @@ if credentials:
     elif mode == "repost":
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)
     elif mode == "like":
-        print("like")
         result1 , contents1 = proc_like_v2(credentials, tweet_id)
     elif mode == "bookmark":
         result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)

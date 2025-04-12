@@ -25,7 +25,7 @@ min_wait = float(config['WAIT_TIME']['min'])
 max_wait = float(config['WAIT_TIME']['max'])
 
 
-def background_task(tweet_id, like_list, bookmark_list, repost_list, reply_list,reptorep):
+def background_task(tweet_id, like_list, bookmark_list, repost_list, reply_list, reptorep):
     # 各リストを処理
     print(f"[{get_now()}] Processing tweet_id: {tweet_id}")
 
@@ -33,8 +33,12 @@ def background_task(tweet_id, like_list, bookmark_list, repost_list, reply_list,
 
 
     # 全ての tweet_id を取得
-    all_account_ids = sorted(set(map(int, like_list)) | set(map(int, bookmark_list)) | 
-                             set(map(int, repost_list)) | set(map(int, reply_list)))
+    all_account_ids = sorted(
+        set(map(int, like_list)) | 
+        set(map(int, bookmark_list)) |
+        set(map(int, repost_list)) | 
+        set(int(reply["AccountId"]) for reply in reply_list)
+        )
 
     print(f"[{get_now()}] {all_account_ids}")
 
@@ -54,24 +58,25 @@ def background_task(tweet_id, like_list, bookmark_list, repost_list, reply_list,
         if account_id in map(int, repost_list):
             threading.Thread(target=tweet_task, args=(account_id, "repost", tweet_id)).start()
 
-        if account_id in map(int, reply_list):
-            if reptorep == True:
-                print("reptorep is True")
-                threading.Thread(target=tweet_task, args=(account_id, "replytoreply", tweet_id)).start()
-            else:
-                print("reptorep is False")
-                threading.Thread(target=tweet_task, args=(account_id, "reply", tweet_id)).start()
-
+#        if account_id in map(int, reply_list):
+        for reply in reply_list:
+            if int(reply["AccountId"]) == account_id:
+                if reptorep:
+                    print("reptorep is True")
+                    threading.Thread(target=tweet_task, args=(account_id, "replytoreply", tweet_id, int(reply["CommentId"]))).start()
+                else:
+                    print("reptorep is False")
+                    threading.Thread(target=tweet_task, args=(account_id, "reply", tweet_id, int(reply["CommentId"]))).start()
 
         # すべての処理が終わった後でランダムな待機時間を設定
         wait_time = random.uniform(min_wait, max_wait)
         print(f"[{get_now()}]  All tasks started. Waiting for {wait_time:.2f} seconds...")
         time.sleep(wait_time)         
 
-def tweet_task(account_id, mode, tweet_id):
+def tweet_task(account_id, mode, tweet_id, comment_id=None):
     try:
         if mode == 'reply' or mode == 'replytoreply':
-            comment_id = get_random_comment_id(account_id , mode)
+#            comment_id = get_random_comment_id(account_id , mode)
             # サブプロセスでPythonスクリプトを実行
             command = [
                 "python", "tweet.py",
@@ -115,14 +120,21 @@ def run_script():
         like_list = to_list(data.get("like_list"))
         bookmark_list = to_list(data.get("bookmark_list"))
         repost_list = to_list(data.get("repost_list"))
-        reply_list = to_list(data.get("reply_list"))
+
+#        reply_list = to_list(data.get("reply_list"))
+        reply_list = data.get("reply_list", [])
+
+#        comment_list = to_list(data.get("comment_list"))
         reptorep = bool(data.get("rep_to_rep"))
 
         print("data",data)
         
         # レスポンスを即座に返す
         response = {"status": "success", "message": "Request received"}
-        threading.Thread(target=background_task, args=(tweet_id, like_list, bookmark_list, repost_list, reply_list,reptorep)).start()
+
+#        threading.Thread(target=background_task, args=(tweet_id, like_list, bookmark_list, repost_list, reply_list, comment_list, reptorep)).start()
+        threading.Thread(target=background_task, args=(tweet_id, like_list, bookmark_list, repost_list, reply_list, reptorep)).start()
+
         return jsonify(response), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

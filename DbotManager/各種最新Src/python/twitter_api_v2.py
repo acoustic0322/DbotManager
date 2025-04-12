@@ -23,6 +23,7 @@ from mysql import insert_tweet_history_monomane
 from mysql import insert_search_history
 from mysql import update_account_master_by_twitter_user_id
 from mysql import update_account_master_by_check_rep_datetime
+from mysql import get_trend_list_keyword
 
 
 import config
@@ -39,7 +40,7 @@ from datetime import datetime, timezone
 sys.path.append(os.path.abspath("chatgpt"))
 
 from chatgpt_reply import generate_reply
-from chatgpt_tweet import generate_tweet,refine_tweet
+from chatgpt_tweet import generate_tweet,refine_tweet,generate_trend_tweet_by_keyword
 
 
 def createClient(credentials):
@@ -246,8 +247,8 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
     outputLog(f"GROQ_API_KEY={credentials['GROQ_API_KEY']}")
     outputLog(f"OPENAI_API_KEY={credentials['OPENAI_API_KEY']}")
-    outputLog(f"ai_post_prompt={credentials['ai_post_prompt']}")
-    outputLog(f"ai_post_example={credentials['ai_post_example']}")
+#    outputLog(f"ai_post_prompt={credentials['ai_post_prompt']}")
+#    outputLog(f"ai_post_example={credentials['ai_post_example']}")
 
 
     ai_mode = credentials['ai_mode']
@@ -269,17 +270,26 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
                 comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
     # ポストモード
     else:
+
         if ai_enable == False or ai_post_enable == 0 or ai_mode == 0:
             outputLog("固定コメント")
             comment = get_comment_by_id(comment_id)
         else:
-            outputLog("AIコメント")
-            comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
 
-            # 裏垢女子モード時は文章を整形
-            if ai_mode == 2:
-                outputLog("裏垢女子")
-                comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
+            if ai_mode == 1 or ai_mode == 2:
+                outputLog("AIコメント")
+                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
+
+                # 裏垢女子モード時は文章を整形
+                if ai_mode == 2:
+                    outputLog("裏垢女子")
+                    comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
+            else:
+                kw1 , kw2 = get_trend_list_keyword()
+                outputLog(f"kw1={kw1}")
+                outputLog(f"kw2={kw2}")
+
+                comment = generate_trend_tweet_by_keyword(credentials['OPENAI_API_KEY'],kw1,kw2)
 
 
     outputLog(f"comment={comment}")
