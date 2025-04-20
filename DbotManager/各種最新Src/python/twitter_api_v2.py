@@ -278,6 +278,17 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
             if ai_mode == 1 or ai_mode == 2:
                 outputLog("AIコメント")
+
+                # ai_post_promptが未設定ならFalseを返す
+                if not credentials.get('ai_post_prompt'):
+                    outputLog("ai_post_promptが未設定のため中止")
+                    return False, "ai_post_prompt未設定"                
+
+                # ai_post_exampleが未設定ならFalseを返す
+                if not credentials.get('ai_post_example'):
+                    outputLog("ai_post_exampleが未設定のため中止")
+                    return False, "ai_post_example未設定"                
+
                 comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
 
                 # 裏垢女子モード時は文章を整形
@@ -289,7 +300,12 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
                 outputLog(f"kw1={kw1}")
                 outputLog(f"kw2={kw2}")
 
-                comment = generate_trend_tweet_by_keyword(credentials['OPENAI_API_KEY'],kw1,kw2)
+                # ai_trend_promptが未設定ならFalseを返す
+                if not credentials.get('ai_trend_prompt'):
+                    outputLog("ai_trend_promptが未設定のため中止")
+                    return False, "ai_trend_prompt未設定"                
+
+                comment = generate_trend_tweet_by_keyword(credentials['OPENAI_API_KEY'],credentials['ai_trend_prompt'],kw1,kw2)
 
 
     outputLog(f"comment={comment}")

@@ -270,25 +270,23 @@ def main():
 
 
 #generate_trend_tweet()はmain処理にまだ追加していません。プロンプトの中身等を可変にすることでどんなツイートも作成することができるシステムです。組み込み方は今後考えていきたいと考えています。
-def generate_trend_tweet_by_keyword(open_ai_api_key,keyword1,keyword2):
+def generate_trend_tweet_by_keyword(open_ai_api_key,trend_prompt,keyword1,keyword2):
 
     prompt_text = f"""
     あなたはSNSの投稿を作成するAIです。
     データベース上にある過去の人気ツイートを参照して、
     以下の条件を満たすツイートを作成してください。
 
-    - 必ず最新のトレンドに沿った内容にする
-    - 140文字以内
-    - カジュアルな口調で、ユーザーが興味を持ちそうな内容
-    - 日本語で自然な文章にする
-    - 内容を膨らませてツイート作成する。
-    - 必ずツイートの中身のみ出力してください。
+    {trend_prompt}
+
 
     #最新トレンド
     - [{keyword1}],[{keyword2}]
     """
+
     outputLog(f"open_ai_api_key={open_ai_api_key}")
-    
+    outputLog(f"prompt_text={prompt_text}")
+     
     prompt = prompt_text#.get("1.0", tk.END).strip()
 
     url = "https://api.openai.com/v1/chat/completions"

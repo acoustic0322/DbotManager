@@ -75,6 +75,7 @@ def get_account_master(id):
             am.ai_reply_enable,
             am.ai_post_prompt,
             am.ai_reply_prompt,
+            am.ai_trend_prompt,
             am.reserve1_ai,
             am.reserve2_ai,
             am.reserve3_ai,
