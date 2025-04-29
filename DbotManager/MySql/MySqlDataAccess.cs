@@ -515,6 +515,8 @@ public class MySqlDataAccess
                         `tweet_process_list`.`bookmark_count`,
                         `tweet_process_list`.`reply_count`,
                         `tweet_process_list`.`repost_count`,
+                        `tweet_process_list`.`sensyuken_mode`,
+                        `tweet_process_list`.`japanese_mode`,
                         `tweet_process_list`.`dumplicate`,
                         `tweet_process_list`.`exe_flag`
                     FROM tweet_process_list 
@@ -546,6 +548,8 @@ public class MySqlDataAccess
                                 BookmarkCount = SupportUtil.ParseOrDefault(reader["bookmark_count"], 0),
                                 RepostCount = SupportUtil.ParseOrDefault(reader["repost_count"], 0),
                                 ReplyCount = SupportUtil.ParseOrDefault(reader["reply_count"], 0),
+                                SensyukenMode = SupportUtil.ParseOrDefault(reader["sensyuken_mode"], 0),
+                                JapaneseMode = SupportUtil.ParseOrDefault(reader["japanese_mode"], 0),
                                 Dumplicate = reader["dumplicate"].ToString() == "1",
                                 ExeFlag = reader["exe_flag"].ToString() == "1",
                             };

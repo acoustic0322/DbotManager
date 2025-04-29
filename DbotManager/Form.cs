@@ -305,7 +305,9 @@ namespace DbotManager
                     checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
                     checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
                     checkBoxDuplicate.Checked ,
-                    GetTweetId()
+                    GetTweetId() ,
+                    0,
+                    0
                 );
 
                 Exe一括処理();
@@ -413,6 +415,7 @@ namespace DbotManager
                 checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
                 checkBoxDuplicate.Checked,
                 GetTweetId(),
+                0,0,
                 true,
                 checkBox一括処理禁止権限無視.Checked
             );
@@ -516,6 +519,7 @@ namespace DbotManager
             bool repostChecked, int repostCount,
             bool excludeFreeAccount, int userId,
             bool duplicateChecked, string tweetId,
+            int sensyukenMode , int japaneseMode,
             bool fillControl = true,
             bool ユーザー権限無視 = false
             
@@ -537,6 +541,10 @@ namespace DbotManager
             _tweetTask.DuplicateEnable = duplicateChecked;
 
             _tweetTask.UserId = userId;
+
+            // (TBD) 開発中のため、日本人いいね、選手権いいねが作動しないよう対応
+            if (japaneseMode != 0) return;
+            if (sensyukenMode != 0) return;
 
             _tweetTask.Init一括処理list(ユーザー権限無視);
 
@@ -880,6 +888,8 @@ namespace DbotManager
                     item.UserId,
                     item.Dumplicate,
                     ExtractNumber(item.TweetId),
+                    item.SensyukenMode,
+                    item.JapaneseMode,
                     false
                     
                 );
