@@ -305,9 +305,7 @@ namespace DbotManager
                     checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
                     checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
                     checkBoxDuplicate.Checked ,
-                    GetTweetId() ,
-                    0,
-                    0
+                    GetTweetId(textBoxUrlTweetID.Text)        
                 );
 
                 Exe一括処理();
@@ -414,8 +412,7 @@ namespace DbotManager
                 checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
                 checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
                 checkBoxDuplicate.Checked,
-                GetTweetId(),
-                0,0,
+                GetTweetId(textBoxUrlTweetID.Text),
                 true,
                 checkBox一括処理禁止権限無視.Checked
             );
@@ -429,8 +426,8 @@ namespace DbotManager
             {
                 TweetTask task = new TweetTask(DbConnection, AppendLog);
                 task.Exe_JAPいいね(
-                    GetTweetName(),
-                    GetTweetId(),
+                    GetTweetName(textBoxUrlTweetID.Text),
+                    GetTweetId(textBoxUrlTweetID.Text),
                     int.Parse(textBoxJAPいいね件数.Text.ToString())
                    
                     );
@@ -454,9 +451,8 @@ namespace DbotManager
 
         #region その他処理
 
-        private string GetTweetId()
+        private string GetTweetId(string input)
         {
-            string input = textBoxUrlTweetID.Text;
             string extractedNumber = ExtractNumber(input);
 
             if (extractedNumber != null)
@@ -471,12 +467,11 @@ namespace DbotManager
             return extractedNumber;
         }
 
-        private string GetTweetName()
+        private string GetTweetName(string input)
         {
-            string url = textBoxUrlTweetID.Text;
 
             // 正規表現でユーザー名を抽出
-            Match match = Regex.Match(url, @"x\.com/([^/]+)/status");
+            Match match = Regex.Match(input, @"x\.com/([^/]+)/status");
 
             string tweetname = string.Empty;
 
@@ -519,7 +514,6 @@ namespace DbotManager
             bool repostChecked, int repostCount,
             bool excludeFreeAccount, int userId,
             bool duplicateChecked, string tweetId,
-            int sensyukenMode , int japaneseMode,
             bool fillControl = true,
             bool ユーザー権限無視 = false
             
@@ -541,10 +535,6 @@ namespace DbotManager
             _tweetTask.DuplicateEnable = duplicateChecked;
 
             _tweetTask.UserId = userId;
-
-            // (TBD) 開発中のため、日本人いいね、選手権いいねが作動しないよう対応
-            if (japaneseMode != 0) return;
-            if (sensyukenMode != 0) return;
 
             _tweetTask.Init一括処理list(ユーザー権限無視);
 
@@ -873,6 +863,9 @@ namespace DbotManager
             var item = dataAccess.GetTargetTweetProcess();
             if(item != null)
             {
+                // 選手権モード時は各パラメータを固定
+                item = UpdateSensyukenMode(item);
+
 
                 MakeList_一括処理(
                     item.LikeEnable,
@@ -888,13 +881,21 @@ namespace DbotManager
                     item.UserId,
                     item.Dumplicate,
                     ExtractNumber(item.TweetId),
-                    item.SensyukenMode,
-                    item.JapaneseMode,
                     false
                     
                 );
 
                 Exe一括処理();
+
+                if (item.JapLikeCount != 0)
+                {
+                    TweetTask task = new TweetTask(DbConnection, AppendLog);
+                    task.Exe_JAPいいね(
+                        GetTweetName(item.TweetId),
+                        GetTweetId(item.TweetId),
+                        item.JapLikeCount
+                        );
+                }
 
                 item.ExeFlag = true;
 
@@ -904,8 +905,33 @@ namespace DbotManager
 
         }
 
+        private TweetProcessList UpdateSensyukenMode(TweetProcessList item)
+        {
+            switch(item.SensyukenMode)
+            {
+                case 0:
+                    break;
 
+                case 1:
+                    item.LikeCount = 100;
+                    item.LikeEnable = true;
+                    item.JapLikeCount = 150;
+                    item.BookmarkCount = 250;
+                    item.BookmarkEnable = true;
+                    item.ReplyEnable = false;
+                    item.RepostEnable = false;
 
+                    // 選手権モード時はUserアカウントは指定しない
+                    item.UserId = 0;
+
+//                    item.LikeCount = 1;
+//                    item.JapLikeCount = 20;
+//                    item.BookmarkCount = 20;
+                    break;
+            }
+
+            return item;
+        }
 
         #endregion
 

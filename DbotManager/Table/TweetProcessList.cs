@@ -38,11 +38,11 @@ namespace DbotManager.Table
         public bool RepToRep { get; set; }
         public bool RepostEnable { get; set; }
         public int LikeCount { get; set; }
+        public int JapLikeCount { get; set; }
         public int BookmarkCount { get; set; }
         public int ReplyCount { get; set; }
         public int RepostCount { get; set; }
         public int SensyukenMode { get; set; }
-        public int JapaneseMode { get; set; }
         public bool Dumplicate { get; set; }
         public bool ExeFlag { get; set; }
     }
