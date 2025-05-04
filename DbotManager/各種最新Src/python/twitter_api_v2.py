@@ -77,10 +77,9 @@ def createClient(credentials):
 
     return None
 
-def get_user_id(credentials):
+def get_user_id(credentials , username):
 
     access_token = credentials['bearer_token']
-    username = credentials['login_id']    
 
     headers = {
         "Authorization": f"Bearer {access_token}",
