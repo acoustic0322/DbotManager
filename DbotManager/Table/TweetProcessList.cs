@@ -45,5 +45,10 @@ namespace DbotManager.Table
         public int SensyukenMode { get; set; }
         public bool Dumplicate { get; set; }
         public bool ExeFlag { get; set; }
+
+        public bool ExeFollow { get; set; }
+        public bool ExeUnFollow { get; set; }
+        public string TargetAccountName { get; set; }
+
     }
 }

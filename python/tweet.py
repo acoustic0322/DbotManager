@@ -20,6 +20,9 @@ from twitter_api_v2 import get_latest_tweet
 from twitter_api_v2 import refresh_access_token
 from twitter_api_v1 import proc_post_v10a
 from twitter_api_v2 import check_replies
+from twitter_api_v1 import proc_follow_v1
+from twitter_api_v2 import proc_following_v2
+from twitter_api_v2 import proc_unfollowing_v2
 
 
 
@@ -75,6 +78,8 @@ search_id = args.get("search_id","")
 config.debug = args.get("debug","").lower() == "true"
 dmmid = args.get("dmmid","")
 
+target_user = args.get("target_user","")
+
 #debug
 #search_row={'id': 1, 'search_user_name': 'MANGA549764083', 'search_user_id': '2', 'post_account_id': 239, 'post_enable': 0, 'last_post_id': '1886501259601174542', 'last_post_time': '2025-02-04 04:45:24', 'reply_account_id': 239, 'reply_enable': 0, 'last_reply_id': '1886385085647040800', 'last_reply_time': '2025-02-03 21:03:46', 'monomane_account_id': '239', 'monomane_enable': 1, 'last_monomane_id': '1886498846538338658', 'last_monomane_time': '2025-02-04 04:35:49'}
 #tweet_data={'text': 'テストツイート6', 'author_id': '1688693290630369284', 'edit_history_tweet_ids': ['1886501614158238016'], 'id': '1886501614158238016', 'created_at': '2025-02-03T19:46:48.000Z'}
@@ -118,6 +123,10 @@ if credentials:
         result1 , contents1 = proc_like_v2(credentials, tweet_id)
     elif mode == "bookmark":
         result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
+    elif mode == "follow":
+        result1 , contents1 = proc_following_v2(credentials, target_user)
+    elif mode == "unfollow":
+        result1 , contents1 = proc_unfollowing_v2(credentials, target_user)
     elif mode == "check":
         search_row = get_search_list(search_id)
         result1 , tweet1 , result2 , tweet2 , tweets , log = proc_check_v2_2(credentials , search_row)

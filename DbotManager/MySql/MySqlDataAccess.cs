@@ -518,6 +518,9 @@ public class MySqlDataAccess
                         `tweet_process_list`.`repost_count`,
                         `tweet_process_list`.`sensyuken_mode`,
                         `tweet_process_list`.`dumplicate`,
+                        `tweet_process_list`.`exe_follow`,
+                        `tweet_process_list`.`exe_unfollow`,
+                        `tweet_process_list`.`target_account_name`,
                         `tweet_process_list`.`exe_flag`
                     FROM tweet_process_list 
                     WHERE exe_flag = '0'
@@ -551,6 +554,9 @@ public class MySqlDataAccess
                                 ReplyCount = SupportUtil.ParseOrDefault(reader["reply_count"], 0),
                                 SensyukenMode = SupportUtil.ParseOrDefault(reader["sensyuken_mode"], 0),
                                 Dumplicate = reader["dumplicate"].ToString() == "1",
+                                ExeFollow = reader["exe_follow"].ToString() == "1",
+                                ExeUnFollow = reader["exe_unfollow"].ToString() == "1",
+                                TargetAccountName = reader["target_account_name"].ToString(),
                                 ExeFlag = reader["exe_flag"].ToString() == "1",
                             };
 

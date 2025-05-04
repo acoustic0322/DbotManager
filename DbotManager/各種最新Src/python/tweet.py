@@ -25,6 +25,8 @@ from twitter_api_v2 import proc_search_v2
 
 from jap_api import proc_like_jap
 
+from twitter_api_v2 import proc_following_v2
+from twitter_api_v2 import proc_unfollowing_v2
 
 from mysql import get_account_master
 from mysql import get_check_account_list
@@ -132,6 +134,10 @@ if credentials:
         result1 , contents1 = proc_search_v2(credentials)
     elif mode == "bookmark":
         result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
+    elif mode == "follow":
+        result1 , contents1 = proc_following_v2(credentials, tweet_name)
+    elif mode == "unfollow":
+        result1 , contents1 = proc_unfollowing_v2(credentials, tweet_name)
     elif mode == "check":
         search_row = get_search_list(search_id)
         result1 , tweet1 , result2 , tweet2 , tweets , log = proc_check_v2_2(credentials , search_row)

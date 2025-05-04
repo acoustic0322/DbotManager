@@ -358,6 +358,8 @@ def generate_random_string(length):
     random_string = ''.join(random.choice(characters) for _ in range(length))
     return random_string
 
+
+
 def proc_monomane(search_row , tweet_data, tweets):
 
     tweet_time = convert_tweet_datetime(tweet_data['created_at'])
@@ -538,3 +540,30 @@ def proc_monomane(search_row , tweet_data, tweets):
 
     return False,None
                 
+def proc_follow_v1(credentials , target_user):
+
+
+#    createClient
+    # 認証情報
+#    api_key = credentials['client_id']
+#    api_secret = credentials['client_id']
+#    access_token = credentials['client_id']
+#    access_token_secret = credentials['client_id']
+
+ #   client = createClient(credentials)
+
+    # 認証
+#    auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
+#    auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
+
+    # OAuth1 認証
+#    auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
+    auth = tweepy.OAuth1UserHandler(credentials['api_key'], credentials['api_key_secret'], credentials['access_token'], credentials['access_token_secret'])
+    api = tweepy.API(auth)
+    try:
+        user = api.create_friendship(screen_name=target_user)
+        print(f"フォローしました: {user.screen_name}")
+    except TweepyException as e:
+        print(f"エラー: {e}")
+
+    return True , None

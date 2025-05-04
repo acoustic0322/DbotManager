@@ -79,10 +79,9 @@ def createClient(credentials):
 
     return None
 
-def get_user_id(credentials):
+def get_user_id(credentials , username):
 
     access_token = credentials['bearer_token']
-    username = credentials['login_id']    
 
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -336,7 +335,7 @@ def proc_like_v2(credentials, tweet_id):
     :param tweet_id: いいねする対象のツイートID
     """
     access_token = credentials['bearer_token']
-    user_id = get_user_id(credentials)
+    user_id = get_user_id(credentials , credentials['login_id'] )
 
     # 「いいね」エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/likes"
@@ -390,7 +389,7 @@ def proc_bookmark_v2(credentials, tweet_id):
 
     access_token = credentials['bearer_token']
 
-    user_id = get_user_id(credentials)
+    user_id = get_user_id(credentials , credentials['login_id'] )
 
     # ブックマーク用エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
@@ -484,7 +483,7 @@ def proc_repost_v2(credentials, tweet_id):
     """
     access_token = credentials['bearer_token']
 
-    user_id = get_user_id(credentials)
+    user_id = get_user_id(credentials , credentials['login_id'] )
 
     # エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/retweets"
@@ -963,7 +962,7 @@ def check_replies(credentials):
     user_id = credentials['twitter_user_id']
 
     if user_id is None:
-        user_id = get_user_id(credentials)
+        user_id = get_user_id(credentials , credentials['login_id'] )
         outputLog(f"user_id={user_id}")
         update_account_master_by_twitter_user_id(credentials['id'] , user_id)
 
@@ -1026,3 +1025,80 @@ def monitor_replies(credentials, user_id, interval=60):
                     seen_replies.add(reply_id)
 
         time.sleep(interval)  # 指定秒数待機（例: 60秒）
+
+
+def proc_following_v2(credentials, target_user):
+    """
+    指定されたユーザーをフォローする関数。
+
+    """
+    access_token = credentials['bearer_token']
+    user_id = get_user_id(credentials ,  credentials['login_id'])
+    target_user_id = get_user_id(credentials , target_user)
+
+    # フォローエンドポイントURL
+    url = f"https://api.twitter.com/2/users/{user_id}/following"
+
+    # 投稿するデータ（対象USER IDを指定）
+    data = {
+        "target_user_id": target_user_id
+    }
+
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    outputLog(f"client_id={credentials['client_id']}")
+
+    # POSTリクエストを送信
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+
+        response = requests.post(url, headers=headers, json=data, proxies=proxies)
+#        response = requests.delete(url, headers=headers, json=data, proxies=proxies)
+
+    else:
+        response = requests.post(url, headers=headers, json=data)
+#        response = requests.delete(url, headers=headers, json=data)
+
+    response_str = json.dumps(response.json())  # json.dumps を使用
+
+    return response.status_code == 200, response_str
+
+def proc_unfollowing_v2(credentials, target_user):
+    """
+    指定されたユーザーをアンフォローする関数。
+    """
+
+    access_token = credentials['bearer_token']
+    user_id = get_user_id(credentials ,  credentials['login_id'])
+    target_user_id = get_user_id(credentials , target_user)
+
+    # フォロー解除エンドポイント
+    url = f"https://api.twitter.com/2/users/{user_id}/following/{target_user_id}"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    outputLog(f"client_id={credentials['client_id']}")
+
+    # プロキシ設定あり
+    if credentials['proxy_enable'] and credentials['proxy_url']:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.delete(url, headers=headers, proxies=proxies)
+    else:
+        response = requests.delete(url, headers=headers)
+
+    response_str = json.dumps(response.json())
+    return response.status_code == 200, response_str

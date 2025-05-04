@@ -422,6 +422,16 @@ namespace DbotManager
         {
             Exe一括処理();
 
+            TweetProcessList followItem = new TweetProcessList()
+            {
+                TargetAccountName = textBox対象アカウント名.Text,
+                ExeFollow = checkBoxFollow.Checked,
+                ExeUnFollow = checkBoxUnFollow.Checked,
+                UserId = checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0
+            };
+
+            ExeFollow処理(followItem);
+
             if(checkBoxJAPいいね.Checked)
             {
                 TweetTask task = new TweetTask(DbConnection, AppendLog);
@@ -637,6 +647,11 @@ namespace DbotManager
         private void Exe一括処理()
         {
             _tweetTask.Exe_一括処理();
+        }
+
+        private void ExeFollow処理(TweetProcessList tweetProcessList)
+        {
+            _tweetTask.ExeFollow処理(tweetProcessList);
         }
         #endregion
 
@@ -886,6 +901,8 @@ namespace DbotManager
                 );
 
                 Exe一括処理();
+
+                ExeFollow処理(item);
 
                 if (item.JapLikeCount != 0)
                 {

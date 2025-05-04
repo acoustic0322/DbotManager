@@ -32,7 +32,9 @@ namespace DbotManager
         CHECK,
         CHECKREP,
         CHECKAIREP,
-        JAP_LIKE
+        JAP_LIKE,
+        FOLLOW,
+        UNFOLLOW
     }
 
     public enum CheckAccountModes
@@ -117,6 +119,11 @@ namespace DbotManager
         public bool ReplyToRep { get; set; }
         public bool DuplicateEnable { get; set; }
 
+        public bool ExeFollow { get; set; }
+        public bool ExeUnFollow { get; set; }
+        public string TargetAccountName { get; set; }
+
+
         public int 件数 { get; set; }
         public string TargetTweetID { get; set; }
         public bool 制限時間以内に履歴ありの無料アカウントを排除 { get; set; }
@@ -140,6 +147,9 @@ namespace DbotManager
         public int リプライ件数 { get; set; }
 
         private static System.Timers.Timer _監視Timer;
+
+
+
 
 
         public event EventHandler<EventArgs> 監視完了;
@@ -318,6 +328,33 @@ namespace DbotManager
                 }
 
             }
+
+        }
+
+        internal void ExeFollow処理(TweetProcessList tweetProcessList)
+        {
+            if (!tweetProcessList.ExeFollow && !tweetProcessList.ExeUnFollow) return;
+            if (tweetProcessList.ExeFollow && tweetProcessList.ExeUnFollow) return;
+
+            bool followFlag = tweetProcessList.ExeFollow;
+            string targetAccountName = tweetProcessList.TargetAccountName;
+
+            var dataAccess = new MySqlDataAccess(dbConnectin);
+            var accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable == true).ToList();
+
+            if(tweetProcessList.UserId != 0)
+            {
+                accountList = accountList.Where(x => x.UserId == tweetProcessList.UserId).ToList();
+            }
+
+            foreach(var account in accountList)
+            {
+                TweetProc(new TweetCommand() { 
+                    TweetProcType = (followFlag ? TweetProcTypes.FOLLOW : TweetProcTypes.UNFOLLOW),  
+                    AccountId = account.Id,  
+                    TweetName = tweetProcessList.TargetAccountName });
+            }
+
 
         }
 
@@ -912,6 +949,14 @@ namespace DbotManager
                 case TweetProcTypes.CHECKAIREP:
                     return "checkairep";
                     break;
+
+                case TweetProcTypes.FOLLOW:
+                    return "follow";
+                    break;
+
+                case TweetProcTypes.UNFOLLOW:
+                    return "unfollow";
+                    break;
             }
             return string.Empty;
         }
@@ -976,6 +1021,12 @@ namespace DbotManager
                 case TweetProcTypes.CHECKAIREP:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} account_id2={tweetCommand.AccountId2}";
                     break;
+
+                case TweetProcTypes.FOLLOW:
+                case TweetProcTypes.UNFOLLOW:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_name={tweetCommand.TweetName}";
+                    break;
+
             }
 
             //            pythonScriptPath += " debug=True";
