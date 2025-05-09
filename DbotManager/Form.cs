@@ -930,9 +930,9 @@ namespace DbotManager
                     break;
 
                 case 1:
-                    item.LikeCount = 200;
+                    item.LikeCount = 250;
                     item.LikeEnable = true;
-                    item.JapLikeCount = 50;
+                    item.JapLikeCount = 0;
                     item.BookmarkCount = 250;
                     item.BookmarkEnable = true;
                     item.ReplyEnable = false;
