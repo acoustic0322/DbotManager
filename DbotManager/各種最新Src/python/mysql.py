@@ -33,6 +33,37 @@ def get_comment_by_id(comment_id):
     
     return result["comment"]  # コメントを返す
 
+def get_random_comment_id(account_id , mode):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',           # ユーザー名
+        password='abcd1234',   # パスワード
+        database='d_bot',      # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    print("mode:",mode)
+
+    try:
+        with connection.cursor() as cursor:
+            # 認証情報を格納しているテーブルからデータを取得
+            sql = "SELECT id FROM comment_master WHERE account_id=%s and mode=%s ORDER BY RAND() LIMIT 1"
+            cursor.execute(sql, (account_id,mode))
+            result = cursor.fetchone()
+    finally:
+        connection.close()
+
+    if result is None:
+        outputLog("エラー: 指定したコメントIDに対応するレコードが見つかりません。")
+        return None
+
+    outputLog(result)
+    
+    return result["id"]  # コメントを返す
+   
   
 def get_account_master(id):
     # MySQLデータベースに接続
