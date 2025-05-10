@@ -1,1 +1,0 @@
-python tweet.py mode=check_refresh

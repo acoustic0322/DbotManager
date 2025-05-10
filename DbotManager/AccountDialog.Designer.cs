@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.button監視設定 = new System.Windows.Forms.Button();
             this.checkBox有料APIブックマーク = new System.Windows.Forms.CheckBox();
             this.checkBox有料APIいいね = new System.Windows.Forms.CheckBox();
             this.checkBoxリプライ = new System.Windows.Forms.CheckBox();
@@ -120,7 +121,10 @@
             this.buttonいいね_Debug = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBoxRenew = new System.Windows.Forms.TextBox();
-            this.button監視設定 = new System.Windows.Forms.Button();
+            this.label20 = new System.Windows.Forms.Label();
+            this.textBoxFollow = new System.Windows.Forms.TextBox();
+            this.buttonUnfollow = new System.Windows.Forms.Button();
+            this.buttonFollow = new System.Windows.Forms.Button();
             this.groupBox6.SuspendLayout();
             this.groupBox7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAccount)).BeginInit();
@@ -178,6 +182,17 @@
             this.groupBox6.TabIndex = 2;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "アカウント設定";
+            // 
+            // button監視設定
+            // 
+            this.button監視設定.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button監視設定.Location = new System.Drawing.Point(120, 498);
+            this.button監視設定.Name = "button監視設定";
+            this.button監視設定.Size = new System.Drawing.Size(106, 33);
+            this.button監視設定.TabIndex = 39;
+            this.button監視設定.Text = "監視設定";
+            this.button監視設定.UseVisualStyleBackColor = true;
+            this.button監視設定.Click += new System.EventHandler(this.button監視設定_Click);
             // 
             // checkBox有料APIブックマーク
             // 
@@ -1174,9 +1189,9 @@
             // buttonリプライ_Debug
             // 
             this.buttonリプライ_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonリプライ_Debug.Location = new System.Drawing.Point(405, 19);
+            this.buttonリプライ_Debug.Location = new System.Drawing.Point(517, 19);
             this.buttonリプライ_Debug.Name = "buttonリプライ_Debug";
-            this.buttonリプライ_Debug.Size = new System.Drawing.Size(106, 27);
+            this.buttonリプライ_Debug.Size = new System.Drawing.Size(88, 27);
             this.buttonリプライ_Debug.TabIndex = 2;
             this.buttonリプライ_Debug.Text = "リポスト";
             this.buttonリプライ_Debug.UseVisualStyleBackColor = true;
@@ -1184,9 +1199,9 @@
             // 
             // textBoxUrlTweetID
             // 
-            this.textBoxUrlTweetID.Location = new System.Drawing.Point(20, 53);
+            this.textBoxUrlTweetID.Location = new System.Drawing.Point(130, 20);
             this.textBoxUrlTweetID.Name = "textBoxUrlTweetID";
-            this.textBoxUrlTweetID.Size = new System.Drawing.Size(596, 27);
+            this.textBoxUrlTweetID.Size = new System.Drawing.Size(193, 27);
             this.textBoxUrlTweetID.TabIndex = 4;
             // 
             // label13
@@ -1201,9 +1216,9 @@
             // buttonブックマーク_Debug
             // 
             this.buttonブックマーク_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonブックマーク_Debug.Location = new System.Drawing.Point(293, 20);
+            this.buttonブックマーク_Debug.Location = new System.Drawing.Point(423, 19);
             this.buttonブックマーク_Debug.Name = "buttonブックマーク_Debug";
-            this.buttonブックマーク_Debug.Size = new System.Drawing.Size(106, 27);
+            this.buttonブックマーク_Debug.Size = new System.Drawing.Size(88, 27);
             this.buttonブックマーク_Debug.TabIndex = 3;
             this.buttonブックマーク_Debug.Text = "ブックマーク";
             this.buttonブックマーク_Debug.UseVisualStyleBackColor = true;
@@ -1212,9 +1227,9 @@
             // buttonいいね_Debug
             // 
             this.buttonいいね_Debug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonいいね_Debug.Location = new System.Drawing.Point(181, 20);
+            this.buttonいいね_Debug.Location = new System.Drawing.Point(329, 19);
             this.buttonいいね_Debug.Name = "buttonいいね_Debug";
-            this.buttonいいね_Debug.Size = new System.Drawing.Size(106, 27);
+            this.buttonいいね_Debug.Size = new System.Drawing.Size(88, 27);
             this.buttonいいね_Debug.TabIndex = 1;
             this.buttonいいね_Debug.Text = "いいね";
             this.buttonいいね_Debug.UseVisualStyleBackColor = true;
@@ -1222,6 +1237,10 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.buttonUnfollow);
+            this.groupBox1.Controls.Add(this.buttonFollow);
+            this.groupBox1.Controls.Add(this.label20);
+            this.groupBox1.Controls.Add(this.textBoxFollow);
             this.groupBox1.Controls.Add(this.textBoxRenew);
             this.groupBox1.Controls.Add(this.buttonブックマーク_Debug);
             this.groupBox1.Controls.Add(this.groupBox7);
@@ -1246,22 +1265,49 @@
             this.textBoxRenew.Size = new System.Drawing.Size(596, 67);
             this.textBoxRenew.TabIndex = 21;
             // 
-            // button監視設定
+            // label20
             // 
-            this.button監視設定.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button監視設定.Location = new System.Drawing.Point(120, 498);
-            this.button監視設定.Name = "button監視設定";
-            this.button監視設定.Size = new System.Drawing.Size(106, 33);
-            this.button監視設定.TabIndex = 39;
-            this.button監視設定.Text = "監視設定";
-            this.button監視設定.UseVisualStyleBackColor = true;
-            this.button監視設定.Click += new System.EventHandler(this.button監視設定_Click);
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(17, 58);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(52, 19);
+            this.label20.TabIndex = 22;
+            this.label20.Text = "フォロー";
+            // 
+            // textBoxFollow
+            // 
+            this.textBoxFollow.Location = new System.Drawing.Point(131, 55);
+            this.textBoxFollow.Name = "textBoxFollow";
+            this.textBoxFollow.Size = new System.Drawing.Size(193, 27);
+            this.textBoxFollow.TabIndex = 23;
+            // 
+            // buttonUnfollow
+            // 
+            this.buttonUnfollow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonUnfollow.Location = new System.Drawing.Point(423, 54);
+            this.buttonUnfollow.Name = "buttonUnfollow";
+            this.buttonUnfollow.Size = new System.Drawing.Size(88, 27);
+            this.buttonUnfollow.TabIndex = 25;
+            this.buttonUnfollow.Text = "解除";
+            this.buttonUnfollow.UseVisualStyleBackColor = true;
+            this.buttonUnfollow.Click += new System.EventHandler(this.buttonUnfollow_Click);
+            // 
+            // buttonFollow
+            // 
+            this.buttonFollow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFollow.Location = new System.Drawing.Point(329, 54);
+            this.buttonFollow.Name = "buttonFollow";
+            this.buttonFollow.Size = new System.Drawing.Size(88, 27);
+            this.buttonFollow.TabIndex = 24;
+            this.buttonFollow.Text = "追加";
+            this.buttonFollow.UseVisualStyleBackColor = true;
+            this.buttonFollow.Click += new System.EventHandler(this.buttonFollow_Click);
             // 
             // AccountDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1299, 758);
+            this.ClientSize = new System.Drawing.Size(1299, 806);
             this.Controls.Add(this.comboBoxUserMaster);
             this.Controls.Add(this.dataGridViewAccount);
             this.Controls.Add(this.buttonClose);
@@ -1379,5 +1425,9 @@
         private System.Windows.Forms.CheckBox checkBox有料APIいいね;
         private System.Windows.Forms.CheckBox checkBox有料;
         private System.Windows.Forms.Button button監視設定;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.TextBox textBoxFollow;
+        private System.Windows.Forms.Button buttonUnfollow;
+        private System.Windows.Forms.Button buttonFollow;
     }
 }

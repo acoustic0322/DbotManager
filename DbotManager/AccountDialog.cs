@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -189,6 +190,14 @@ namespace DbotManager
             }
 
             return extractedNumber;
+        }
+
+        private string GetFollowText(bool debug_mode = false)
+        {
+            string input = textBoxFollow.Text;
+
+
+            return input;
         }
 
         private string ExtractNumber(string input)
@@ -438,6 +447,36 @@ namespace DbotManager
             tweetTask.TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPOST, UserId = userId, AccountId = accountId, TweetId = tweetId });
         }
 
+        private void buttonFollow_Click(object sender, EventArgs e)
+        {
+            int userId = GetUserId();
+            int accountId = int.Parse(textBoxAccountID.Text); ;
+            string follow = GetFollowText();
+
+            TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
+            //            tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, 0, tweetId);
+            tweetTask.TweetProc(new TweetCommand() { 
+                TweetProcType = TweetProcTypes.FOLLOW, 
+                AccountId = accountId, 
+                TweetName = follow });
+        }
+
+        private void buttonUnfollow_Click(object sender, EventArgs e)
+        {
+            int userId = GetUserId();
+            int accountId = int.Parse(textBoxAccountID.Text); ;
+            string follow = GetFollowText();
+
+            TweetTask tweetTask = new TweetTask(dbConnection, AppendLog);
+            //            tweetTask.TweetProc(TweetProcTypes.BOOKMARK, userId, accountId, 0, tweetId);
+            tweetTask.TweetProc(new TweetCommand()
+            {
+                TweetProcType = TweetProcTypes.UNFOLLOW,
+                AccountId = accountId,
+                TweetName = follow
+            });
+        }
+
         private void buttonコメント編集_Click(object sender, EventArgs e)
         {
             // ダイアログが未作成または破棄されている場合に新しいダイアログを作成
@@ -470,5 +509,7 @@ namespace DbotManager
                 _checkAccountDialog.Focus();
             }
         }
+
+
     }
 }

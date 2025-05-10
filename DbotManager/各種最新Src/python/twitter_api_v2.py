@@ -400,7 +400,7 @@ def proc_like_v2(credentials, tweet_id):
     :param tweet_id: いいねする対象のツイートID
     """
     access_token = credentials['bearer_token']
-    user_id = get_user_id(credentials)
+    user_id = get_user_id(credentials ,  credentials['login_id'])
 
     # 「いいね」エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/likes"
@@ -493,7 +493,7 @@ def proc_bookmark_v2(credentials, tweet_id):
 
     access_token = credentials['bearer_token']
 
-    user_id = get_user_id(credentials)
+    user_id = get_user_id(credentials  ,  credentials['login_id'])
 
     # ブックマーク用エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
@@ -587,7 +587,7 @@ def proc_repost_v2(credentials, tweet_id):
     """
     access_token = credentials['bearer_token']
 
-    user_id = get_user_id(credentials)
+    user_id = get_user_id(credentials ,  credentials['login_id'])
 
     # エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/retweets"
@@ -1075,7 +1075,7 @@ def check_replies(search_account , reply_account):
     user_id = reply_account['twitter_user_id']
 
     if user_id is None or user_id == "":
-        user_id = get_user_id(reply_account)
+        user_id = get_user_id(reply_account ,  reply_account['login_id'])
         outputLog(f"user_id={user_id}")
         update_account_master_by_twitter_user_id(reply_account['id'] , user_id)
 
@@ -1187,17 +1187,19 @@ def proc_following_v2(credentials, target_user):
     }
 
     outputLog(f"client_id={credentials['client_id']}")
+    outputLog(f"access_token={access_token}")
 
     # POSTリクエストを送信
-    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+    if False:
+#    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
         outputLog(f"proxy_url={credentials['proxy_url']}")
         proxies = {
             "http": credentials['proxy_url'],
             "https": credentials['proxy_url']
         }
 
-        response = requests.post(url, headers=headers, json=data, proxies=proxies)
-#        response = requests.delete(url, headers=headers, json=data, proxies=proxies)
+#        response = requests.post(url, headers=headers, json=data, proxies=proxies)
+        response = requests.delete(url, headers=headers, json=data, proxies=proxies)
 
     else:
         response = requests.post(url, headers=headers, json=data)
