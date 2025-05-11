@@ -1,1 +1,0 @@
-python tweet.py mode=follow account_id=1 target_user=@ajt4222
