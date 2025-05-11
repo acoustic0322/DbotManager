@@ -230,7 +230,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="python\tweet.py" />
     <Content Include="各種最新Src\d-bot_childtweet\child_tweet.py" />
     <Content Include="各種最新Src\d-bot_childtweet\config.py" />
     <Content Include="各種最新Src\d-bot_childtweet\mysql.py" />
