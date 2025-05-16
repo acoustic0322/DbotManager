@@ -9,6 +9,7 @@ import time
 from mysql import insert_trend
 from mysql import delete_trend
 
+import tempfile
 
 # トレンドデータの処理
 def parse_trend_text(text):
@@ -33,32 +34,61 @@ config.read(config_path, encoding="utf-8")
 # Chrome設定を取得
 chrome_user_data_dir = config.get("Chrome", "user_data_dir", fallback="")
 chrome_profile = config.get("Chrome", "profile", fallback="Default")
+profile_list_str = config.get("Chrome", "profile_list", fallback="")
+profile_path = os.path.join(chrome_user_data_dir, chrome_profile)
 
-print(chrome_user_data_dir)
-print(chrome_profile)
+# プロファイルリストを分割・整形（空白削除）
+profile_list = [f"Profile {p.strip()}" for p in profile_list_str.split(",") if p.strip()]
+
+# 現在のプロファイルのインデックスを取得して次のインデックスを決定
+if chrome_profile in profile_list:
+    current_index = profile_list.index(chrome_profile)
+    next_index = (current_index + 1) % len(profile_list)
+    chrome_profile = profile_list[next_index]
+else:
+    # 一致しない場合は先頭にする
+    chrome_profile = profile_list[0] if profile_list else "Default"
+
+# 切り替え後のプロファイルを保存
+config.set("Chrome", "profile", chrome_profile)
+with open(config_path, "w", encoding="utf-8") as configfile:
+    config.write(configfile)
+
+# 結果出力
+print("User Data Dir:", chrome_user_data_dir)
+print("Using profile:", chrome_profile)
+print("profile path:", profile_path)
 
 # Chromeドライバーのセットアップ
 options = webdriver.ChromeOptions()
 
-# 設定ファイルから値を適用
-if chrome_user_data_dir:
-    options.add_argument(f"--user-data-dir={chrome_user_data_dir}")
+# 必ず1つだけ --user-data-dir を指定
+# TEMPディレクトリを使用（安全な一時プロファイル）
+#temp_profile_dir = tempfile.mkdtemp()
+options.add_argument(f"--user-data-dir={chrome_user_data_dir}")
+#options.add_argument(r"--user-data-dir=C:\Users\user\AppData\Local\Google\Chrome\User Data")
+
 options.add_argument(f"--profile-directory={chrome_profile}")
+# ✅ プロファイル名を指定（例: Profile 46）
+#options.add_argument("--profile-directory=Profile 48")
 
-#options.add_argument("--headless")  # ヘッドレスモード（ブラウザを開かず実行）
-#options.add_argument("--headless=new")  # ヘッドレスモード（新しい実装）
-#options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
+options.add_argument("--remote-debugging-port=9222")
 
-# 追加のオプション（必要に応じて）
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
+# GPU関係の無効化（不要なら省略可）
+options.add_argument("--disable-gpu")
+options.add_argument("--disable-software-rasterizer")
 
-# WebDriverの設定（service引数なし）
+# 任意のプロファイルディレクトリ（本当に使いたいなら temp_profile_dir の代わりに使う）
+# if chrome_user_data_dir:
+#     options.add_argument(f"--user-data-dir={chrome_user_data_dir}")
+#     options.add_argument(f"--profile-directory={chrome_profile}")
+
+# WebDriver起動
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
-
 # Twitterの「話題を検索」ページへ移動
 #url = "https://twitter.com/explore/tabs/trending"
+#url = "https://x.com"
 url = "https://x.com/explore/tabs/for_you"
 driver.get(url)
 
@@ -81,12 +111,12 @@ for i, trend in enumerate(trends, 1):
     print(f"{i}. category={category}, keyword={keyword}, post_count={post_count}")
 
 ## トレンドデータを削除
-delete_trend()
+delete_trend(chrome_profile)
 
 # 取得データをデータベースに登録
 for rank, category, keyword, post_count in trend_data:
     print(f"rank={rank} category={category} keyword={keyword} post_count={post_count}")
-    insert_trend(rank, category, keyword, post_count)
+    insert_trend(chrome_profile, rank, category, keyword, post_count)
 
 # ユーザーのキー入力を待つ
 #nput("続行するには Enter を押してください...")

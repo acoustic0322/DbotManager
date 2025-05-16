@@ -26,6 +26,7 @@ namespace DbotManager.Table
         public bool SearchRepEnable { get; set; }
 
 
-
+        // 表示用プロパティ
+        public string DisplayText => $"{Id}:{Name}";
     }
 }

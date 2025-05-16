@@ -45,7 +45,7 @@ public class MySqlDataAccess
 
                 // SQLクエリにWHERE句を追加して24時間以内のデータを絞り込む
                 string query = @"
-                SELECT user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime 
+                SELECT user_id,user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime 
                 FROM tweet_history_view 
                 WHERE updatetime >= @TwentyFourHoursAgo
                 ORDER BY updatetime DESC;";
@@ -53,7 +53,7 @@ public class MySqlDataAccess
                 if(allFlag)
                 {
                     query = @"
-                    SELECT user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime 
+                    SELECT user_id,user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime 
                     FROM tweet_history_view 
                     ORDER BY updatetime DESC;";
                 }
@@ -76,6 +76,7 @@ public class MySqlDataAccess
                             {
                                 TweetHistory tweetHistory = new TweetHistory
                                 {
+                                    UserId = int.Parse(reader["user_id"].ToString()),
                                     UserName = reader["user_name"].ToString(),
                                     AccountId = int.Parse(reader["account_id"].ToString()),
                                     AccountName = reader["account_name"].ToString(),

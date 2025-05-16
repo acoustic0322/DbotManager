@@ -1085,8 +1085,24 @@ namespace DbotManager
         }
 
 
+
         #endregion
 
+        HistoryDialog _historyDialog;
 
+        private void button履歴_Click(object sender, EventArgs e)
+        {
+            // ダイアログが未作成または破棄されている場合に新しいダイアログを作成
+            if (_historyDialog == null || _historyDialog.IsDisposed)
+            {
+                _historyDialog = new HistoryDialog(DbConnection);
+                _historyDialog.Show();
+            }
+            else
+            {
+                // 既に開いている場合はフォーカスを移動
+                _historyDialog.Focus();
+            }
+        }
     }
 }

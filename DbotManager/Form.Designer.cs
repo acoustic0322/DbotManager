@@ -66,6 +66,9 @@
             this.textBoxいいね件数 = new System.Windows.Forms.TextBox();
             this.checkBoxいいね = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.checkBoxUnFollow = new System.Windows.Forms.CheckBox();
+            this.textBox対象アカウント名 = new System.Windows.Forms.TextBox();
+            this.checkBoxFollow = new System.Windows.Forms.CheckBox();
             this.textBoxJAPいいね件数 = new System.Windows.Forms.TextBox();
             this.checkBoxJAPいいね = new System.Windows.Forms.CheckBox();
             this.checkBox一括処理禁止権限無視 = new System.Windows.Forms.CheckBox();
@@ -122,9 +125,7 @@
             this.textBoxRenew = new System.Windows.Forms.TextBox();
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
-            this.textBox対象アカウント名 = new System.Windows.Forms.TextBox();
-            this.checkBoxFollow = new System.Windows.Forms.CheckBox();
-            this.checkBoxUnFollow = new System.Windows.Forms.CheckBox();
+            this.button履歴 = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -534,6 +535,33 @@
             this.groupBox3.TabIndex = 0;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "基本設定";
+            // 
+            // checkBoxUnFollow
+            // 
+            this.checkBoxUnFollow.AutoSize = true;
+            this.checkBoxUnFollow.Location = new System.Drawing.Point(265, 119);
+            this.checkBoxUnFollow.Name = "checkBoxUnFollow";
+            this.checkBoxUnFollow.Size = new System.Drawing.Size(101, 23);
+            this.checkBoxUnFollow.TabIndex = 16;
+            this.checkBoxUnFollow.Text = "フォロー解除";
+            this.checkBoxUnFollow.UseVisualStyleBackColor = true;
+            // 
+            // textBox対象アカウント名
+            // 
+            this.textBox対象アカウント名.Location = new System.Drawing.Point(372, 119);
+            this.textBox対象アカウント名.Name = "textBox対象アカウント名";
+            this.textBox対象アカウント名.Size = new System.Drawing.Size(140, 27);
+            this.textBox対象アカウント名.TabIndex = 14;
+            // 
+            // checkBoxFollow
+            // 
+            this.checkBoxFollow.AutoSize = true;
+            this.checkBoxFollow.Location = new System.Drawing.Point(188, 119);
+            this.checkBoxFollow.Name = "checkBoxFollow";
+            this.checkBoxFollow.Size = new System.Drawing.Size(71, 23);
+            this.checkBoxFollow.TabIndex = 15;
+            this.checkBoxFollow.Text = "フォロー";
+            this.checkBoxFollow.UseVisualStyleBackColor = true;
             // 
             // textBoxJAPいいね件数
             // 
@@ -1097,38 +1125,22 @@
             this.buttonアカウント設定.UseVisualStyleBackColor = true;
             this.buttonアカウント設定.Click += new System.EventHandler(this.buttonアカウント設定_Click);
             // 
-            // textBox対象アカウント名
+            // button履歴
             // 
-            this.textBox対象アカウント名.Location = new System.Drawing.Point(372, 119);
-            this.textBox対象アカウント名.Name = "textBox対象アカウント名";
-            this.textBox対象アカウント名.Size = new System.Drawing.Size(140, 27);
-            this.textBox対象アカウント名.TabIndex = 14;
-            // 
-            // checkBoxFollow
-            // 
-            this.checkBoxFollow.AutoSize = true;
-            this.checkBoxFollow.Location = new System.Drawing.Point(188, 119);
-            this.checkBoxFollow.Name = "checkBoxFollow";
-            this.checkBoxFollow.Size = new System.Drawing.Size(71, 23);
-            this.checkBoxFollow.TabIndex = 15;
-            this.checkBoxFollow.Text = "フォロー";
-            this.checkBoxFollow.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxUnFollow
-            // 
-            this.checkBoxUnFollow.AutoSize = true;
-            this.checkBoxUnFollow.Location = new System.Drawing.Point(265, 119);
-            this.checkBoxUnFollow.Name = "checkBoxUnFollow";
-            this.checkBoxUnFollow.Size = new System.Drawing.Size(101, 23);
-            this.checkBoxUnFollow.TabIndex = 16;
-            this.checkBoxUnFollow.Text = "フォロー解除";
-            this.checkBoxUnFollow.UseVisualStyleBackColor = true;
+            this.button履歴.Location = new System.Drawing.Point(1096, 8);
+            this.button履歴.Name = "button履歴";
+            this.button履歴.Size = new System.Drawing.Size(103, 28);
+            this.button履歴.TabIndex = 11;
+            this.button履歴.Text = "履歴";
+            this.button履歴.UseVisualStyleBackColor = true;
+            this.button履歴.Click += new System.EventHandler(this.button履歴_Click);
             // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1468, 712);
+            this.Controls.Add(this.button履歴);
             this.Controls.Add(this.buttonアカウント設定);
             this.Controls.Add(this.buttonクリアlog);
             this.Controls.Add(this.buttonものまね);
@@ -1272,6 +1284,7 @@
         private System.Windows.Forms.CheckBox checkBoxUnFollow;
         private System.Windows.Forms.TextBox textBox対象アカウント名;
         private System.Windows.Forms.CheckBox checkBoxFollow;
+        private System.Windows.Forms.Button button履歴;
     }
 }
 

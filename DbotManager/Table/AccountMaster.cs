@@ -74,6 +74,7 @@ namespace DbotManager.Table
         public int? PhotoId { get; set; }
         public int? MovieId { get; set; }
 
-
+        // 表示用プロパティ
+        public string DisplayText => $"{Id}:{Name}";
     }
 }

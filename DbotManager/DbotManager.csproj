@@ -115,6 +115,12 @@
     </Compile>
     <Compile Include="DiscordTask.cs" />
     <Compile Include="Entity\WebCommand.cs" />
+    <Compile Include="HistoryDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HistoryDialog.Designer.cs">
+      <DependentUpon>HistoryDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="MySql\DbConnectionInfo.cs" />
     <Compile Include="ReserveRegistrationDialog.cs">
       <SubType>Form</SubType>
@@ -165,6 +171,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form.resx">
       <DependentUpon>Form.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HistoryDialog.resx">
+      <DependentUpon>HistoryDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

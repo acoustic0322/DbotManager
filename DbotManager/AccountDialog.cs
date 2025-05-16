@@ -102,7 +102,7 @@ namespace DbotManager
             if (userList != null)
             {
                 comboBoxUserMaster.DataSource = userList;
-                comboBoxUserMaster.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
+                comboBoxUserMaster.DisplayMember = "DisplayText"; // コンボボックスに表示するプロパティ
                 comboBoxUserMaster.ValueMember = "Id";     // 選択されたときに取得するプロパティ
             }
             else

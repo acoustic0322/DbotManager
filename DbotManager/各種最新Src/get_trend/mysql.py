@@ -705,7 +705,7 @@ import pymysql
 import datetime
 
 
-def delete_trend():
+def delete_trend(chrome_profile):
     # MySQLデータベースに接続
     connection = pymysql.connect(
         host=config.db_host,      # ホスト名
@@ -719,7 +719,7 @@ def delete_trend():
     try:
         with connection.cursor() as cursor:
             # テーブルを全削除
-            sql_delete = "DELETE FROM trend_list"
+            sql_delete = "DELETE FROM trend_list where profile = '"+chrome_profile+"'"
             cursor.execute(sql_delete)
 
             # コミット
@@ -727,7 +727,7 @@ def delete_trend():
     finally:
         connection.close()
 
-def insert_trend(rank, category, keyword, post_count):
+def insert_trend(chrome_profile,rank, category, keyword, post_count):
     # MySQLデータベースに接続
     connection = pymysql.connect(
         host=config.db_host,      # ホスト名
@@ -742,10 +742,10 @@ def insert_trend(rank, category, keyword, post_count):
         with connection.cursor() as cursor:
             # 新しいデータを挿入
             sql_insert = """
-                INSERT INTO trend_list (`rank`, category, keyword, post_count, retrieved_at)
-                VALUES (%s, %s, %s, %s, NOW())
+                INSERT INTO trend_list (`rank`, category, keyword, post_count, retrieved_at, profile)
+                VALUES (%s, %s, %s, %s, NOW(), %s)
             """
-            cursor.execute(sql_insert, (rank, category, keyword, post_count))
+            cursor.execute(sql_insert, (rank, category, keyword, post_count, chrome_profile))
 
             # コミット
             connection.commit()
