@@ -98,7 +98,7 @@ namespace DbotManager
                 AccountId = AccountId,
                 Enable = checkBox有効.Checked,
                 TargetAccountName = textBoxCheckAccount.Text,
-                Mode = radioButton監視.Checked ? TweetProcTypes.CHECK : (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE)
+                Mode = radioButton監視.Checked ? TweetProcTypes.ポスト監視 : (radioButton監視toReply.Checked ? TweetProcTypes.リプ監視 : TweetProcTypes.モノマネ)
             };
 
             int newId = dataAccess.InsertCheckAccountList(checkAccount);
@@ -115,7 +115,7 @@ namespace DbotManager
                 AccountId = AccountId,
                 Enable = checkBox有効.Checked,
                 TargetAccountName = textBoxCheckAccount.Text,
-                Mode = radioButton監視.Checked ? TweetProcTypes.CHECK : (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE)
+                Mode = radioButton監視.Checked ? TweetProcTypes.ポスト監視 : (radioButton監視toReply.Checked ? TweetProcTypes.リプ監視 : TweetProcTypes.モノマネ)
             };
 
             dataAccess.UpdateCheckAccountList(checkAccount);
@@ -150,7 +150,7 @@ namespace DbotManager
             TweetTask _tweetTask = new TweetTask(dbConnection , AppendLog);
 //            _tweetTask.TweetProc(radioButton監視.Checked ? TweetProcTypes.CHECK :  (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE), userId, accountId, checkAccountId, tweetId);
             _tweetTask.TweetProc(new TweetCommand() { 
-                TweetProcType = (radioButton監視.Checked ? TweetProcTypes.CHECK : (radioButton監視toReply.Checked ? TweetProcTypes.CHECKREP : TweetProcTypes.MONOMANE)),
+                TweetProcType = (radioButton監視.Checked ? TweetProcTypes.ポスト監視 : (radioButton監視toReply.Checked ? TweetProcTypes.リプ監視 : TweetProcTypes.モノマネ)),
                 UserId = userId,
                 AccountId = accountId,
                 SearchId = checkAccountId               
@@ -175,15 +175,15 @@ namespace DbotManager
 
                 if (radioButton監視.Checked)
                 {
-                    list = list.Where(x => x.Mode == TweetProcTypes.CHECK).ToList();
+                    list = list.Where(x => x.Mode == TweetProcTypes.ポスト監視).ToList();
                 }
                 else if(radioButton監視toReply.Checked)
                 {
-                    list = list.Where(x => x.Mode == TweetProcTypes.CHECKREP).ToList();
+                    list = list.Where(x => x.Mode == TweetProcTypes.リプ監視).ToList();
                 }
                 else
                 {
-                    list = list.Where(x => x.Mode == TweetProcTypes.MONOMANE).ToList();
+                    list = list.Where(x => x.Mode == TweetProcTypes.モノマネ).ToList();
                 }
 
                 dataGridViewCheckAccount.DataSource = list;

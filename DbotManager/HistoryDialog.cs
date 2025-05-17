@@ -34,17 +34,22 @@ namespace DbotManager
 
             UpdateControl_Master();
 
+            Search();
+
+            button再表示.BackColor = Color.Red;
+
             _isLoading = false;
 
         }
 
         private void UpdateControl_Master()
         {
-            FillDebugControls_UserName();
-            FillDebugControls_AccountName();
+            FillControls_UserName();
+            FillControls_AccountName();
+            FillControls_Mode();
         }
 
-        private void FillDebugControls_UserName()
+        private void FillControls_UserName()
         {
             List<UserMaster> userList = dataAccess.GetUserMaster();
 
@@ -60,14 +65,17 @@ namespace DbotManager
             }
         }
 
-        private void FillDebugControls_AccountName()
+        private void FillControls_AccountName()
         {
             List<AccountMaster> accountList = dataAccess.GetAccountMaster();
 
+            /*
             if(checkBoxUser.Checked)
             {
                 accountList = accountList.Where(x => x.UserId == (int)(comboBoxUserMaster.SelectedValue)).ToList();
             }
+            */
+            accountList = accountList.Where(x => x.UserId == (int)(comboBoxUserMaster.SelectedValue)).ToList();
 
             if (accountList != null)
             {
@@ -81,10 +89,38 @@ namespace DbotManager
             }
         }
 
+        private void FillControls_Mode()
+        {
+            var items = Enum.GetValues(typeof(TweetProcTypes))
+                .Cast<TweetProcTypes>()
+                /*
+                .Where(x => x != TweetProcTypes)  // ← 除外条件
+                .Where(x => x != TweetProcTypes.NONE)  // ← 除外条件
+                .Where(x => x != TweetProcTypes.NONE)  // ← 除外条件
+                .Where(x => x != TweetProcTypes.NONE)  // ← 除外条件
+                */
+                .Select(e => new
+                {
+                    Value = e,
+                    Display = GetEnumDescription(e)
+                })
+                .ToList();
+
+            comboBoxモード.DataSource = items;
+            comboBoxモード.DisplayMember = "Display";
+            comboBoxモード.ValueMember = "Value";
+        }
+
+        private string GetEnumDescription(Enum value)
+        {
+            var fi = value.GetType().GetField(value.ToString());
+            var attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+            return attributes.Length > 0 ? attributes[0].Description : value.ToString();
+        }
+
         private void Search()
         {
             _tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.UpdateTime >= DateTime.Today.AddDays(-1)).ToList();
-            UpdateTweetHistoryFilter();
         }
 
 
@@ -97,18 +133,19 @@ namespace DbotManager
 
                 dspHistoryList.AddRange(_tweetHistoryList);
 
+                if (checkBoxエラー.Checked) dspHistoryList = dspHistoryList.Where(x => x.Result == false).ToList();
                 if (checkBoxUser.Checked) dspHistoryList = dspHistoryList.Where(x => x.UserId == (int)comboBoxUserMaster.SelectedValue).ToList();
                 if (checkBoxAccount.Checked) dspHistoryList = dspHistoryList.Where(x => x.AccountId == (int)comboBoxAccount.SelectedValue).ToList();
-
-
+                if (checkBoxモード.Checked) dspHistoryList = dspHistoryList.Where(x => x.Mode == (TweetProcTypes)comboBoxモード.SelectedValue).ToList();
 
                 // 匿名型で表示用データを作成（表示したい列だけ）
                 var displayList = dspHistoryList.Select(x => new
                 {
                     日時 = ((DateTime)x.UpdateTime).ToString("MM/dd HH:mm:ss"),
                     ユーザー名 = x.UserName,
-                    アカウント名 = $"{x.AccountName}({x.AccountId})",
-                    モード = GetModeName(x.Mode),
+                    アカウントID = $"{x.AccountId}",
+                    アカウント名 = $"{x.AccountName}",
+                    モード = x.Mode,// GetModeName(x.Mode),
                     結果 = x.Result ? "" : "×",
                     ポスト内容 = x.Comment,
                     LOG = x.ErrorLog,
@@ -117,19 +154,15 @@ namespace DbotManager
 
                 dataGridViewTweetHistory.DataSource = displayList;
 
-                /*
-                if (string.IsNullOrEmpty(textBoxSearchHistoryAccountId.Text))
-                {
-                    dataGridViewTweetHistory.DataSource = _tweetHistoryList;
-                }
-                else
-                {
-                    int historyAccountId;
-                    int.TryParse(textBoxSearchHistoryAccountId.Text, out historyAccountId);
-                    dataGridViewTweetHistory.DataSource = _tweetHistoryList.Where(x => x.AccountId == historyAccountId).ToList();
-                }
-                */
-
+                // 列幅の設定（列名はプロパティ名またはヘッダ表示名と一致させる）
+                dataGridViewTweetHistory.Columns["日時"].Width = 120;
+                dataGridViewTweetHistory.Columns["ユーザー名"].Width = 100;
+                dataGridViewTweetHistory.Columns["アカウントID"].Width = 100;
+                dataGridViewTweetHistory.Columns["アカウント名"].Width = 120;
+                dataGridViewTweetHistory.Columns["モード"].Width = 80;
+                dataGridViewTweetHistory.Columns["結果"].Width = 50;
+                dataGridViewTweetHistory.Columns["ポスト内容"].Width = 200;
+                dataGridViewTweetHistory.Columns["LOG"].Width = 250;
             }
             else
             {
@@ -138,63 +171,9 @@ namespace DbotManager
 
         }
 
-        private string GetModeName(TweetProcTypes mode)
-        {
-            string ret = "";
-            switch(mode)
-            {
-                case TweetProcTypes.LIKE:
-                    ret = "いいね";
-                    break;
-                case TweetProcTypes.POST:
-                    ret = "ポスト";
-                    break;
-                case TweetProcTypes.CHECKREP:
-                    ret = "リプ監視";
-                    break;
-                case TweetProcTypes.CHECK:
-                    ret = "監視";
-                    break;
-                case TweetProcTypes.UNFOLLOW:
-                    ret = "フォロー解除";
-                    break;
-                case TweetProcTypes.BOOKMARK:
-                    ret = "ブックマーク";
-                    break;
-                case TweetProcTypes.CHECKAIREP:
-                    ret = "フォロー解除";
-                    break;
-                case TweetProcTypes.FOLLOW:
-                    ret = "フォロー追加";
-                    break;
-                case TweetProcTypes.GET_ACCESSTOKEN:
-                    ret = "AccessToken取得";
-                    break;
-                case TweetProcTypes.GET_REFRESHTOKEN:
-                    ret = "RefreshToken取得";
-                    break;
-                case TweetProcTypes.JAP_LIKE:
-                    ret = "JAPいいね";
-                    break;
-                case TweetProcTypes.MONOMANE:
-                    ret = "モノマネ監視";
-                    break;
-                case TweetProcTypes.REPLY:
-                    ret = "リプライ";
-                    break;
-                case TweetProcTypes.REPOST:
-                    ret = "リポスト";
-                    break;
-
-            }
-
-            return ret;
-        }
-
         private void buttonSearch_Click(object sender, EventArgs e)
         {
             Search();
-
         }
 
         private void comboBoxUserMaster_SelectedIndexChanged(object sender, EventArgs e)
@@ -202,7 +181,8 @@ namespace DbotManager
             if (_isLoading) return;
 
             checkBoxUser.Checked = true;
-            FillDebugControls_AccountName();
+            FillControls_AccountName();
+            button再表示.BackColor = Color.Red;
         }
 
         private void comboBoxAccount_SelectedIndexChanged(object sender, EventArgs e)
@@ -210,19 +190,45 @@ namespace DbotManager
             if (_isLoading) return;
 
             checkBoxAccount.Checked = true;
+            button再表示.BackColor = Color.Red;
 
         }
         private void checkBoxUser_CheckedChanged(object sender, EventArgs e)
         {
             if (_isLoading) return;
-//            FillDebugControls_AccountName();
+            //            FillDebugControls_AccountName();
+            button再表示.BackColor = Color.Red;
         }
 
         private void checkBoxAccount_CheckedChanged(object sender, EventArgs e)
         {
             if (_isLoading) return;
-
+            button再表示.BackColor = Color.Red;
         }
 
+        private void comboBoxモード_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            checkBoxモード.Checked = true;
+            button再表示.BackColor = Color.Red;
+        }
+
+        private void button絞込_Click(object sender, EventArgs e)
+        {
+            UpdateTweetHistoryFilter();
+            button再表示.BackColor = SystemColors.Control;
+        }
+
+        private void checkBoxエラー_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            button再表示.BackColor = Color.Red;
+        }
+
+        private void checkBoxモード_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            button再表示.BackColor = Color.Red;
+        }
     }
 }

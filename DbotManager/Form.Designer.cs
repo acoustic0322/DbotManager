@@ -1082,7 +1082,7 @@
             // 
             // buttonものまね
             // 
-            this.buttonものまね.Location = new System.Drawing.Point(1205, 8);
+            this.buttonものまね.Location = new System.Drawing.Point(965, 8);
             this.buttonものまね.Name = "buttonものまね";
             this.buttonものまね.Size = new System.Drawing.Size(103, 28);
             this.buttonものまね.TabIndex = 6;
@@ -1127,7 +1127,7 @@
             // 
             // button履歴
             // 
-            this.button履歴.Location = new System.Drawing.Point(1096, 8);
+            this.button履歴.Location = new System.Drawing.Point(1224, 8);
             this.button履歴.Name = "button履歴";
             this.button履歴.Size = new System.Drawing.Size(103, 28);
             this.button履歴.TabIndex = 11;

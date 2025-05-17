@@ -110,16 +110,17 @@ public class MySqlDataAccess
 
     private TweetProcTypes GetTweetProcType(string value)
     {
-        if (value == "like") return TweetProcTypes.LIKE;
-        else if (value == "repost") return TweetProcTypes.REPOST;
-        else if (value == "bookmark") return TweetProcTypes.BOOKMARK;
-        else if (value == "post") return TweetProcTypes.POST;
-        else if (value == "reply") return TweetProcTypes.REPLY;
-        else if (value == "get_access_token") return TweetProcTypes.GET_ACCESSTOKEN;
-        else if (value == "get_refresh_token") return TweetProcTypes.GET_REFRESHTOKEN;
-        else if (value == "check" || value == "CHECK") return TweetProcTypes.CHECK;
-        else if (value == "checkrep" || value == "CHECKREP") return TweetProcTypes.CHECKREP;
-        else if (value == "monomane" || value == "MONOMANE") return TweetProcTypes.MONOMANE;
+        if (value == "like") return TweetProcTypes.いいね;
+        else if (value == "repost") return TweetProcTypes.リポスト;
+        else if (value == "bookmark") return TweetProcTypes.ブックマーク;
+        else if (value == "post") return TweetProcTypes.ポスト;
+        else if (value == "reply") return TweetProcTypes.リプライ;
+//        else if (value == "get_access_token") return TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得;
+//        else if (value == "get_refresh_token") return TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新;
+        else if (value == "check" || value == "CHECK") return TweetProcTypes.ポスト監視;
+        else if (value == "checkrep" || value == "CHECKREP") return TweetProcTypes.リプ監視;
+        else if (value == "monomane" || value == "MONOMANE") return TweetProcTypes.モノマネ;
+        else if (value == "check_refresh") return TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新;
 
         return TweetProcTypes.NONE;
     }

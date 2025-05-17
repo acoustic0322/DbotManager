@@ -34,8 +34,10 @@
             this.checkBoxUser = new System.Windows.Forms.CheckBox();
             this.checkBoxAccount = new System.Windows.Forms.CheckBox();
             this.comboBoxAccount = new System.Windows.Forms.ComboBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.checkBoxモード = new System.Windows.Forms.CheckBox();
+            this.comboBoxモード = new System.Windows.Forms.ComboBox();
+            this.button再表示 = new System.Windows.Forms.Button();
+            this.checkBoxエラー = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).BeginInit();
             this.SuspendLayout();
             // 
@@ -54,13 +56,14 @@
             this.dataGridViewTweetHistory.RowHeadersVisible = false;
             this.dataGridViewTweetHistory.RowTemplate.Height = 21;
             this.dataGridViewTweetHistory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewTweetHistory.Size = new System.Drawing.Size(1059, 591);
+            this.dataGridViewTweetHistory.Size = new System.Drawing.Size(1277, 591);
             this.dataGridViewTweetHistory.TabIndex = 1;
             // 
             // buttonSearch
             // 
+            this.buttonSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonSearch.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.buttonSearch.Location = new System.Drawing.Point(944, 9);
+            this.buttonSearch.Location = new System.Drawing.Point(1162, 14);
             this.buttonSearch.Name = "buttonSearch";
             this.buttonSearch.Size = new System.Drawing.Size(127, 32);
             this.buttonSearch.TabIndex = 2;
@@ -116,35 +119,65 @@
             this.comboBoxAccount.TabIndex = 6;
             this.comboBoxAccount.SelectedIndexChanged += new System.EventHandler(this.comboBoxAccount_SelectedIndexChanged);
             // 
-            // checkBox1
+            // checkBoxモード
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.checkBox1.Location = new System.Drawing.Point(503, 16);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(62, 23);
-            this.checkBox1.TabIndex = 9;
-            this.checkBox1.Text = "モード";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBoxモード.AutoSize = true;
+            this.checkBoxモード.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.checkBoxモード.Location = new System.Drawing.Point(503, 16);
+            this.checkBoxモード.Name = "checkBoxモード";
+            this.checkBoxモード.Size = new System.Drawing.Size(62, 23);
+            this.checkBoxモード.TabIndex = 9;
+            this.checkBoxモード.Text = "モード";
+            this.checkBoxモード.UseVisualStyleBackColor = true;
+            this.checkBoxモード.CheckedChanged += new System.EventHandler(this.checkBoxモード_CheckedChanged);
             // 
-            // comboBox1
+            // comboBoxモード
             // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(593, 14);
-            this.comboBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(151, 27);
-            this.comboBox1.TabIndex = 8;
+            this.comboBoxモード.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxモード.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.comboBoxモード.FormattingEnabled = true;
+            this.comboBoxモード.Location = new System.Drawing.Point(572, 14);
+            this.comboBoxモード.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.comboBoxモード.Name = "comboBoxモード";
+            this.comboBoxモード.Size = new System.Drawing.Size(151, 27);
+            this.comboBoxモード.TabIndex = 8;
+            this.comboBoxモード.SelectedIndexChanged += new System.EventHandler(this.comboBoxモード_SelectedIndexChanged);
+            // 
+            // button絞込
+            // 
+            this.button再表示.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button再表示.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.button再表示.Location = new System.Drawing.Point(1029, 14);
+            this.button再表示.Name = "button絞込";
+            this.button再表示.Size = new System.Drawing.Size(127, 32);
+            this.button再表示.TabIndex = 10;
+            this.button再表示.Text = "再表示";
+            this.button再表示.UseVisualStyleBackColor = true;
+            this.button再表示.Click += new System.EventHandler(this.button絞込_Click);
+            // 
+            // checkBoxエラー
+            // 
+            this.checkBoxエラー.AutoSize = true;
+            this.checkBoxエラー.Checked = true;
+            this.checkBoxエラー.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxエラー.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.checkBoxエラー.Location = new System.Drawing.Point(744, 16);
+            this.checkBoxエラー.Name = "checkBoxエラー";
+            this.checkBoxエラー.Size = new System.Drawing.Size(116, 23);
+            this.checkBoxエラー.TabIndex = 11;
+            this.checkBoxエラー.Text = "エラーのみ表示";
+            this.checkBoxエラー.UseVisualStyleBackColor = true;
+            this.checkBoxエラー.CheckedChanged += new System.EventHandler(this.checkBoxエラー_CheckedChanged);
             // 
             // HistoryDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1083, 659);
-            this.Controls.Add(this.checkBox1);
-            this.Controls.Add(this.comboBox1);
+            this.ClientSize = new System.Drawing.Size(1301, 659);
+            this.Controls.Add(this.checkBoxエラー);
+            this.Controls.Add(this.button再表示);
+            this.Controls.Add(this.checkBoxモード);
+            this.Controls.Add(this.comboBoxモード);
             this.Controls.Add(this.checkBoxAccount);
             this.Controls.Add(this.comboBoxAccount);
             this.Controls.Add(this.checkBoxUser);
@@ -168,7 +201,9 @@
         private System.Windows.Forms.CheckBox checkBoxUser;
         private System.Windows.Forms.CheckBox checkBoxAccount;
         private System.Windows.Forms.ComboBox comboBoxAccount;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.CheckBox checkBoxモード;
+        private System.Windows.Forms.ComboBox comboBoxモード;
+        private System.Windows.Forms.Button button再表示;
+        private System.Windows.Forms.CheckBox checkBoxエラー;
     }
 }

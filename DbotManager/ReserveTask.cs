@@ -360,7 +360,7 @@ namespace DbotManager
 
                 TweetTask task = new TweetTask(dbConnectin, logAction);
                 var result = task.TweetProc(new TweetCommand() { 
-                    TweetProcType = TweetProcTypes.POST,
+                    TweetProcType = TweetProcTypes.ポスト,
                     AccountId = (int)reserveSchedule.AccountId,
                     CommentId = (int)reserveSchedule.CommentId ,
                     MediaId = reserveSchedule.MediaId,

@@ -208,7 +208,7 @@ namespace DbotManager
 
             _tweetTask.TweetProc(
                 new TweetCommand() { 
-                    TweetProcType = radioButtonポスト.Checked ? TweetProcTypes.POST : TweetProcTypes.REPLY ,
+                    TweetProcType = radioButtonポスト.Checked ? TweetProcTypes.ポスト : TweetProcTypes.リプライ ,
                     UserId = userId, 
                     AccountId = accountId,
                     CommentId=commentId,

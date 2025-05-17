@@ -20,21 +20,21 @@ namespace DbotManager
 {
     public enum TweetProcTypes
     {
-        LIKE,
-        BOOKMARK,
-        REPOST,
-        POST,
-        REPLY,
-        GET_ACCESSTOKEN,
-        GET_REFRESHTOKEN,
-        MONOMANE,
+        いいね,
+        ブックマーク,
+        リポスト,
+        ポスト,
+        リプライ,
+        ｱｸｾｽﾄｰｸﾝ取得,
+        ﾘﾌﾚｯｼｭﾄｰｸﾝ更新,
+        モノマネ,
         NONE,
-        CHECK,
-        CHECKREP,
-        CHECKAIREP,
-        JAP_LIKE,
-        FOLLOW,
-        UNFOLLOW
+        ポスト監視,
+        リプ監視,
+        AIリプ監視,
+        JAPいいね,
+        フォロー追加,
+        フォロー解除
     }
 
     public enum CheckAccountModes
@@ -166,7 +166,7 @@ namespace DbotManager
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result && x.Mode != TweetProcTypes.GET_ACCESSTOKEN && x.Mode != TweetProcTypes.GET_REFRESHTOKEN).ToList();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result && x.Mode != TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得 && x.Mode != TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新).ToList();
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
             List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
@@ -179,19 +179,19 @@ namespace DbotManager
 
             // 「いいね」リスト抽出
             {
-                List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.LIKE, ユーザー権限無視);
+                List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.いいね, ユーザー権限無視);
                 LikeAccountList = likeList.OrderBy(_ => Guid.NewGuid()).Take(いいね件数).ToList();
             }
 
             // 「ブックマーク」リスト抽出
             {
                 // 「いいね」許可したアカウントからブックマークリスト作成
-                List<AccountMaster> list1 = FilterAccountList(userMasterList, LikeAccountList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK, ユーザー権限無視);
+                List<AccountMaster> list1 = FilterAccountList(userMasterList, LikeAccountList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.ブックマーク, ユーザー権限無視);
                 var bookmarkList1 = list1.OrderBy(_ => Guid.NewGuid()).Take(ブックマーク件数).ToList();
 
                 // 「ブックマーク」で追加済を除外したアカウントリスト
                 List<AccountMaster> filteredList = accountMasterList.Except(bookmarkList1).ToList();
-                List<AccountMaster> list2 = FilterAccountList(userMasterList, filteredList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.BOOKMARK, ユーザー権限無視);
+                List<AccountMaster> list2 = FilterAccountList(userMasterList, filteredList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.ブックマーク, ユーザー権限無視);
                 var 残り件数 = ブックマーク件数 - bookmarkList1.Count;
                 var bookmarkList2 = list2.OrderBy(_ => Guid.NewGuid()).Take(残り件数).ToList();
 
@@ -200,8 +200,8 @@ namespace DbotManager
                 BookmarkAccountList.AddRange(bookmarkList2);
             }
 
-            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPLY, ユーザー権限無視, ReplyToRep);
-            List<AccountMaster> repostList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.REPOST, ユーザー権限無視);
+            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.リプライ, ユーザー権限無視, ReplyToRep);
+            List<AccountMaster> repostList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.リポスト, ユーザー権限無視);
 
             var selectedItems = SelectBalancedItems(LikeAccountList, replyList, BookmarkAccountList, repostList, いいね件数, リプライ件数, ブックマーク件数, リポスト件数);
 
@@ -214,7 +214,7 @@ namespace DbotManager
         {
             TweetProc(
                 new TweetCommand() {
-                    TweetProcType = TweetProcTypes.JAP_LIKE, 
+                    TweetProcType = TweetProcTypes.JAPいいね, 
                     AccountId = 1, 
                     TweetId = tweet_id,
                     TweetName = tweet_name,
@@ -302,28 +302,28 @@ namespace DbotManager
                     if (i < likeList.Count)
                     {
                         var likeItem = likeList[i];
-                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.LIKE, UserId = likeItem.UserId, AccountId = likeItem.Id, TweetId = TargetTweetID });
+                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.いいね, UserId = likeItem.UserId, AccountId = likeItem.Id, TweetId = TargetTweetID });
                     }
 
                     // REPLY処理
                     if (i < replyList.Count)
                     {
                         var replyItem = replyList[i];
-                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, UserId = replyItem.UserId, AccountId = replyItem.Id, CommentId = replyItem.CommentId, TweetId = TargetTweetID });
+                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, UserId = replyItem.UserId, AccountId = replyItem.Id, CommentId = replyItem.CommentId, TweetId = TargetTweetID });
                     }
 
                     // BOOKMARK処理
                     if (i < bookmarkList.Count)
                     {
                         var bookmarkItem = bookmarkList[i];
-                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.BOOKMARK, UserId = bookmarkItem.UserId, AccountId = bookmarkItem.Id, TweetId = TargetTweetID });
+                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.ブックマーク, UserId = bookmarkItem.UserId, AccountId = bookmarkItem.Id, TweetId = TargetTweetID });
                     }
 
                     // REPOST処理
                     if (i < repostList.Count)
                     {
                         var replyItem = repostList[i];
-                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPOST, UserId = replyItem.UserId, AccountId = replyItem.Id, TweetId = TargetTweetID });
+                        TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リポスト, UserId = replyItem.UserId, AccountId = replyItem.Id, TweetId = TargetTweetID });
                     }
                 }
 
@@ -350,7 +350,7 @@ namespace DbotManager
             foreach(var account in accountList)
             {
                 TweetProc(new TweetCommand() { 
-                    TweetProcType = (followFlag ? TweetProcTypes.FOLLOW : TweetProcTypes.UNFOLLOW),  
+                    TweetProcType = (followFlag ? TweetProcTypes.フォロー追加 : TweetProcTypes.フォロー解除),  
                     AccountId = account.Id,  
                     TweetName = tweetProcessList.TargetAccountName });
             }
@@ -506,16 +506,16 @@ namespace DbotManager
                 var userMasterRow = userMasterList.Where(x => x.Id == account.UserId).FirstOrDefault();
 
                 if (userMasterRow.Enable == false) continue;
-                if (tweetProcType == TweetProcTypes.LIKE && !userMasterRow.LikeEnable && !ユーザー権限無視) continue;
-                else if (tweetProcType == TweetProcTypes.BOOKMARK && !userMasterRow.BookmarkEnable && !ユーザー権限無視) continue;
-                else if (tweetProcType == TweetProcTypes.REPOST && !userMasterRow.RepostEnable) continue;   // リポストユーザー権限がないものはスルー(2025.03.02 zoom)
-                else if (tweetProcType == TweetProcTypes.REPLY && !userMasterRow.ReplyEnable && !ユーザー権限無視) continue;    // リプライユーザー権限がないものでも無視する場合は強制(2025.03.02 zoom)
+                if (tweetProcType == TweetProcTypes.いいね && !userMasterRow.LikeEnable && !ユーザー権限無視) continue;
+                else if (tweetProcType == TweetProcTypes.ブックマーク && !userMasterRow.BookmarkEnable && !ユーザー権限無視) continue;
+                else if (tweetProcType == TweetProcTypes.リポスト && !userMasterRow.RepostEnable) continue;   // リポストユーザー権限がないものはスルー(2025.03.02 zoom)
+                else if (tweetProcType == TweetProcTypes.リプライ && !userMasterRow.ReplyEnable && !ユーザー権限無視) continue;    // リプライユーザー権限がないものでも無視する場合は強制(2025.03.02 zoom)
 
                 // 処理無効アカウントはスルー
-                if (tweetProcType == TweetProcTypes.LIKE && !account.LikeEnable && !ユーザー権限無視) continue;
-                else if (tweetProcType == TweetProcTypes.BOOKMARK && !account.BookMarkEnable && !ユーザー権限無視) continue;
-                else if (tweetProcType == TweetProcTypes.REPOST && !account.RepostEnable) continue;
-                else if (tweetProcType == TweetProcTypes.REPLY && !account.ReplyEnable) continue;
+                if (tweetProcType == TweetProcTypes.いいね && !account.LikeEnable && !ユーザー権限無視) continue;
+                else if (tweetProcType == TweetProcTypes.ブックマーク && !account.BookMarkEnable && !ユーザー権限無視) continue;
+                else if (tweetProcType == TweetProcTypes.リポスト && !account.RepostEnable) continue;
+                else if (tweetProcType == TweetProcTypes.リプライ && !account.ReplyEnable) continue;
 
                 var myHistory = tweetHistoryList.Where(x => x.AccountId == account.Id && x.Result == true).ToList();
 
@@ -539,19 +539,19 @@ namespace DbotManager
                     // 無料アカウントは制限時間内の取引を中止
                     if (制限時間以内に履歴ありの無料アカウントを排除)
                     {
-                        if (tweetProcType == TweetProcTypes.LIKE)
+                        if (tweetProcType == TweetProcTypes.いいね)
                         {
                             // 無料アカウント or 有料アカウントの無料いいね
                             if (!account.Paid || !account.PaidLike)
                             {
-                                var lastHistory = lastMyHistoryList.Where(x => x.Mode == TweetProcTypes.LIKE).ToList();
+                                var lastHistory = lastMyHistoryList.Where(x => x.Mode == TweetProcTypes.いいね).ToList();
                                 if (lastHistory.Count > 0)
                                 {
                                     if ((dateNow - (DateTime)lastHistory.FirstOrDefault().UpdateTime).TotalDays < 1) continue;
                                 }
                             }
                         }
-                        else if (tweetProcType == TweetProcTypes.BOOKMARK || tweetProcType == TweetProcTypes.REPOST || tweetProcType == TweetProcTypes.REPLY)
+                        else if (tweetProcType == TweetProcTypes.ブックマーク || tweetProcType == TweetProcTypes.リポスト || tweetProcType == TweetProcTypes.リプライ)
                         {
                             // 無料アカウント or 有料アカウントの無料ブックマーク
                             if (!account.Paid || !account.PaidBookmark)
@@ -567,7 +567,7 @@ namespace DbotManager
 
                 }
 
-                if (tweetProcType == TweetProcTypes.REPLY)
+                if (tweetProcType == TweetProcTypes.リプライ)
                 {
                     var commentMasterListWk = commentMasterList.Where(x => x.AccountId == account.Id && x.TweetModeType == (repToRep ? TweetModeTypes.ReplyToReply : TweetModeTypes.Replay)).ToList();
 
@@ -691,7 +691,7 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Mode == TweetProcTypes.CHECK).ToList();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Mode == TweetProcTypes.ポスト監視).ToList();
 
             foreach (var row in accountMasterList.Where(x => x.SearchEnable == true))
             {
@@ -825,7 +825,7 @@ namespace DbotManager
                 if (searchHistoryRow == null) continue;
 
                 var tweetResult = TweetProc(new TweetCommand() { 
-                    TweetProcType = item.CheckAiRepMode ? TweetProcTypes.CHECKAIREP : TweetProcTypes.CHECK, 
+                    TweetProcType = item.CheckAiRepMode ? TweetProcTypes.AIリプ監視 : TweetProcTypes.ポスト監視, 
                     SearchId = item.Id,
                     AccountId = searchHistoryRow.AccountId,
                     AccountId2 = item.ReplyAccountId
@@ -878,7 +878,7 @@ namespace DbotManager
             var commentItem = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList());
             if (commentItem == null) return;
             var commentId = commentItem.Id;
-            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents1 });
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, AccountId = accountId, CommentId = commentId, TweetId = result.contents1 });
         }
 
         public void TweetProcReplyToReply(SearchList searchList, TweetResult result)
@@ -892,7 +892,7 @@ namespace DbotManager
             if (commentItem == null) return;
             var commentId = commentItem.Id;
 
-            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.REPLY, AccountId = accountId, CommentId = commentId, TweetId = result.contents2 });
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, AccountId = accountId, CommentId = commentId, TweetId = result.contents2 });
         }
 
         private string GetNameList(List<AccountMaster> accountMasterList, List<int> list)
@@ -912,49 +912,49 @@ namespace DbotManager
         {
             switch (type)
             {
-                case TweetProcTypes.LIKE:
+                case TweetProcTypes.いいね:
                     return "like";
                     break;
-                case TweetProcTypes.JAP_LIKE:
+                case TweetProcTypes.JAPいいね:
                     return "jap_like";
                     break;
-                case TweetProcTypes.REPLY:
+                case TweetProcTypes.リプライ:
                     return "reply";
                     break;
-                case TweetProcTypes.BOOKMARK:
+                case TweetProcTypes.ブックマーク:
                     return "bookmark";
                     break;
-                case TweetProcTypes.REPOST:
+                case TweetProcTypes.リポスト:
                     return "repost";
                     break;
-                case TweetProcTypes.POST:
+                case TweetProcTypes.ポスト:
                     return "post";
                     break;
-                case TweetProcTypes.GET_ACCESSTOKEN:
+                case TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得:
                     return "get_access_token";
                     break;
-                case TweetProcTypes.GET_REFRESHTOKEN:
+                case TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新:
                     return "get_refresh_token";
                     break;
-                case TweetProcTypes.MONOMANE:
+                case TweetProcTypes.モノマネ:
                     return "monomane";
                     break;
-                case TweetProcTypes.CHECK:
+                case TweetProcTypes.ポスト監視:
                     return "check";
                     break;
-                case TweetProcTypes.CHECKREP:
+                case TweetProcTypes.リプ監視:
                     return "checkrep";
                     break;
 
-                case TweetProcTypes.CHECKAIREP:
+                case TweetProcTypes.AIリプ監視:
                     return "checkairep";
                     break;
 
-                case TweetProcTypes.FOLLOW:
+                case TweetProcTypes.フォロー追加:
                     return "follow";
                     break;
 
-                case TweetProcTypes.UNFOLLOW:
+                case TweetProcTypes.フォロー解除:
                     return "unfollow";
                     break;
             }
@@ -971,7 +971,7 @@ namespace DbotManager
 
             switch (tweetCommand.TweetProcType)
             {
-                case TweetProcTypes.POST:
+                case TweetProcTypes.ポスト:
 
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} ai_enable={tweetCommand.AiEnable}";
 
@@ -982,30 +982,30 @@ namespace DbotManager
 
                     break;
 
-                case TweetProcTypes.LIKE:
-                case TweetProcTypes.BOOKMARK:
-                case TweetProcTypes.REPOST:
+                case TweetProcTypes.いいね:
+                case TweetProcTypes.ブックマーク:
+                case TweetProcTypes.リポスト:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId}";
                     break;
 
-                case TweetProcTypes.JAP_LIKE:
+                case TweetProcTypes.JAPいいね:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity}";
                     break;
 
-                case TweetProcTypes.REPLY:
+                case TweetProcTypes.リプライ:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} tweet_id={tweetCommand.TweetId}";
                     break;
 
-                case TweetProcTypes.GET_ACCESSTOKEN:
+                case TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId}";
                     break;
-                case TweetProcTypes.GET_REFRESHTOKEN:
+                case TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId}";
                     break;
 
-                case TweetProcTypes.CHECK:
-                case TweetProcTypes.CHECKREP:
-                case TweetProcTypes.MONOMANE:
+                case TweetProcTypes.ポスト監視:
+                case TweetProcTypes.リプ監視:
+                case TweetProcTypes.モノマネ:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} search_id={tweetCommand.SearchId}";
 //                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_account_name={tweetCommand.CheckAccountName.Replace("@","")} check_list_id={tweetCommand.SearchId}";
                     /*
@@ -1018,12 +1018,12 @@ namespace DbotManager
                     //                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_list_id={tweetCommand.CheckListId}";
                     break;
 
-                case TweetProcTypes.CHECKAIREP:
+                case TweetProcTypes.AIリプ監視:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} account_id2={tweetCommand.AccountId2}";
                     break;
 
-                case TweetProcTypes.FOLLOW:
-                case TweetProcTypes.UNFOLLOW:
+                case TweetProcTypes.フォロー追加:
+                case TweetProcTypes.フォロー解除:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_name={tweetCommand.TweetName}";
                     break;
 
@@ -1141,19 +1141,19 @@ namespace DbotManager
 
             switch (tweetProcType)
             {
-                case TweetProcTypes.POST:
+                case TweetProcTypes.ポスト:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} comment_id={commentId}";
                     break;
-                case TweetProcTypes.LIKE:
+                case TweetProcTypes.いいね:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
-                case TweetProcTypes.BOOKMARK:
+                case TweetProcTypes.ブックマーク:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId} tweet_id={tweetId}";
                     break;
-                case TweetProcTypes.GET_ACCESSTOKEN:
+                case TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId}";
                     break;
-                case TweetProcTypes.GET_REFRESHTOKEN:
+                case TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新:
                     pythonScriptPath += $" mode={GetTweetMode(tweetProcType)} account_id={accountId}";
                     break;
             }
