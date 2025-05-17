@@ -147,8 +147,8 @@ namespace DbotManager
                     アカウント名 = $"{x.AccountName}",
                     モード = x.Mode,// GetModeName(x.Mode),
                     結果 = x.Result ? "" : "×",
-                    ポスト内容 = x.Comment,
                     LOG = x.ErrorLog,
+                    ポスト内容 = x.Comment,
                 }).ToList();
 
 
@@ -163,6 +163,9 @@ namespace DbotManager
                 dataGridViewTweetHistory.Columns["結果"].Width = 50;
                 dataGridViewTweetHistory.Columns["ポスト内容"].Width = 200;
                 dataGridViewTweetHistory.Columns["LOG"].Width = 250;
+
+                dataGridViewTweetHistory.AllowUserToResizeColumns = true;
+                dataGridViewTweetHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             }
             else
             {
