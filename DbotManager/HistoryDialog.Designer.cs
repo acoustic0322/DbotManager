@@ -55,7 +55,7 @@
             this.dataGridViewTweetHistory.Name = "dataGridViewTweetHistory";
             this.dataGridViewTweetHistory.RowHeadersVisible = false;
             this.dataGridViewTweetHistory.RowTemplate.Height = 21;
-            this.dataGridViewTweetHistory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridViewTweetHistory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridViewTweetHistory.Size = new System.Drawing.Size(1277, 591);
             this.dataGridViewTweetHistory.TabIndex = 1;
             // 
@@ -143,12 +143,12 @@
             this.comboBoxモード.TabIndex = 8;
             this.comboBoxモード.SelectedIndexChanged += new System.EventHandler(this.comboBoxモード_SelectedIndexChanged);
             // 
-            // button絞込
+            // button再表示
             // 
             this.button再表示.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button再表示.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
             this.button再表示.Location = new System.Drawing.Point(1029, 14);
-            this.button再表示.Name = "button絞込";
+            this.button再表示.Name = "button再表示";
             this.button再表示.Size = new System.Drawing.Size(127, 32);
             this.button再表示.TabIndex = 10;
             this.button再表示.Text = "再表示";
