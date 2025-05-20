@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace DbotManager
 {
@@ -31,6 +32,8 @@ namespace DbotManager
         private void HistoryDialog_Load(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Maximized;
+
+            dateTimePicker1.Value = DateTime.Today.AddDays(-1);
 
             UpdateControl_Master();
 
@@ -120,7 +123,12 @@ namespace DbotManager
 
         private void Search()
         {
-            _tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.UpdateTime >= DateTime.Today.AddDays(-1)).ToList();
+            DateTime selectedDate = dateTimePicker1.Value.Date;
+            DateTime today = DateTime.Today;
+            TimeSpan diff = selectedDate - today;
+            int days = diff.Days;
+
+            _tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.UpdateTime >= DateTime.Today.AddDays(days)).ToList();
         }
 
 
@@ -232,6 +240,12 @@ namespace DbotManager
         {
             if (_isLoading) return;
             button再表示.BackColor = Color.Red;
+        }
+
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            buttonSearch.BackColor = Color.Red;
         }
     }
 }

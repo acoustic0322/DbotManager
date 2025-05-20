@@ -120,6 +120,8 @@ public class MySqlDataAccess
         else if (value == "check" || value == "CHECK") return TweetProcTypes.ポスト監視;
         else if (value == "checkrep" || value == "CHECKREP") return TweetProcTypes.リプ監視;
         else if (value == "monomane" || value == "MONOMANE") return TweetProcTypes.モノマネ;
+        else if (value == "follow") return TweetProcTypes.フォロー追加;
+        else if (value == "unfollow") return TweetProcTypes.フォロー解除;
         else if (value == "check_refresh") return TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新;
 
         return TweetProcTypes.NONE;

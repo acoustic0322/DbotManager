@@ -38,6 +38,8 @@
             this.comboBoxモード = new System.Windows.Forms.ComboBox();
             this.button再表示 = new System.Windows.Forms.Button();
             this.checkBoxエラー = new System.Windows.Forms.CheckBox();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).BeginInit();
             this.SuspendLayout();
             // 
@@ -56,14 +58,14 @@
             this.dataGridViewTweetHistory.RowHeadersVisible = false;
             this.dataGridViewTweetHistory.RowTemplate.Height = 21;
             this.dataGridViewTweetHistory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.dataGridViewTweetHistory.Size = new System.Drawing.Size(1277, 591);
+            this.dataGridViewTweetHistory.Size = new System.Drawing.Size(1702, 591);
             this.dataGridViewTweetHistory.TabIndex = 1;
             // 
             // buttonSearch
             // 
             this.buttonSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonSearch.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.buttonSearch.Location = new System.Drawing.Point(1162, 14);
+            this.buttonSearch.Location = new System.Drawing.Point(1401, 14);
             this.buttonSearch.Name = "buttonSearch";
             this.buttonSearch.Size = new System.Drawing.Size(127, 32);
             this.buttonSearch.TabIndex = 2;
@@ -147,7 +149,7 @@
             // 
             this.button再表示.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button再表示.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.button再表示.Location = new System.Drawing.Point(1029, 14);
+            this.button再表示.Location = new System.Drawing.Point(1268, 14);
             this.button再表示.Name = "button再表示";
             this.button再表示.Size = new System.Drawing.Size(127, 32);
             this.button再表示.TabIndex = 10;
@@ -169,11 +171,34 @@
             this.checkBoxエラー.UseVisualStyleBackColor = true;
             this.checkBoxエラー.CheckedChanged += new System.EventHandler(this.checkBoxエラー_CheckedChanged);
             // 
+            // dateTimePicker1
+            // 
+            this.dateTimePicker1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.dateTimePicker1.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.dateTimePicker1.Location = new System.Drawing.Point(1534, 15);
+            this.dateTimePicker1.Name = "dateTimePicker1";
+            this.dateTimePicker1.Size = new System.Drawing.Size(153, 27);
+            this.dateTimePicker1.TabIndex = 12;
+            this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
+            // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.label1.Location = new System.Drawing.Point(1693, 17);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(24, 19);
+            this.label1.TabIndex = 13;
+            this.label1.Text = "～";
+            // 
             // HistoryDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1301, 659);
+            this.ClientSize = new System.Drawing.Size(1726, 659);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.checkBoxエラー);
             this.Controls.Add(this.button再表示);
             this.Controls.Add(this.checkBoxモード);
@@ -205,5 +230,7 @@
         private System.Windows.Forms.ComboBox comboBoxモード;
         private System.Windows.Forms.Button button再表示;
         private System.Windows.Forms.CheckBox checkBoxエラー;
+        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.Label label1;
     }
 }
