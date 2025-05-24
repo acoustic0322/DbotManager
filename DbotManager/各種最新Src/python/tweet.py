@@ -27,6 +27,7 @@ from jap_api import proc_like_jap
 
 from twitter_api_v2 import proc_following_v2
 from twitter_api_v2 import proc_unfollowing_v2
+from twitter_api_v2 import proc_following_v1
 
 from mysql import get_account_master
 from mysql import get_check_account_list
@@ -135,6 +136,7 @@ if credentials:
     elif mode == "bookmark":
         result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
     elif mode == "follow":
+#        result1 , contents1 = proc_following_v1(credentials, tweet_name)
         result1 , contents1 = proc_following_v2(credentials, tweet_name)
     elif mode == "unfollow":
         result1 , contents1 = proc_unfollowing_v2(credentials, tweet_name)
@@ -162,7 +164,6 @@ if credentials:
 
     elif mode == "checkairep":
         result1 , contents1 = check_replies(credentials , get_account_master(account_id2))
-
     else:
         # エラーメッセージを標準エラーに出力
         outputLog(f"サポートされていないmode: {mode}")

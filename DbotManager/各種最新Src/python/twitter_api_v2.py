@@ -99,7 +99,8 @@ def get_user_id(credentials , username):
             "http": credentials['proxy_url'],
             "https": credentials['proxy_url']
         }
-        response = requests.get(url, headers=headers ,proxies=proxies)
+#        response = requests.get(url, headers=headers ,proxies=proxies)
+        response = requests.get(url, headers=headers)
     else:
         outputLog(f"proxy_url None")
         response = requests.get(url, headers=headers)
@@ -110,10 +111,10 @@ def get_user_id(credentials , username):
         user_data = response.json()
         user_id = user_data["data"]["id"]
         outputLog(f"get_user_id {username}のユーザーID: {user_id}")
-        return user_id
+        return user_id , True , None
     else:
         outputLog(f"get_user_idエラー: {response.status_code}, {response.text}")
-        return None
+        return None , False , response.text
 
 def check_access_token(credentials):
 
@@ -400,7 +401,11 @@ def proc_like_v2(credentials, tweet_id):
     :param tweet_id: いいねする対象のツイートID
     """
     access_token = credentials['bearer_token']
-    user_id = get_user_id(credentials ,  credentials['login_id'])
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
+    if result == False:
+        return False , contents        
+
+    outputLog(f"user_id={user_id}")
 
     # 「いいね」エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/likes"
@@ -425,6 +430,9 @@ def proc_like_v2(credentials, tweet_id):
             "http": credentials['proxy_url'],
             "https": credentials['proxy_url']
         }
+
+        # 2025.05.16  一旦プロキシ無効
+#        response = requests.post(url, headers=headers, json=data)
         response = requests.post(url, headers=headers, json=data, proxies=proxies)
     else:
         response = requests.post(url, headers=headers, json=data)
@@ -493,7 +501,10 @@ def proc_bookmark_v2(credentials, tweet_id):
 
     access_token = credentials['bearer_token']
 
-    user_id = get_user_id(credentials  ,  credentials['login_id'])
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
+    if result == False:
+        return False , contents        
+
 
     # ブックマーク用エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
@@ -587,7 +598,9 @@ def proc_repost_v2(credentials, tweet_id):
     """
     access_token = credentials['bearer_token']
 
-    user_id = get_user_id(credentials ,  credentials['login_id'])
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
+    if result == False:
+        return False , contents        
 
     # エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/retweets"
@@ -1075,7 +1088,10 @@ def check_replies(search_account , reply_account):
     user_id = reply_account['twitter_user_id']
 
     if user_id is None or user_id == "":
-        user_id = get_user_id(reply_account ,  reply_account['login_id'])
+        user_id , result , contents = get_user_id(reply_account ,  reply_account['login_id'])
+        if result == False:
+            return False , contents        
+
         outputLog(f"user_id={user_id}")
         update_account_master_by_twitter_user_id(reply_account['id'] , user_id)
 
@@ -1169,8 +1185,10 @@ def proc_following_v2(credentials, target_user):
 
     """
     access_token = credentials['bearer_token']
-    user_id = get_user_id(credentials ,  credentials['login_id'])
-    target_user_id = get_user_id(credentials , target_user)
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
+    if result == False:
+        return False , contents    
+    target_user_id , result , contents = get_user_id(credentials , target_user)
 
     # フォローエンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/following"
@@ -1188,6 +1206,8 @@ def proc_following_v2(credentials, target_user):
 
     outputLog(f"client_id={credentials['client_id']}")
     outputLog(f"access_token={access_token}")
+    outputLog(f"user_id={user_id}")
+    outputLog(f"target_user_id={target_user_id}")
 
     # POSTリクエストを送信
     if False:
@@ -1209,14 +1229,50 @@ def proc_following_v2(credentials, target_user):
 
     return response.status_code == 200, response_str
 
+def proc_following_v1(credentials, target_user):
+    """
+    指定されたユーザーをフォローする関数。
+
+    """
+
+    CONSUMER_KEY = credentials['api_key']
+    CONSUMER_SECRET = credentials['api_key_secret']
+    ACCESS_TOKEN = credentials['access_token']
+    ACCESS_SECRET = credentials['access_token_secret']
+
+    import tweepy
+
+    #twitter認証
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
+    api = tweepy.API(auth)
+
+    target_user_id , result , contents = get_user_id(credentials , target_user)
+
+    try:
+#        api.create_favorite(user_key) #いいね
+        api.create_friendship(user_id=target_user_id) #フォロー
+    except Exception as e:
+        # すでに「いいね」、フォロー済みだとこれが出力。
+        print('　【失敗】' + str(e))
+
+#    response_str = json.dumps(response.json())  # json.dumps を使用
+#    return response.status_code == 200, response_str
+
 def proc_unfollowing_v2(credentials, target_user):
     """
     指定されたユーザーをアンフォローする関数。
     """
 
     access_token = credentials['bearer_token']
-    user_id = get_user_id(credentials ,  credentials['login_id'])
-    target_user_id = get_user_id(credentials , target_user)
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
+    if result == False:
+        return False , contents
+
+    target_user_id , result , contents = get_user_id(credentials , target_user)
+    if result == False:
+        return False , contents        
+
 
     # フォロー解除エンドポイント
     url = f"https://api.twitter.com/2/users/{user_id}/following/{target_user_id}"

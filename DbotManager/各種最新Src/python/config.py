@@ -6,7 +6,7 @@ import pytz
 import inspect
 
 import pytz
-from dateutil import parser  # dateutilを使用
+#from dateutil import parser  # dateutilを使用
 
 def convert_tweet_datetime(iso_format_date):
 
