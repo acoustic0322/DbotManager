@@ -4,7 +4,6 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-
 // データベース接続情報を取得
 $servername = $config['servername'];
 $username = $config['username'];
@@ -19,8 +18,23 @@ $error = "";
 
 // ログイン処理
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+
+    /*
+    if (isset($_POST['guest'])) {
+        $_SESSION['user_id'] = 'guest';
+        $_SESSION['is_guest'] = true;
+        $_SESSION['user_id'] = 1;
+        $_SESSION['is_logged_in'] = false;
+        header("Location: menu.php");
+        exit;
+    }
+        */
+
+	$_SESSION['is_guest'] = false;
+  $_SESSION['is_logged_in'] = true;
+
+  $username = $_POST['username'] ?? '';
+  $password = $_POST['password'] ?? '';
 
     // 接続チェック
     if ($conn->connect_error) {
@@ -35,45 +49,105 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   $stmt->bind_result($stored_hashed_password, $user_id);
   $stmt->fetch();
 
-    if ($stmt->num_rows > 0) {
-        // ユーザーが存在する場合
-//        if (password_verify($password, $stored_hashed_password)) {
-        if ($password == $stored_hashed_password) {
-            // 認証成功: セッションにユーザー名を保存し、ユーザー設定画面へリダイレクト
-            $_SESSION['user_id'] = $user_id;
-            header("Location: menu.php"); // user_settings.php 画面に遷移
-            exit;
-        } else {
-            // パスワードが一致しない場合
-            $error = "パスワードが間違っています。";
-        }
+  if ($stmt->num_rows > 0) {
+    if ($password == $stored_hashed_password) {
+      // 認証成功: セッションにユーザー名を保存し、ユーザー設定画面へリダイレクト
+      $_SESSION['user_id'] = $user_id;
+      header("Location: menu.php"); // user_settings.php 画面に遷移
+      exit;
     } else {
-        // ユーザーが存在しない場合
-        $error = "ユーザーが存在しません。";
+      // パスワードが一致しない場合
+      $error = "パスワードが間違っています。";
     }
+  } else {
+    // ユーザーが存在しない場合
+    $error = "ユーザーが存在しません。";
+  }
 
-    $stmt->close();
-    $conn->close();
+  $stmt->close();
+  $conn->close();
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>ログイン</title>
-</head>
-<body>
-    <h2>ログイン</h2>
-    <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
-    <form method="POST">
-        <label for="username">ユーザー名:</label>
-        <input type="text" name="username" required>
-        <br>
-        <label for="password">パスワード:</label>
-        <input type="password" name="password" required>
-        <br>
-        <button type="submit">ログイン</button>
-    </form>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ログイン - X-DBOT</title>   
+    <link rel="stylesheet" href="css/top-login.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="noise-overlay"></div>
+
+    <a href="index.html" class="back-link">ホームに戻る</a>
+
+    <div class="login-container">
+      <div class="login-box fade-in">
+        <div class="login-header">
+          <h1>X-DBOT<span class="gold-dot">.</span></h1>
+          <p>アカウントにログイン</p>
+        </div>
+
+        <form action="#" method="POST">
+          <div class="form-group">
+            <label for="email">ユーザーID</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">パスワード</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn-login">ログイン</button>
+
+          <p
+            style="
+              color: #d4af37;
+              font-size: 16px;
+              text-align: center;
+              margin: 20px 0;
+            "
+          >
+          ↓デモのため、こちらで管理画面に遷移
+          </p>
+          <a
+            href="./sidebar.html"
+            class="btn-signup"
+            style="
+              color: #fff;
+              background-color: #007bff;
+              padding: 10px 15px;
+              border-radius: 5px;
+              text-decoration: none;
+            "
+            >ログインページに遷移</a
+          >
+        </form>
+      </div>
+    </div>
+
+    <script src="js/animations.js"></script>
+  </body>
 </html>

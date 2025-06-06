@@ -23,14 +23,20 @@ $action2 = $data['action2'];
 $selectedIds = $data['selected_ids'];
 $form_account_id = $data['form_account_id'];
 
-if ($command == 'comment') 
+//error_log("test");
+//echo $command;
+//alert($action1);
+
+if ($command == 'post' || $command == 'reply'|| $command == 'replytoreply')
 {
+//    alert($action1);
+
     // 処理の分岐
     if ($action1 == 'duplicate') { // 複製処理
        foreach ($selectedIds as $id) {   
             try {
                 $conn = new mysqli($config['servername'], $config['username'], $config['password'], $config['dbname']);
-                $message = duplicateData_comment($conn, $id, $form_account_id);
+                $message = duplicateData_comment($conn, $id, $form_account_id , $command);
                 error_log("Duplicate comment successful for ID: $id");
             } catch (Exception $e) {
                 error_log("Error duplicating data for ID $id: " . $e->getMessage());
@@ -42,7 +48,7 @@ if ($command == 'comment')
         foreach ($selectedIds as $id) {   
             try {
                 $conn = new mysqli($config['servername'], $config['username'], $config['password'], $config['dbname']);
-                $message = deleteData_comment($conn, $id, $form_account_id);
+                $message = deleteData_comment($conn, $id, $command);
                 error_log("Delete comment successful for ID: $id");
             } catch (Exception $e) {
                 error_log("Error delete data for ID $id: " . $e->getMessage());

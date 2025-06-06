@@ -95,55 +95,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Xアカウント編集</title>
-    <link rel="stylesheet" type="text/css" href="./main.css">
-    <style>
-        .registration-form {
-/*            display: flex;*/
-            margin-bottom: 20px;
-        }
-        .registration-form input {
-            width: 100%; /* 幅を調整 */
-            margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
-            padding: 8px;
-            font-size: 16px;
-        }
-        .registration-form button {
-            padding: 8px 12px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .button_form{
-            display: inline-block;
-        }
-
-        .checkbox-group {
-           display: flex;
-            gap: 10px; /* チェックボックス間のスペース */
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center; /* チェックボックスとテキストを縦方向で中央揃え */
-        }        
-    </style>
+    <link rel="stylesheet" href="_lib/style.css">
 
 </head>
 <body>
+<div class="layout">
 
     <?php require PARTS_DIR.'/sidebar.php'; ?>
+  <div class="main">
 
     <!-- コンテンツエリア -->
     <div class="content" id="content">
@@ -199,6 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     </form>
     </div>
+</div>
 
 <style>
     /* テキストボックスの幅を80%に設定 */

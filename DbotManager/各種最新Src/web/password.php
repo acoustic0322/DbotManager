@@ -37,14 +37,15 @@ $password = $current_user['password'];
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>プロフィール設定</title>
-    <link rel="stylesheet" type="text/css" href="./main.css">
+  <meta charset="UTF-8">
+  <title>パスワード変更</title>
+  <link rel="stylesheet" href="./css/admin-dashboard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
-
+<body class="password-page">
+<div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
-
+<div class="main">
     <!-- コンテンツエリア -->
     <div class="content" id="content">
         <form action="?" method="post">
@@ -53,6 +54,7 @@ $password = $current_user['password'];
             
             <button type="submit">変更</button>
         </form>  
+    </div>
     </div>
 </body>
 </html>

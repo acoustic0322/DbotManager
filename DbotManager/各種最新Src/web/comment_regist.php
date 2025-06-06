@@ -194,340 +194,113 @@ $result_replytoreply = $stmt->get_result();
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>コメント一覧</title>
-    <link rel="stylesheet" type="text/css" href="./main.css">
-    <style>
-        .registration-form {
-/*            display: flex;*/
-            margin-bottom: 20px;
-        }
-        .registration-form input {
-            width: 80%; /* 幅を調整 */
-            margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
-            padding: 8px;
-            font-size: 12px;
-        }
-        .registration-form button {
-            padding: 8px 12px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .button_form{
-            display: inline-block;
-        }
-
-        .checkbox-group {
-           display: flex;
-            gap: 10px; /* チェックボックス間のスペース */
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center; /* チェックボックスとテキストを縦方向で中央揃え */
-        }        
-    </style>
+  <meta charset="UTF-8">
+  <title>コメント登録</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
-<body>
-    
-<?php require PARTS_DIR.'/sidebar.php'; ?>
+<body class="comment-regist-page">
+  <div class="layout">
+    <?php require PARTS_DIR.'/sidebar.php'; ?>
+    <div class="main">
+      <h2>新規コメント登録</h2>
+      <form method="POST" action="?">
+        <input type="hidden" name="account_id" value="<?= htmlspecialchars($account_id) ?>">
 
-<div class="content" id="content">
-    <h2>新規コメント登録</h2>
-<!--    <form method="POST" action="?" class="registration-form">  -->
-    <form method="POST" action="?">
-        <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($account_id); ?>">
-        <div class="input-group">
-            <input type="checkbox" name="new_enable" placeholder="有効" checked>有効
+        <p><label><input type="checkbox" name="new_enable" checked>有効</label></p>
+
+        <div class="mode-row">
+          <span>モード:</span>
+          <div class="radio-group">
+            <label><input type="radio" name="new_mode" value="post" checked>ポスト</label>
+            <label><input type="radio" name="new_mode" value="reply">リプライ</label>
+            <label><input type="radio" name="new_mode" value="replytoreply">リプライtoリプライ</label>
+          </div>
         </div>
-        モード
-        <label>
-            <input type="radio" name="new_mode" value="post" checked>
-            ポスト
-        </label>
-        <label>
-            <input type="radio" name="new_mode" value="reply">
-            リプライ
-        </label>
-        <label>
-            <input type="radio" name="new_mode" value="replytoreply">
-            リプライtoリプライ
-        </label><br>
 
-        <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
-
-        動画/画像
-        <label>
-            <input type="radio" name="new_mediatype" value="" checked>
-            なし
-        </label>
-        <label>
-            <input type="radio" name="new_mediatype" value="video">
-            動画
-        </label>
-        <label>
-            <input type="radio" name="new_mediatype" value="photo">
-            画像
-        </label>
+        <?php if (!empty($_SESSION['media_enable'])): ?>
+        <div class="mode-row">
+          <span>メディア:</span>
+          <div class="radio-group">
+            <label><input type="radio" name="new_mediatype" value="" checked>なし</label>
+            <label><input type="radio" name="new_mediatype" value="video">動画</label>
+            <label><input type="radio" name="new_mediatype" value="photo">画像</label>
+          </div>
+        </div>
         <?php endif; ?>
-        <br>
 
+        <p>
+          時間帯:
+          <select name="time_zone_setting">
+            <option value="">なし</option>
+            <option value="time_zone_1">時間帯1</option>
+            <option value="time_zone_2">時間帯2</option>
+            <option value="time_zone_3">時間帯3</option>
+            <option value="time_zone_4">時間帯4</option>
+          </select>
+        </p>
 
-        <!-- 時間帯設定のコンボボックスを追加 -->
-        <div class="input-group">
-            時間帯設定
-            <select name="time_zone_setting">
-                <option value="">なし</option>
-                <option value="time_zone_1">時間帯1</option>
-                <option value="time_zone_2">時間帯2</option>
-                <option value="time_zone_3">時間帯3</option>
-                <option value="time_zone_4">時間帯4</option>
-            </select>
-            ※ポスト設定時のみ有効
-        </div>
-
-        コメント１
-        <div class="input-group">
-            <textarea name="new_comment1" rows="3" cols="100" placeholder="コメント１" required style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント２
-        <div class="input-group">
-            <textarea name="new_comment2" placeholder="コメント２" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント３
-        <div class="input-group">
-            <textarea name="new_comment3" placeholder="コメント３" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント４
-        <div class="input-group">
-            <textarea name="new_comment4" placeholder="コメント４" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント５
-        <div class="input-group">
-            <textarea name="new_comment5" placeholder="コメント５" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント６
-        <div class="input-group">
-            <textarea name="new_comment6" placeholder="コメント６" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント７
-        <div class="input-group">
-            <textarea name="new_comment7" placeholder="コメント７" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント８
-        <div class="input-group">
-            <textarea name="new_comment8" placeholder="コメント８" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント９
-        <div class="input-group">
-            <textarea name="new_comment9" placeholder="コメント９" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-        コメント１０
-        <div class="input-group">
-            <textarea name="new_comment10" placeholder="コメント１０" style="width: 100%; max-width: 600px; padding: 10px; font-size: 16px; height: 70px;"></textarea>
-        </div>
-
-        <!--
-        <div class="input-group">
-            <input type="checkbox" name="new_movie_enable" placeholder="動画">動画
-        </div>
-        <div class="input-group">
-            <input type="checkbox" name="new_photo_enable" placeholder="画像">画像
-        </div>
-        -->
-
-        <!--
-        <div class="input-group">
-            <input type="checkbox" name="new_photo_enable" placeholder="ChatGPT(開発予定)">ChatGPT(開発予定)
-        </div>
-    -->
-
-        <button type="submit">登録</button>
-    </form>
-
-    <h2>ポスト一覧</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>有効</th>
-                <th>コメント</th>
-                <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
-                <th>動画/画像</th>
-                <?php endif; ?>                
-                <th>時間帯</th>
-
-                <!--                <th>ChatGPT</th>-->
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = $result_post->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
-                    <td><?php echo htmlspecialchars($row['comment']); ?></td>
-
-                    <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
-                            <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '動画' : (htmlspecialchars($row['photo_enable']) == 1 ? '画像' : 'なし'); ?></td>
-                    <?php endif; ?>               
-
-                    <!-- 時間帯の表示 -->
-                    <td>
-                        <?php 
-                        switch ($row['reserve_mode']) {
-                            case 1:
-                                echo "時間帯1";
-                                break;
-                            case 2:
-                                echo "時間帯2";
-                                break;
-                            case 3:
-                                echo "時間帯3";
-                                break;
-                            case 4:
-                                echo "時間帯4";
-                                break;
-                            default:
-                                echo "なし";
-                                break;
-                        }
-                        ?>
-                    </td>
-
-                    <!-- 隠し要素 -->                     
-                    <td class="hidden"><?php echo htmlspecialchars($row['chatgpt']) == 1 ? '〇' : '×'; ?></td>
-                    <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
-
-                    <td>
-                        <button onclick="editComment(<?php echo $row['id']; ?>)">編集</button>
-                        <form class="button_form" method="POST" action="?">
-                        <input type="hidden" name="type" value="comment_del">
-                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']) ?>">
-                        <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($account_id); ?>">
-                        <button type="button" onclick="deleteComment(this,<?php echo htmlspecialchars($row['id']) ?>)">削除</button>
-                    </form>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
-
-    <h2>リプライ一覧</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>有効</th>
-                <th>コメント</th>
-                <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
-                <th>動画/画像</th>
-                <?php endif; ?>   
-<!--                <th>ChatGPT</th> -->
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = $result_reply->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
-                    <td><?php echo htmlspecialchars($row['comment']); ?></td>
-
-                    <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                    <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                            <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '動画' : (htmlspecialchars($row['photo_enable']) == 1 ? '画像' : 'なし'); ?></td>
-                    <?php endif; ?>                
-                    <?php endif; ?>                
-
-                    <td class="hidden"><?php echo htmlspecialchars($row['chatgpt']) == 1 ? '〇' : '×'; ?></td>
-                    <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
-
-                    <td>
-                        <button onclick="editComment(<?php echo $row['id']; ?>)">編集</button>
-                        <form class="button_form" method="POST" action="?">
-                        <input type="hidden" name="type" value="comment_del">
-                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']) ?>">
-                        <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($account_id); ?>">
-                        <button type="button" onclick="deleteComment(this,<?php echo htmlspecialchars($row['id']) ?>)">削除</button>
-                    </form>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
-
-    <h2>リプライtoリプライ一覧</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>有効</th>
-                <th>コメント</th>
-                <?php if (isset($_SESSION['movie_enable']) && $_SESSION['movie_enable'] == 1): ?>
-                <?php if (isset($_SESSION['photo_enable']) && $_SESSION['photo_enable'] == 1): ?>
-                <th>動画/画像</th>
-                <?php endif; ?>
-                <?php endif; ?> 
-<!--                <th>ChatGPT</th> -->
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = $result_replytoreply->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['enable']) == 1 ? '〇' : '×'; ?></td>
-                    <td><?php echo htmlspecialchars($row['comment']); ?></td>
-
-                    <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
-                            <td><?php echo htmlspecialchars($row['movie_enable']) == 1 ? '動画' : (htmlspecialchars($row['photo_enable']) == 1 ? '画像' : 'なし'); ?></td>
-                    <?php endif; ?>                
-
-                    <td class="hidden"><?php echo htmlspecialchars($row['chatgpt']) == 1 ? '〇' : '×'; ?></td>
-                    <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
-
-                    <td>
-                        <button onclick="editComment(<?php echo $row['id']; ?>)">編集</button>
-                        <form class="button_form" method="POST" action="?">
-                        <input type="hidden" name="type" value="comment_del">
-                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']) ?>">
-                        <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($account_id); ?>">
-                        <button type="button" onclick="deleteComment(this,<?php echo htmlspecialchars($row['id']) ?>)">削除</button>
-                    </form>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
-
-
-    <style>
-    .hidden {
-        display: none;
-    }
-    </style>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        function editComment(id) {
-            window.location.href = './comment_edit.php?id='+id;
-        }
-
-        function deleteComment(button,id) {
-            button.form.submit();
-        }
-
-    </script>
-
+<div class="comment-grid">
+  <?php for ($i = 1; $i <= 10; $i++): ?>
+    <div class="comment-item">
+      <label for="new_comment<?= $i ?>">コメント<?= $i ?></label>
+      <textarea name="new_comment<?= $i ?>" id="new_comment<?= $i ?>" placeholder="コメント<?= $i ?>"></textarea>
+    </div>
+  <?php endfor; ?>
 </div>
 
+        <button class="btn" type="submit">登録</button>
+      </form>
+
+      <h2 class="tx-white">ポスト一覧</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>有効</th>
+            <th>コメント</th>
+            <?php if (!empty($_SESSION['media_enable'])): ?><th>メディア</th><?php endif; ?>
+            <th>時間帯</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php while ($row = $result_post->fetch_assoc()): ?>
+          <tr>
+            <td><?= $row['enable'] ? '〇' : '×' ?></td>
+            <td><?= htmlspecialchars($row['comment']) ?></td>
+            <?php if (!empty($_SESSION['media_enable'])): ?>
+              <td><?= $row['movie_enable'] ? '動画' : ($row['photo_enable'] ? '画像' : 'なし') ?></td>
+            <?php endif; ?>
+            <td>
+              <?php
+                echo match((int)$row['reserve_mode']) {
+                  1 => '時間帯1',
+                  2 => '時間帯2',
+                  3 => '時間帯3',
+                  4 => '時間帯4',
+                  default => 'なし',
+                };
+              ?>
+            </td>
+            <td>
+              <button class="btn" onclick="editComment(<?= $row['id'] ?>)">編集</button>
+              <form method="POST" action="?" style="display:inline;">
+                <input type="hidden" name="type" value="comment_del">
+                <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                <input type="hidden" name="account_id" value="<?= $account_id ?>">
+                <button type="submit" class="btn" onclick="return confirm('削除しますか？')">削除</button>
+              </form>
+            </td>
+          </tr>
+          <?php endwhile; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    function editComment(id) {
+      location.href = './comment_edit.php?id=' + id;
+    }
+  </script>
 </body>
 </html>

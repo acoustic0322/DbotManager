@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>X-DBOTへようこそ</title>
+    <link rel="stylesheet" href="css/top-login.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="noise-overlay"></div>
+
+    <header>
+      <div class="logo">
+        <span class="logo-text">X-DBOT</span>
+        <div class="logo-dot"></div>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#features">機能</a></li>
+          <li><a href="#company">会社概要</a></li>
+          <li><a href="./login.php" class="nav-login">ログイン</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <!-- パーティクル背景 -->
+      <div class="particles-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+
+      <!-- 動的グリッド背景 -->
+      <div class="grid-background"></div>
+
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="hero-badge fade-in">
+            <span class="badge-text">🤖 X アカウント自動化ツール</span>
+          </div>
+
+          <p class="hero-subtitle fade-in delay-2">
+            <span class="subtitle-highlight">Xアカウントの自動化と管理</span
+            >を、もっとスマートに。
+            <br />効率的なコンテンツ投稿でアカウント運用を最適化します。
+          </p>
+
+          <div class="hero-features fade-in delay-3">
+            <div class="feature-item">
+              <div class="feature-icon">📅</div>
+              <div class="feature-text">
+                <div class="feature-title">スケジュールポスト</div>
+                <div class="feature-desc">指定時間での自動投稿</div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">🤖</div>
+              <div class="feature-text">
+                <div class="feature-title">AI投稿生成</div>
+                <div class="feature-desc">AIによる自動コンテンツ作成</div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">💬</div>
+              <div class="feature-text">
+                <div class="feature-title">自動返信</div>
+                <div class="feature-desc">
+                  リプライへのAI自動応答
+                  <span class="coming-soon-badge">※実装中</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-cta fade-in delay-4">
+            <a href="./login.php" class="btn-primary-new">
+              <span class="btn-text">ログイン</span>
+              <div class="btn-shine"></div>
+            </a>
+            <a href="#features" class="btn-secondary-new">
+              <span class="btn-icon">▼</span>
+              <span class="btn-text">機能詳細</span>
+            </a>
+          </div>
+
+          <div class="hero-note fade-in delay-5">
+            <p class="note-text">Xアカウント運用の効率化を支援するツールです</p>
+          </div>
+        </div>
+
+        <div class="hero-visual fade-in delay-3">
+          <!-- サービス紹介カード -->
+          <div class="visual-card">
+            <div class="card-glow"></div>
+            <div class="card-content">
+              <div class="service-preview">
+                <!-- X投稿プレビュー -->
+                <div class="post-preview">
+                  <div class="post-header">
+                    <div class="post-avatar">🤖</div>
+                    <div class="post-info">
+                      <div class="post-name">X-DBOT</div>
+                      <div class="post-handle">@your_account</div>
+                    </div>
+                  </div>
+                  <div class="post-content">
+                    <p>
+                      おはようございます！☀️<br />
+                      今日も素晴らしい一日になりそうですね。<br />
+                      皆さんの今日の目標は何ですか？
+                    </p>
+                    <div class="post-tag">#AI自動投稿</div>
+                  </div>
+                  <div class="post-actions">
+                    <span class="action-item">💬 12</span>
+                    <span class="action-item">🔄 8</span>
+                    <span class="action-item">❤️ 25</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- フローティング要素 -->
+          <div class="floating-elements">
+            <div class="floating-element element-1">
+              <div class="element-icon">📅</div>
+            </div>
+            <div class="floating-element element-2">
+              <div class="element-icon">🤖</div>
+            </div>
+            <div class="floating-element element-3">
+              <div class="element-icon">💬</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-scroll">
+        <div class="scroll-icon">
+          <div class="scroll-dot"></div>
+        </div>
+        <span>さらに詳しく</span>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="features-container">
+        <div class="section-header">
+          <div class="section-badge">
+            <span class="badge-icon">⚡</span>
+            <span class="badge-text">POWERFUL FEATURES</span>
+          </div>
+          <h2>主な機能<span class="gold-dot">.</span></h2>
+          <p>X-DBOTが提供する革新的なソリューション</p>
+        </div>
+
+        <div class="features-grid">
+          <!-- Feature 1: スケジュールポスト -->
+          <div class="feature-card" data-feature="schedule">
+            <div class="feature-number">01</div>
+            <div class="feature-icon-wrapper">
+              <div class="feature-icon">📅</div>
+              <div class="feature-glow"></div>
+            </div>
+            <div class="feature-content">
+              <h3>スケジュールポスト</h3>
+              <p>
+                予め登録したポスト本文を指定した時間帯に自動投稿。コンテンツ計画で効率的にプレゼンスを維持。
+              </p>
+              <div class="feature-details">
+                <div class="detail-item">
+                  <span class="detail-icon">✓</span>
+                  <span>無制限の投稿設定</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">✓</span>
+                  <span>カスタマイズ可能なスケジュール</span>
+                </div>
+              </div>
+              <div class="feature-action">
+                <a href="./login.php" class="learn-more-btn">
+                  <span class="btn-icon">🚀</span>
+                  <span>今すぐ始める</span>
+                  <span class="btn-arrow">→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature 2: AI投稿生成 -->
+          <div class="feature-card" data-feature="ai">
+            <div class="feature-number">02</div>
+            <div class="feature-icon-wrapper">
+              <div class="feature-icon">🤖</div>
+              <div class="feature-glow"></div>
+            </div>
+            <div class="feature-content">
+              <h3>スケジュールポスト(AI)</h3>
+              <p>
+                AIが自動でエンゲージメントの高いコンテンツを生成。トピック指定だけで魅力的な投稿を作成。
+              </p>
+              <div class="feature-details">
+                <div class="detail-item">
+                  <span class="detail-icon">✓</span>
+                  <span>ChatGPT搭載AI生成</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">✓</span>
+                  <span>個性のカスタマイズ</span>
+                </div>
+              </div>
+              <div class="feature-action">
+                <a href="./login.php" class="learn-more-btn">
+                  <span class="btn-icon">✨</span>
+                  <span>体験してみる</span>
+                  <span class="btn-arrow">→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature 3: 自動返信 -->
+          <div class="feature-card" data-feature="reply">
+            <div class="feature-number">03</div>
+            <div class="feature-icon-wrapper">
+              <div class="feature-icon">💬</div>
+              <div class="feature-glow"></div>
+            </div>
+            <div class="feature-content">
+              <h3>
+                リプライの自動返信<span class="coming-soon-new">実装中</span>
+              </h3>
+              <p>
+                フォロワーとの自然な対話を AI
+                が代行。24時間体制でエンゲージメントを維持。
+              </p>
+              <div class="feature-details">
+                <div class="detail-item">
+                  <span class="detail-icon">✓</span>
+                  <span>自然言語処理</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">✓</span>
+                  <span>コンテキスト理解</span>
+                </div>
+              </div>
+              <div class="feature-action">
+                <a href="#" class="learn-more-btn">
+                  <span class="btn-icon">⏳</span>
+                  <span>近日公開</span>
+                  <span class="btn-arrow">→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="company" class="about-section">
+      <div class="about-content">
+        <div class="section-header">
+          <h2>会社概要<span class="gold-dot">.</span></h2>
+          <p>私たちについて知っていただく</p>
+        </div>
+        <div class="about-hero">
+          <div class="about-hero-content reveal-left">
+            <h3>革新的なソリューションで、<br />デジタル時代を共に歩む</h3>
+            <p>
+              X-DBOTは、最新のAI技術とソーシャルメディアマーケティングの専門知識を組み合わせ、
+              お客様のビジネス成長をサポートします。私たちは常に技術の最前線に立ち、
+              効率的で革新的なソリューションを提供し続けています。
+            </p>
+          </div>
+          <div class="about-hero-image reveal-right">
+            <img
+              src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=800"
+              alt="現代的なオフィス環境"
+            />
+            <div class="image-glow"></div>
+          </div>
+        </div>
+
+        <div class="company-info">
+          <ul class="info-list">
+            <li class="reveal-up">
+              <span class="info-label">会社名</span>
+              <span class="info-value">株式会社X-DBOT</span>
+            </li>
+            <li class="reveal-up delay-1">
+              <span class="info-label">設立</span>
+              <span class="info-value">2025年1月</span>
+            </li>
+            <li class="reveal-up delay-2">
+              <span class="info-label">所在地</span>
+              <span class="info-value">東京都渋谷区</span>
+            </li>
+            <li class="reveal-up delay-2">
+              <span class="info-label">代表者</span>
+              <span class="info-value">山田太郎</span>
+            </li>
+            <li class="reveal-up delay-3">
+              <span class="info-label">事業内容</span>
+              <span class="info-value"
+                >SNSマーケティング支援、AI技術開発、ソフトウェア開発</span
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="cta-content">
+        <h2>今すぐ始めましょう<span class="gold-dot">.</span></h2>
+        <p>X-DBOTで、あなたのソーシャルメディア戦略を次のレベルへ</p>
+        <a href="./login.php" class="btn-primary-new">
+          <span class="btn-text">ログイン</span>
+          <div class="btn-shine"></div>
+        </a>
+      </div>
+      <div class="cta-background"></div>
+    </section>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-logo">
+          <span>X-DBOT</span>
+          <div class="logo-dot"></div>
+        </div>
+        <div class="footer-links">
+          <div class="footer-column">
+            <h4>サービス</h4>
+            <ul>
+              <li><a href="#features">主な機能</a></li>
+            </ul>
+          </div>
+          <div class="footer-column">
+            <h4>会社情報</h4>
+            <ul>
+              <li><a href="#company">会社概要</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">
+        <p>&copy; 2025 X-DBOT All Rights Reserved.</p>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
+  </body>
+</html>

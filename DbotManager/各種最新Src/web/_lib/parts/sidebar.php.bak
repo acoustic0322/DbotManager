@@ -1,0 +1,17 @@
+<link rel="stylesheet" href="./css/admin-dashboard.css" />
+
+<!-- サイドメニュー -->
+<div class="sidebar">
+  <h2>設定メニュー</h2>
+  <a href="./tweet_sensyuken.html">選手権いいね</a>
+  <a href="./tweet.html">いいね・ﾌﾞｯｸﾏｰｸ</a>
+  <a href="./account_list.html">Xアカウント一覧</a>
+  <a href="./account_regist.html">Xアカウント登録</a>
+  <a href="./account_regist2.html">Xアカウント登録(貸出)</a>
+  <a href="./password.html">パスワード変更</a>
+  <a href="./upload.html">動画アップロード</a>
+  <a href="./upload.html">画像アップロード</a>
+  <a href="./user_master.html">AI API設定</a>
+  <a href="./user_list.html">ユーザー編集(管理者)</a>
+  <a href="./login.html">ログアウト</a>
+</div>

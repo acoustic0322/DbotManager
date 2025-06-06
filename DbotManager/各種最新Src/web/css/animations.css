@@ -1,0 +1,182 @@
+/*
+ * ============================================
+ * X-DBOT フロントエンド アニメーションスタイル
+ * ファイル名: animations.css
+ * 用途: トップページ（index.html）とログインページ（login.html）のアニメーション
+ * ============================================
+ */
+
+/* Animations */
+@keyframes scrollAnimation {
+  0% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  75% {
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+  }
+  76% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Fade-in animations */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.8s forwards;
+}
+
+.delay-1 {
+  animation-delay: 0.2s;
+}
+
+.delay-2 {
+  animation-delay: 0.4s;
+}
+
+.delay-3 {
+  animation-delay: 0.6s;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reveal animations for features */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal-left.active,
+.reveal-right.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Button hover effect */
+.btn-primary,
+.btn-secondary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before,
+.btn-secondary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.7s;
+}
+
+.btn-primary:hover::before,
+.btn-secondary:hover::before {
+  left: 100%;
+}
+
+/* Pulse animation for gold elements */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+  }
+}
+
+.gold-dot {
+  animation: pulse 2s infinite;
+  display: inline-block;
+}
+
+/* Background shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.hero h1,
+.section-header h2,
+.cta-content h2 {
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    var(--gold-light) 50%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Floating animation for images */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.hero-image img {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Glow pulse for image backgrounds */
+@keyframes glowPulse {
+  0% {
+    opacity: 0.1;
+    filter: blur(20px);
+  }
+  50% {
+    opacity: 0.2;
+    filter: blur(15px);
+  }
+  100% {
+    opacity: 0.1;
+    filter: blur(20px);
+  }
+}
+
+.image-glow,
+.glow-effect {
+  animation: glowPulse 4s ease-in-out infinite;
+}

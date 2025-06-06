@@ -36,9 +36,6 @@ am.name as name
 , am.access_token as access_token
 , am.id as id
 , am.search_enable as search_enable
-, (select count(*)  from comment_master cm1 where cm1.account_id = am.id and mode='post')  as post_comment_count
-, (select count(*)  from comment_master cm1 where cm1.account_id = am.id and mode='reply') as reply_comment_count 
-, (select count(*)  from search_list sl where sl.post_account_id = am.id) as search_list_count 
 FROM account_master am WHERE am.user_id = ?");
 
 $stmt->bind_param("s", $current_userid);
@@ -55,8 +52,6 @@ while ($row = $result->fetch_assoc()){
     }
 }
 
-
-// 新規ユーザー登録処理
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $type = $_POST['type']??'';
     if ($type == 'account_del') {
@@ -88,182 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: account_list.php");
         exit;        
     }
-    else{
-
-        $new_name = $_POST['new_name'];
-        $new_login_id = $_POST['new_login_id'];
-        $new_login_pass = $_POST['new_login_pass'];
-        $new_client_id = isset($_POST['new_client_id']) ? $_POST['new_client_id'] : "";//$_POST['new_client_id'];
-        $new_client_secret = isset($_POST['new_client_secret']) ? $_POST['new_client_secret'] : "";//$_POST['new_client_secret'];
-        $new_api_key = $_POST['new_api_key'];
-        $new_api_key_secret = $_POST['new_api_key_secret'];
-
-        echo $new_client_id ;
-
-        $new_access_token = '';
-        $new_access_token_secret = '';
-        /*
-        $new_access_token = $_POST['new_access_token'];
-        $new_access_token_secret = $_POST['new_access_token_secret'];
-        $new_bearer_token = $_POST['new_bearer_token'];
-        $new_refresh_token = $_POST['new_refresh_token'];
-        */
-
-        $new_enable = isset($_POST['new_enable']) ? 1 : 0;
-
-        $new_like_enable = isset($_POST['new_like_enable']) ? 1 : 0;
-        $new_reply_enable = isset($_POST['new_reply_enable']) ? 1 : 0;
-        $new_bookmark_enable = isset($_POST['new_bookmark_enable']) ? 1 : 0;
-        $new_repost_enable = isset($_POST['new_repost_enable']) ? 1 : 0;
-        $new_post_enable = isset($_POST['new_post_enable']) ? 1 : 0;
-        $new_paid = isset($_POST['new_paid']) ? 1 : 0;
-        $new_paid_like = isset($_POST['new_paid_like']) ? 1 : 0;
-        $new_paid_bookmark = isset($_POST['new_paid_bookmark']) ? 1 : 0;
-
-        // 予約の処理（Reserve1-4）
-        $reserve1_enable = isset($_POST['reserve1_enable']) ? 1 : 0;
-        $reserve1_start_hour = $_POST['reserve1_start_hour'] ?? 0;
-        $reserve1_end_hour = $_POST['reserve1_end_hour'] ?? 0;
-        $reserve1_count = $_POST['reserve1_count'] ?? 0;
-
-        $reserve2_enable = isset($_POST['reserve2_enable']) ? 1 : 0;
-        $reserve2_start_hour = $_POST['reserve2_start_hour'] ?? 0;
-        $reserve2_end_hour = $_POST['reserve2_end_hour'] ?? 0;
-        $reserve2_count = $_POST['reserve2_count'] ?? 0;
-
-        $reserve3_enable = isset($_POST['reserve3_enable']) ? 1 : 0;
-        $reserve3_start_hour = $_POST['reserve3_start_hour'] ?? 0;
-        $reserve3_end_hour = $_POST['reserve3_end_hour'] ?? 0;
-        $reserve3_count = $_POST['reserve3_count'] ?? 0;
-
-        $reserve4_enable = isset($_POST['reserve4_enable']) ? 1 : 0;
-        $reserve4_start_hour = $_POST['reserve4_start_hour'] ?? 0;
-        $reserve4_end_hour = $_POST['reserve4_end_hour'] ?? 0;
-        $reserve4_count = $_POST['reserve4_count'] ?? 0;
-
-
-        $new_dmm_id = $_POST['new_dmm_id'];
-
-        $new_search_enable = isset($_POST['new_search_enable']) ? 1 : 0;
-        $new_check_interval = $_POST['check_interval'] ?? 60;
-
-        $new_proxy_enable = isset($_POST['new_proxy_enable']) ? 1 : 0;
-        $new_proxy_url = $_POST['new_proxy_url'];
-
-        $new_use_admin_api = isset($_POST['new_use_admin_api']) ? 1 : 0;
-        $new_api_master_id = $_SESSION['api_master_id'];
-
-
-        // 既存のユーザー名を確認
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM account_master WHERE user_id = ? and login_id = ?");
-        $stmt->bind_param("ss", $current_userid, $new_login_id);
-        $stmt->execute();
-        $stmt->bind_result($count);
-        $stmt->fetch();
-        $stmt->close();
-
-        // 重複している場合の処理
-        if ($count > 0) {
-            echo "<script>alert('このログインIDは既に存在します。別のログインIDを使用してください。');</script>";
-        } else {
-
-            // ユーザーをデータベースに登録
-            $stmt = $conn->prepare("INSERT INTO account_master (
-                user_id, 
-                name,
-                login_id,
-                login_password,
-                client_id,
-                client_secret,
-                api_key,
-                api_key_secret,
-                enable,
-                like_enable,
-                reply_enable,
-                bookmark_enable, 
-                repost_enable,
-                post_enable,
-                paid,
-                paid_like,
-                paid_bookmark,
-                reserve1_enable , 
-                reserve1_start_hour , 
-                reserve1_end_hour , 
-                reserve1_count , 
-                reserve2_enable , 
-                reserve2_start_hour , 
-                reserve2_end_hour , 
-                reserve2_count , 
-                reserve3_enable , 
-                reserve3_start_hour , 
-                reserve3_end_hour , 
-                reserve3_count , 
-                reserve4_enable , 
-                reserve4_start_hour , 
-                reserve4_end_hour , 
-                reserve4_count ,
-                dmm_id ,
-                search_enable ,
-                proxy_enable ,
-                proxy_url ,
-                api_master_id ,
-                use_admin_api ,
-                check_interval
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?)");
-            
-            $stmt->bind_param(
-                "ssssssssiiiiiiiiisiiiiiiiiiiiiiiiiiisiii",
-                $current_userid,
-                $new_name,
-                $new_login_id,
-                $new_login_pass,
-                $new_client_id,
-                $new_client_secret,
-                $new_api_key,
-                $new_api_key_secret,
-                $new_enable,
-                $new_like_enable,
-                $new_reply_enable,
-                $new_bookmark_enable, 
-                $new_repost_enable,
-                $new_post_enable,
-                $new_paid,
-                $new_paid_like,
-                $new_paid_bookmark,
-                $reserve1_enable , 
-                $reserve1_start_hour , 
-                $reserve1_end_hour , 
-                $reserve1_count , 
-                $reserve2_enable , 
-                $reserve2_start_hour , 
-                $reserve2_end_hour , 
-                $reserve2_count , 
-                $reserve3_enable , 
-                $reserve3_start_hour , 
-                $reserve3_end_hour , 
-                $reserve3_count , 
-                $reserve4_enable , 
-                $reserve4_start_hour , 
-                $reserve4_end_hour , 
-                $reserve4_count ,
-                $new_dmm_id,
-                $new_search_enable,
-                $new_proxy_enable,
-                $new_proxy_url,
-                $new_api_master_id,
-                $new_use_admin_api,
-                $new_check_interval
-                );
-
-            $stmt->execute();
-            $stmt->close();
-            $conn->close();
-            // 登録後にリダイレクト
-            header("Location: account_list.php");
-            exit;        
-        }
-
-    }
 }
 
 
@@ -272,270 +91,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $conn->prepare("
 SELECT 
 am.name as name
+, am.id as id
 , am.login_id as login_id
 , am.bearer_token as bearer_token
 , am.refresh_token as refresh_token
 , am.access_token as access_token
 , am.id as id
 , am.search_enable as search_enable
-, (select count(*)  from comment_master cm1 where cm1.account_id = am.id and mode='post')  as post_comment_count
-, (select count(*)  from comment_master cm1 where cm1.account_id = am.id and mode='reply') as reply_comment_count 
-, (select count(*)  from search_list sl where sl.post_account_id = am.id) as search_list_count 
+, am.use_admin_api as use_admin_api
+, am.ai_mode as ai_mode
 FROM account_master am WHERE am.user_id = ?");
 $stmt->bind_param("s", $current_userid);
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>Xアカウント一覧</title>
-    <link rel="stylesheet" type="text/css" href="./main.css">
-    <style>
-        .registration-form {
-/*            display: flex;*/
-            margin-bottom: 20px;
-        }
-        .registration-form input {
-            width: 80%; /* 幅を調整 */
-            margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
-            padding: 8px;
-            font-size: 12px;
-        }
-        .registration-form button {
-            padding: 8px 12px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .button_form{
-            display: inline-block;
-        }
-
-        .checkbox-group {
-           display: flex;
-            gap: 10px; /* チェックボックス間のスペース */
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center; /* チェックボックスとテキストを縦方向で中央揃え */
-        }        
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xアカウント一覧</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
 <body>
+    <div class="layout">
+  <?php require PARTS_DIR.'/sidebar.php'; ?>
 
-    <?php require PARTS_DIR.'/sidebar.php'; ?>
 
    <!-- コンテンツエリア -->
    <div class="content" id="content">
-   <h2>新規Xアカウント登録</h2>
-   <form method="POST" action="?">
-
-    <!-- ラジオボタン api_master_modeが設定されてるときのみ表示 -->
-    <?php if (isset($_SESSION['api_master_id']) && $_SESSION['api_master_id'] != 0): ?>     
-        <div class="input-group">
-        <label>
-            <input type="radio" name="new_use_admin_api" value="search" checked onclick="toggleUseAdminApi()"> 監視専用
-        </label>
-        <label>
-            <input type="radio" name="new_use_admin_api" value="process" onclick="toggleUseAdminApi()"> いいね・ブックマーク専用
-        </label>
-        <br>
-        </div>
-    <?php else: ?>
-        <!-- modeがnormalのまま送信されるようにする -->
-        <input type="hidden" name="new_use_admin_api" value="normal">    
-    <?php endif; ?>
-
-    <div class="input-group">
-        <input type="text" id="new_name" name="new_name" placeholder="名前" required>
-    </div>
-    <div class="input-group">
-        <input type="text" id="new_login_id" name="new_login_id" placeholder="ログインID" required>
-    </div>
-    <div class="input-group">
-        <input type="text" id="new_login_pass" name="new_login_pass" placeholder="ログインパス">
-    </div>
-
-    <!-- チェックボックス (通常モード用) -->
-    <div id="search-options">
-        <div class="input-group">
-            <input type="text" name="new_client_id" placeholder="ClientID">
-        </div>
-        <div class="input-group">
-            <input type="text" name="new_client_secret" placeholder="ClientSecret">
-        </div>
-    </div>
-
-    <!--
-    <div class="input-group">
-        <input type="text" name="new_bearer_token" placeholder="BearerToken">
-    </div>
-    <div class="input-group">
-        <input type="text" name="new_refresh_token" placeholder="RefreshToken">
-    </div>
-    -->
-
-    <div class="input-group" checkbox-group">
-        <label>
-            <input type="checkbox" name="new_enable" value="1" checked>有効
-        </label><br>
-
-        <div id="process-options">
-            <?php if (isset($_SESSION['post_enable']) && $_SESSION['post_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="new_post_enable" value="1" checked>ポスト機能
-            </label><br>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="new_like_enable" value="1" checked>いいね機能
-            </label><br>
-            <?php else: ?>
-                <label>
-                <input type="hidden" name="new_like_enable" value="1" checked>
-            </label><br>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
-                <label>
-                <input type="checkbox" name="new_bookmark_enable" value="1" checked>ブックマーク機能
-            </label><br>
-            <?php else: ?>
-                <label>
-                <input type="hidden" name="new_bookmark_enable" value="1" checked>
-            </label><br>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['reply_enable']) && $_SESSION['reply_enable'] == 1): ?>
-                <label>
-                <input type="checkbox" name="new_reply_enable" value="1"  checked>リプライ機能
-            </label><br>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['repost_enable']) && $_SESSION['repost_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="new_repost_enable" value="1" checked>リポスト機能
-            </label><br>
-            <?php endif; ?>
-        </div>
-
-        <div id="search-options">
-            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="new_search_enable" value="0">監視実施
-            </label><br>
-
-            <div class="input-group">
-            <label for="check_interval">監視周期(分):</label>
-            <input type="number" id="check_interval" name="check_interval" min="5" max="6000" step="1" value="60" style="width: 50px;">
-            </div>  
-
-            <?php endif; ?>
-        </div>
-
-        <label>
-            <input type="checkbox" name="new_proxy_enable" value="0">プロキシ
-        </label><br>
-        <input type="text" name="new_proxy_url" placeholder="プロキシURL">
-        <br>
-    </div>
-
-    <div class="input-group">
-        <?php if ((isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1) || 
-          (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1)): ?>
-            <label>
-            <input type="checkbox" name="new_paid" value="1" checked>有料アカウント
-            </label><br>
-        <?php endif; ?>
-
-        <div id="process-options">
-        <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="new_paid_like" value="1" checked>有料API(いいね)
-            </label><br>
-        <?php endif; ?>
-
-        <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="new_paid_bookmark" value="1" checked>有料API(ブックマーク)
-            </label><br>
-        <?php endif; ?>
-        </div>
-    </div>
-
-        <div class="input-group">
-            <input type="text" id="new_dmm_id" name="new_dmm_id" placeholder="DMM ID">
-        </div>
-
-        <div id="process-options">
-            <br>
-            【メディアポスト関連】
-            <br>
-            <div class="input-group">
-                <input type="text" name="new_api_key" placeholder="ApiKey">
-            </div>
-            <div class="input-group">
-                <input type="text" name="new_api_key_secret" placeholder="ApiKeySecret">
-            </div>
-        </div>
-
-        <div id="process-options">
-        <br>
-        【ポスト予約設定】
-        <br>
-        <label>
-            <input type="checkbox" name="reserve1_enable" value="1" checked>時間帯１
-            <input type="text" id="reserve1_start_hour" name="reserve1_start_hour" class="short" placeholder="開始" > ～
-            <input type="text" id="reserve1_end_hour" name="reserve1_end_hour" class="short" placeholder="終了" > 時　
-            <input type="text" id="reserve1_count" name="reserve1_count" class="short" placeholder="" > 回
-        </label><br>
-        <label>
-            <input type="checkbox" name="reserve2_enable" value="1" checked>時間帯２
-            <input type="text" id="reserve2_start_hour" name="reserve2_start_hour" class="short" placeholder="開始" > ～
-            <input type="text" id="reserve2_end_hour" name="reserve2_end_hour" class="short" placeholder="終了" > 時　
-            <input type="text" id="reserve2_count" name="reserve2_count" class="short" placeholder="" > 回
-        </label><br>
-        <label>
-            <input type="checkbox" name="reserve3_enable" value="1" checked>時間帯３
-            <input type="text" id="reserve3_start_hour" name="reserve3_start_hour" class="short" placeholder="開始" > ～
-            <input type="text" id="reserve3_end_hour" name="reserve3_end_hour" class="short" placeholder="終了" > 時　
-            <input type="text" id="reserve3_count" name="reserve3_count" class="short" placeholder="" > 回
-        </label><br>
-        <label>
-            <input type="checkbox" name="reserve4_enable" value="1" checked>時間帯４
-            <input type="text" id="reserve4_start_hour" name="reserve4_start_hour" class="short" placeholder="開始" > ～
-            <input type="text" id="reserve4_end_hour" name="reserve4_end_hour" class="short" placeholder="終了" > 時　
-            <input type="text" id="reserve4_count" name="reserve4_count" class="short" placeholder="" > 回
-        </label><br>
-        
-        <br>
-        </div>
-
-
-
-        <div class="input-group">
-            <button type="submit">登録</button>
-        </div>
-    </form>
-
-
 
     <h2>Xアカウント一覧</h2>
     <form method="GET" style="margin-bottom: 20px;">
@@ -549,11 +136,16 @@ $result = $stmt->get_result();
     <form method="GET" action="?" style="margin: 0; display: inline-block;">
        
         <select id="command_option" name="command" onchange="toggleCommandSource()">
-            <option value="comment">コメント設定</option>
+            <option value="post">ﾎﾟｽﾄｺﾒﾝﾄ</option>
+            <option value="reply">ﾘﾌﾟﾗｲｺﾒﾝﾄ</option>
+            <option value="replytoreply">ﾘﾌﾟtoﾘﾌﾟｺﾒﾝﾄ</option>
 
             <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
             <option value="search">監視リプ,モノマネ</option>
-            <option value="searchFrom">監視実施</option>
+
+            <!-- 貸出アカウントへの一括切り替えができてしまうため保留 -->
+<!--            <option value="searchFrom">監視実施</option>  -->
+
             <?php endif; ?>
             
         </select>
@@ -579,12 +171,15 @@ $result = $stmt->get_result();
 
 </form>
 
-    <div id="duplicate_source" style="display: none; margin-left: 10px;">
+    <div id="duplicate_source" style="display: none; margin-left: 10px; display: inline-flex; align-items: center; gap: 12px; white-space: nowrap;">
     <span>(複製元：</span>
-    <select id="form_account_id" name="xuser">
+    <select id="form_account_id" name="xuser" style="min-width: 120px;">
         <option value="">未選択</option>
         <?php foreach ($xusers as $k => $row) { ?>
-            <option value="<?php echo e($row['id']) ?>" <?php echo ( (string)$row['id'] === (string)$xuser_id ? 'selected' : '' ); ?>><?php echo e($row['name']) ?></option>
+            <option value="<?php echo e($row['id']) ?>" 
+            	<?php echo ( (string)$row['id'] === (string)$xuser_id ? 'selected' : '' ); ?>>
+            	<?php echo e($row['name']) ?>
+            </option>
         <?php } ?>
     </select>
     <span>)</span>
@@ -599,7 +194,7 @@ $result = $stmt->get_result();
         const duplicateSource = document.getElementById('duplicate_source');
         if (actionOption.value === "duplicate") {
             // 複製するが選択された場合
-            duplicateSource.style.display = "inline-block";
+            duplicateSource.style.display = "inline-flex";
         } else {
             // その他の場合
             duplicateSource.style.display = "none";
@@ -633,10 +228,28 @@ $result = $stmt->get_result();
         const selectedIds = Array.from(document.querySelectorAll('input[name="selected_ids[]"]:checked'))
             .map(checkbox => checkbox.value);
 
-        if (selectedIds.length === 0) {
-            alert("チェックされたアカウントがありません。");
+    // 監視実施モードのチェック
+    if (command === "searchFrom") {
+        const hasInvalidId = selectedIds.some(id => {
+            alert("エラー: 1");
+            const option = document.querySelector(`#form_account_id option[value="${id}"]`);
+            alert("エラー: 2");
+            return option && option.dataset.useAdminApi !== "0"; // use_admin_api が 0 じゃないものがあるか
+        });
+
+        if (hasInvalidId) {
+            alert(hasInvalidId)
+            alert('エラー: 監視実施モードは、use_admin_api=0 のアカウントのみ実行できます。');
             return;
         }
+//        alert("エラー: 監視実施モードは選択できません。");
+  //      return;
+    }
+
+    if (selectedIds.length === 0) {
+        alert("チェックされたアカウントがありません。");
+        return;
+    }
 
 //        alert(command);
 //        alert(action1);
@@ -660,15 +273,15 @@ $result = $stmt->get_result();
         .then(data => {
             alert(data.message); // サーバーからのメッセージを表示
             window.location.reload(); // ページをリロード
-        })        
+        })
         .catch(error => {
             console.error('エラー:', error);
         });
-    }    
+    }
 
     // ページロード時に初期状態をチェック
     document.addEventListener('DOMContentLoaded', toggleDuplicateSource);
-    </script>    
+    </script>
 
 <script>
 
@@ -678,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function toggleUseAdminApi() {
 
-   
+
     const searchOptions = document.getElementById('search-options');
     const processOptions = document.getElementById('process-options');
     const selectedMode = document.querySelector('input[name="new_use_admin_api"]:checked').value;
@@ -695,16 +308,48 @@ function toggleUseAdminApi() {
 
     // PHPから取得したセッション変数をJavaScriptに渡す
     const apiMasterId = <?php echo json_encode($api_master_id); ?>;
-    if (apiMasterId === 0)     
+    if (apiMasterId === 0)
     {
 //        searchOptions.style.display = "block";
 //        processOptions.style.display = "block";
     }
 
 }
+
+function toggleMenu(menuEl) {
+  // 他のメニューを閉じる
+  document.querySelectorAll('.dropdown-menu').forEach(el => {
+    if (el !== menuEl) {
+      el.classList.remove('show');
+      el.classList.remove('show-above');
+    }
+  });
+
+  // 表示トグル
+  const isVisible = menuEl.classList.contains('show');
+  if (isVisible) {
+    menuEl.classList.remove('show');
+    menuEl.classList.remove('show-above');
+    return;
+  }
+
+  // 一時表示して高さを計測
+  menuEl.classList.add('show');
+  const rect = menuEl.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+
+  if (spaceBelow < rect.height && spaceAbove > rect.height) {
+    menuEl.classList.add('show-above');
+  } else {
+    menuEl.classList.remove('show-above');
+  }
+}
+
+
 </script>
 
-</div>    
+</div>
 
 <!--
     <form method="GET" action="?">
@@ -726,7 +371,7 @@ function toggleUseAdminApi() {
           <option value="2">削除する</option>
         </select>
         </form>
-      
+
       <span>(複製元：</span>
       <select id="form_xuser" name="xuser">
         <option value="">未選択</option>
@@ -735,63 +380,90 @@ function toggleUseAdminApi() {
         <?php } ?>
       </select>
       <span>)</span>
-   </form>    
+   </form>
         -->
+
+<div style="margin-top: 20px; font-size: 14px; color: #aaa;">
+  <strong>アイコン凡例：</strong>
+  ✅=通常認証 / 🎞️=メディア認証 / 🔍=監視 / 🏷️=API貸出 / 🤖=AI（自由） / 👩=AI（裏垢） / 📈=AI（トレンド）
+</div>
     <table>
-    <thead>
-        <tr>
-            <th><input type="checkbox" id="select_all" onclick="toggleSelectAll()"></th>
-            <th>名前</th>
-            <th>ログインID</th>
-            <th>ﾎﾟｽﾄｺﾒﾝﾄ</th>
-            <th>ﾘﾌﾟﾗｲﾄｺﾒﾝﾄ</th>
-            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
-            <th>自動ﾘﾌﾟ,ﾓﾉﾏﾈ</th>
-            <th>監視実施</th>
-            <?php endif; ?>
-            <th>通常認証</th>
-            <th>メディア認証</th>
-            <th>操作</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php while ($row = $result->fetch_assoc()): ?>
-            <tr>
-            <td>
-                <input type="checkbox" name="selected_ids[]" value="<?php echo htmlspecialchars($row['id']); ?>">
-            </td>
-            <td><?php echo htmlspecialchars($row['name']); ?></td>
-            <td><?php echo htmlspecialchars($row['login_id']); ?></td>
-            <td><?php echo htmlspecialchars($row['post_comment_count']); ?>件</td>
-            <td><?php echo htmlspecialchars($row['reply_comment_count']); ?>件</td>
+<thead>
+  <tr>
+    <th class="checkbox-col"><input type="checkbox" id="select_all" onclick="toggleSelectAll()"></th>
+    <th class="id-col"></th>
+    <th class="name-col">アカウント</th>
+    <th>ステータス</th>
+    <th>操作</th>
+  </tr>
+</thead>
+<tbody>
+  <?php while ($row = $result->fetch_assoc()): ?>
+  <tr>
+    <td class="checkbox-col"><input type="checkbox" name="selected_ids[]" value="<?php echo htmlspecialchars($row['id']); ?>"></td>
+    <td class="id-col"></td>
+    <td class="name-col">
+      <div>
+        <div>
+          <?php echo htmlspecialchars($row['name']); ?> 
+          <span style="color: #888; font-size: 12px;">[ID=<?php echo htmlspecialchars($row['id']); ?>]</span>
+        </div>
+        <div style="font-size: 12px; font-style: italic;">
+          <a href="https://x.com/<?php echo urlencode($row['login_id']); ?>"
+             target="_blank"
+             style="color: #d4af37; text-decoration: none;"
+             onmouseover="this.style.textDecoration='underline'"
+             onmouseout="this.style.textDecoration='none'">
+            @<?php echo htmlspecialchars($row['login_id']); ?>
+          </a>
+        </div>
+      </div>
+    </td>
+<td>
+  <?php if (!empty($row['bearer_token']) && !empty($row['refresh_token'])): ?>
+    <span title="通常認証済み">✅</span>
+  <?php endif; ?>
+  <?php if (!empty($row['access_token'])): ?>
+    <span title="メディア認証済み">🎞️</span>
+  <?php endif; ?>
+  <?php if (!empty($row['search_enable'])): ?>
+    <span title="監視実施">🔍</span>
+  <?php endif; ?>
+  <?php if (isset($row['use_admin_api']) && $row['use_admin_api'] == 1): ?>
+    <span title="貸出アカウント">🏷️</span>
+  <?php endif; ?>
+  <?php
+    switch ($row['ai_mode'] ?? 0) {
+      case 1: echo '<span title="AIモード：自由">🤖</span>'; break;
+      case 2: echo '<span title="AIモード：裏垢女子">👩</span>'; break;
+      case 3: echo '<span title="AIモード：トレンド">📈</span>'; break;
+    }
+  ?>
+</td>    <td>
+<div class="dropdown" style="position: relative;">
+  <button class="dropdown-button" onclick="toggleMenu(this.nextElementSibling)">操作 ▾</button>
+  <div class="dropdown-menu">
+    <a href="#" onclick="editAccountMaster(<?= $row['id'] ?>)">編集</a>
+    <a href="#" onclick="editComment(<?= $row['id'] ?>)">ｺﾒﾝﾄ一覧</a>
+    <a href="#" onclick="registComment(<?= $row['id'] ?>)">ｺﾒﾝﾄ登録</a>
+    <?php if (!empty($_SESSION['check_enable'])): ?>
+      <a href="#" onclick="editCheckAccount(<?= $row['id'] ?>)">自動ﾘﾌﾟ,ﾓﾉﾏﾈ編集</a>
+    <?php endif; ?>
+    <a href="#" onclick="editXLogin2(<?= $row['id'] ?>)">通常認証</a>
+    <a href="#" onclick="editXLogin1(<?= $row['id'] ?>)">ﾒﾃﾞｨｱ認証</a>
+    <form class="button_form" method="POST" action="?">
+      <input type="hidden" name="type" value="account_del">
+      <input type="hidden" name="id" value="<?= htmlspecialchars($row['id']) ?>">
+      <button type="submit">削除</button>
+    </form>
+  </div>
+</div>
 
-            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
-            <td><?php echo htmlspecialchars($row['search_list_count']); ?>件</td>
-            <td><?php echo !empty($row['search_enable']) ? '〇' : '×'; ?></td>
-            <?php endif; ?>
-            
-            <td><?php echo (!empty($row['bearer_token']) && !empty($row['refresh_token']))  ? '〇' : '×'; ?></td>
-            <td><?php echo !empty($row['access_token']) ? '〇' : '×'; ?></td>
-            <td>
-                <button onclick="editAccountMaster(<?php echo $row['id']; ?>)">編集</button>
-                <button onclick="editComment(<?php echo $row['id']; ?>)">ｺﾒﾝﾄ一覧</button>
-                <button onclick="registComment(<?php echo $row['id']; ?>)">ｺﾒﾝﾄ登録</button>
+    </td>
+  </tr>
+  <?php endwhile; ?>
+</tbody>
 
-                <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
-                <button onclick="editCheckAccount(<?php echo $row['id']; ?>)">自動ﾘﾌﾟ,ﾓﾉﾏﾈ編集</button>
-                <?php endif; ?>
-
-                <button onclick="editXLogin2(<?php echo $row['id']; ?>)">通常認証</button>
-                <button onclick="editXLogin1(<?php echo $row['id']; ?>)">ﾒﾃﾞｨｱ認証</button>
-                <form class="button_form" method="POST" action="?">
-                    <input type="hidden" name="type" value="account_del">
-                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']) ?>">
-                    <button type="button" onclick="deleteUser(this,<?php echo htmlspecialchars($row['id']) ?>)">削除</button>
-                </form>
-            </td>
-        </tr>
-        <?php endwhile; ?>
-    </tbody>
 </table>
 
     </div>
@@ -860,25 +532,6 @@ function toggleUseAdminApi() {
             });
         });
     </script>
-
-
-<style>
-    /* テキストボックスの幅を80%に設定 */
-    .input-group input[type="text"] {
-        width: 80%; /* 幅を80%に設定 */
-        padding: 8px; /* パディングを追加 */
-        font-size: 12px; /* フォントサイズを調整 */
-        margin-bottom: 5px; /* ボックス間のスペース */
-        box-sizing: border-box; /* パディングを含めた幅を計算 */
-    }
-</style> 
-
-<style>
-    /* テキストボックスの幅を短く設定 */
-    input[type="text"].short {
-        width: 40px; /* 必要に応じて調整 */
-    }
-</style>
-
+  </div>
 </body>
 </html>

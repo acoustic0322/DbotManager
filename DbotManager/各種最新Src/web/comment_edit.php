@@ -144,138 +144,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>Xアカウント編集</title>
-    <link rel="stylesheet" type="text/css" href="./main.css">
-    <style>
-        .registration-form {
-/*            display: flex;*/
-            margin-bottom: 20px;
-        }
-        .registration-form input {
-            width: 100%; /* 幅を調整 */
-            margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
-            padding: 8px;
-            font-size: 16px;
-        }
-        .registration-form button {
-            padding: 8px 12px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .button_form{
-            display: inline-block;
-        }
-
-        .checkbox-group {
-           display: flex;
-            gap: 10px; /* チェックボックス間のスペース */
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center; /* チェックボックスとテキストを縦方向で中央揃え */
-        }        
-    </style>
-
+  <meta charset="UTF-8">
+  <title>コメント編集</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #0a0f1a;
+      color: white;
+    }
+    .layout { display: flex; }
+    .main { flex-grow: 1; padding: 40px; max-width: 800px; }
+    h2 { font-size: 24px; margin-bottom: 20px; }
+    label { font-weight: bold; display: block; margin-top: 15px; }
+    input[type="text"], select {
+      width: 100%; padding: 10px; font-size: 16px; border-radius: 6px;
+      border: 1px solid #374151; background-color: #0f172a; color: white;
+    }
+    textarea {
+      width: 100%; padding: 10px; font-size: 16px; height: 80px;
+      border-radius: 6px; border: 1px solid #374151; background-color: #0f172a; color: white;
+    }
+    input[type="radio"], input[type="checkbox"] {
+      margin-right: 8px;
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: linear-gradient(to right, #3b82f6, #2563eb);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-
+  <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
+    <div class="main">
+      <h2>コメント編集</h2>
+      <form method="POST" action="?">
+        <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
 
-    <!-- コンテンツエリア -->
-    <div class="content" id="content">
-<!--        <form action="?" method="post">  -->
-<!--        <form method="POST" action="?" class="registration-form">-->
-        <form method="POST" action="?">
-            <!--
-            <label for="user_id">ユーザーID:</label>
-            <input type="text" id="user_id" name="user_id" value="<?php echo htmlspecialchars($edit_account['user_id'] ?? '') ?>" required><br><br>
-            -->
+        <label><input type="checkbox" name="enable" value="1" <?= !empty($edit_account['enable']) ? 'checked' : '' ?>>有効</label>
 
-            <div class="input-group" checkbox-group">
+        <label>モード:</label>
+        <label><input type="radio" name="mode" value="post" <?= $edit_account['mode'] === 'post' ? 'checked' : '' ?>>ポスト</label>
+        <label><input type="radio" name="mode" value="reply" <?= $edit_account['mode'] === 'reply' ? 'checked' : '' ?>>リプライ</label>
+        <label><input type="radio" name="mode" value="replytoreply" <?= $edit_account['mode'] === 'replytoreply' ? 'checked' : '' ?>>リプライtoリプライ</label>
 
-                <label>
-                    <input type="checkbox" name="enable" value="1" <?php echo !empty($edit_account['enable']) ? 'checked' : '' ?>>有効
-                </label><br>
+        <?php if (!empty($_SESSION['media_enable'])): ?>
+        <label>動画/画像:</label>
+        <label><input type="radio" name="new_mediatype" value="" <?= ($edit_account['movie_enable'] === 0 && $edit_account['photo_enable'] === 0) ? 'checked' : '' ?>>なし</label>
+        <label><input type="radio" name="new_mediatype" value="video" <?= $edit_account['movie_enable'] === 1 ? 'checked' : '' ?>>動画</label>
+        <label><input type="radio" name="new_mediatype" value="photo" <?= $edit_account['photo_enable'] === 1 ? 'checked' : '' ?>>画像</label>
+        <?php endif; ?>
 
-                モード
-                <label>
-                    <input type="radio" name="mode" value="post" <?php echo ($edit_account['mode'] === 'post') ? 'checked' : ''; ?>> ポスト
-                </label>
-                <label>
-                    <input type="radio" name="mode" value="reply" <?php echo ($edit_account['mode'] === 'reply') ? 'checked' : ''; ?>> リプライ
-                </label>
-                <label>
-                    <input type="radio" name="mode" value="replytoreply" <?php echo ($edit_account['mode'] === 'replytoreply') ? 'checked' : ''; ?>> リプライtoリプライ
-                </label>
-                <br>            
+        <label for="comment">コメント:</label>
+        <input type="text" id="comment" name="comment" placeholder="コメント" value="<?= htmlspecialchars($edit_account['comment'] ?? '') ?>" required>
 
-                <?php if (isset($_SESSION['media_enable']) && $_SESSION['media_enable'] == 1): ?>
+        <label for="time_zone_setting">時間帯設定:</label>
+        <select name="time_zone_setting" id="time_zone_setting">
+          <option value="" <?= $edit_account['reserve_mode'] == 0 ? 'selected' : '' ?>>なし</option>
+          <option value="time_zone_1" <?= $edit_account['reserve_mode'] == 1 ? 'selected' : '' ?>>時間帯1</option>
+          <option value="time_zone_2" <?= $edit_account['reserve_mode'] == 2 ? 'selected' : '' ?>>時間帯2</option>
+          <option value="time_zone_3" <?= $edit_account['reserve_mode'] == 3 ? 'selected' : '' ?>>時間帯3</option>
+          <option value="time_zone_4" <?= $edit_account['reserve_mode'] == 4 ? 'selected' : '' ?>>時間帯4</option>
+        </select>
 
-                動画/画像
-                <label>
-                    <input type="radio" name="new_mediatype" value="" <?php echo ($edit_account['movie_enable'] === 0 && $edit_account['photo_enable'] === 0) ? 'checked' : ''; ?>>
-                    なし
-                </label>
-                <label>
-                <input type="radio" name="new_mediatype" value="video" <?php echo ($edit_account['movie_enable'] === 1) ? 'checked' : ''; ?>>
-                    動画
-                </label>
-                <label>
-                <input type="radio" name="new_mediatype" value="photo" <?php echo ($edit_account['photo_enable'] === 1) ? 'checked' : ''; ?>>
-                    画像
-                </label>
-                <?php endif; ?>
-                <br>            
-            </div>
-
-            <div class="input-group">
-                <label for="name">コメント:</label><br>
-                <input type="text" id="comment" name="comment" placeholder="コメント" value="<?php echo htmlspecialchars($edit_account['comment'] ?? '') ?>" required>
-            </div>
-
-            <!-- 時間帯設定のコンボボックスを追加 -->
-            <div class="input-group">
-                時間帯設定
-                <select name="time_zone_setting">
-                    <option value="" <?php echo $edit_account['reserve_mode'] == 0 ? 'selected' : ''; ?>>なし</option>
-                    <option value="time_zone_1" <?php echo $edit_account['reserve_mode'] == 1 ? 'selected' : ''; ?>>時間帯1</option>
-                    <option value="time_zone_2" <?php echo $edit_account['reserve_mode'] == 2 ? 'selected' : ''; ?>>時間帯2</option>
-                    <option value="time_zone_3" <?php echo $edit_account['reserve_mode'] == 3 ? 'selected' : ''; ?>>時間帯3</option>
-                    <option value="time_zone_4" <?php echo $edit_account['reserve_mode'] == 4 ? 'selected' : ''; ?>>時間帯4</option>
-                </select>
-                ※ポスト設定時のみ有効
-            </div>
-
-            <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
-            <button type="submit">更新</button>
-        </form>
+        <button class="btn" type="submit">更新</button>
+      </form>
     </div>
-
-<style>
-    /* テキストボックスの幅を80%に設定 */
-    .input-group input[type="text"] {
-        width: 80%; /* 幅を80%に設定 */
-        padding: 8px; /* パディングを追加 */
-        font-size: 12px; /* フォントサイズを調整 */
-        margin-bottom: 5px; /* ボックス間のスペース */
-        box-sizing: border-box; /* パディングを含めた幅を計算 */
-    }
-</style> 
-
+  </div>
 </body>
 </html>

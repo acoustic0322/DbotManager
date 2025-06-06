@@ -34,6 +34,7 @@ $current_userid = $_SESSION['user_id'];
 
 $stmt = $conn->prepare("SELECT * FROM account_master WHERE user_id = ?");
 $stmt->bind_param("s", $current_userid);
+//$stmt->bind_param("s", "1");
 $stmt->execute();
 $result = $stmt->get_result();
 $stmt->close();
@@ -338,60 +339,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="
     https://cdn.jsdelivr.net/npm/choices.js@11.0.2/public/assets/styles/choices.min.css
     " rel="stylesheet">
-
-    <link rel="stylesheet" type="text/css" href="./main.css">
-    <style>
-        .registration-form {
-            margin-top: 10px;
-            margin-bottom: 20px;
-        }
-        .registration-form input {
-            margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
-            padding: 8px;
-            font-size: 16px;
-        }
-        .registration-form button {
-            padding: 8px 12px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .button_form{
-            display: inline-block;
-        }
-        div#content img,
-        div#content video{
-            max-width: 200px;
-            height: auto;
-        }
-    </style>
+    <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
-<body>
-
+<body class="upload-page">
+<div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
-
-    <!-- コンテンツエリア -->
-    <div class="content" id="content">
-   <h2>Xアカウント選択</h2>
+    <div class="main">
+   <h2>アカウント選択</h2>
    <form method="GET" action="?">
       <input type="hidden" name="type" value="<?php echo e($type) ?>">
-      <select id="form_xuser" name="xuser">
-        <option value="">未選択</option>
-        <?php foreach ($xusers as $k => $row) { ?>
-            <option value="<?php echo e($row['id']) ?>" <?php echo ( (string)$row['id'] === (string)$xuser_id ? 'selected' : '' ); ?>><?php echo e($row['name']) ?></option>
-        <?php } ?>
+      <select name="xuser" id="xuser" required>
+        <?php foreach ($xusers as $xu): ?>
+          <option value="<?= htmlspecialchars($xu['id']) ?>" <?= ($xu['id'] == $xuser_id) ? 'selected' : '' ?>>
+            <?= htmlspecialchars($xu['name']) ?> [ID=<?= $xu['id'] ?>]
+          </option>
+        <?php endforeach; ?>
       </select>
    </form>
 
@@ -485,6 +447,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
     })();
     </script>
- 
+ </div>
 </body>
 </html>

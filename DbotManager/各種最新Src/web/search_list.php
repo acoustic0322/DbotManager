@@ -88,57 +88,13 @@ $result_check = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>監視ユーザー一覧</title>
-    <link rel="stylesheet" type="text/css" href="./main.css">
-    <style>
-        .registration-form {
-/*            display: flex;*/
-            margin-bottom: 20px;
-        }
-        .registration-form input {
-            width: 80%; /* 幅を調整 */
-            margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
-            padding: 8px;
-            font-size: 12px;
-        }
-        .registration-form button {
-            padding: 8px 12px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .button_form{
-            display: inline-block;
-        }
-
-        .checkbox-group {
-           display: flex;
-            gap: 10px; /* チェックボックス間のスペース */
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center; /* チェックボックスとテキストを縦方向で中央揃え */
-        }        
-    </style>
+    <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
 <body>
-    
+<div class="layout">
 <?php require PARTS_DIR.'/sidebar.php'; ?>
-
-<div class="content" id="content">
-    <h2>新規監視登録</h2>
+  <div class="main">
+    <h2 class="tx-white">新規監視登録</h2>
 <!--    <form method="POST" action="?" class="registration-form">  -->
     <form method="POST" action="?">
         <input type="hidden" name="search_account_id" value="<?php echo htmlspecialchars($account_id); ?>">
@@ -190,7 +146,7 @@ $result_check = $stmt->get_result();
     
     </form>
 
-    <h2>監視一覧</h2>
+    <h2 class="tx-white">監視一覧</h2>
     <table>
         <thead>
             <tr>
@@ -256,12 +212,12 @@ $result_check = $stmt->get_result();
                     <td class="hidden"><?php echo htmlspecialchars($row['id']); ?></td>
 
                     <td>
-                        <button onclick="editComment(<?php echo $row['id']; ?>)">編集</button>
+                        <button class="btn" onclick="editComment(<?php echo $row['id']; ?>)">編集</button>
                         <form class="button_form" method="POST" action="?">
                         <input type="hidden" name="type" value="del">
                         <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']) ?>">
                         <input type="hidden" name="search_account_id" value="<?php echo htmlspecialchars($account_id); ?>">
-                        <button type="button" onclick="deleteComment(this,<?php echo htmlspecialchars($account_id); ?>)">削除</button>
+                        <button type="button" class="btn" onclick="deleteComment(this,<?php echo htmlspecialchars($account_id); ?>)">削除</button>
                     </form>
                     </td>
                 </tr>
@@ -269,11 +225,6 @@ $result_check = $stmt->get_result();
         </tbody>
     </table>
 
-    <style>
-    .hidden {
-        display: none;
-    }
-    </style>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -286,7 +237,7 @@ $result_check = $stmt->get_result();
         }
 
     </script>
-
+</div>
 </div>
 
 </body>

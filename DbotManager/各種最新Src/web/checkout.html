@@ -1,0 +1,29 @@
+<!-- checkout.html -->
+<!DOCTYPE html>
+<html>
+<head>
+        <meta charset="UTF-8">
+  <title>決済ページ</title>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <h2>商品: サンプル商品 (¥1,000)</h2>
+  <button id="checkout-button">支払う</button>
+
+  <script>
+//    const stripe = Stripe('pk_test_xxxxxxxxxxxxxxxxxxxxxxxx'); // 公開可能キー
+    const stripe = Stripe('pk_test_51REokc2KckKYw0LSWsaxpUUf26UUsmyMQbS1JfwbeNPMJX78DMPeDCZFgIBk9S8yGaDIKIqhf6gnR7WQkXuQKYJP00cJm9372n'); // 公開可能キー
+
+    document.getElementById('checkout-button').addEventListener('click', function () {
+      fetch('create-checkout-session.php', {
+        method: 'POST',
+      })
+      .then(response => response.json())
+      .then(session => {
+        return stripe.redirectToCheckout({ sessionId: session.id });
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  </script>
+</body>
+</html>

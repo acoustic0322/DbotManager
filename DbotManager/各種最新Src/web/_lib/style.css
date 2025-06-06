@@ -1,0 +1,179 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #0a0f1a;
+  color: #ffffff;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  flex: 0 0 240px;
+  background: #1e1e1e;
+  padding: 20px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.content {
+  flex: 1;
+  max-width: 1200px;
+  padding: 40px 20px;
+  margin: 0 auto;
+  background: #0a0f1a;
+}
+
+.main {
+  flex-grow: 1;
+  padding: 40px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 1000px;
+}
+
+h2 {
+  font-size: 32px;
+  border-left: 6px solid #3b82f6;
+  padding-left: 12px;
+  margin-bottom: 30px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #374151;
+  background: #0f172a;
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+form input[type="text"] {
+  background: #2a2a2a;
+  color: #fff;
+  width: 220px;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  margin-right: 10px;
+  transform: scale(1.2);
+}
+
+textarea {
+  resize: vertical;
+  height: 150px;
+}
+
+.short {
+  width: 60px;
+  display: inline-block;
+  margin: 0 5px;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.flex-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.flex-row > * {
+  white-space: nowrap;
+}
+
+.form-block {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 30px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+th {
+  background: #2c2c2c;
+  color: #3b82f6;
+  font-weight: 600;
+  text-align: left;
+}
+
+td {
+  background: #1e1e1e;
+}
+
+tr:hover td {
+  background: #2a2a2a;
+}
+
+.btn,
+form button,
+.button_form button,
+.content button {
+  padding: 10px 20px;
+  margin: 4px 6px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.button_form button,
+.content button {
+  padding: 6px 12px;
+  margin: 2px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.btn:hover,
+form button:hover,
+.button_form button:hover,
+.content button:hover {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+}
+
+
+

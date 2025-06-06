@@ -12,6 +12,8 @@ if (!current_user($conn)) {
 }
 
 
+
+
 // idの確認
 //$id = $_GET['id'] ?? null;
 $id = $_POST['id'] ?? $_GET['id'] ?? null;
@@ -26,6 +28,19 @@ $edit_account = get_account($conn, $id);
 if ($edit_account === null) {
     echo 'アカウントが存在しません';
     exit;
+}
+
+//echo $edit_account['ai_post_prompt'];
+
+// プロンプトプリセットのリストを取得
+$stmt = $conn->prepare("SELECT id, type, mode , name, prompt , example FROM prompt_master");
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
+
+$presets = [];
+while ($row = $result->fetch_assoc()) {
+    $presets[] = $row;
 }
 
 // POSTリクエストの場合
@@ -82,12 +97,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $reserve4_end_hour = $_POST['reserve4_end_hour'] ?? 0;
     $reserve4_count = $_POST['reserve4_count'] ?? 0;
 
+    $reserve1_ai = isset($_POST['reserve1_ai']) ? 1 : 0;
+    $reserve2_ai = isset($_POST['reserve2_ai']) ? 1 : 0;
+    $reserve3_ai = isset($_POST['reserve3_ai']) ? 1 : 0;
+    $reserve4_ai = isset($_POST['reserve4_ai']) ? 1 : 0;
+
     $dmm_id = $_POST['dmm_id'];
 
     $search_enable = isset($_POST['search_enable']) ? 1 : 0;
     $proxy_enable = isset($_POST['proxy_enable']) ? 1 : 0;
     $proxy_url = $_POST['proxy_url'];
     $check_interval = $_POST['check_interval'];
+
+    $ai_post_enable = isset($_POST['ai_post_enable']) ? 1 : 0;
+    $ai_reply_enable = isset($_POST['ai_reply_enable']) ? 1 : 0;
+    $ai_post_prompt = $_POST['ai_post_prompt'];
+    $ai_reply_prompt = $_POST['ai_reply_prompt'];
+    $ai_post_example = $_POST['ai_post_example'];
+    $ai_reply_example = $_POST['ai_reply_example'];
+//    $ai_mode = isset($_POST['ai_mode']) ? $_POST['ai_mode'] : null;
+    $ai_mode = $_POST['ai_mode'];
+
+    $ai_trend_prompt = $_POST['ai_trend_prompt'];
+
+    // api_master_id が 0 以外なら client_id を空にする
+    if (isset($edit_account['api_master_id']) && $edit_account['api_master_id'] != 0) {
+        $client_id = '';
+        $paid = 1;
+        $paid_like = 1;
+        $paid_bookmark = 1;
+        $search_enable = 0;
+        $check_interval = '';
+    }    
 
     // 入力値のバリデーション
 //    if (empty($name) || empty($login_id) || empty($login_password)) {
@@ -137,17 +178,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             reserve4_start_hour = ?, 
             reserve4_end_hour = ?, 
             reserve4_count = ?,
+            reserve1_ai = ?, 
+            reserve2_ai = ?, 
+            reserve3_ai = ?, 
+            reserve4_ai = ?, 
             dmm_id = ? ,
             search_enable = ? ,
             proxy_enable = ? ,
             proxy_url = ? ,
-            check_interval = ?
+            check_interval = ? ,
+            ai_post_enable = ? ,
+            ai_reply_enable = ? ,
+            ai_post_prompt = ? ,
+            ai_reply_prompt = ? ,
+            ai_post_example = ? ,
+            ai_reply_example = ?,
+            ai_mode   = ? ,
+            ai_trend_prompt = ? 
         WHERE id = ?
     ");
 
 //    "sssssssssssiiiiiiiiiiiiiiiiiiiiiiiiii", // 型指定
     $stmt->bind_param(
-        "sssssssiiiiiiiiiiiiiiiiiiiiiiiiisiisis", // 型指定
+        "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiissssiss", // 型指定
         $name, 
         $login_id, 
 #        $hashed_password, 
@@ -181,22 +234,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reserve4_start_hour, 
         $reserve4_end_hour, 
         $reserve4_count,
+        $reserve1_ai,
+        $reserve2_ai,
+        $reserve3_ai,
+        $reserve4_ai,
         $dmm_id,
         $search_enable ,
         $proxy_enable ,
         $proxy_url ,
         $check_interval ,
+        $ai_post_enable  ,
+        $ai_reply_enable  ,
+        $ai_post_prompt  ,
+        $ai_reply_prompt , 
+        $ai_post_example  ,
+        $ai_reply_example , 
+        $ai_mode   ,
+        $ai_trend_prompt  ,
         $id
     );
     
-//    echo "<script>alert('{$reserve1_enable}');</script>";
-
     // SQLクエリ実行
     $stmt->execute();
     $stmt->close();
-
-//    echo "<script>alert('test1');</script>";
-
 
     // 登録後にリダイレクト
     header("Location: account_list.php");
@@ -208,251 +268,102 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>Xアカウント編集</title>
-    <link rel="stylesheet" type="text/css" href="./main.css">
-    <style>
-        .registration-form {
-/*            display: flex;*/
-            margin-bottom: 20px;
-        }
-        .registration-form input {
-            width: 100%; /* 幅を調整 */
-            margin-bottom: 5px; /* 各入力欄の間にスペースを設ける */
-            padding: 8px;
-            font-size: 16px;
-        }
-        .registration-form button {
-            padding: 8px 12px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .button_form{
-            display: inline-block;
-        }
-
-        .checkbox-group {
-           display: flex;
-            gap: 10px; /* チェックボックス間のスペース */
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center; /* チェックボックスとテキストを縦方向で中央揃え */
-        }        
-    </style>
-
+  <meta charset="UTF-8">
+  <title>Xアカウント編集</title>
+  <link rel="stylesheet" href="./css/admin-dashboard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
+  <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
 
-    <!-- コンテンツエリア -->
-    <div class="content" id="content">
-<!--        <form action="?" method="post">  -->
-<!--        <form method="POST" action="?" class="registration-form">-->
+    <div class="main">
+      <div class="card">
+        <h2 class="tx-white">Xアカウント編集</h2>
         <form method="POST" action="?">
-            <!--
-            <label for="user_id">ユーザーID:</label>
-            <input type="text" id="user_id" name="user_id" value="<?php echo htmlspecialchars($edit_account['user_id'] ?? '') ?>" required><br><br>
-            -->
+          <label>名前</label>
+          <input type="text" name="name" value="<?= htmlspecialchars($edit_account['name'] ?? '') ?>">
 
-        <div class="input-group">
-            <label for="name">名前:</label><br>
-            <input type="text" id="name" name="name" placeholder="名前" value="<?php echo htmlspecialchars($edit_account['name'] ?? '') ?>" required>
-        </div>
-        <div class="input-group">
-            <label for="name">ログインID:</label><br>
-            <input type="text" id="login_id" name="login_id" placeholder="ログインID" value="<?php echo htmlspecialchars($edit_account['login_id'] ?? '') ?>" required>
-        </div>
-        <div class="input-group">
-            <label for="name">ログインパス:</label><br>
-            <input type="text" id="login_pass" name="login_password" placeholder="ログインパス" value="<?php echo htmlspecialchars($edit_account['login_password'] ?? '') ?>">
-        </div>
-        <div class="input-group">
-            <label for="name">クライアントID:</label><br>
-            <input type="text" name="client_id" placeholder="ClientID" value="<?php echo htmlspecialchars($edit_account['client_id'] ?? '') ?>">
-        </div>
-        <div class="input-group">
-            <label for="name">クライアントシークレット:</label><br>
-            <input type="text" name="client_secret" placeholder="ClientSecret" value="<?php echo htmlspecialchars($edit_account['client_secret'] ?? '') ?>">
-        </div>
+          <label>ログインID</label>
+          <input type="text" name="login_id" value="<?= htmlspecialchars($edit_account['login_id'] ?? '') ?>">
 
-        <!--
-        <div class="input-group">
-            <label for="name">bearer_token:</label>
-            <input type="text" name="bearer_token" placeholder="BearerToken" value="<?php echo htmlspecialchars($edit_account['bearer_token'] ?? '') ?>">
-        </div>
-        <div class="input-group">
-            <label for="name">refresh_token:</label>
-            <input type="text" name="refresh_token" placeholder="RefreshToken" value="<?php echo htmlspecialchars($edit_account['refresh_token'] ?? '') ?>">
-        </div>
-    -->
+          <label>ログインパス</label>
+          <input type="text" name="login_password" value="<?= htmlspecialchars($edit_account['login_password'] ?? '') ?>">
 
-        <div class="input-group" checkbox-group">
-            <label>
-                <input type="checkbox" name="enable" value="1" <?php echo !empty($edit_account['enable']) ? 'checked' : '' ?>>有効
-            </label><br>
+          <label>Client ID</label>
+          <input type="text" name="client_id" value="<?= htmlspecialchars($edit_account['client_id'] ?? '') ?>">
 
-            <?php if (isset($_SESSION['post_enable']) && $_SESSION['post_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="post_enable" value="1" <?php echo !empty($edit_account['post_enable']) ? 'checked' : '' ?>>ポスト機能
-            </label><br>
-            <?php endif; ?>
+          <label>Client Secret</label>
+          <input type="text" name="client_secret" value="<?= htmlspecialchars($edit_account['client_secret'] ?? '') ?>">
 
-            <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="like_enable" value="1" <?php echo !empty($edit_account['like_enable']) ? 'checked' : '' ?>>いいね機能
-            </label><br>
-            <?php endif; ?>
+          <label>DMM ID</label>
+          <input type="text" name="dmm_id" value="<?= htmlspecialchars($edit_account['dmm_id'] ?? '') ?>">
 
-            <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="bookmark_enable" value="1" <?php echo !empty($edit_account['bookmark_enable']) ? 'checked' : '' ?>>ブックマーク機能
-            </label><br>
-            <?php endif; ?>
+          <label>API Key</label>
+          <input type="text" name="api_key" value="<?= htmlspecialchars($edit_account['api_key'] ?? '') ?>">
 
-            <?php if (isset($_SESSION['reply_enable']) && $_SESSION['reply_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="reply_enable" value="1" <?php echo !empty($edit_account['reply_enable']) ? 'checked' : '' ?>>リプライ機能
-            </label><br>
-            <?php endif; ?>
+          <label>API Key Secret</label>
+          <input type="text" name="api_key_secret" value="<?= htmlspecialchars($edit_account['api_key_secret'] ?? '') ?>">
 
-            <?php if (isset($_SESSION['repost_enable']) && $_SESSION['repost_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="repost_enable" value="1" <?php echo !empty($edit_account['repost_enable']) ? 'checked' : '' ?>>リポスト機能
-            </label><br>
-            <?php endif; ?>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="enable" value="1" <?= !empty($edit_account['enable']) ? 'checked' : '' ?>>有効</label>
+            <label><input type="checkbox" name="like_enable" value="1" <?= !empty($edit_account['like_enable']) ? 'checked' : '' ?>>いいね</label>
+            <label><input type="checkbox" name="bookmark_enable" value="1" <?= !empty($edit_account['bookmark_enable']) ? 'checked' : '' ?>>ブックマーク</label>
+            <label><input type="checkbox" name="reply_enable" value="1" <?= !empty($edit_account['reply_enable']) ? 'checked' : '' ?>>リプライ</label>
+            <label><input type="checkbox" name="repost_enable" value="1" <?= !empty($edit_account['repost_enable']) ? 'checked' : '' ?>>リポスト</label>
+          </div>
 
-            <label>
-                <input type="checkbox" name="search_enable" value="0" <?php echo !empty($edit_account['search_enable']) ? 'checked' : '' ?>>監視実施
-            </label><br>
+          <label>監視実施 <input type="checkbox" name="search_enable" value="1" <?= !empty($edit_account['search_enable']) ? 'checked' : '' ?>></label>
+          <label>監視周期（分）</label>
+          <input type="number" name="check_interval" value="<?= htmlspecialchars($edit_account['check_interval'] ?? '') ?>">
 
-            <div class="input-group">
-            <label for="check_interval">監視周期(分):</label>
-            <input type="number" id="check_interval" name="check_interval" min="5" max="6000" step="1" value="<?php echo htmlspecialchars($edit_account['check_interval'] ?? '') ?>" style="width: 50px;">
-            </div>             
+          <label>プロキシ使用 <input type="checkbox" name="proxy_enable" value="1" <?= !empty($edit_account['proxy_enable']) ? 'checked' : '' ?>></label>
+          <label>プロキシURL</label>
+          <input type="text" name="proxy_url" value="<?= htmlspecialchars($edit_account['proxy_url'] ?? '') ?>">
 
-            <label>
-                <input type="checkbox" name="proxy_enable" value="0" <?php echo !empty($edit_account['proxy_enable']) ? 'checked' : '' ?>>プロキシ
-            </label><br>
-            <input type="text" name="proxy_url" placeholder="プロキシURL" value="<?php echo htmlspecialchars($edit_account['proxy_url'] ?? '') ?>">
-            <br>
+          <label>有料アカウント <input type="checkbox" name="paid" value="1" <?= !empty($edit_account['paid']) ? 'checked' : '' ?>></label>
+          <label>有料API（いいね） <input type="checkbox" name="paid_like" value="1" <?= !empty($edit_account['paid_like']) ? 'checked' : '' ?>></label>
+          <label>有料API（ブックマーク） <input type="checkbox" name="paid_bookmark" value="1" <?= !empty($edit_account['paid_bookmark']) ? 'checked' : '' ?>></label>
 
-            <?php if ((isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1) || 
-              (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1)): ?>
-            <label>
-                <input type="checkbox" name="paid" value="1" <?php echo !empty($edit_account['paid']) ? 'checked' : '' ?>>有料アカウント
-            </label><br>
-            <?php endif; ?>
+          <h3>ポスト予約設定</h3>
+          <label>時間帯1</label><br>
+          <input type="checkbox" name="reserve1_enable" value="1" <?= !empty($edit_account['reserve1_enable']) ? 'checked' : '' ?>>
+          <input type="text" name="reserve1_start_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve1_start_hour'] ?? '') ?>"> ～
+          <input type="text" name="reserve1_end_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve1_end_hour'] ?? '') ?>"> 時　
+          <input type="text" name="reserve1_count" class="short" value="<?= htmlspecialchars($edit_account['reserve1_count'] ?? '') ?>"> 回
 
-            <?php if (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="paid_like" value="1" <?php echo !empty($edit_account['paid_like']) ? 'checked' : '' ?>>有料API(いいね)
-            </label><br>
-            <?php endif; ?>
+          <label>AIコメントON <input type="checkbox" name="reserve1_ai" value="1" <?= !empty($edit_account['reserve1_ai']) ? 'checked' : '' ?>></label>
 
-            <?php if (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1): ?>
-            <label>
-                <input type="checkbox" name="paid_bookmark" value="1" <?php echo !empty($edit_account['paid_bookmark']) ? 'checked' : '' ?>>有料API(ブックマーク)
-            </label><br>
-            <?php endif; ?>
-        </div>
+          <h3>AI設定</h3>
+          <label>AIポスト <input type="checkbox" name="ai_post_enable" value="1" <?= !empty($edit_account['ai_post_enable']) ? 'checked' : '' ?>></label>
+          <label>AIリプライ <input type="checkbox" name="ai_reply_enable" value="1" <?= !empty($edit_account['ai_reply_enable']) ? 'checked' : '' ?>></label>
 
-        <div class="input-group">
-            DMM ID:<br>
-            <input type="text" id="dmm_id" name="dmm_id" placeholder="DMM ID" value="<?php echo htmlspecialchars($edit_account['dmm_id'] ?? '') ?>">
-        </div>
+          <label>AIモード</label>
+          <label><input type="radio" name="ai_mode" value="0" <?= ($edit_account['ai_mode'] ?? '') == 0 ? 'checked' : '' ?>>なし</label>
+          <label><input type="radio" name="ai_mode" value="1" <?= ($edit_account['ai_mode'] ?? '') == 1 ? 'checked' : '' ?>>自由</label>
+          <label><input type="radio" name="ai_mode" value="2" <?= ($edit_account['ai_mode'] ?? '') == 2 ? 'checked' : '' ?>>裏垢女子</label>
+          <label><input type="radio" name="ai_mode" value="3" <?= ($edit_account['ai_mode'] ?? '') == 3 ? 'checked' : '' ?>>トレンド</label>
 
-        <br>
-        【メディアポスト関連】
-        <br>
-        <div class="input-group">
-            <label for="name">ApiKey:</label><br>
-            <input type="text" name="api_key" placeholder="ApiKey" value="<?php echo htmlspecialchars($edit_account['api_key'] ?? '') ?>">
-        </div>
-        <div class="input-group">
-            <label for="name">ApiKeySecret:</label><br>
-            <input type="text" name="api_key_secret" placeholder="ApiKeySecret" value="<?php echo htmlspecialchars($edit_account['api_key_secret'] ?? '') ?>">
-        </div>
-        
-        <!--
-        <div class="input-group">
-            <label for="name">AccessToken:</label><br>
-            <input type="text" name="access_token" placeholder="AccessToken" value="<?php echo htmlspecialchars($edit_account['access_token'] ?? '') ?>">
-        </div>
-        <div class="input-group">
-            <label for="name">AccessTokenSecret:</label><br>
-            <input type="text" name="access_token_secret" placeholder="AccessTokenSecret" value="<?php echo htmlspecialchars($edit_account['access_token_secret'] ?? '') ?>">
-        </div>
-            -->
+          <label>ポスト用プロンプト</label>
+          <textarea name="ai_post_prompt"><?= htmlspecialchars($edit_account['ai_post_prompt'] ?? '') ?></textarea>
 
-        <br>
-        【ポスト予約設定】
-        <br>
-        <label>
-            <input type="checkbox" name="reserve1_enable" value="1" <?php echo !empty($edit_account['reserve1_enable']) ? 'checked' : '' ?>>時間帯１
-            <input type="text" name="reserve1_start_hour" class="short" placeholder="開始" value="<?php echo htmlspecialchars($edit_account['reserve1_start_hour'] ?? '') ?>"> ～
-            <input type="text" name="reserve1_end_hour" class="short" placeholder="終了" value="<?php echo htmlspecialchars($edit_account['reserve1_end_hour'] ?? '') ?>"> 時　
-            <input type="text" name="reserve1_count" class="short" placeholder="" value="<?php echo htmlspecialchars($edit_account['reserve1_count'] ?? '') ?>"> 回
-        </label><br>
-        <label>
-            <input type="checkbox" name="reserve2_enable" value="1" <?php echo !empty($edit_account['reserve2_enable']) ? 'checked' : '' ?>>時間帯２
-            <input type="text" name="reserve2_start_hour" class="short" placeholder="開始" value="<?php echo htmlspecialchars($edit_account['reserve2_start_hour'] ?? '') ?>"> ～
-            <input type="text" name="reserve2_end_hour" class="short" placeholder="終了" value="<?php echo htmlspecialchars($edit_account['reserve2_end_hour'] ?? '') ?>"> 時　
-            <input type="text" name="reserve2_count" class="short" placeholder="" value="<?php echo htmlspecialchars($edit_account['reserve2_count'] ?? '') ?>"> 回
-        </label><br>
-        <label>
-            <input type="checkbox" name="reserve3_enable" value="1" <?php echo !empty($edit_account['reserve3_enable']) ? 'checked' : '' ?>>時間帯３
-            <input type="text" name="reserve3_start_hour" class="short" placeholder="開始" value="<?php echo htmlspecialchars($edit_account['reserve3_start_hour'] ?? '') ?>"> ～
-            <input type="text" name="reserve3_end_hour" class="short" placeholder="終了" value="<?php echo htmlspecialchars($edit_account['reserve3_end_hour'] ?? '') ?>"> 時　
-            <input type="text" name="reserve3_count" class="short" placeholder="" value="<?php echo htmlspecialchars($edit_account['reserve3_count'] ?? '') ?>"> 回
-        </label><br>
-        <label>
-            <input type="checkbox" name="reserve4_enable" value="1" <?php echo !empty($edit_account['reserve4_enable']) ? 'checked' : '' ?>>時間帯４
-            <input type="text" name="reserve4_start_hour" class="short" placeholder="開始" value="<?php echo htmlspecialchars($edit_account['reserve4_start_hour'] ?? '') ?>"> ～
-            <input type="text" name="reserve4_end_hour" class="short" placeholder="終了" value="<?php echo htmlspecialchars($edit_account['reserve4_end_hour'] ?? '') ?>"> 時　
-            <input type="text" name="reserve4_count" class="short" placeholder="" value="<?php echo htmlspecialchars($edit_account['reserve4_count'] ?? '') ?>"> 回
-        </label><br>
-        
-        <br>
+          <label>ポスト例文</label>
+          <textarea name="ai_post_example"><?= htmlspecialchars($edit_account['ai_post_example'] ?? '') ?></textarea>
 
+          <label>リプ用プロンプト</label>
+          <textarea name="ai_reply_prompt"><?= htmlspecialchars($edit_account['ai_reply_prompt'] ?? '') ?></textarea>
 
-            <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
-            <button type="submit">更新</button>
+          <label>リプ例文</label>
+          <textarea name="ai_reply_example"><?= htmlspecialchars($edit_account['ai_reply_example'] ?? '') ?></textarea>
+
+          <label>トレンドプロンプト</label>
+          <textarea name="ai_trend_prompt"><?= htmlspecialchars($edit_account['ai_trend_prompt'] ?? '') ?></textarea>
+
+          <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
+          <button class="btn" type="submit">更新</button>
         </form>
+      </div>
     </div>
-
-<style>
-    /* テキストボックスの幅を80%に設定 */
-    .input-group input[type="text"] {
-        width: 80%; /* 幅を80%に設定 */
-        padding: 8px; /* パディングを追加 */
-        font-size: 12px; /* フォントサイズを調整 */
-        margin-bottom: 5px; /* ボックス間のスペース */
-        box-sizing: border-box; /* パディングを含めた幅を計算 */
-    }
-</style> 
-
-<style>
-    /* テキストボックスの幅を短く設定 */
-    input[type="text"].short {
-        width: 40px; /* 必要に応じて調整 */
-    }
-</style>
-
+  </div>
 </body>
 </html>
