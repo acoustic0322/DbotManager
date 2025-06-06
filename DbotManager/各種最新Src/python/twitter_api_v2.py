@@ -1297,3 +1297,38 @@ def proc_unfollowing_v2(credentials, target_user):
     response_str = json.dumps(response.json())
     return response.status_code == 200, response_str
         
+def proc_profile_image_v2(credentials):
+
+    access_token = credentials['bearer_token']
+
+    # APIエンドポイント
+    url = f"https://api.twitter.com/2/users/by/username/{credentials['login_id']}?user.fields=profile_image_url"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    outputLog(f"client_id={credentials['client_id']}")
+
+    # プロキシ設定あり
+    if credentials['proxy_enable'] and credentials['proxy_url']:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.delete(url, headers=headers, proxies=proxies)
+    else:
+        response = requests.delete(url, headers=headers)
+
+    # 結果を出力
+    if response.status_code == 200:
+        data = response.json()
+        profile_image_url = data['data']['profile_image_url']
+        print(f"{username} のプロフィール画像URL: {profile_image_url}")
+    else:
+        print("エラー:", response.status_code, response.text)
+
+#    response_str = json.dumps(response.json())
+#    return response.status_code == 200, response_str
+        

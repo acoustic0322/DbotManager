@@ -538,3 +538,29 @@ def proc_monomane(search_row , tweet_data, tweets):
 
     return False,None
                 
+
+def proc_profile_image_v1(credentials):
+
+    # OAuth 1.0a 認証
+#    auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
+    auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
+    auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
+
+    # Twitterアプリの認証情報（事前に取得しておく）
+    consumer_key = credentials['api_key']
+    consumer_secret = credentials['api_key_secret']
+    access_token = credentials['access_token']
+    access_token_secret = credentials['access_token_secret']
+
+    auth = tweepy.OAuth1UserHandler(consumer_key, consumer_secret, access_token, access_token_secret)
+    api = tweepy.API(auth)
+
+    print(credentials['login_id'])
+
+    user = api.get_user(screen_name=credentials['login_id'])
+
+    # 画像URL表示（高画質にしたい場合は _normal を削除）
+    profile_image_url = user.profile_image_url_https.replace('_normal', '')
+    print(f"{username} のプロフィール画像URL: {profile_image_url}")
+
+        
