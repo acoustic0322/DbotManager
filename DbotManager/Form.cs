@@ -893,7 +893,7 @@ namespace DbotManager
                     item.RepostEnable,
                     item.RepostCount,
                     checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
-                    item.UserId,
+                    item.SensyukenMode　== 0 ? item.UserId : 0 ,    // 選手権モード時はUSERIDを指定しない(全ユーザーでいいね・ブクマ処理)
                     item.Dumplicate,
                     ExtractNumber(item.TweetId),
                     false
@@ -930,16 +930,16 @@ namespace DbotManager
                     break;
 
                 case 1:
-                    item.LikeCount = 250;
-                    item.LikeEnable = true;
-                    item.JapLikeCount = 0;
-                    item.BookmarkCount = 250;
-                    item.BookmarkEnable = true;
-                    item.ReplyEnable = false;
-                    item.RepostEnable = false;
+//                    item.LikeCount = 250;
+//                    item.LikeEnable = true;
+//                    item.JapLikeCount = 0;
+//                    item.BookmarkCount = 250;
+//                    item.BookmarkEnable = true;
+//                    item.ReplyEnable = false;
+//                    item.RepostEnable = false;
 
                     // 選手権モード時はUserアカウントは指定しない
-                    item.UserId = 0;
+//                    item.UserId = 0;
 
 //                    item.LikeCount = 1;
 //                    item.JapLikeCount = 20;
