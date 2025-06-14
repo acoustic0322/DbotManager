@@ -147,42 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>コメント編集</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background-color: #0a0f1a;
-      color: white;
-    }
-    .layout { display: flex; }
-    .main { flex-grow: 1; padding: 40px; max-width: 800px; }
-    h2 { font-size: 24px; margin-bottom: 20px; }
-    label { font-weight: bold; display: block; margin-top: 15px; }
-    input[type="text"], select {
-      width: 100%; padding: 10px; font-size: 16px; border-radius: 6px;
-      border: 1px solid #374151; background-color: #0f172a; color: white;
-    }
-    textarea {
-      width: 100%; padding: 10px; font-size: 16px; height: 80px;
-      border-radius: 6px; border: 1px solid #374151; background-color: #0f172a; color: white;
-    }
-    input[type="radio"], input[type="checkbox"] {
-      margin-right: 8px;
-    }
-    .btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: linear-gradient(to right, #3b82f6, #2563eb);
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
-</head>
+  <link rel="stylesheet" href="./css/admin-dashboard.css" /></head>
 <body>
   <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>

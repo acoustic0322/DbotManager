@@ -348,7 +348,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    <h2>アカウント選択</h2>
    <form method="GET" action="?">
       <input type="hidden" name="type" value="<?php echo e($type) ?>">
-      <select name="xuser" id="xuser" required>
+      <select name="xuser" id="form_xuser" required>
         <?php foreach ($xusers as $xu): ?>
           <option value="<?= htmlspecialchars($xu['id']) ?>" <?= ($xu['id'] == $xuser_id) ? 'selected' : '' ?>>
             <?= htmlspecialchars($xu['name']) ?> [ID=<?= $xu['id'] ?>]

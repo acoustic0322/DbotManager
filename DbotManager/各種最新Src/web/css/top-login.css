@@ -57,12 +57,23 @@ html {
 }
 
 body {
-  font-family: "Poppins", sans-serif;
+
+/* 2025.06.09 背景がbg.jpenに切り替わらなかったため修正
+/*
+  font-family: "Poppins", sans-serif; 
   background-color: var(--navy-dark);
   color: var(--text-white);
   line-height: 1.6;
   overflow-x: hidden;
   position: relative;
+  */
+
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)),
+              url("../img/bg.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;  
 }
 
 a {
@@ -900,7 +911,11 @@ nav a:hover::after {
   align-items: center;
   justify-content: center;
   padding: var(--spacing-xl);
-  background: var(--gradient-navy);
+
+  /* 2025.06.09 背景がbg.jpenに切り替わらなかったため修正
+  /* background: var(--gradient-navy); */
+  background: transparent !important;
+
   position: relative;
   overflow: hidden;
 }

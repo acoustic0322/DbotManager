@@ -202,7 +202,7 @@ $result_replytoreply = $stmt->get_result();
 <body class="comment-regist-page">
   <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
-    <div class="main">
+   <div class="content" id="content">
       <h2>新規コメント登録</h2>
       <form method="POST" action="?">
         <input type="hidden" name="account_id" value="<?= htmlspecialchars($account_id) ?>">

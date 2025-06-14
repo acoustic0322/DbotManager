@@ -81,6 +81,8 @@ function current_user($conn){
         $_SESSION['OPENAI_API_KEY'] = '';
         $_SESSION['ai_enable'] = '0';
         $_SESSION['follow_enable'] = '0';
+        $_SESSION['sensyuken_like_limit'] = 0;
+        $_SESSION['sensyuken_bookmark_limit'] = 0;
         
         $_SESSION['is_guest'] = true;
         $_SESSION['is_logged_in'] = false;
@@ -113,6 +115,9 @@ function current_user($conn){
         $_SESSION['OPENAI_API_KEY'] = $user['OPENAI_API_KEY'];
         $_SESSION['ai_enable'] = $user['ai_enable'];
         $_SESSION['follow_enable'] = $user['follow_enable'];
+        $_SESSION['sensyuken_like_limit'] = $user['sensyuken_like_limit'];
+        $_SESSION['sensyuken_bookmark_limit'] = $user['sensyuken_bookmark_limit'];
+
 
         $re = true;
     }
@@ -147,6 +152,8 @@ function get_user($conn,$id){
         OPENAI_API_KEY,
         ai_enable,
         follow_enable
+        ,sensyuken_like_limit
+        ,sensyuken_bookmark_limit
      FROM user_master WHERE id = ?"
      );
 
@@ -177,6 +184,8 @@ function get_user($conn,$id){
             $OPENAI_API_KEY,
             $ai_enable,
             $follow_enable
+            ,$sensyuken_like_limit
+            ,$sensyuken_bookmark_limit
         );
         $stmt->fetch();
 
@@ -204,6 +213,8 @@ function get_user($conn,$id){
                 'OPENAI_API_KEY' => $OPENAI_API_KEY,
                 'ai_enable' => $ai_enable ,
                 'follow_enable' => $follow_enable ,
+                'sensyuken_like_limit' => $sensyuken_like_limit ,
+                'sensyuken_bookmark_limit' => $sensyuken_bookmark_limit ,
                 ];
         }
 
@@ -543,7 +554,10 @@ function get_search_list_row($conn, $id)
         monomane_enable, 
         post_account_id , 
         reply_account_id , 
-        monomane_account_id 
+        monomane_account_id ,
+        time_enable ,
+        start_hour , 
+        end_hour
     FROM search_list
     WHERE id = ?;
     ";
@@ -559,7 +573,8 @@ function get_search_list_row($conn, $id)
         $stmt->bind_result(
             $search_user_name, $enable, 
             $post_enable, $reply_enable, $monomane_enable,
-            $post_account_id, $reply_account_id, $monomane_account_id
+            $post_account_id, $reply_account_id, $monomane_account_id ,
+            $time_enable , $start_hour , $end_hour
             );
 
         if ($stmt->fetch()) {
@@ -573,7 +588,10 @@ function get_search_list_row($conn, $id)
                 'monomane_enable' => $monomane_enable, 
                 'post_account_id' => $post_account_id , 
                 'reply_account_id' => $reply_account_id , 
-                'monomane_account_id'  => $monomane_account_id
+                'monomane_account_id'  => $monomane_account_id ,
+                'time_enable'  => $time_enable ,
+                'start_hour'  => $start_hour ,
+                'end_hour'  => $end_hour 
             ];
         }
     }

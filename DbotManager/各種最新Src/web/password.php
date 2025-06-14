@@ -48,8 +48,9 @@ $password = $current_user['password'];
 <div class="main">
     <!-- コンテンツエリア -->
     <div class="content" id="content">
+        <h2>パスワード</h2>        
         <form action="?" method="post">
-            <label for="password">パスワード:</label>
+            <label for="password">変更するパスワード:</label>
             <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required><br><br>
             
             <button type="submit">変更</button>

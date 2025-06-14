@@ -94,8 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Xアカウント編集</title>
-    <link rel="stylesheet" href="_lib/style.css">
+    <title>監視設定編集</title>
+    <link rel="stylesheet" href="./css/admin-dashboard.css" />
 
 </head>
 <body>
@@ -106,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- コンテンツエリア -->
     <div class="content" id="content">
+    <h2 class="tx-white">監視設定編集</h2>
 <!--        <form action="?" method="post">  -->
 <!--        <form method="POST" action="?" class="registration-form">-->
 
@@ -135,7 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- 時間帯有効/無効チェックボックス -->
         <div class="input-group">
             <label>
-                <input type="checkbox" name="time_enable" value="time_enable">
+                <input type="checkbox" name="time_enable" value="1"
+                    <?php echo ($edit_account['time_enable'] == 1) ? 'checked' : ''; ?>>
                 時間帯有効
             </label>
         </div>
@@ -143,14 +145,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- 開始時間 -->
         <div class="input-group">
             <label for="start_time">開始時間 (0～24):</label>
-            <input type="number" id="start_hour" name="start_hour" min="0" max="24" step="1" value="0" style="width: 50px;">
+            <input type="number" class="short" id="start_hour" name="start_hour" min="0" max="24" step="1"
+                value="<?php echo (int)($edit_account['start_hour'] ?? 0); ?>">
         </div>
 
         <!-- 終了時間 -->
         <div class="input-group">
             <label for="end_time">終了時間 (0～24):</label>
-            <input type="number" id="end_hour" name="end_hour" min="0" max="24" step="1" value="24" style="width: 50px;">
-        </div>         
+            <input type="number" class="short" id="end_hour" name="end_hour" min="0" max="24" step="1"
+                value="<?php echo (int)($edit_account['end_hour'] ?? 24); ?>">
+        </div>    
 
         <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($id); ?>">
         <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">

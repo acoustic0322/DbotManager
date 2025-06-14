@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>いいね・ブックマーク</title>
+    <title>(自)いいね・ブクマ</title>
     <link rel="stylesheet" href="./css/admin-dashboard.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
@@ -61,10 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="main">
     <!-- コンテンツエリア -->
     <div class="content" id="content">    
-    <h2>ツイート自動処理 登録フォーム</h2>
+    <h2>(自)いいね・ブクマ</h2>
     <form method="POST">
         <label for="tweet_id">対象ツイートID</label>
-        <input type="text" id="tweet_id" name="tweet_id" required>
+        <input type="text" id="tweet_id" name="tweet_id">
 
         <div class="form-block">
             <label>実行機能</label>
@@ -77,21 +77,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="form-block">
             <label for="like_count">いいね数</label>
-            <input type="number" id="like_count" name="like_count" min="0">
+            <input type="number" id="like_count" name="like_count" min="0" class="short">
 
             <label for="bookmark_count">ブックマーク数</label>
-            <input type="number" id="bookmark_count" name="bookmark_count" min="0">
+            <input type="number" id="bookmark_count" name="bookmark_count" min="0" class="short">
 
             <label for="reply_count">リプライ数</label>
-            <input type="number" id="reply_count" name="reply_count" min="0">
+            <input type="number" id="reply_count" name="reply_count" min="0" class="short">
 
             <label for="repost_count">リポスト数</label>
-            <input type="number" id="repost_count" name="repost_count" min="0">
+            <input type="number" id="repost_count" name="repost_count" min="0" class="short">
         </div>
 
         <div class="form-block">
             <label><input type="checkbox" name="follow_enable">フォロー操作</label>
-            <label><input type="radio" name="follow_action" value="add">フォロー</label>
+            <label><input type="radio" name="follow_action" value="add" checked>フォロー</label>
             <label><input type="radio" name="follow_action" value="remove">アンフォロー</label>
 
             <label for="follow_screen_name">対象アカウント名 (@なし)</label>
@@ -103,5 +103,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
       </div>
       </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const tweetIdInput = document.querySelector('input[name="tweet_id"]');
+    const followCheckbox = document.querySelector('input[name="follow_enable"]');
+    const followScreenNameInput = document.querySelector('input[name="follow_screen_name"]');
+
+    form.addEventListener("submit", function (e) {
+        const actions = [
+            { check: 'like_enable', input: 'like_count', label: 'いいね数' },
+            { check: 'bookmark_enable', input: 'bookmark_count', label: 'ブックマーク数' },
+            { check: 'reply_enable', input: 'reply_count', label: 'リプライ数' },
+            { check: 'repost_enable', input: 'repost_count', label: 'リポスト数' }
+        ];
+
+        let requireTweetId = false;
+
+        for (const { check, input, label } of actions) {
+            const checkEl = document.querySelector(`input[name="${check}"]`);
+            const inputEl = document.querySelector(`input[name="${input}"]`);
+            const isChecked = checkEl?.checked;
+
+            if (isChecked) {
+                const value = parseInt(inputEl?.value || "0", 10);
+                if (isNaN(value) || value <= 0) {
+                    alert(`「${label}」を1以上で入力してください。`);
+                    inputEl?.focus();
+                    e.preventDefault();
+                    return;
+                }
+                requireTweetId = true;
+            }
+        }
+
+        // リプライにリプライ（数値不要だがtweet_idは必要）
+        const repToRepChecked = document.querySelector('input[name="rep_to_rep"]')?.checked;
+        if (repToRepChecked) {
+            requireTweetId = true;
+        }
+
+        // tweet_idが必要なのに空ならエラー
+        if (requireTweetId && tweetIdInput?.value.trim() === "") {
+            alert("対象ツイートIDを入力してください。");
+            tweetIdInput.focus();
+            e.preventDefault();
+        }
+
+        // フォロー操作がONなら、対象アカウント必須
+        if (followCheckbox?.checked) {
+            const target = followScreenNameInput?.value.trim();
+            if (!target) {
+                alert("フォロー対象アカウント名を入力してください。");
+                followScreenNameInput.focus();
+                e.preventDefault();
+                return;
+            }
+        }        
+    });
+});
+</script>
+
+
+
+
 </body>
 </html>
+

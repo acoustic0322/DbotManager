@@ -77,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ログイン - X-DBOT</title>   
     <link rel="stylesheet" href="css/top-login.css" />
-    <link rel="stylesheet" href="css/animations.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -86,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     />
   </head>
   <body>
+      <div class="layout">
     <div class="noise-overlay"></div>
 
     <a href="index.html" class="back-link">ホームに戻る</a>
@@ -130,6 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               margin: 20px 0;
             "
           >
+          <!--
           ↓デモのため、こちらで管理画面に遷移
           </p>
           <a
@@ -144,10 +145,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             "
             >ログインページに遷移</a
           >
+-->
         </form>
       </div>
     </div>
 
     <script src="js/animations.js"></script>
   </body>
+</div>
 </html>

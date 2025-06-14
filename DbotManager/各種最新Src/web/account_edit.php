@@ -277,18 +277,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
 
-    <div class="main">
-      <div class="card">
+   <div class="content" id="content">
+<!--      <div class="card"> -->
         <h2 class="tx-white">Xアカウント編集</h2>
+
+    <?php
+        $profile_image_path = "img/profile/" . htmlspecialchars($edit_account['id']) . ".jpg";
+        $login_id = htmlspecialchars($edit_account['login_id']);
+        $x_link = "https://x.com/" . urlencode($login_id);
+        ?>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <img src="<?= $profile_image_path ?>"
+               alt="アイコン"
+               onerror="this.onerror=null;this.src='img/profile/noimage/noimage.jpg';"
+               style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #ccc;">
+
+          <div style="font-size: 16px; font-style: italic;">
+            <a href="<?= $x_link ?>"
+               target="_blank"
+               style="color: #d4af37; text-decoration: none;"
+               onmouseover="this.style.textDecoration='underline'"
+               onmouseout="this.style.textDecoration='none'">
+              @<?= $login_id ?>
+            </a>
+          </div>
+        </div>
+        
         <form method="POST" action="?">
           <label>名前</label>
           <input type="text" name="name" value="<?= htmlspecialchars($edit_account['name'] ?? '') ?>">
 
-          <label>ログインID</label>
+          <label>XアカウントID</label>
           <input type="text" name="login_id" value="<?= htmlspecialchars($edit_account['login_id'] ?? '') ?>">
 
+          <!--
           <label>ログインパス</label>
           <input type="text" name="login_password" value="<?= htmlspecialchars($edit_account['login_password'] ?? '') ?>">
+          -->
 
           <label>Client ID</label>
           <input type="text" name="client_id" value="<?= htmlspecialchars($edit_account['client_id'] ?? '') ?>">
@@ -307,6 +332,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <div class="checkbox-group">
             <label><input type="checkbox" name="enable" value="1" <?= !empty($edit_account['enable']) ? 'checked' : '' ?>>有効</label>
+            <label><input type="checkbox" name="post_enable" value="1" <?= !empty($edit_account['post_enable']) ? 'checked' : '' ?>>ポスト</label>
             <label><input type="checkbox" name="like_enable" value="1" <?= !empty($edit_account['like_enable']) ? 'checked' : '' ?>>いいね</label>
             <label><input type="checkbox" name="bookmark_enable" value="1" <?= !empty($edit_account['bookmark_enable']) ? 'checked' : '' ?>>ブックマーク</label>
             <label><input type="checkbox" name="reply_enable" value="1" <?= !empty($edit_account['reply_enable']) ? 'checked' : '' ?>>リプライ</label>
@@ -315,7 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <label>監視実施 <input type="checkbox" name="search_enable" value="1" <?= !empty($edit_account['search_enable']) ? 'checked' : '' ?>></label>
           <label>監視周期（分）</label>
-          <input type="number" name="check_interval" value="<?= htmlspecialchars($edit_account['check_interval'] ?? '') ?>">
+          <input type="number" class="short"  name="check_interval" value="<?= htmlspecialchars($edit_account['check_interval'] ?? '') ?>">
 
           <label>プロキシ使用 <input type="checkbox" name="proxy_enable" value="1" <?= !empty($edit_account['proxy_enable']) ? 'checked' : '' ?>></label>
           <label>プロキシURL</label>
@@ -332,6 +358,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="text" name="reserve1_end_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve1_end_hour'] ?? '') ?>"> 時　
           <input type="text" name="reserve1_count" class="short" value="<?= htmlspecialchars($edit_account['reserve1_count'] ?? '') ?>"> 回
 
+          <label>時間帯2</label><br>
+          <input type="checkbox" name="reserve2_enable" value="1" <?= !empty($edit_account['reserve2_enable']) ? 'checked' : '' ?>>
+          <input type="text" name="reserve2_start_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve2_start_hour'] ?? '') ?>"> ～
+          <input type="text" name="reserve2_end_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve2_end_hour'] ?? '') ?>"> 時　
+          <input type="text" name="reserve2_count" class="short" value="<?= htmlspecialchars($edit_account['reserve2_count'] ?? '') ?>"> 回
+
+          <label>時間帯3</label><br>
+          <input type="checkbox" name="reserve3_enable" value="1" <?= !empty($edit_account['reserve3_enable']) ? 'checked' : '' ?>>
+          <input type="text" name="reserve3_start_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve3_start_hour'] ?? '') ?>"> ～
+          <input type="text" name="reserve3_end_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve3_end_hour'] ?? '') ?>"> 時　
+          <input type="text" name="reserve3_count" class="short" value="<?= htmlspecialchars($edit_account['reserve3_count'] ?? '') ?>"> 回
+
+          <label>時間帯4</label><br>
+          <input type="checkbox" name="reserve4_enable" value="4" <?= !empty($edit_account['reserve4_enable']) ? 'checked' : '' ?>>
+          <input type="text" name="reserve4_start_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve4_start_hour'] ?? '') ?>"> ～
+          <input type="text" name="reserve4_end_hour" class="short" value="<?= htmlspecialchars($edit_account['reserve4_end_hour'] ?? '') ?>"> 時　
+          <input type="text" name="reserve4_count" class="short" value="<?= htmlspecialchars($edit_account['reserve4_count'] ?? '') ?>"> 回
+
+
+          
           <label>AIコメントON <input type="checkbox" name="reserve1_ai" value="1" <?= !empty($edit_account['reserve1_ai']) ? 'checked' : '' ?>></label>
 
           <h3>AI設定</h3>
@@ -363,7 +409,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <button class="btn" type="submit">更新</button>
         </form>
       </div>
-    </div>
+<!--    </div> -->
   </div>
 </body>
 </html>

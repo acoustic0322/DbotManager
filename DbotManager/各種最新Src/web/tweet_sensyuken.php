@@ -14,21 +14,34 @@ if (!current_user($conn)) {
 $current_userid = $_SESSION['user_id'];
 $sensyuken_mode = $_SESSION['sensyuken_mode'];
 
-//echo $current_userid ;
+
 
 $stmt = $conn->prepare("
-SELECT COUNT(*) AS today_count
+SELECT 
+  SUM(like_count) AS total_likes,
+  SUM(bookmark_count) AS total_bookmarks
 FROM tweet_process_list
-WHERE user_id = ? and sensyuken_mode != 0 and sensyuken_mode is not null
-and DATE(updatetime) = CURDATE()");
+WHERE user_id = ? 
+  AND sensyuken_mode != 0 
+  AND sensyuken_mode IS NOT NULL
+  AND DATE(updatetime) = CURDATE()"
+);
 
 $stmt->bind_param("s", $current_userid);
 $stmt->execute();
 
 $result = $stmt->get_result();
 $row = $result->fetch_assoc();
-$today_count = $row['today_count'];
-$exe_enable_count = ($sensyuken_mode * 5) - $today_count;
+//$total_likes = $row['total_likes'];
+//$total_bookmarks = $row['total_bookmarks'];
+$total_likes = is_null($row['total_likes']) ? 0 : (int)$row['total_likes'];
+$total_bookmarks = is_null($row['total_bookmarks']) ? 0 : (int)$row['total_bookmarks'];
+$exe_enable_like_count = $_SESSION['sensyuken_like_limit'] - $total_likes;
+$exe_enable_bookmark_count = $_SESSION['sensyuken_bookmark_limit'] - $total_bookmarks;
+
+//echo $current_userid ;
+//echo $total_likes ;
+//echo $total_bookmarks ;
 
 $stmt->close();
 
@@ -37,22 +50,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 引数の準備
     $tweetId = isset($_POST['tweet_id']) ? $_POST['tweet_id'] : '';
+    $like_count = isset($_POST['like_count']) ? (int)$_POST['like_count'] : 0;
+    $bookmark_count = isset($_POST['bookmark_count']) ? (int)$_POST['bookmark_count'] : 0;
+    $like_enable = isset($_POST['like_enable']) ? 1 : 0;
+    $bookmark_enable = isset($_POST['bookmark_enable']) ? 1 : 0;
 
+    // 超過チェック（サーバー側）
+    if ($like_count > $exe_enable_like_count || $bookmark_count > $exe_enable_bookmark_count) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?result=error_overlimit");
+        exit;
+    }
 
     // INSERT文
     $sql = "INSERT INTO tweet_process_list (
-        user_id, tweet_id, 
-        updatetime , sensyuken_mode
+    user_id, tweet_id, 
+    updatetime, sensyuken_mode,
+    like_count, bookmark_count,
+    like_enable, bookmark_enable
     ) 
     VALUES (
-        ?, ?, NOW() , ? 
+    ?, ?, NOW(), ?, ?, ?, ?, ?
     )";    
 
     // プリペアドステートメント
     $stmt = $conn->prepare($sql);
 
     // バインド（型指定修正）
-    $stmt->bind_param('isi', $current_userid, $tweetId, $sensyuken_mode);
+//    $stmt->bind_param('isi', $current_userid, $tweetId, $sensyuken_mode);
+    $stmt->bind_param('isiiiii', $current_userid, $tweetId, $sensyuken_mode, $like_count, $bookmark_count, $like_enable, $bookmark_enable);
 
     // 実行
     $stmt->execute();    
@@ -70,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>選手権 いいね・ブックマーク処理</title>
+    <title>選手権</title>
     <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
 <body class="tweet-sensyuken-page">
@@ -79,19 +104,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="main">
     <!-- コンテンツエリア -->
     <div class="content" id="content">
-        <h2>選手権 いいね・ブックマーク処理</h2>
-        <label>本日の残り回数： <?php echo ($exe_enable_count); ?> </label><br><br>
+        <h2>選手権</h2>
+<!--        <label>本日の残り回数： <?php echo ($exe_enable_count); ?> </label><br><br>-->
         <form method="POST" action="?">
+
+            <!-- JS用にPHP変数を埋め込み -->
+            <script>
+                const maxLikeCount = <?php echo max(0, $exe_enable_like_count); ?>;
+                const maxBookmarkCount = <?php echo max(0, $exe_enable_bookmark_count); ?>;
+            </script> 
+
         <div class="input-group" checkbox-group">
             <label>
-                <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートID" required size="80" maxlength="100">>
+                <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートID" required size="80" maxlength="100" require>
+                <br><br>
+                <label><input type="checkbox" name="like_enable">いいね（残り <?php echo max(0, $exe_enable_like_count); ?> 回）</label>
+                <input type="number" id="like_count" name="like_count" min="0" class="short">                
+                <br><br>
+                <label><input type="checkbox" name="bookmark_enable">ブックマーク（残り <?php echo max(0, $exe_enable_bookmark_count); ?> 回）</label>
+                <input type="number" id="bookmark_count" name="bookmark_count" min="0" class="short">                
+
+
             </label><br><br>
         </div>
 
-            <button type="submit" <?php if ($exe_enable_count <= 0) echo 'disabled'; ?>>実行</button>
+            <button type="submit">実行</button>
+
+                <!-- バリデーションスクリプト -->
+                <script>
+                document.querySelector("form").addEventListener("submit", function(event) {
+                    const likeEnable = document.querySelector("input[name='like_enable']").checked;
+                    const likeCount = parseInt(document.querySelector("input[name='like_count']").value || "0", 10);
+                    const bookmarkEnable = document.querySelector("input[name='bookmark_enable']").checked;
+                    const bookmarkCount = parseInt(document.querySelector("input[name='bookmark_count']").value || "0", 10);
+
+                    if (likeEnable && likeCount > maxLikeCount) {
+                        alert("指定したいいね数が本日の残り回数を超えています（残り " + maxLikeCount + " 回）");
+                        event.preventDefault();
+                        return;
+                    }
+
+                    if (bookmarkEnable && bookmarkCount > maxBookmarkCount) {
+                        alert("指定したブックマーク数が本日の残り回数を超えています（残り " + maxBookmarkCount + " 回）");
+                        event.preventDefault();
+                        return;
+                    }
+                });
+                </script>
+
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const tweetIdInput = document.querySelector('input[name="tweet_id"]');
+
+    form.addEventListener("submit", function (e) {
+        const actions = [
+            { check: 'like_enable', input: 'like_count', label: 'いいね数' },
+            { check: 'bookmark_enable', input: 'bookmark_count', label: 'ブックマーク数' },
+        ];
+
+        let requireCheckBox = false;
+        let requireTweetId = false;
+
+        for (const { check, input, label } of actions) {
+            const checkEl = document.querySelector(`input[name="${check}"]`);
+            const inputEl = document.querySelector(`input[name="${input}"]`);
+            const isChecked = checkEl?.checked;
+
+            if (isChecked) {
+
+                requireCheckBox = true;
+
+                const value = parseInt(inputEl?.value || "0", 10);
+                if (isNaN(value) || value <= 0) {
+                    alert(`「${label}」を1以上で入力してください。`);
+                    inputEl?.focus();
+                    e.preventDefault();
+                    return;
+                }
+                requireTweetId = true;
+            }
+        }
+
+        if(requireCheckBox == false)
+        {
+            alert("いいね、ブックマークのチェックボックスがOFFです");
+        }
+        // tweet_idが必要なのに空ならエラー
+        else if (requireTweetId && tweetIdInput?.value.trim() === "") {
+            alert("対象ツイートIDを入力してください。");
+            tweetIdInput.focus();
+            e.preventDefault();
+        }
+      
+    });
+});
+</script>
+
+
+
 
 </body>
 </html>

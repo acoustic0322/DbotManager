@@ -16,14 +16,14 @@
        ): ?>    
 
             <?php if (isset($_SESSION['japanese_mode']) && $_SESSION['japanese_mode'] !== 0): ?>
-                <a href="tweet_japanese.php">Twitter拡散サービス(日本人いいね)</a>
+                <a href="tweet_japanese.php">Twitter拡散サービス<BR>(日本人いいね)</a>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['sensyuken_mode']) && $_SESSION['sensyuken_mode'] !== 0): ?>
-                <a href="tweet_sensyuken.php">選手権いいね</a>
+                <a href="tweet_sensyuken.php">選手権</a>
             <?php endif; ?>
 
-            <a href="tweet.php">いいね・ﾌﾞｯｸﾏｰｸ</a>
+            <a href="tweet.php">(自)いいね・ブクマ</a>
         <?php endif; ?>
 
     <!--
@@ -35,7 +35,7 @@
     <a href="account_regist.php">Xアカウント登録</a>
 
     <?php if (isset($_SESSION['api_master_id']) && $_SESSION['api_master_id'] != 0): ?>
-    <a href="account_regist2.php">Xアカウント登録(貸出)</a>
+    <a href="account_regist2.php">Xアカウント登録<BR>(貸出API専用)</a>
     <?php endif; ?>
 
 <!--    <a href="comment_list.php">コメント設定</a>  -->
@@ -46,7 +46,7 @@
     <?php endif; ?>
 
     <?php if (isset($_SESSION['ai_enable']) && $_SESSION['ai_enable'] == 1): ?>
-        <a href="user_master.php">AI API設定</a>
+        <a href="user_master.php">AIツイート・リプ<BR>API設定</a>
     <?php endif; ?>
 
     <?php if (isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>

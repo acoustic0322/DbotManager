@@ -213,11 +213,13 @@ textarea {
   height: 150px;
 }
 
+/*
 .short {
   width: 60px;
   display: inline-block;
   margin: 0 5px;
 }
+  */
 
 .checkbox-group {
   display: flex;
@@ -250,7 +252,25 @@ table {
   background: #1e1e1e;
   border-radius: 12px;
   overflow: visible;
+
+  /* 2025.06.09 テーブル全体にくっきりゴールド枠を追加 */
+  /*
+  border: 2px solid #d4af37 !important;       
+  border-radius: 8px;
+  background-clip: padding-box;
+  box-shadow: 0 0 0 2px #d4af37,              
+              0 0 12px rgba(212, 175, 55, 0.6);
+  overflow: hidden;
+  */
 }
+
+/* テーブルヘッダーに枠線追加 */
+/*
+table tr:nth-child(1) th {
+  border: 2px solid #d4af37;
+}
+  */
+
 
 th,
 td {
@@ -429,8 +449,22 @@ table td.name-col {
   margin-bottom: 5px;
   box-sizing: border-box;
 }
+
+/*
 input[type="text"].short {
   width: 40px;
+}
+  */
+/* 2025.06.09 分数入力用CSS 統一 */
+/*
+input.short {
+  width: 30px;
+}
+  */
+
+  /* 2025.06.09 分数入力用CSS 統一 */
+input.short {
+  width: 80px !important;
 }
 
 /* search_list.html */

@@ -1,0 +1,564 @@
+/*
+ * ============================================
+ * X-DBOT 管理画面ダッシュボードスタイル
+ * ファイル名: admin-dashboard.css
+ * 用途: 管理画面（
+    sidebar.html
+    tweet_sensyuken.html
+    tweet.html
+    account_list.html
+    account_edit.html
+    comment_list.html
+    comment_regist.html
+    search_list.html
+    account_regist.html
+    account_regist2.html
+    password.html
+    upload.html
+    user_master.html
+）のページ用
+ * ============================================
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)),
+    url("../img/bg.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: #ffffff;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  flex: 0 0 240px;
+  background: #1e1e1e;
+  padding: 30px 20px;
+  border-radius: 12px;
+  width: 260px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.1) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(212, 175, 55, 0.05) 100%
+  );
+  border-radius: 12px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sidebar > * {
+  position: relative;
+  z-index: 2;
+}
+
+.sidebar h2 {
+  font-size: 20px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #d4af37;
+  padding-bottom: 10px;
+  color: #d4af37;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-weight: 700;
+}
+
+.sidebar a {
+  display: block;
+  padding: 12px 16px;
+  margin: 6px 0;
+  text-decoration: none;
+  color: white;
+  background: rgba(42, 42, 42, 0.7);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  font-weight: 500;
+}
+
+.sidebar a:hover {
+  background: linear-gradient(
+    to right,
+    rgba(212, 175, 55, 0.9),
+    rgba(170, 140, 44, 0.9)
+  );
+  color: #0a0f1a;
+  transform: translateX(6px) scale(1.02);
+  border-color: #f7ebc3;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+  text-shadow: none;
+}
+
+/* 青い色を完全に除去 */
+.sidebar * {
+  border-color: #d4af37 !important;
+}
+.sidebar *:not(a):not(h2) {
+  color: white !important;
+}
+
+.content {
+  flex: 1;
+  max-width: 1200px;
+  padding: 40px 20px;
+  margin: 0 auto;
+}
+
+.main {
+  flex-grow: 1;
+  padding: 40px;
+}
+
+.card {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 1000px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+h2 {
+  font-size: 32px;
+  border-left: 6px solid #d4af37;
+  padding-left: 12px;
+  margin-bottom: 30px;
+  color: #d4af37;
+}
+
+.content h2 {
+  color: white;
+}
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #d4af37;
+  background: rgba(15, 23, 42, 0.8);
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #f7ebc3;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+}
+
+form input[type="text"] {
+  background: rgba(42, 42, 42, 0.8);
+  color: #fff;
+  width: 220px;
+  border: 1px solid #d4af37;
+}
+
+form input[type="text"]:focus {
+  outline: none;
+  border-color: #f7ebc3;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  margin-right: 10px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+textarea {
+  resize: vertical;
+  height: 150px;
+}
+
+.short {
+  width: 60px;
+  display: inline-block;
+  margin: 0 5px;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.flex-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.flex-row > * {
+  white-space: nowrap;
+}
+
+.form-block {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 30px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  overflow: visible;
+}
+
+th,
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #2a2a2a;
+  text-align: left;
+}
+
+th {
+  background: #2c2c2c;
+  color: #d4af37;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* ヘッダーの角丸 */
+th:first-child {
+  border-top-left-radius: 12px;
+}
+
+th:last-child {
+  border-top-right-radius: 12px;
+  overflow: visible;
+  position: relative;
+}
+
+td {
+  background: #1e1e1e;
+  color: #ffffff;
+}
+
+/* 最後の行の角丸 */
+tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+  overflow: visible;
+  position: relative;
+}
+
+/* 最後の行のボーダーを削除 */
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: #2a2a2a;
+}
+
+.btn,
+form button,
+.button_form button,
+.content button {
+  padding: 10px 20px;
+  margin: 4px 6px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(to right, #d4af37, #aa8c2c);
+  color: #0a0f1a;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.button_form button,
+.content button {
+  padding: 6px 12px;
+  margin: 2px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.btn:hover,
+form button:hover,
+.button_form button:hover,
+.content button:hover {
+  background: linear-gradient(to right, #aa8c2c, #8b7323);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+/* + */
+.tx-white {
+  color: white;
+}
+
+.radio-group {
+  display: flex;
+  gap: 15px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+.dropdown-button {
+  padding: 6px 12px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 999;
+  min-width: 160px;
+  background: #1e293b;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  display: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-menu.show-above {
+  top: auto;
+  bottom: 100%;
+}
+.dropdown-menu a,
+.dropdown-menu form button {
+  display: block;
+  width: 100%; /* ← 横幅いっぱい使う */
+  box-sizing: border-box; /* ← padding含めて計算 */
+  padding: 10px 14px;
+  background: transparent;
+  color: white;
+  text-decoration: none;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+.dropdown-menu a:hover,
+.dropdown-menu form button:hover {
+  background: #2563eb;
+}
+
+table th.checkbox-col,
+table td.checkbox-col {
+  width: 40px;
+  text-align: center;
+}
+
+table th.id-col,
+table td.id-col {
+  width: 60px;
+  text-align: center;
+}
+
+table th.name-col,
+table td.name-col {
+  width: 200px;
+}
+
+/* tweet_sensyuken.html */
+.tweet-sensyuken-page form input[type="text"] {
+  width: 220px;
+}
+
+/* account_regist.html, account_regist2.html   */
+.input-group input[type="text"] {
+  width: 80%;
+  padding: 8px;
+  font-size: 12px;
+  margin-bottom: 5px;
+  box-sizing: border-box;
+}
+/*
+input[type="text"].short {
+  width: 40px;
+}
+  */
+input.short {
+  width: 120px !important; 
+}
+
+/* search_list.html */
+.hidden {
+  display: none;
+}
+
+/* comment_regist.html */
+.comment-regist-page textarea {
+  max-width: 600px;
+  font-size: 16px;
+  height: 70px;
+  margin-bottom: 10px;
+}
+
+.comment-regist-page input[type="text"],
+.comment-regist-page select {
+  width: 300px;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.mode-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.comment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 1000px;
+}
+.comment-item {
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 768px) {
+  .comment-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* password.html */
+.password-page .main {
+  max-width: 800px;
+}
+
+.password-page h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.password-page form {
+  width: 100%;
+}
+
+.password-page label {
+  margin-top: 15px;
+}
+
+.password-page input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #0f172a;
+  color: white;
+  border: 1px solid #d4af37;
+  border-radius: 6px;
+}
+
+.password-page .btn {
+  margin-top: 25px;
+  padding: 12px 20px;
+  font-size: 16px;
+}
+
+/* upload.html */
+.upload-page .main {
+  max-width: 1000px;
+}
+
+.upload-page h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.upload-page form {
+  margin-top: 20px;
+}
+
+.upload-page input[type="file"] {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #0f172a;
+  color: white;
+  border: 1px solid #374151;
+  border-radius: 6px;
+}
+
+.upload-page .btn {
+  margin-top: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  color: white;
+}
+
+.upload-page select {
+  padding: 10px;
+  border: 1px solid #d4af37;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+/* user_master.html */
+
+input[type="GROQ_API_KEY"], input[type="OPENAI_API_KEY"] {
+  border: 1px solid #d4af37;
+  border-radius: 6px;
+  padding: 10px;
+  background-color: #0f172a;
+  color: white;
+  font-size: 16px;
+}

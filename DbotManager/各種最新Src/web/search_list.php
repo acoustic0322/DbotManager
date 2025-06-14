@@ -87,13 +87,13 @@ $result_check = $stmt->get_result();
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>監視ユーザー一覧</title>
+    <title>監視Xアカウント一覧</title>
     <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
 <body>
 <div class="layout">
 <?php require PARTS_DIR.'/sidebar.php'; ?>
-  <div class="main">
+   <div class="content" id="content">
     <h2 class="tx-white">新規監視登録</h2>
 <!--    <form method="POST" action="?" class="registration-form">  -->
     <form method="POST" action="?">
@@ -133,13 +133,13 @@ $result_check = $stmt->get_result();
         <!-- 開始時間 -->
         <div class="input-group">
             <label for="start_hour">開始時間 (0～24):</label>
-            <input type="number" id="start_hour" name="start_hour" min="0" max="24" step="1" value="0" style="width: 50px;">
+            <input type="number" id="start_hour" name="start_hour" min="0" max="24" step="1" value="0"  class="short" >
         </div>
 
         <!-- 終了時間 -->
         <div class="input-group">
             <label for="end_hour">終了時間 (0～24):</label>
-            <input type="number" id="end_hour" name="end_hour" min="0" max="24" step="1" value="24" style="width: 50px;">
+            <input type="number" id="end_hour" name="end_hour" min="0" max="24" step="1" value="24"  class="short" >
         </div> 
     
         <button type="submit">登録</button>

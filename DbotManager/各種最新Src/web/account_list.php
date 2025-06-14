@@ -383,7 +383,7 @@ function toggleMenu(menuEl) {
    </form>
         -->
 
-<div style="margin-top: 20px; font-size: 14px; color: #aaa;">
+<div style="margin-top: 20px; font-size: 14px; color: #fff;">
   <strong>アイコン凡例：</strong>
   ✅=通常認証 / 🎞️=メディア認証 / 🔍=監視 / 🏷️=API貸出 / 🤖=AI（自由） / 👩=AI（裏垢） / 📈=AI（トレンド）
 </div>
@@ -401,7 +401,12 @@ function toggleMenu(menuEl) {
   <?php while ($row = $result->fetch_assoc()): ?>
   <tr>
     <td class="checkbox-col"><input type="checkbox" name="selected_ids[]" value="<?php echo htmlspecialchars($row['id']); ?>"></td>
-    <td class="id-col"></td>
+    <td class="id-col">
+      <img src="img/profile/<?php echo htmlspecialchars($row['id']); ?>.jpg"
+         alt="icon"
+         onerror="this.onerror=null;this.src='img/profile/noimage/noimage.jpg';"
+         style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;">
+    </td>  
     <td class="name-col">
       <div>
         <div>

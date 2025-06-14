@@ -328,7 +328,7 @@ $result = $stmt->get_result();
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>アカウント登録</title>
+  <title>Xアカウント登録(貸出API専用)</title>
   <link rel="stylesheet" href="./css/admin-dashboard.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   </style>
@@ -336,19 +336,21 @@ $result = $stmt->get_result();
 <body>
 <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
-    <div class="main">
-   <h2 class="tx-white">新規Xアカウント登録(貸出)</h2>
+   <div class="content" id="content">
+   <h2 class="tx-white">Xアカウント登録(貸出API専用)</h2>
    <form method="POST" action="?">
 
     <div class="input-group">
         <input type="text" id="new_name" name="new_name" placeholder="名前" required>
     </div>
     <div class="input-group">
-        <input type="text" id="new_login_id" name="new_login_id" placeholder="ログインID" required>
+        <input type="text" id="new_login_id" name="new_login_id" placeholder="XアカウントID" required>
     </div>
+    <!--
     <div class="input-group">
         <input type="text" id="new_login_pass" name="new_login_pass" placeholder="ログインパス">
     </div>
+    -->
 
     <!-- チェックボックス (通常モード用) -->
      <!--
@@ -420,7 +422,7 @@ $result = $stmt->get_result();
 
         <div class="input-group">
         <label for="check_interval">監視周期(分):</label>
-        <input type="number" id="check_interval" name="check_interval" min="5" max="6000" step="1" value="60" style="width: 50px;">
+        <input type="number" id="check_interval" name="check_interval" class="short" min="5" max="6000" step="1" value="60">
         </div>  
 
         <?php endif; ?>
