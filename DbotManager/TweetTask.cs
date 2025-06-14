@@ -512,10 +512,23 @@ namespace DbotManager
                 else if (tweetProcType == TweetProcTypes.リプライ && !userMasterRow.ReplyEnable && !ユーザー権限無視) continue;    // リプライユーザー権限がないものでも無視する場合は強制(2025.03.02 zoom)
 
                 // 処理無効アカウントはスルー
-                if (tweetProcType == TweetProcTypes.いいね && !account.LikeEnable && !ユーザー権限無視) continue;
-                else if (tweetProcType == TweetProcTypes.ブックマーク && !account.BookMarkEnable && !ユーザー権限無視) continue;
-                else if (tweetProcType == TweetProcTypes.リポスト && !account.RepostEnable) continue;
-                else if (tweetProcType == TweetProcTypes.リプライ && !account.ReplyEnable) continue;
+
+                // 2025.05.30 大輔 API貸し出しですが上記画像の四角で囲ってる場所にチェックがない場合はいいね等しないように修正お願いします！
+                // ⇒ 貸出APIのいいねは消費しないようにしたいため、ユーザー権限無効に関わらず判定
+                if(account.UseAdminApi)
+                {
+                    if (tweetProcType == TweetProcTypes.いいね && !account.LikeEnable) continue;
+                    else if (tweetProcType == TweetProcTypes.ブックマーク && !account.BookMarkEnable) continue;
+                    else if (tweetProcType == TweetProcTypes.リポスト && !account.RepostEnable) continue;
+                    else if (tweetProcType == TweetProcTypes.リプライ && !account.ReplyEnable) continue;
+                }
+                else
+                {
+                    if (tweetProcType == TweetProcTypes.いいね && !account.LikeEnable && !ユーザー権限無視) continue;
+                    else if (tweetProcType == TweetProcTypes.ブックマーク && !account.BookMarkEnable && !ユーザー権限無視) continue;
+                    else if (tweetProcType == TweetProcTypes.リポスト && !account.RepostEnable) continue;
+                    else if (tweetProcType == TweetProcTypes.リプライ && !account.ReplyEnable) continue;
+                }
 
                 var myHistory = tweetHistoryList.Where(x => x.AccountId == account.Id && x.Result == true).ToList();
 

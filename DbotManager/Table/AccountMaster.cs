@@ -76,5 +76,9 @@ namespace DbotManager.Table
 
         // 表示用プロパティ
         public string DisplayText => $"{Id}:{Name}";
+
+        public bool UseAdminApi { get; set; }
+        public int ApiMasterId { get; set; }
+
     }
 }

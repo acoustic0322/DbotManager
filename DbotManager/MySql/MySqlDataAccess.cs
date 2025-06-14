@@ -249,7 +249,9 @@ public class MySqlDataAccess
                     am.reserve1_ai,
                     am.reserve2_ai,
                     am.reserve3_ai,
-                    am.reserve4_ai
+                    am.reserve4_ai,
+                    am.api_master_id,
+                    am.use_admin_api
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
                     ";
@@ -332,6 +334,10 @@ public class MySqlDataAccess
                                     Reserve2Ai = reader["reserve2_ai"].ToString() == "1",
                                     Reserve3Ai = reader["reserve3_ai"].ToString() == "1",
                                     Reserve4Ai = reader["reserve4_ai"].ToString() == "1",
+
+                                    UseAdminApi = reader["use_admin_api"].ToString() == "1",
+                                    ApiMasterId = SupportUtil.ParseOrDefault(reader["api_master_id"], 0),
+
 
 
 
