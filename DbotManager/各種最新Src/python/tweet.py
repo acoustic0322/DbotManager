@@ -22,9 +22,8 @@ from twitter_api_v1 import proc_post_v10a
 from twitter_api_v2 import check_replies
 from twitter_api_v2 import get_username_from_tweet_id_v2
 from twitter_api_v2 import proc_search_v2
-from twitter_api_v2 import proc_profile_image_v2
-from twitter_api_v1 import proc_profile_image_v1
 from other import proc_profile_image
+from other import update_profile_image
 
 from jap_api import proc_like_jap
 
@@ -109,6 +108,11 @@ if mode ==  "check_refresh":
     proc_update_refresh_token()
     sys.exit(0)
 
+if mode ==  "update_profiles":
+    outputLog("update_profiles")
+    update_profile_image()
+    sys.exit(0)
+
 elif mode == "get_search_history":
     result1 , list1 = get_search_history("post")
     outputLog(list1)
@@ -168,7 +172,7 @@ if credentials:
     elif mode == "checkairep":
         result1 , contents1 = check_replies(credentials , get_account_master(account_id2))
     elif mode == "get_profile":
-        proc_profile_image(credentials['login_id'])
+        proc_profile_image(account_id , credentials['login_id'])
     else:
         # エラーメッセージを標準エラーに出力
         outputLog(f"サポートされていないmode: {mode}")

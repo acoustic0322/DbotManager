@@ -64,7 +64,31 @@ def get_random_comment_id(account_id , mode):
     
     return result["id"]  # コメントを返す
    
-  
+def get_all_account_master():
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',           # ユーザー名
+        password='abcd1234',   # パスワード
+        database='d_bot',      # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+    try:
+        with connection.cursor() as cursor:
+            # 認証情報を格納しているテーブルからデータを取得
+            sql = """SELECT 
+            *
+            FROM 
+            account_master 
+            """
+            cursor.execute(sql)
+            credentials = cursor.fetchall()
+            return credentials
+    finally:
+        connection.close()
+
+
 def get_account_master(id):
     # MySQLデータベースに接続
     connection = pymysql.connect(
