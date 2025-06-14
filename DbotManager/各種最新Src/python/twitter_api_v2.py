@@ -1,4 +1,4 @@
-import requests
+﻿import requests
 import json
 import time
 import sys
@@ -131,8 +131,9 @@ def check_access_token(credentials):
 def proc_update_refresh_token():
     outputLog("proc_update_refresh_token")
     credentials_list = get_account_master_for_update_refresh()
+    outputLog(f"credentials_list={credentials_list}")
     for credentials in credentials_list:
-#        outputLog("target=",credentials['id'])
+#        outputLog(f"target={credentials['id']}")
         result , access_token , refresh_token = refresh_access_token(credentials)
 
         save_tweet_history(credentials['id'], '' , 'check_refresh' , '' , result , f"refresh:{refresh_token} access:{access_token}")
@@ -144,6 +145,7 @@ def refresh_access_token(credentials):
         client_secret = credentials['client_secret']
         refresh_token = credentials['refresh_token']
 
+        outputLog(f"id={credentials['id']}")
         outputLog(f"client_id={client_id}")
         outputLog(f"client_secret={client_secret}")
         outputLog(f"refresh_token={refresh_token}")
@@ -176,17 +178,20 @@ def refresh_access_token(credentials):
 #            response = requests.post(url, headers=headers, json=data)
         response = requests.post(url, headers=headers, data=data)
 
+        outputLog(f"response={response}")
+
+
         # HTTPエラーの場合の処理
         if response.status_code == 200:
             response_data = response.json()  # JSONデータを取得
-            outputLog(f"response.json()={response_data}")
+#            outputLog(f"response.json()={response_data}")
 
             # access_token を抜き出す
             access_token = response_data.get("access_token")
-            outputLog(f"access_token={access_token}")
+#            outputLog(f"access_token={access_token}")
 
             refresh_token = response_data.get("refresh_token")
-            outputLog(f"refresh_token={refresh_token}")
+#            outputLog(f"refresh_token={refresh_token}")
 
             # スコープを確認する
             scope = response_data.get("scope")
@@ -1296,39 +1301,3 @@ def proc_unfollowing_v2(credentials, target_user):
 
     response_str = json.dumps(response.json())
     return response.status_code == 200, response_str
-        
-def proc_profile_image_v2(credentials):
-
-    access_token = credentials['bearer_token']
-
-    # APIエンドポイント
-    url = f"https://api.twitter.com/2/users/by/username/{credentials['login_id']}?user.fields=profile_image_url"
-
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-
-    outputLog(f"client_id={credentials['client_id']}")
-
-    # プロキシ設定あり
-    if credentials['proxy_enable'] and credentials['proxy_url']:
-        outputLog(f"proxy_url={credentials['proxy_url']}")
-        proxies = {
-            "http": credentials['proxy_url'],
-            "https": credentials['proxy_url']
-        }
-        response = requests.delete(url, headers=headers, proxies=proxies)
-    else:
-        response = requests.delete(url, headers=headers)
-
-    # 結果を出力
-    if response.status_code == 200:
-        data = response.json()
-        profile_image_url = data['data']['profile_image_url']
-        print(f"{username} のプロフィール画像URL: {profile_image_url}")
-    else:
-        print("エラー:", response.status_code, response.text)
-
-#    response_str = json.dumps(response.json())
-#    return response.status_code == 200, response_str
-        
