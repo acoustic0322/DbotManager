@@ -878,40 +878,44 @@ namespace DbotManager
             var item = dataAccess.GetTargetTweetProcess();
             if(item != null)
             {
-                // 選手権モード時は各パラメータを固定
-                item = UpdateSensyukenMode(item);
 
-
-                MakeList_一括処理(
-                    item.LikeEnable,
-                    item.LikeCount,
-                    item.ReplyEnable,
-                    item.ReplyCount,
-                    item.RepToRep,
-                    item.BookmarkEnable,
-                    item.BookmarkCount,
-                    item.RepostEnable,
-                    item.RepostCount,
-                    checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
-                    item.SensyukenMode　== 0 ? item.UserId : 0 ,    // 選手権モード時はUSERIDを指定しない(全ユーザーでいいね・ブクマ処理)
-                    item.Dumplicate,
-                    ExtractNumber(item.TweetId),
-                    false
-                    
-                );
-
-                Exe一括処理();
-
-                ExeFollow処理(item);
-
-                if (item.JapLikeCount != 0)
+                if(item.UserId != 0)
                 {
-                    TweetTask task = new TweetTask(DbConnection, AppendLog);
-                    task.Exe_JAPいいね(
-                        GetTweetName(item.TweetId),
-                        GetTweetId(item.TweetId),
-                        item.JapLikeCount
-                        );
+                    // 選手権モード時は各パラメータを固定
+                    item = UpdateSensyukenMode(item);
+
+
+                    MakeList_一括処理(
+                        item.LikeEnable,
+                        item.LikeCount,
+                        item.ReplyEnable,
+                        item.ReplyCount,
+                        item.RepToRep,
+                        item.BookmarkEnable,
+                        item.BookmarkCount,
+                        item.RepostEnable,
+                        item.RepostCount,
+                        checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
+                        item.SensyukenMode == 0 ? item.UserId : 0,    // 選手権モード時はUSERIDを指定しない(全ユーザーでいいね・ブクマ処理)
+                        item.Dumplicate,
+                        ExtractNumber(item.TweetId),
+                        false
+
+                    );
+
+                    Exe一括処理();
+
+                    ExeFollow処理(item);
+
+                    if (item.JapLikeCount != 0)
+                    {
+                        TweetTask task = new TweetTask(DbConnection, AppendLog);
+                        task.Exe_JAPいいね(
+                            GetTweetName(item.TweetId),
+                            GetTweetId(item.TweetId),
+                            item.JapLikeCount
+                            );
+                    }
                 }
 
                 item.ExeFlag = true;
