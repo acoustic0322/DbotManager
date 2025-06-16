@@ -166,7 +166,7 @@ namespace DbotManager
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Result && x.Mode != TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得 && x.Mode != TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新).ToList();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView(1).Where(x => x.Result && x.Mode != TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得 && x.Mode != TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新).ToList();
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
             List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
@@ -704,7 +704,7 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.Mode == TweetProcTypes.ポスト監視).ToList();
+            List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView(1).Where(x => x.Mode == TweetProcTypes.ポスト監視).ToList();
 
             foreach (var row in accountMasterList.Where(x => x.SearchEnable == true))
             {

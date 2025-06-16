@@ -142,10 +142,11 @@ namespace DbotManager
         {
             DateTime selectedDate = dateTimePicker1.Value.Date;
             DateTime today = DateTime.Today;
-            TimeSpan diff = selectedDate - today;
+            TimeSpan diff = today - selectedDate;
             int days = diff.Days;
 
-            _tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.UpdateTime >= DateTime.Today.AddDays(days)).ToList();
+//            _tweetHistoryList = dataAccess.GetTweetHistoryView().Where(x => x.UpdateTime >= DateTime.Today.AddDays(days)).ToList();
+            _tweetHistoryList = dataAccess.GetTweetHistoryView(days).ToList();
         }
 
 
@@ -279,7 +280,7 @@ namespace DbotManager
         private void checkBoxVPS_CheckedChanged(object sender, EventArgs e)
         {
             if (_isLoading) return;
-            buttonSearch.BackColor = Color.Red;
+            button再表示.BackColor = Color.Red;
 
         }
     }

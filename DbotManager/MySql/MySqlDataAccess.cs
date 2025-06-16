@@ -28,7 +28,7 @@ public class MySqlDataAccess
         connectionString = $"Server={dbConnection.MachineName};Database={dbConnection.User};Uid={dbConnection.Root};Pwd={dbConnection.Pass};charset=utf8mb4;";
     }
 
-    public List<TweetHistory> GetTweetHistoryView(bool allFlag = false)
+    public List<TweetHistory> GetTweetHistoryView(int day = 0)
     {
         List<TweetHistory> tweetHistoryList = new List<TweetHistory>();
 
@@ -45,29 +45,30 @@ public class MySqlDataAccess
 
                 // SQLクエリにWHERE句を追加して24時間以内のデータを絞り込む
                 string query = @"
-                SELECT user_id,user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime 
-                FROM tweet_history_view 
-                WHERE updatetime >= @TwentyFourHoursAgo
-                ORDER BY updatetime DESC;";
+                SELECT 
+                    user_id, user_name, account_id, account_name, paid, comment, mode, 
+                    target_tweet_id, result, error_log, updatetime , vps_id
+                FROM 
+                    tweet_history_view ";
 
-                if(allFlag)
+                string query2 = $@"
+                WHERE 
+                    updatetime >= NOW() - INTERVAL {day} DAY ";
+
+                string query3 = $@"
+                ORDER BY 
+                    updatetime DESC;";
+
+                if(day != 0)
                 {
-                    query = @"
-                    SELECT user_id,user_name, account_id, account_name, paid ,comment, mode, target_tweet_id, result, error_log ,updatetime 
-                    FROM tweet_history_view 
-                    ORDER BY updatetime DESC;";
+                    query += query2;
                 }
+
+                query += query3;
 
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    if(!allFlag)
-                    {
-                        // パラメータを設定
-                        command.Parameters.AddWithValue("@TwentyFourHoursAgo", twentyFourHoursAgo);
-
-                    }
-
                     using (MySqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
