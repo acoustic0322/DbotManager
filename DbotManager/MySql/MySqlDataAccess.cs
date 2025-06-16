@@ -86,7 +86,8 @@ public class MySqlDataAccess
                                     TargetTweetID = reader["target_tweet_id"].ToString(),
                                     Result = reader["result"].ToString() == "1",
                                     ErrorLog = reader["error_log"].ToString(),
-                                    UpdateTime = Convert.ToDateTime(reader["updatetime"])
+                                    UpdateTime = Convert.ToDateTime(reader["updatetime"]),
+                                    VpsId = int.Parse(reader["vps_id"].ToString()),
                                 };
 
                                 tweetHistoryList.Add(tweetHistory);

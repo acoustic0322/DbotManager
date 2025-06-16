@@ -40,6 +40,8 @@
             this.checkBoxエラー = new System.Windows.Forms.CheckBox();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.label1 = new System.Windows.Forms.Label();
+            this.checkBoxVPS = new System.Windows.Forms.CheckBox();
+            this.comboBoxVPS = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).BeginInit();
             this.SuspendLayout();
             // 
@@ -192,11 +194,37 @@
             this.label1.TabIndex = 13;
             this.label1.Text = "～";
             // 
+            // checkBoxVPS
+            // 
+            this.checkBoxVPS.AutoSize = true;
+            this.checkBoxVPS.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.checkBoxVPS.Location = new System.Drawing.Point(885, 16);
+            this.checkBoxVPS.Name = "checkBoxVPS";
+            this.checkBoxVPS.Size = new System.Drawing.Size(57, 23);
+            this.checkBoxVPS.TabIndex = 15;
+            this.checkBoxVPS.Text = "VPS";
+            this.checkBoxVPS.UseVisualStyleBackColor = true;
+            this.checkBoxVPS.CheckedChanged += new System.EventHandler(this.checkBoxVPS_CheckedChanged);
+            // 
+            // comboBoxVPS
+            // 
+            this.comboBoxVPS.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxVPS.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.comboBoxVPS.FormattingEnabled = true;
+            this.comboBoxVPS.Location = new System.Drawing.Point(954, 14);
+            this.comboBoxVPS.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.comboBoxVPS.Name = "comboBoxVPS";
+            this.comboBoxVPS.Size = new System.Drawing.Size(151, 27);
+            this.comboBoxVPS.TabIndex = 14;
+            this.comboBoxVPS.SelectedIndexChanged += new System.EventHandler(this.comboBoxVPS_SelectedIndexChanged);
+            // 
             // HistoryDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1726, 659);
+            this.Controls.Add(this.checkBoxVPS);
+            this.Controls.Add(this.comboBoxVPS);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.checkBoxエラー);
@@ -232,5 +260,7 @@
         private System.Windows.Forms.CheckBox checkBoxエラー;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.CheckBox checkBoxVPS;
+        private System.Windows.Forms.ComboBox comboBoxVPS;
     }
 }

@@ -50,6 +50,7 @@ namespace DbotManager
             FillControls_UserName();
             FillControls_AccountName();
             FillControls_Mode();
+            FillControls_Vps();
         }
 
         private void FillControls_UserName()
@@ -85,6 +86,22 @@ namespace DbotManager
                 comboBoxAccount.DataSource = accountList;
                 comboBoxAccount.DisplayMember = "DisplayText"; // コンボボックスに表示するプロパティ
                 comboBoxAccount.ValueMember = "Id";     // 選択されたときに取得するプロパティ
+            }
+            else
+            {
+                MessageBox.Show("ユーザー名を取得できませんでした。");
+            }
+        }
+
+        private void FillControls_Vps()
+        {
+            List<VpsMaster> vpsList = dataAccess.GetVpsMaster();
+
+            if (vpsList != null)
+            {
+                comboBoxVPS.DataSource = vpsList;
+                comboBoxVPS.DisplayMember = "Id"; // コンボボックスに表示するプロパティ
+                comboBoxVPS.ValueMember = "Id";     // 選択されたときに取得するプロパティ
             }
             else
             {
@@ -145,11 +162,13 @@ namespace DbotManager
                 if (checkBoxUser.Checked) dspHistoryList = dspHistoryList.Where(x => x.UserId == (int)comboBoxUserMaster.SelectedValue).ToList();
                 if (checkBoxAccount.Checked) dspHistoryList = dspHistoryList.Where(x => x.AccountId == (int)comboBoxAccount.SelectedValue).ToList();
                 if (checkBoxモード.Checked) dspHistoryList = dspHistoryList.Where(x => x.Mode == (TweetProcTypes)comboBoxモード.SelectedValue).ToList();
+                if (checkBoxVPS.Checked) dspHistoryList = dspHistoryList.Where(x => x.VpsId == (int)comboBoxVPS.SelectedValue).ToList();
 
                 // 匿名型で表示用データを作成（表示したい列だけ）
                 var displayList = dspHistoryList.Select(x => new
                 {
                     日時 = ((DateTime)x.UpdateTime).ToString("MM/dd HH:mm:ss"),
+                    VPS = x.VpsId,
                     ユーザー名 = x.UserName,
                     アカウントID = $"{x.AccountId}",
                     アカウント名 = $"{x.AccountName}",
@@ -164,6 +183,7 @@ namespace DbotManager
 
                 // 列幅の設定（列名はプロパティ名またはヘッダ表示名と一致させる）
                 dataGridViewTweetHistory.Columns["日時"].Width = 120;
+                dataGridViewTweetHistory.Columns["VPS"].Width = 40;
                 dataGridViewTweetHistory.Columns["ユーザー名"].Width = 100;
                 dataGridViewTweetHistory.Columns["アカウントID"].Width = 100;
                 dataGridViewTweetHistory.Columns["アカウント名"].Width = 120;
@@ -246,6 +266,21 @@ namespace DbotManager
         {
             if (_isLoading) return;
             buttonSearch.BackColor = Color.Red;
+        }
+
+        private void comboBoxVPS_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+
+            checkBoxVPS.Checked = true;
+            button再表示.BackColor = Color.Red;
+        }
+
+        private void checkBoxVPS_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            buttonSearch.BackColor = Color.Red;
+
         }
     }
 }

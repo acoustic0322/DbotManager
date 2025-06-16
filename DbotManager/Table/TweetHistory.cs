@@ -9,6 +9,7 @@ namespace DbotManager.Table
     public class TweetHistory
     {
         public int UserId { get; set; }
+        public int VpsId { get; set; }
         public string UserName { get; set; }
         public int AccountId { get; set; }
         public string AccountName { get; set; }
