@@ -386,6 +386,8 @@ namespace DbotManager
                     reserveSchedule.Result = true;
                 }
 
+                //2025.06.20 Taskエラーでnullが帰ってきたときにリトライ処理を行わせないための暫定対応
+                reserveSchedule.Result = true;
 
             }
 

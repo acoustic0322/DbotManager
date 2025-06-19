@@ -73,8 +73,23 @@ public class MySqlDataAccess
                     {
                         while (reader.Read())
                         {
+                            var user_id = reader["user_id"];
+                            var user_name = reader["user_name"];
+                            var account_id = reader["account_id"];
+                            var account_name = reader["account_id"];
+                            var paid = reader["paid"];
+                            var comment = reader["comment"];
+                            var mode = reader["mode"];
+                            var target_tweet_id = reader["target_tweet_id"];
+                            var result = reader["result"];
+                            var error_log = reader["error_log"];
+                            var updatetime = reader["updatetime"];
+                            var vps_id = reader["vps_id"];
+
                             try
                             {
+                                if (string.IsNullOrEmpty(user_id.ToString())) continue;
+
                                 TweetHistory tweetHistory = new TweetHistory
                                 {
                                     UserId = int.Parse(reader["user_id"].ToString()),
