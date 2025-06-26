@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "aolasamaproject",
+  "private_key_id": "d8b2350f0ada6a8c80d4628946aa2ca69f47eeb7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDbQdcVmjEj0Nr2\n/WtRGMyTYuxWFts9px6qhuT2d28HjJ7ubK/NEoXduv/D9zLXmEHAsPwjIRATBwtG\ni6HIPpcn70UM0ZKBJHwsy+PKymg3wnKelup0AdsH1gK7enFmZM0E7ULsx7/0bFsg\nf3tHcaJ9pVYLC8ITPhT61gbA4YGxWn71s5BveR0ezzbrOaCGjNYftpc8eITC/9Ak\nlcSAGe3xTwLV0DDvueJnAbcWSc7RfpbZFReWL7xtoNeXmOLErcuD//36yvmRnFVm\nmtOrwH5Dc4bemr2og7PwgHcPUunE1082G19EpjrlbDAFodZbguM2iivDwJ/Qmjky\ndXaqnaVBAgMBAAECggEAF7OX2R14d2sx6GY/rh4Uq1ATxUCmRZVlwsBfSudhSLsi\nSRrVrED22J/I2znDNLwgS4C2WOPPlYb66I7al8dwVqBOYhLbl/tGMx99SeQ0fOaX\ntl4RDSZQM5omZHbZgFygLwqo4+i57uWxuiMdw/zcOGHhmcMVIThiUzVEuKAIAZBY\nAj+fTa51KWQ89exZjUXIkYuhm9pYE0BrpGhYw1MXVFIvn2SFDjcIN/+jtY5w5UQJ\n8jzrA3EvwJn4ADkhkhJo9vvBPitavrqDPRDQ6l3kKiEb5Y+ea1dfP+JK2poR6aXD\nPAD3XQjNVC3miFJVDRLkUcbgGIjG/f/KjYFBRnrSWwKBgQD6CV4ufU4G3cIK8a+Y\nEbmtdlLupxuEcoGt/0JmVG4oanfEHqcP5o9dusXfoumxCEoCq8utLY7+7BXMLYGk\nL0e79V1GNW7R2VMSWsUnenpEnAg2+Ab8FpEo996csP6nwrCX7YBIsjmvmJfT0Eml\nP6nHbXHt6TZAbkqE80Iobp92ywKBgQDgfItig15HNGhh5pfWbDZo89IVCzzzroRH\nu47pnDgrYITSk/W14untzp8dmaMhgBsvqCIlSX17usFaJWk5hG8TPy80FC96H40k\norce+CtpZ+tyWXfzZur8wHVhSHz2sdo40ZryzE6ArVIDRYUYLcqRZktARyrnAfJP\ni52D1RzGowKBgC4/cVY0Ayyt8+hGT+5WyPtWuXw/GI3lCCuA3W1EDKQZHVH/QXNl\nd/skQtlcrtD58YaQ9DlyBdMNI/MCL8qInEId3kTQOVFDW2Q3uePVeawbGEHimpgi\nLHNhdaGR82hgUH2phmLr5FOga+TXz+dq4SJsEfipfElqnQn+XKxR2dkFAoGAXK0O\nHi19zoekUEaSiMND8zA1mtp432E82yBjb64+wimmrAjJd72mNbcHmYDECCCLGLGg\n5yPf2iTPjhfDySsTcC61nhp3P0OnUWibkP2DbpCocxzcmG/0s0QBMZhrfq0OGkbu\nYS5XemgTY6ZfvAurhTtl9bNr0tLK5mwNK0/gAWECgYBQ15fXOrsJs2e2JPsxUkb9\n1/BiqAhKeb2iS6RjRNOjX9nZnwe2o/12nKTLXo0EMP75QAKs6ow7hHJVaIRwA8f5\nKUPkUK0qpdEc26lkW96W4x+zLqGKdHQvl6DP/h2eDInahsDYNI9XAFgPGLqHj2ZU\n3CEFQFw2ge6v7IBbM1HLtA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "aolasamaproject@aolasamaproject.iam.gserviceaccount.com",
+  "client_id": "112140125347687152203",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/aolasamaproject%40aolasamaproject.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
