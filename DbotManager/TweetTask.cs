@@ -33,6 +33,7 @@ namespace DbotManager
         リプ監視,
         AIリプ監視,
         JAPいいね,
+        JAPブックマーク,
         フォロー追加,
         フォロー解除
     }
@@ -216,6 +217,19 @@ namespace DbotManager
                 new TweetCommand() {
                     TweetProcType = TweetProcTypes.JAPいいね, 
                     AccountId = 1, 
+                    TweetId = tweet_id,
+                    TweetName = tweet_name,
+                    Quantity = quantity
+                });
+        }
+
+        public void Exe_JAPブックマーク(string tweet_name, string tweet_id, int quantity)
+        {
+            TweetProc(
+                new TweetCommand()
+                {
+                    TweetProcType = TweetProcTypes.JAPブックマーク,
+                    AccountId = 1,
                     TweetId = tweet_id,
                     TweetName = tweet_name,
                     Quantity = quantity
@@ -937,6 +951,9 @@ namespace DbotManager
                 case TweetProcTypes.ブックマーク:
                     return "bookmark";
                     break;
+                case TweetProcTypes.JAPブックマーク:
+                    return "jap_bookmark";
+                    break;
                 case TweetProcTypes.リポスト:
                     return "repost";
                     break;
@@ -1002,6 +1019,10 @@ namespace DbotManager
                     break;
 
                 case TweetProcTypes.JAPいいね:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity}";
+                    break;
+
+                case TweetProcTypes.JAPブックマーク:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity}";
                     break;
 
