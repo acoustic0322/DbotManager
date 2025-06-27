@@ -26,6 +26,7 @@ from other import proc_profile_image
 from other import update_profile_image
 
 from jap_api import proc_like_jap
+from jap_api import proc_bookmark_jap
 
 from twitter_api_v2 import proc_following_v2
 from twitter_api_v2 import proc_unfollowing_v2
@@ -138,6 +139,10 @@ if credentials:
         if not tweet_name:  # None または空文字列のときにTrue
             tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
         result1 , contents1 = proc_like_jap(tweet_name, tweet_id , quantity)
+    elif mode == "jap_bookmark":
+        if not tweet_name:  # None または空文字列のときにTrue
+            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+        result1 , contents1 = proc_bookmark_jap(tweet_name, tweet_id , quantity)
     elif mode == "search":
         result1 , contents1 = proc_search_v2(credentials)
     elif mode == "bookmark":

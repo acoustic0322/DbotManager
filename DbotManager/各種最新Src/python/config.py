@@ -108,9 +108,30 @@ debug = True
 
 db_host = "203.137.53.205"
 
+
+
+#※親
+#ユーザー名:Hashidai00
+#パスワード:@Hashidai00
+#API: 7f7dc877aadbc0b7c996d6e48e95f1bf 
+#----------------------------------------------- 
+#just anotherログイン情報
+#※子供1
+#ユーザー名:Hashidai0531
+#パスワード:@Hashidai00
+#API: 026e7a18d6426b6bad09801b5e203883
+#D — 昨日 16:05
+#こちらを使用する
+#just anotherログイン情報
+#※子供2
+#ユーザー名:Hashidai042210
+#パスワード:@Hashidai00
+#API: 58215aa1068f63c788c2cc2f49288be5
+
 # リリース用API
-jap_api_key = '7f7dc877aadbc0b7c996d6e48e95f1bf'
+#jap_api_key = '7f7dc877aadbc0b7c996d6e48e95f1bf'
+#jap_api_key = '58215aa1068f63c788c2cc2f49288be5'
 
 # デバッグ用API
-#jap_api_key = '026e7a18d6426b6bad09801b5e203883'
+jap_api_key = '026e7a18d6426b6bad09801b5e203883'
 
