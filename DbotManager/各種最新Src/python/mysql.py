@@ -136,7 +136,8 @@ def get_account_master(id):
             am.reserve3_ai,
             am.reserve4_ai,
             am.ai_post_example,
-            am.ai_reply_example
+            am.ai_reply_example,
+            um.jap_api_key
             FROM 
             account_master am
             left join api_master api on api.id = am.api_master_id
@@ -200,6 +201,30 @@ def update_account_master_by_check_rep_datetime(id ):
             connection.commit()
     finally:
         connection.close()          
+
+def update_account_master_by_update_profile_datetime(id ):
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+    try:
+        with connection.cursor() as cursor:
+
+            sql = """
+                UPDATE account_master set update_profile_datetime = NOW() where id = %s
+            """
+
+            outputLog(sql)
+            outputLog(f"id={id}")
+            cursor.execute(sql, ( id ))
+            connection.commit()
+    finally:
+        connection.close()                  
 
 def get_account_master_for_update_refresh():
     # MySQLデータベースに接続

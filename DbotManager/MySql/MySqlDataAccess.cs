@@ -73,8 +73,23 @@ public class MySqlDataAccess
                     {
                         while (reader.Read())
                         {
+                            var user_id = reader["user_id"];
+                            var user_name = reader["user_name"];
+                            var account_id = reader["account_id"];
+                            var account_name = reader["account_id"];
+                            var paid = reader["paid"];
+                            var comment = reader["comment"];
+                            var mode = reader["mode"];
+                            var target_tweet_id = reader["target_tweet_id"];
+                            var result = reader["result"];
+                            var error_log = reader["error_log"];
+                            var updatetime = reader["updatetime"];
+                            var vps_id = reader["vps_id"];
+
                             try
                             {
+                                if (string.IsNullOrEmpty(user_id.ToString())) continue;
+
                                 TweetHistory tweetHistory = new TweetHistory
                                 {
                                     UserId = int.Parse(reader["user_id"].ToString()),
@@ -526,9 +541,11 @@ public class MySqlDataAccess
                         `tweet_process_list`.`like_count`,
                         `tweet_process_list`.`jap_like_count`,
                         `tweet_process_list`.`bookmark_count`,
+                        `tweet_process_list`.`jap_bookmark_count`,
                         `tweet_process_list`.`reply_count`,
                         `tweet_process_list`.`repost_count`,
                         `tweet_process_list`.`sensyuken_mode`,
+                        `tweet_process_list`.`japanese_mode`,
                         `tweet_process_list`.`dumplicate`,
                         `tweet_process_list`.`exe_follow`,
                         `tweet_process_list`.`exe_unfollow`,
@@ -562,9 +579,11 @@ public class MySqlDataAccess
                                 LikeCount = SupportUtil.ParseOrDefault(reader["like_count"], 0),
                                 JapLikeCount = SupportUtil.ParseOrDefault(reader["jap_like_count"], 0),
                                 BookmarkCount = SupportUtil.ParseOrDefault(reader["bookmark_count"], 0),
+                                JapBookmarkCount = SupportUtil.ParseOrDefault(reader["jap_bookmark_count"], 0),
                                 RepostCount = SupportUtil.ParseOrDefault(reader["repost_count"], 0),
                                 ReplyCount = SupportUtil.ParseOrDefault(reader["reply_count"], 0),
                                 SensyukenMode = SupportUtil.ParseOrDefault(reader["sensyuken_mode"], 0),
+                                JapaneseMode = SupportUtil.ParseOrDefault(reader["japanese_mode"], 0),
                                 Dumplicate = reader["dumplicate"].ToString() == "1",
                                 ExeFollow = reader["exe_follow"].ToString() == "1",
                                 ExeUnFollow = reader["exe_unfollow"].ToString() == "1",
@@ -1481,7 +1500,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = "SELECT id, username , password , admin , enable ,memo , " +
-                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_mode,post_enable,reserve_enable,media_enable,check_enable,searchrep_enable" +
+                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_mode,post_enable,reserve_enable,media_enable,check_enable,searchrep_enable,jap_api_key" +
                     " FROM user_master;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1507,6 +1526,7 @@ public class MySqlDataAccess
                                 MediaEnable = reader["media_enable"].ToString() == "1",
                                 CheckEnable = reader["check_enable"].ToString() == "1",
                                 SearchRepEnable = reader["searchrep_enable"].ToString() == "1",
+                                JapApiKey = reader["jap_api_key"].ToString(),
                             };
 
                             userList.Add(user);

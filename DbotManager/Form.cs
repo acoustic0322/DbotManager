@@ -439,8 +439,8 @@ namespace DbotManager
                 task.Exe_JAPいいね(
                     GetTweetName(textBoxUrlTweetID.Text),
                     GetTweetId(textBoxUrlTweetID.Text),
-                    int.Parse(textBoxJAPいいね件数.Text.ToString())
-                   
+                    int.Parse(textBoxJAPいいね件数.Text.ToString()),
+                    checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 1
                     );
             }
         }
@@ -885,8 +885,9 @@ namespace DbotManager
                     // 選手権モード時は各パラメータを固定
                     item = UpdateSensyukenMode(item);
 
-
-                    MakeList_一括処理(
+                    if (item.JapaneseMode != 1)
+                    {
+                        MakeList_一括処理(
                         item.LikeEnable,
                         item.LikeCount,
                         item.ReplyEnable,
@@ -902,20 +903,39 @@ namespace DbotManager
                         ExtractNumber(item.TweetId),
                         false
 
-                    );
+                        );
 
-                    Exe一括処理();
+                        Exe一括処理();
 
-                    ExeFollow処理(item);
+                        ExeFollow処理(item);
+                    }
 
-                    if (item.JapLikeCount != 0)
+
+                    if (item.JapaneseMode == 1)
                     {
                         TweetTask task = new TweetTask(DbConnection, AppendLog);
-                        task.Exe_JAPいいね(
+
+                        if(item.LikeEnable && item.JapLikeCount > 0)
+                        {
+                            task.Exe_JAPいいね(
+                                GetTweetName(item.TweetId),
+                                GetTweetId(item.TweetId),
+                                item.JapLikeCount,
+                                item.UserId
+                                );
+
+                        }
+
+                        if (item.BookmarkEnable && item.JapBookmarkCount > 0)
+                        {
+
+                            task.Exe_JAPブックマーク(
                             GetTweetName(item.TweetId),
                             GetTweetId(item.TweetId),
-                            item.JapLikeCount
+                            item.JapBookmarkCount,
+                            item.UserId
                             );
+                        }
                     }
                 }
 
@@ -954,6 +974,7 @@ namespace DbotManager
 
             return item;
         }
+
 
         #endregion
 

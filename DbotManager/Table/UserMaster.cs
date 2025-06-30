@@ -24,6 +24,7 @@ namespace DbotManager.Table
         public bool MediaEnable { get; set; }
         public bool CheckEnable { get; set; }
         public bool SearchRepEnable { get; set; }
+        public string JapApiKey { get; set; }
 
 
         // 表示用プロパティ
