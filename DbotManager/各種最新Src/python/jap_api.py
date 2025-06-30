@@ -2,9 +2,9 @@ import requests
 
 import config
 from config import outputLog
-from config import jap_api_key
+#from config import jap_api_key
 
-def proc_like_jap(tweet_name, tweet_id , quantity = 10):
+def proc_like_jap(tweet_name, tweet_id , jap_api_key, quantity = 10):
 
     # APIエンドポイント
     api_url = 'https://justanotherpanel.com/api/v2'
@@ -15,6 +15,8 @@ def proc_like_jap(tweet_name, tweet_id , quantity = 10):
     link = f'https://x.com/{tweet_name}/status/{tweet_id}'
 
 #    outputLog(link)
+    outputLog(f'jap_api_key={jap_api_key}')
+    outputLog(f'link={link}')
 
 
     # リクエストデータ
@@ -49,7 +51,7 @@ def proc_like_jap(tweet_name, tweet_id , quantity = 10):
     outputLog(f'JAP API ERROR: {error_message}')
     return False, error_message
 
-def proc_bookmark_jap(tweet_name, tweet_id , quantity = 10):
+def proc_bookmark_jap(tweet_name, tweet_id , jap_api_key , quantity = 10):
 
     # APIエンドポイント
     api_url = 'https://justanotherpanel.com/api/v2'
@@ -60,7 +62,8 @@ def proc_bookmark_jap(tweet_name, tweet_id , quantity = 10):
     link = f'https://x.com/{tweet_name}/status/{tweet_id}'
 
 #    outputLog(link)
-
+    outputLog(f'jap_api_key={jap_api_key}')
+    outputLog(f'link={link}')
 
     # リクエストデータ
     data = {

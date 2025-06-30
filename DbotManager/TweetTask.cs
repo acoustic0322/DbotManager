@@ -211,7 +211,7 @@ namespace DbotManager
         }
 
 
-        public void Exe_JAPいいね(string tweet_name , string tweet_id , int quantity)
+        public void Exe_JAPいいね(string tweet_name , string tweet_id , int quantity, int userId)
         {
             TweetProc(
                 new TweetCommand() {
@@ -219,11 +219,12 @@ namespace DbotManager
                     AccountId = 1, 
                     TweetId = tweet_id,
                     TweetName = tweet_name,
-                    Quantity = quantity
+                    Quantity = quantity,
+                    UserId = userId
                 });
         }
 
-        public void Exe_JAPブックマーク(string tweet_name, string tweet_id, int quantity)
+        public void Exe_JAPブックマーク(string tweet_name, string tweet_id, int quantity, int userId)
         {
             TweetProc(
                 new TweetCommand()
@@ -232,7 +233,8 @@ namespace DbotManager
                     AccountId = 1,
                     TweetId = tweet_id,
                     TweetName = tweet_name,
-                    Quantity = quantity
+                    Quantity = quantity,
+                    UserId =userId
                 });
         }
 
@@ -996,6 +998,7 @@ namespace DbotManager
         {
             ReadIniファイル();
 
+
             // Pythonスクリプトのパスを指定
             string pythonScriptPath = $@"{pythonWorkingPath}\tweet.py";
 
@@ -1019,11 +1022,26 @@ namespace DbotManager
                     break;
 
                 case TweetProcTypes.JAPいいね:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity}";
+                    {
+                        // MySQLデータアクセスの初期化
+                        var dataAccess = new MySqlDataAccess(dbConnectin);
+                        List<UserMaster> userMasterList = dataAccess.GetUserMaster();
+                        var userRow = userMasterList.Where(x => x.Id == tweetCommand.UserId).FirstOrDefault();
+                        pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity} jap_api_key={userRow.JapApiKey}";
+
+                    }
                     break;
 
                 case TweetProcTypes.JAPブックマーク:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity}";
+                    {
+                        // MySQLデータアクセスの初期化
+                        var dataAccess = new MySqlDataAccess(dbConnectin);
+                        List<UserMaster> userMasterList = dataAccess.GetUserMaster();
+                        var userRow = userMasterList.Where(x => x.Id == tweetCommand.UserId).FirstOrDefault();
+
+                        pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity} jap_api_key={userRow.JapApiKey}";
+
+                    }
                     break;
 
                 case TweetProcTypes.リプライ:

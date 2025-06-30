@@ -439,8 +439,8 @@ namespace DbotManager
                 task.Exe_JAPいいね(
                     GetTweetName(textBoxUrlTweetID.Text),
                     GetTweetId(textBoxUrlTweetID.Text),
-                    int.Parse(textBoxJAPいいね件数.Text.ToString())
-                   
+                    int.Parse(textBoxJAPいいね件数.Text.ToString()),
+                    checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 1
                     );
             }
         }
@@ -920,7 +920,8 @@ namespace DbotManager
                             task.Exe_JAPいいね(
                                 GetTweetName(item.TweetId),
                                 GetTweetId(item.TweetId),
-                                item.JapLikeCount
+                                item.JapLikeCount,
+                                item.UserId
                                 );
 
                         }
@@ -931,7 +932,8 @@ namespace DbotManager
                             task.Exe_JAPブックマーク(
                             GetTweetName(item.TweetId),
                             GetTweetId(item.TweetId),
-                            item.JapBookmarkCount
+                            item.JapBookmarkCount,
+                            item.UserId
                             );
                         }
                     }

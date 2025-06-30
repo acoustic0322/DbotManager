@@ -1500,7 +1500,7 @@ public class MySqlDataAccess
                 connection.Open();
 
                 string query = "SELECT id, username , password , admin , enable ,memo , " +
-                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_mode,post_enable,reserve_enable,media_enable,check_enable,searchrep_enable" +
+                    "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_mode,post_enable,reserve_enable,media_enable,check_enable,searchrep_enable,jap_api_key" +
                     " FROM user_master;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1526,6 +1526,7 @@ public class MySqlDataAccess
                                 MediaEnable = reader["media_enable"].ToString() == "1",
                                 CheckEnable = reader["check_enable"].ToString() == "1",
                                 SearchRepEnable = reader["searchrep_enable"].ToString() == "1",
+                                JapApiKey = reader["jap_api_key"].ToString(),
                             };
 
                             userList.Add(user);

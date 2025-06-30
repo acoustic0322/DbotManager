@@ -89,6 +89,8 @@ quantity = args.get("quantity","")
 
 ai_enable = False if args.get("ai_enable","") == "False" else True
 
+jap_api_key = args.get("jap_api_key","")
+
 #debug
 #search_row={'id': 1, 'search_user_name': 'MANGA549764083', 'search_user_id': '2', 'post_account_id': 239, 'post_enable': 0, 'last_post_id': '1886501259601174542', 'last_post_time': '2025-02-04 04:45:24', 'reply_account_id': 239, 'reply_enable': 0, 'last_reply_id': '1886385085647040800', 'last_reply_time': '2025-02-03 21:03:46', 'monomane_account_id': '239', 'monomane_enable': 1, 'last_monomane_id': '1886498846538338658', 'last_monomane_time': '2025-02-04 04:35:49'}
 #tweet_data={'text': 'テストツイート6', 'author_id': '1688693290630369284', 'edit_history_tweet_ids': ['1886501614158238016'], 'id': '1886501614158238016', 'created_at': '2025-02-03T19:46:48.000Z'}
@@ -138,11 +140,11 @@ if credentials:
     elif mode == "jap_like":
         if not tweet_name:  # None または空文字列のときにTrue
             tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_like_jap(tweet_name, tweet_id , quantity)
+        result1 , contents1 = proc_like_jap(tweet_name, tweet_id , jap_api_key , quantity)
     elif mode == "jap_bookmark":
         if not tweet_name:  # None または空文字列のときにTrue
             tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_bookmark_jap(tweet_name, tweet_id , quantity)
+        result1 , contents1 = proc_bookmark_jap(tweet_name, tweet_id , jap_api_key , quantity)
     elif mode == "search":
         result1 , contents1 = proc_search_v2(credentials)
     elif mode == "bookmark":
