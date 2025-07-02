@@ -146,6 +146,8 @@
     <Compile Include="ReserveTask.cs" />
     <Compile Include="SupportUtil.cs" />
     <Compile Include="Table\SearchHistory.cs" />
+    <Compile Include="Table\TweetWatchMaster.cs" />
+    <Compile Include="Table\TweetWatch.cs" />
     <Compile Include="Table\SearchList.cs" />
     <Compile Include="Table\CheckAccountList.cs" />
     <Compile Include="Table\AccountMaster.cs" />

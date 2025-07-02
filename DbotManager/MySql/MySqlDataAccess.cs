@@ -1073,6 +1073,67 @@ public class MySqlDataAccess
 
     #endregion
 
+    #region TweetWatchMaster
+
+    public List<TweetWatchMaster> GetTweetWatchMaster()
+    {
+        List<TweetWatchMaster> tweetWatchMasterList = new List<TweetWatchMaster>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = @"SELECT account_id,
+                    watch_user_name,
+                    comment_enable_tweet,
+                    comment_enable_reply,
+                    monomane_enable_tweet
+                    FROM tweet_watch_master
+                    ";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            try
+                            {
+                                TweetWatchMaster accountItem = new TweetWatchMaster()
+                                {
+                                    AccountId = int.Parse(reader["id"].ToString()),
+                                    CommentEnable_Tweet = reader["comment_enable_tweet"].ToString() == "1",
+                                    CommentEnable_Reply = reader["comment_enable_reply"].ToString() == "1",
+                                    MonomaneEnable_Tweet = reader["monomane_enable_tweet"].ToString() == "1",
+                                    WatchUserName = reader["watch_user_name"].ToString(),
+
+                                };
+
+                                tweetWatchMasterList.Add(accountItem);
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("エラーが発生しました: " + ex.Message);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return tweetWatchMasterList;
+    }
+
+
+    #endregion
+
 
     #region CheckUserMaster
 
