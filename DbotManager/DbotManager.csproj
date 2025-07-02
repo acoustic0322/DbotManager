@@ -199,6 +199,14 @@
     <None Include="各種最新Src\d-bot_childtweet\check_refresh.bat" />
     <None Include="各種最新Src\d-bot_childtweet\child_tweet.bat" />
     <None Include="各種最新Src\d-bot_childtweet\config.ini" />
+    <None Include="各種最新Src\get_trend\config.ini" />
+    <None Include="各種最新Src\get_trend\get_trend.bat" />
+    <None Include="各種最新Src\get_trend\__pycache__\config.cpython-38.pyc" />
+    <None Include="各種最新Src\get_trend\__pycache__\mysql.cpython-38.pyc" />
+    <None Include="各種最新Src\get_trend\環境設定\pip_install.bat" />
+    <None Include="各種最新Src\watch_tweet\aolasamaproject-d8b2350f0ada.json" />
+    <None Include="各種最新Src\watch_tweet\README.txt\README.txt.docx" />
+    <None Include="各種最新Src\watch_tweet\__pycache__\read_sheet.cpython-38.pyc" />
     <None Include="各種最新Src\web\account_edit - コピー.php" />
     <None Include="各種最新Src\web\account_edit.php" />
     <None Include="各種最新Src\web\account_list.php" />
@@ -247,7 +255,18 @@
     <Content Include="各種最新Src\d-bot_childtweet\tweet.py" />
     <Content Include="各種最新Src\d-bot_childtweet\twitter_api_v1.py" />
     <Content Include="各種最新Src\d-bot_childtweet\twitter_api_v2.py" />
+    <Content Include="各種最新Src\get_trend\config.py" />
+    <Content Include="各種最新Src\get_trend\get_trend.py" />
+    <Content Include="各種最新Src\get_trend\mysql.py" />
+    <Content Include="各種最新Src\get_trend\環境設定\get_trend.xml" />
+    <Content Include="各種最新Src\watch_tweet\auto_reply_watch.py" />
+    <Content Include="各種最新Src\watch_tweet\auto_tweet_watch.py" />
+    <Content Include="各種最新Src\watch_tweet\main.py" />
+    <Content Include="各種最新Src\watch_tweet\read_sheet.py" />
+    <Content Include="各種最新Src\watch_tweet\reply_watch.py" />
+    <Content Include="各種最新Src\watch_tweet\tweet_watch.py" />
     <Content Include="各種最新Src\web\main.css" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

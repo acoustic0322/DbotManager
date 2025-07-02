@@ -48,6 +48,8 @@ from tweet_copy_dmm import tweet_copy_dmm
 import config
 from config import outputLog
 
+from tweet_watch import fetch_latest_tweet
+
 # コマンドライン引数の解析関数
 def parse_arguments(args):
     params = {}
@@ -180,6 +182,10 @@ if credentials:
         result1 , contents1 = check_replies(credentials , get_account_master(account_id2))
     elif mode == "get_profile":
         proc_profile_image(account_id , credentials['login_id'])
+
+    elif mode == "watch":
+        result1 , contents1 = fetch_latest_tweet("motohage")
+
     else:
         # エラーメッセージを標準エラーに出力
         outputLog(f"サポートされていないmode: {mode}")
