@@ -34,6 +34,7 @@ namespace DbotManager
         AIリプ監視,
         JAPいいね,
         JAPブックマーク,
+        JAPリポスト,
         フォロー追加,
         フォロー解除
     }
@@ -235,6 +236,20 @@ namespace DbotManager
                     TweetName = tweet_name,
                     Quantity = quantity,
                     UserId =userId
+                });
+        }
+
+        public void Exe_JAPリポスト(string tweet_name, string tweet_id, int quantity, int userId)
+        {
+            TweetProc(
+                new TweetCommand()
+                {
+                    TweetProcType = TweetProcTypes.JAPリポスト,
+                    AccountId = 1,
+                    TweetId = tweet_id,
+                    TweetName = tweet_name,
+                    Quantity = quantity,
+                    UserId = userId
                 });
         }
 
@@ -959,6 +974,9 @@ namespace DbotManager
                 case TweetProcTypes.リポスト:
                     return "repost";
                     break;
+                case TweetProcTypes.JAPリポスト:
+                    return "jap_repost";
+                    break;
                 case TweetProcTypes.ポスト:
                     return "post";
                     break;
@@ -1033,6 +1051,18 @@ namespace DbotManager
                     break;
 
                 case TweetProcTypes.JAPブックマーク:
+                    {
+                        // MySQLデータアクセスの初期化
+                        var dataAccess = new MySqlDataAccess(dbConnectin);
+                        List<UserMaster> userMasterList = dataAccess.GetUserMaster();
+                        var userRow = userMasterList.Where(x => x.Id == tweetCommand.UserId).FirstOrDefault();
+
+                        pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity} jap_api_key={userRow.JapApiKey}";
+
+                    }
+                    break;
+
+                case TweetProcTypes.JAPリポスト:
                     {
                         // MySQLデータアクセスの初期化
                         var dataAccess = new MySqlDataAccess(dbConnectin);
