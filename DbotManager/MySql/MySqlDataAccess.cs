@@ -9,6 +9,7 @@ using DbotManager.MySql;
 using DbotManager;
 using static Mysqlx.Crud.UpdateOperation.Types;
 using System.Linq;
+using System.Security.Principal;
 
 public class DbConnectionInfo
 {
@@ -1103,7 +1104,7 @@ public class MySqlDataAccess
                             {
                                 TweetWatchMaster accountItem = new TweetWatchMaster()
                                 {
-                                    AccountId = int.Parse(reader["id"].ToString()),
+                                    AccountId = int.Parse(reader["account_id"].ToString()),
                                     CommentEnable_Tweet = reader["comment_enable_tweet"].ToString() == "1",
                                     CommentEnable_Reply = reader["comment_enable_reply"].ToString() == "1",
                                     MonomaneEnable_Tweet = reader["monomane_enable_tweet"].ToString() == "1",
@@ -1134,6 +1135,69 @@ public class MySqlDataAccess
 
     #endregion
 
+    #region TweetWatch
+
+    public void InitTweetWatch(List<string> userNameList)
+    {
+        DeleteTweetWatch();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                foreach(string userName in userNameList)
+                {
+                    string query = "INSERT INTO tweet_watch (user_name) VALUES (@UserName);";
+
+                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@UserName", userName);
+
+                        command.ExecuteScalar();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+    }
+
+    public bool DeleteTweetWatch()
+    {
+        bool isDeleted = false;
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = "DELETE FROM tweet_watch;";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    // 削除された行数が1以上で成功とみなす
+                    isDeleted = rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return isDeleted;
+    }
+
+    #endregion
 
     #region CheckUserMaster
 

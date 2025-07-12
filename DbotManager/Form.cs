@@ -216,8 +216,8 @@ namespace DbotManager
                 HideTab(0);
 
                 // 予約ポストの自動開始
-                button予約作成_Click(sender, e);
-                button予約Start_Click(sender, e);
+//                button予約作成_Click(sender, e);
+  //              button予約Start_Click(sender, e);
 
                 // 監視モードの自動開始
                 button監視Start_Click(sender, e);

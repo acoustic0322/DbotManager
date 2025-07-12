@@ -647,6 +647,23 @@ namespace DbotManager
             List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             var 監視対象アカウント = accountMasterList.Where(x => x.Enable && (bool)x.SearchEnable && userMasterList.Any(user => user.Id == x.UserId)).ToList();
 
+            // 監視対象アカウントの AccountId 一覧を取得
+            var 監視対象アカウントID一覧 = 監視対象アカウント.Select(x => x.Id).ToHashSet();
+
+            var tweetWatchMasterList = dataAccess.GetTweetWatchMaster();
+
+            tweetWatchMasterList = tweetWatchMasterList.Where(x => (x.CommentEnable_Reply || x.CommentEnable_Tweet || x.MonomaneEnable_Tweet)).ToList();
+
+            // tweetWatchMasterListをさらに絞り込み
+            tweetWatchMasterList = tweetWatchMasterList
+                .Where(x => 監視対象アカウントID一覧.Contains(x.AccountId))
+                .ToList();
+
+            dataAccess.InitTweetWatch(tweetWatchMasterList.Select(x => x.WatchUserName).Distinct().ToList());
+
+
+            /*
+
             List<SearchList> wk1 = dataAccess.GetSearchList().Where(x => (bool)x.Enable).ToList();
             List<SearchList> wk2 = wk1.Where(x => userMasterList.Any(user => user.Id == x.SearchUserId)).ToList();
             List<SearchList> searchList_通常 = wk2.Where(x => 監視対象アカウント.Any(y => (bool)y.Enable)).ToList();
@@ -709,6 +726,7 @@ namespace DbotManager
 
             _replyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
             _replyToReplyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.ReplyToReply).ToList();
+            */
 
             _監視list作成日時 = DateTime.Now;
         }
