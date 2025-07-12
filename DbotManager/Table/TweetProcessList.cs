@@ -43,6 +43,7 @@ namespace DbotManager.Table
         public int JapBookmarkCount { get; set; }
         public int ReplyCount { get; set; }
         public int RepostCount { get; set; }
+        public int JapRepostCount { get; set; }
         public int SensyukenMode { get; set; }
         public int JapaneseMode { get; set; }
         public bool Dumplicate { get; set; }

@@ -936,6 +936,17 @@ namespace DbotManager
                             item.UserId
                             );
                         }
+
+                        if (item.RepostEnable && item.JapRepostCount > 0)
+                        {
+
+                            task.Exe_JAPリポスト(
+                            GetTweetName(item.TweetId),
+                            GetTweetId(item.TweetId),
+                            item.JapRepostCount,
+                            item.UserId
+                            );
+                        }
                     }
                 }
 
