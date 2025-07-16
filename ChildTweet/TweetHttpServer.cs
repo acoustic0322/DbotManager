@@ -72,7 +72,13 @@ namespace ChildTweet
                 var data = JsonSerializer.Deserialize<TweetRequest>(body);
 
                 // 非同期でバックグラウンド処理を開始
-                Task.Run(() => ProcessTweet(data));
+//                Task.Run(() => ProcessTweet(data));
+
+                Task.Run(() =>
+                {
+                    var processor = new TweetProcess(Log);
+                    processor.Execute(data);
+                });
 
                 // レスポンス
                 string responseText = JsonSerializer.Serialize(new { status = "success", message = "Received" });

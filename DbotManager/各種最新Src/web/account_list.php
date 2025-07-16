@@ -26,19 +26,42 @@ $current_userid = $_SESSION['user_id'];
 $api_master_id = isset($_SESSION['api_master_id']) ? $_SESSION['api_master_id'] : null;
 
 // アカウントコンボボックスのレコード取得
-//$stmt = $conn->prepare("SELECT * FROM account_master WHERE user_id = ?");
-$stmt = $conn->prepare("
-SELECT 
-am.name as name
-, am.login_id as login_id
-, am.bearer_token as bearer_token
-, am.refresh_token as refresh_token
-, am.access_token as access_token
-, am.id as id
-, am.search_enable as search_enable
-FROM account_master am WHERE am.user_id = ?");
+$search = trim($_GET['search'] ?? '');
+$searchParam = '%' . $search . '%';
 
-$stmt->bind_param("s", $current_userid);
+if ($search !== '') {
+    $stmt = $conn->prepare("
+    SELECT 
+      am.name as name,
+      am.id as id,
+      am.login_id as login_id,
+      am.bearer_token as bearer_token,
+      am.refresh_token as refresh_token,
+      am.access_token as access_token,
+      am.search_enable as search_enable,
+      am.use_admin_api as use_admin_api,
+      am.ai_mode as ai_mode
+    FROM account_master am
+    WHERE am.user_id = ? AND am.name LIKE ?
+    ");
+    $stmt->bind_param("ss", $current_userid, $searchParam);
+} else {
+    $stmt = $conn->prepare("
+    SELECT 
+      am.name as name,
+      am.id as id,
+      am.login_id as login_id,
+      am.bearer_token as bearer_token,
+      am.refresh_token as refresh_token,
+      am.access_token as access_token,
+      am.search_enable as search_enable,
+      am.use_admin_api as use_admin_api,
+      am.ai_mode as ai_mode
+    FROM account_master am
+    WHERE am.user_id = ?
+    ");
+    $stmt->bind_param("s", $current_userid);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 $stmt->close();
@@ -87,21 +110,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-//$stmt = $conn->prepare("SELECT * FROM account_master WHERE user_id = ?");
-$stmt = $conn->prepare("
-SELECT 
-am.name as name
-, am.id as id
-, am.login_id as login_id
-, am.bearer_token as bearer_token
-, am.refresh_token as refresh_token
-, am.access_token as access_token
-, am.id as id
-, am.search_enable as search_enable
-, am.use_admin_api as use_admin_api
-, am.ai_mode as ai_mode
-FROM account_master am WHERE am.user_id = ?");
-$stmt->bind_param("s", $current_userid);
+if ($search !== '') {
+    $stmt = $conn->prepare("
+    SELECT 
+      am.name as name,
+      am.id as id,
+      am.login_id as login_id,
+      am.bearer_token as bearer_token,
+      am.refresh_token as refresh_token,
+      am.access_token as access_token,
+      am.search_enable as search_enable,
+      am.use_admin_api as use_admin_api,
+      am.ai_mode as ai_mode
+    FROM account_master am
+    WHERE am.user_id = ? AND am.name LIKE ?
+    ");
+    $stmt->bind_param("ss", $current_userid, $searchParam);
+} else {
+    $stmt = $conn->prepare("
+    SELECT 
+      am.name as name,
+      am.id as id,
+      am.login_id as login_id,
+      am.bearer_token as bearer_token,
+      am.refresh_token as refresh_token,
+      am.access_token as access_token,
+      am.search_enable as search_enable,
+      am.use_admin_api as use_admin_api,
+      am.ai_mode as ai_mode
+    FROM account_master am
+    WHERE am.user_id = ?
+    ");
+    $stmt->bind_param("s", $current_userid);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -130,63 +171,57 @@ $result = $stmt->get_result();
         <button type="submit">検索</button>
     </form>
 
-    <div style="display: flex; align-items: center; gap: 10px;">
-    <span>チェックONのアカウントに対し</span>
+<div style="margin-bottom: 20px;">
+  <div>
+    チェックONのアカウントに対し以下の処理を実行：
+  </div>
 
-    <form method="GET" action="?" style="margin: 0; display: inline-block;">
-       
-        <select id="command_option" name="command" onchange="toggleCommandSource()">
-            <option value="post">ﾎﾟｽﾄｺﾒﾝﾄ</option>
-            <option value="reply">ﾘﾌﾟﾗｲｺﾒﾝﾄ</option>
-            <option value="replytoreply">ﾘﾌﾟtoﾘﾌﾟｺﾒﾝﾄ</option>
+<form method="GET" action="?" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
 
-            <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
-            <option value="search">監視リプ,モノマネ</option>
+  <!-- コマンド選択 -->
+  <select id="command_option" name="command" onchange="toggleCommandSource()" style="width: auto; min-width: 140px;">
+    <option value="post">ﾎﾟｽﾄｺﾒﾝﾄ</option>
+    <option value="reply">ﾘﾌﾟﾗｲｺﾒﾝﾄ</option>
+    <option value="replytoreply">ﾘﾌﾟtoﾘﾌﾟｺﾒﾝﾄ</option>
+    <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
+      <option value="search">監視リプ,モノマネ</option>
+    <?php endif; ?>
+  </select>
 
-            <!-- 貸出アカウントへの一括切り替えができてしまうため保留 -->
-<!--            <option value="searchFrom">監視実施</option>  -->
+  <span>を</span>
 
-            <?php endif; ?>
-            
-        </select>
-    </form>
+  <!-- 処理種別 -->
+  <select id="action1_option" name="action1" onchange="toggleDuplicateSource()" style="width: auto; min-width: 120px;">
+    <option value="duplicate">複製する</option>
+    <option value="delete">削除する</option>
+  </select>
 
-    <span>を</span>
+  <!-- ON/OFF操作（初期非表示） -->
+  <select id="action2_option" name="action2" style="display: none; width: auto; min-width: 120px;">
+    <option value="on">ONにする</option>
+    <option value="off">OFFにする</option>
+  </select>
 
-    <div id="action1_source" style="margin-left: 10px;">
-    <form method="GET" action="?" style="margin: 0; display: inline-block;">
-    <select id="action1_option" name="action1" onchange="toggleDuplicateSource()">
-        <option value="duplicate">複製する</option>
-        <option value="delete">削除する</option>
+  <!-- 複製元選択 -->
+  <div id="duplicate_source" style="display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;">
+    <span>(複製元：</span>
+    <select id="form_account_id" name="xuser" style="width: auto; min-width: 140px;">
+      <option value="">未選択</option>
+      <?php foreach ($xusers as $k => $row) { ?>
+        <option value="<?php echo e($row['id']) ?>" <?php echo ((string)$row['id'] === (string)$xuser_id ? 'selected' : ''); ?>>
+          <?php echo e($row['name']) ?>
+        </option>
+      <?php } ?>
     </select>
-    </div>
+    <span>)</span>
+  </div>
 
-    <div id="action2_source" style="display: none; margin-left: 10px;">
-    <form method="GET" action="?" style="margin: 0; display: inline-block;">
-    <select id="action2_option" name="action2" >
-        <option value="on">ONにする</option>
-        <option value="off">OFFにする</option>
-    </select>
-    </div>
+  <!-- 実行ボタン -->
+  <button type="submit" onclick="executeAction()" style="margin-left: 10px;">実行</button>
 
 </form>
 
-    <div id="duplicate_source" style="display: none; margin-left: 10px; display: inline-flex; align-items: center; gap: 12px; white-space: nowrap;">
-    <span>(複製元：</span>
-    <select id="form_account_id" name="xuser" style="min-width: 120px;">
-        <option value="">未選択</option>
-        <?php foreach ($xusers as $k => $row) { ?>
-            <option value="<?php echo e($row['id']) ?>" 
-            	<?php echo ( (string)$row['id'] === (string)$xuser_id ? 'selected' : '' ); ?>>
-            	<?php echo e($row['name']) ?>
-            </option>
-        <?php } ?>
-    </select>
-    <span>)</span>
-    </div>
 
-    <!-- 実行ボタン -->
-    <button type="submit" onclick="executeAction()" style="margin-left: 10px;">実行</button>
 
     <script>
     function toggleDuplicateSource() {
@@ -404,8 +439,8 @@ function toggleMenu(menuEl) {
     <td class="id-col">
       <img src="img/profile/<?php echo htmlspecialchars($row['id']); ?>.jpg"
          alt="icon"
-         onerror="this.onerror=null;this.src='img/profile/noimage/noimage.jpg';"
-         style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;">
+         onerror="this.onerror=null;this.src='img/noimage/noimage.jpg';"
+         style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;">
     </td>  
     <td class="name-col">
       <div>

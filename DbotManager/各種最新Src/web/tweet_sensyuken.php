@@ -19,7 +19,8 @@ $sensyuken_mode = $_SESSION['sensyuken_mode'];
 $stmt = $conn->prepare("
 SELECT 
   SUM(like_count) AS total_likes,
-  SUM(bookmark_count) AS total_bookmarks
+  SUM(bookmark_count) AS total_bookmarks,
+  SUM(reply_count) AS total_replys
 FROM tweet_process_list
 WHERE user_id = ? 
   AND sensyuken_mode != 0 
@@ -36,8 +37,10 @@ $row = $result->fetch_assoc();
 //$total_bookmarks = $row['total_bookmarks'];
 $total_likes = is_null($row['total_likes']) ? 0 : (int)$row['total_likes'];
 $total_bookmarks = is_null($row['total_bookmarks']) ? 0 : (int)$row['total_bookmarks'];
+$total_replys = is_null($row['total_replys']) ? 0 : (int)$row['total_replys'];
 $exe_enable_like_count = $_SESSION['sensyuken_like_limit'] - $total_likes;
 $exe_enable_bookmark_count = $_SESSION['sensyuken_bookmark_limit'] - $total_bookmarks;
+$exe_enable_reply_count = $_SESSION['sensyuken_reply_limit'] - $total_replys;
 
 //echo $current_userid ;
 //echo $total_likes ;
@@ -61,15 +64,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    $reply_count = 100;
+    $reply_enable = 1;
+
+    // reply制限チェック
+    if ($exe_enable_reply_count <= 100) {
+        $reply_count = $exe_enable_reply_count;
+    }
+
+    if ($exe_enable_reply_count == 0) {
+        $reply_enable = 0;
+    }    
+
     // INSERT文
     $sql = "INSERT INTO tweet_process_list (
     user_id, tweet_id, 
     updatetime, sensyuken_mode,
-    like_count, bookmark_count,
-    like_enable, bookmark_enable
+    like_count, bookmark_count, reply_count,
+    like_enable, bookmark_enable, reply_enable
     ) 
     VALUES (
-    ?, ?, NOW(), ?, ?, ?, ?, ?
+    ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?
     )";    
 
     // プリペアドステートメント
@@ -77,7 +92,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // バインド（型指定修正）
 //    $stmt->bind_param('isi', $current_userid, $tweetId, $sensyuken_mode);
-    $stmt->bind_param('isiiiii', $current_userid, $tweetId, $sensyuken_mode, $like_count, $bookmark_count, $like_enable, $bookmark_enable);
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param(
+        'isiiiiiii',
+        $current_userid,
+        $tweetId,
+        $sensyuken_mode,
+        $like_count,
+        $bookmark_count,
+        $reply_count,
+        $like_enable,
+        $bookmark_enable,
+        $reply_enable
+    );
 
     // 実行
     $stmt->execute();    

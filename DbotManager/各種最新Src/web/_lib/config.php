@@ -83,6 +83,7 @@ function current_user($conn){
         $_SESSION['follow_enable'] = '0';
         $_SESSION['sensyuken_like_limit'] = 0;
         $_SESSION['sensyuken_bookmark_limit'] = 0;
+        $_SESSION['sensyuken_reply_limit'] = 0;
         
         $_SESSION['is_guest'] = true;
         $_SESSION['is_logged_in'] = false;
@@ -117,6 +118,10 @@ function current_user($conn){
         $_SESSION['follow_enable'] = $user['follow_enable'];
         $_SESSION['sensyuken_like_limit'] = $user['sensyuken_like_limit'];
         $_SESSION['sensyuken_bookmark_limit'] = $user['sensyuken_bookmark_limit'];
+        $_SESSION['sensyuken_reply_limit'] = $user['sensyuken_reply_limit'];
+        $_SESSION['japanese_like_limit'] = $user['japanese_like_limit'];
+        $_SESSION['japanese_bookmark_limit'] = $user['japanese_bookmark_limit'];
+        $_SESSION['japanese_repost_limit'] = $user['japanese_repost_limit'];
 
 
         $re = true;
@@ -154,6 +159,10 @@ function get_user($conn,$id){
         follow_enable
         ,sensyuken_like_limit
         ,sensyuken_bookmark_limit
+        ,sensyuken_reply_limit
+        ,japanese_like_limit
+        ,japanese_bookmark_limit
+        ,japanese_repost_limit
      FROM user_master WHERE id = ?"
      );
 
@@ -186,6 +195,10 @@ function get_user($conn,$id){
             $follow_enable
             ,$sensyuken_like_limit
             ,$sensyuken_bookmark_limit
+            ,$sensyuken_reply_limit
+            ,$japanese_like_limit
+            ,$japanese_bookmark_limit
+            ,$japanese_repost_limit
         );
         $stmt->fetch();
 
@@ -215,6 +228,10 @@ function get_user($conn,$id){
                 'follow_enable' => $follow_enable ,
                 'sensyuken_like_limit' => $sensyuken_like_limit ,
                 'sensyuken_bookmark_limit' => $sensyuken_bookmark_limit ,
+                'sensyuken_reply_limit' => $sensyuken_reply_limit ,
+                'japanese_like_limit' => $japanese_like_limit ,
+                'japanese_bookmark_limit' => $japanese_bookmark_limit ,
+                'japanese_repost_limit' => $japanese_repost_limit ,
                 ];
         }
 
