@@ -85,7 +85,6 @@ namespace ChildTweet
         public async Task ExecuteAsync(TweetRequest req)
         {
             ReadIniファイル();
-
             _log($"▶ tweet_id: {req.tweet_id}");
 
             List<Task> allTasks = new();
@@ -94,12 +93,10 @@ namespace ChildTweet
             _log($"┗いいね処理");
             foreach (var id in req.like_list)
             {
-                allTasks.Add(Task.Run(async () =>
+                int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
+                allTasks.Add(ExecuteWithDelay(delay, async () =>
                 {
-                    int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
                     _log($"　┗いいね実行 ID={id} 待機秒数={delay}mSec");
-                    await Task.Delay(delay);
-
                     await TweetProc(new TweetCommand
                     {
                         AccountId = id,
@@ -113,12 +110,10 @@ namespace ChildTweet
             _log($"┗ブックマーク処理");
             foreach (var id in req.bookmark_list)
             {
-                allTasks.Add(Task.Run(async () =>
+                int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
+                allTasks.Add(ExecuteWithDelay(delay, async () =>
                 {
-                    int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
                     _log($"　┗ブックマーク実行 ID={id} 待機秒数={delay}mSec");
-                    await Task.Delay(delay);
-
                     await TweetProc(new TweetCommand
                     {
                         AccountId = id,
@@ -132,12 +127,10 @@ namespace ChildTweet
             _log($"┗リポスト処理");
             foreach (var id in req.repost_list)
             {
-                allTasks.Add(Task.Run(async () =>
+                int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
+                allTasks.Add(ExecuteWithDelay(delay, async () =>
                 {
-                    int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
                     _log($"　┗リポスト実行 ID={id} 待機秒数={delay}mSec");
-                    await Task.Delay(delay);
-
                     await TweetProc(new TweetCommand
                     {
                         AccountId = id,
@@ -151,12 +144,10 @@ namespace ChildTweet
             _log($"┗リプライ処理");
             foreach (var item in req.reply_list)
             {
-                allTasks.Add(Task.Run(async () =>
+                int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
+                allTasks.Add(ExecuteWithDelay(delay, async () =>
                 {
-                    int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
                     _log($"　┗リプライ実行 AccountID={item.AccountId} CommentID={item.CommentId} 待機秒数={delay}mSec");
-                    await Task.Delay(delay);
-
                     await TweetProc(new TweetCommand
                     {
                         AccountId = item.AccountId,
@@ -167,10 +158,17 @@ namespace ChildTweet
                 }));
             }
 
-            // 全タスク完了待ち
             await Task.WhenAll(allTasks);
-
             _log("✔ 全ての処理が完了しました。");
+        }
+
+        private Task ExecuteWithDelay(int delayMs, Func<Task> action)
+        {
+            return Task.Run(async () =>
+            {
+                await Task.Delay(delayMs);
+                await action();
+            });
         }
 
 
