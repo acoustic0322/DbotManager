@@ -72,6 +72,8 @@ namespace ChildTweet
     internal class TweetProcess
     {
         private string pythonWorkingPath;
+        private int waitMin;
+        private int waitMax;
 
         private readonly Action<string> _log;
 
@@ -80,27 +82,89 @@ namespace ChildTweet
             _log = logger ?? Console.WriteLine;
         }
 
-        public void Execute(TweetRequest req)
+        public async Task ExecuteAsync(TweetRequest req)
         {
+            ReadIniファイル();
+
             _log($"▶ tweet_id: {req.tweet_id}");
             _log($"┗いいね処理");
 
+//            var likeTasks = req.like_list.Select(async id =>
             var likeTasks = req.like_list.Select(async id =>
             {
-                _log($"　┗🖤 いいね実行 ID={id}");
-                TweetProc(new TweetCommand() { AccountId = id, TweetId = req.tweet_id, TweetProcType = TweetProcTypes.いいね });
-                Thread.Sleep(100); // 擬似処理
-            }
+                var rand = new Random();
+                int delay = rand.Next(waitMin, waitMax);
+                _log($"　┗いいね実行 ID={id} 待機秒数={delay}mSec");
+                await Task.Delay(delay);
+
+                return Task.Run(() => TweetProc(new TweetCommand
+                {
+                    AccountId = id,
+                    TweetId = req.tweet_id,
+                    TweetProcType = TweetProcTypes.いいね
+                }));
+            }).ToList();
+
 
             _log($"┗ブックマーク処理");
-            foreach (var id in req.bookmark_list)
+
+            var bookmarkTasks = req.bookmark_list.Select(async id =>
             {
-                _log($"　┗🔖 ブックマーク実行 ID={id}");
-                TweetProc(new TweetCommand() { AccountId = id, TweetId = req.tweet_id, TweetProcType = TweetProcTypes.ブックマーク });
-                Thread.Sleep(100);
-            }
+                var rand = new Random();
+                int delay = rand.Next(waitMin, waitMax);
+                _log($"　┗ブックマーク実行 ID={id} 待機秒数={delay}mSec");
+                await Task.Delay(delay);
+
+                return Task.Run(() => TweetProc(new TweetCommand
+                {
+                    AccountId = id,
+                    TweetId = req.tweet_id,
+                    TweetProcType = TweetProcTypes.ブックマーク
+                }));
+            }).ToList();
 
             // TODO: repost, reply も追加
+
+            _log($"┗リポスト処理");
+
+            var repostTasks = req.repost_list.Select(async id =>
+            {
+                var rand = new Random();
+                int delay = rand.Next(waitMin, waitMax);
+                _log($"　┗リポスト実行 ID={id} 待機秒数={delay}mSec");
+                await Task.Delay(delay);
+
+                return Task.Run(() => TweetProc(new TweetCommand
+                {
+                    AccountId = id,
+                    TweetId = req.tweet_id,
+                    TweetProcType = TweetProcTypes.リポスト
+                }));
+            }).ToList();
+
+            _log($"┗リプライ処理");
+
+            var replyTasks = req.reply_list.Select(async item =>
+            {
+                var rand = new Random();
+                int delay = rand.Next(waitMin, waitMax);
+                _log($"　┗リプライ実行 AccountID={item.AccountId} CommentID={item.CommentId} 待機={delay}ms");
+                await Task.Delay(delay);
+
+                return Task.Run(() => TweetProc(new TweetCommand
+                {
+                    AccountId = item.AccountId,
+                    TweetId =  req.tweet_id,
+                    CommentId = item.CommentId,
+                    TweetProcType = TweetProcTypes.リプライ
+                }));
+            }).ToList();
+
+
+            // 並列実行を待機
+            await Task.WhenAll(likeTasks.Concat(bookmarkTasks).Concat(repostTasks));
+
+            _log("✔ 全ての処理が完了しました。");
         }
 
 
@@ -139,16 +203,15 @@ namespace ChildTweet
                 if (settings.ContainsKey("Tweet") && settings["Tweet"].ContainsKey("working"))
                 {
                     pythonWorkingPath = settings["Tweet"]["working"];
+                    var test = settings["Tweet"]["wait_min"];
+                    waitMin = int.Parse(settings["Tweet"]["wait_min"]);
+                    waitMax = int.Parse(settings["Tweet"]["wait_max"]);
                 }
             }
         }
 
         public TweetResult TweetProc(TweetCommand tweetCommand)
         {
-
-            ReadIniファイル();
-//            pythonWorkingPath = "python";
-
             // Pythonスクリプトのパスを指定
             string pythonScriptPath = $@"{pythonWorkingPath}\tweet.py";
 
@@ -160,9 +223,11 @@ namespace ChildTweet
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId}";
                     break;
 
+                case TweetProcTypes.リプライ:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} tweet_id={tweetCommand.TweetId}";
+                    break;
             }
 
-            //            pythonScriptPath += " debug=True";
             pythonScriptPath += " debug=False";
 
             // Pythonの実行ファイルのパスを指定（通常 "python" または "python3" でOK）
