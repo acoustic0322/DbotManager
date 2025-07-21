@@ -85,7 +85,7 @@ namespace ChildTweet
             _log($"▶ tweet_id: {req.tweet_id}");
             _log($"┗いいね処理");
 
-            foreach (var id in req.like_list)
+            var likeTasks = req.like_list.Select(async id =>
             {
                 _log($"　┗🖤 いいね実行 ID={id}");
                 TweetProc(new TweetCommand() { AccountId = id, TweetId = req.tweet_id, TweetProcType = TweetProcTypes.いいね });
