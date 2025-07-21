@@ -37,7 +37,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param('isiiiiiiiiiiis', $current_userid, $tweetId, $likeEnable, $bookmarkEnable, $replyEnable, $repostEnable, $likeCount, $bookmarkCount, $replyCount, $repostCount, $repToRep, $exeFollow, $exeUnfollow, $targetAccountName);
+
+//    $stmt->bind_param('isiiiiiiiiiiis', $current_userid, $tweetId, $likeEnable, $bookmarkEnable, $replyEnable, $repostEnable, $likeCount, $bookmarkCount, $replyCount, $repostCount, $repToRep, $exeFollow, $exeUnfollow, $targetAccountName);
+    $stmt->bind_param(
+    'isiiiiiiiiiiis', // ← ここを修正（s: target_account_name追加で15個）
+      $current_userid,          // i
+      $tweetId,                 // s
+      $likeEnable,              // i
+      $bookmarkEnable,          // i
+      $replyEnable,             // i
+      $repostEnable,            // i
+      $likeCount,               // i
+      $bookmarkCount,           // i
+      $replyCount,              // i
+      $repostCount,             // i
+      $repToRep,                // i
+      $exeFollow,               // i
+      $exeUnfollow,             // i
+      $targetAccountName        // s
+    );
+
     $stmt->execute();
     $stmt->close();
     $conn->close();

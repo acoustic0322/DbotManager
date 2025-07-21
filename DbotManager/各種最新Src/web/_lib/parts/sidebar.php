@@ -15,8 +15,11 @@
             (isset($_SESSION['follow_enable']) && $_SESSION['follow_enable'] == 1) 
        ): ?>    
 
-            <?php if (isset($_SESSION['japanese_mode']) && $_SESSION['japanese_mode'] !== 0): ?>
+            <?php if (isset($_SESSION['japanese_mode']) && $_SESSION['japanese_mode'] === 1): ?>
                 <a href="tweet_japanese.php">Twitter拡散サービス<BR>(日本人いいね)</a>
+            <?php endif; ?>
+            <?php if (isset($_SESSION['japanese_mode']) && $_SESSION['japanese_mode'] === 2): ?>
+                <a href="tweet_japanese2.php">Twitter拡散サービス<BR>(日本人いいね)</a>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['sensyuken_mode']) && $_SESSION['sensyuken_mode'] !== 0): ?>

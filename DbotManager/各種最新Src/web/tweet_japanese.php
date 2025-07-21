@@ -1,101 +1,140 @@
 <?php
-
-require 'vendor/autoload.php';
-
-
-use Stripe\Stripe;
-use Stripe\Checkout\Session;
-
-\Stripe\Stripe::setApiKey('sk_test_51REokc2KckKYw0LSL7yZtg5VZccdocrzto6thNvp1dEZkyY86BgC2Pw0iCpoKQV8cp2QpiKZGSDvc9Xtl1yVfvHI00yfvKYfmL'); // シークレットキー
-
 require __DIR__ . '/_lib/config.php';
 session_start(); // セッションを開始する
 
 // データベース接続
 $conn = new mysqli($config['servername'], $config['username'], $config['password'], $config['dbname']);
 
-
-//echo $_SESSION['user_id'];
-
 // セッションによるユーザー確認
-//if (!current_user($conn)) {
-//    echo "<p>ログインしていません。</p>";
-//    exit;
-//}
+if (!current_user($conn)) {
+    echo "<p>ログインしていません。</p>";
+    exit;
+}
 
-current_user($conn);
-//echo $_SESSION['is_logged_in'];
-
-//$current_userid = $_SESSION['user_id'];
+$current_userid = $_SESSION['user_id'];
 //$sensyuken_mode = $_SESSION['sensyuken_mode'];
+$japanese_mode = '1';
 
-$session_id = $_GET['session_id'] ?? '';
+$stmt = $conn->prepare("
+SELECT 
+  SUM(like_count) AS total_likes,
+  SUM(bookmark_count) AS total_bookmarks,
+  SUM(repost_count) AS total_reposts
+FROM tweet_process_list
+WHERE user_id = ? 
+  AND japanese_mode != 0 
+  AND japanese_mode IS NOT NULL"
+);
 
-if ($session_id) {
-    try {
-        $session = \Stripe\Checkout\Session::retrieve($session_id);
-        $metadata = $session->metadata;
-        $paid = true; // フラグを立てる
+$stmt->bind_param("s", $current_userid);
+$stmt->execute();
 
-        /*
-        echo "<h2>決済が完了しました</h2>";
-        echo "<ul>";
-        echo "<li>Tweet ID: " . htmlspecialchars($metadata->tweet_id ?? '未設定') . "</li>";
-        echo "<li>Bookmark: " . ($metadata->bookmark ?? 0 ? '有効' : '無効') . "</li>";
-        echo "<li>Reply: " . ($metadata->reply ?? 0 ? '有効' : '無効') . "</li>";
-        echo "<li>Reply to Reply: " . ($metadata->rep_to_rep ?? 0 ? '有効' : '無効') . "</li>";
-        echo "<li>Repost: " . ($metadata->repost ?? 0 ? '有効' : '無効') . "</li>";
-        echo "</ul>";
-        */
+$result = $stmt->get_result();
+$row = $result->fetch_assoc();
+$total_likes = is_null($row['total_likes']) ? 0 : (int)$row['total_likes'];
+$total_bookmarks = is_null($row['total_bookmarks']) ? 0 : (int)$row['total_bookmarks'];
+$total_reposts = is_null($row['total_reposts']) ? 0 : (int)$row['total_reposts'];
+$exe_enable_like_count = $_SESSION['japanese_like_limit'] - $total_likes;
+$exe_enable_bookmark_count = $_SESSION['japanese_bookmark_limit'] - $total_bookmarks;
+$exe_enable_repost_count = $_SESSION['japanese_repost_limit'] - $total_reposts;
 
-       // メタデータ取得してセッションに保存
-       $_SESSION['tweet_id'] = $session->metadata->tweet_id ?? '';
-       $_SESSION['bookmark_enable'] = $session->metadata->bookmark ?? 0;
-       $_SESSION['reply_enable'] = $session->metadata->reply ?? 0;
-       $_SESSION['rep_to_rep'] = $session->metadata->rep_to_rep ?? 0;
-       $_SESSION['repost_enable'] = $session->metadata->repost ?? 0;   
-       
+//echo $current_userid ;
+//echo $total_likes ;
+//echo $total_bookmarks ;
 
-        // INSERT文
-        $sql = "INSERT INTO tweet_process_list (
-            user_id, tweet_id, like_enable, bookmark_enable, reply_enable, repost_enable, 
-            updatetime , rep_to_rep , japanese_mode
-        ) 
-        VALUES (
-            ?, ?, ?, ?, ?, ?, NOW() , ? , ? 
-        )";    
+$stmt->close();
 
-/*
-        // プリペアドステートメント
-        $stmt = $conn->prepare($sql);
+// POSTリクエストの場合
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-        // バインド（型指定修正）
-        $stmt->bind_param('isiiiiii', 
-        $current_userid,
-        $_SESSION['tweet_id'],
-        '1',
-        $_SESSION['bookmark_enable'],
-        $_SESSION['reply_enable'],
-        $_SESSION['repost_enable'],
-        $_SESSION['rep_to_rep'] ,
-        '1'
-        );
+    // 引数の準備
+    $tweetId = isset($_POST['tweet_id']) ? $_POST['tweet_id'] : '';
+    $like_count = isset($_POST['like_count']) ? (int)$_POST['like_count'] : 0;
+    $bookmark_count = isset($_POST['bookmark_count']) ? (int)$_POST['bookmark_count'] : 0;
+    $repost_count = isset($_POST['repost_count']) ? (int)$_POST['repost_count'] : 0;
+    $like_enable = isset($_POST['like_enable']) ? 1 : 0;
+    $bookmark_enable = isset($_POST['bookmark_enable']) ? 1 : 0;
+    $repost_enable = isset($_POST['repost_enable']) ? 1 : 0;
 
-        // 実行
-//        $stmt->execute();    
-        $stmt->close();
-        $conn->close();           
-        */
-
-    } catch (\Exception $e) {
-        $paid = false; 
-        echo "<p>Stripeセッションの取得に失敗しました: " . $e->getMessage() . "</p>";
+    // 超過チェック（サーバー側）
+    if ($like_count > $exe_enable_like_count || $bookmark_count > $exe_enable_bookmark_count) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?result=error_overlimit");
+        exit;
     }
-} else {
-    $paid = false; 
-//    echo "<h2>通常アクセス</h2>";
-//    echo "<p>このページは Stripe 決済後でない通常表示です。</p>";
-    // ここに通常アクセス時に表示するコンテンツを書く
+
+    $reply_count = 100;
+    $reply_enable = 1;
+
+    // reply制限チェック
+    /*
+    if ($exe_enable_reply_count <= 100) {
+        $reply_count = $exe_enable_reply_count;
+    }
+
+    if ($exe_enable_reply_count == 0) {
+        $reply_enable = 0;
+    } 
+        */   
+
+    // INSERT文
+    $sql = "INSERT INTO tweet_process_list (
+    user_id, tweet_id, 
+    updatetime, japanese_mode,
+    jap_like_count, jap_bookmark_count, jap_repost_count,
+    like_enable, bookmark_enable, repost_enable
+    ) 
+    VALUES (
+    ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?
+    )";    
+
+    // プリペアドステートメント
+    $stmt = $conn->prepare($sql);
+
+    // バインド（型指定修正）
+//    $stmt->bind_param('isi', $current_userid, $tweetId, $japanese_mode);
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param(
+        'isiiiiiii',
+        $current_userid,
+        $tweetId,
+        $japanese_mode,
+        $like_count,
+        $bookmark_count,
+        $repost_count,
+        
+        $like_enable,
+        $bookmark_enable,
+        $repost_enable
+        
+    );
+
+    // 実行
+    $stmt->execute();    
+    $stmt->close();
+
+    // USER_MASTER の更新処理
+    $updateSql = "UPDATE USER_MASTER SET 
+    japanese_like_limit = japanese_like_limit - ?, 
+    japanese_bookmark_limit = japanese_bookmark_limit - ? ,
+    japanese_repost_limit = japanese_repost_limit - ? 
+    WHERE id = ?";
+
+    $update_like = ($like_enable === 1) ? $like_count : 0;
+    $update_bookmark = ($bookmark_enable === 1) ? $bookmark_count : 0;
+    $update_repost = ($repost_enable === 1) ? $repost_count : 0;
+
+    $updateStmt = $conn->prepare($updateSql);
+    $updateStmt->bind_param('iiii', $update_like, $update_bookmark, $update_repost, $current_userid);
+    $updateStmt->execute();
+    $updateStmt->close();
+
+
+    $conn->close();    
+
+    // リダイレクト（PRGパターン）
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+
 }
 ?>
 
@@ -103,167 +142,163 @@ if ($session_id) {
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>日本人いいね</title>
-    <link rel="stylesheet" href="_lib/style.css">    
-    <script src="https://js.stripe.com/v3/"></script>
-
+    <title>Twitter拡散サービス</title>
+    <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
-<body>
+<body class="tweet-sensyuken-page">
 <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
   <div class="main">
     <!-- コンテンツエリア -->
     <div class="content" id="content">
-<!--        <form action="?" method="post">  -->
-
-        <img src="image/japanese_like.png" alt="ロゴ" width="45%"  height="40%">
-
-        <!-- 特定商取引法に基づく表記 -->
-<!--        <div style="margin: 40px auto; max-width: 800px; font-size: 14px; line-height: 1.6; border-top: 1px solid #ccc; padding-top: 20px;"> -->
-        <div>
-        <h3>商品説明</h3>
-        <p>本サービスは、個人および法人のSNS運用を支援するWebアプリケーションを提供します。</p>
-        <p>ユーザーは自身のSNS投稿URLを登録することで、当社が提供する「アカウント運用補助スクリプト」や「アルゴリズム解析ツール」を用い、SNS上での反応・表示最適化を図ることが可能です。</p>
-        <p>決済後は5分以内付与されますが、時間がかかる場合もあります。</p>
-        <p>24時間以内に付与されない場合はご連絡ください。</p>
-        </div>
+        <h2>Twitter拡散サービス</h2>
 
 
-        <div style="margin: 40px auto; max-width: 800px; font-size: 14px; line-height: 1.6; border-top: 1px solid #ccc; padding-top: 20px;">
-        </div>
+<?php
+$notice_text = '';
+$notice_color = '#ff0000'; // デフォルト色
+#$notice_file = 'G:\マイドライブ\DBotManager\WEB\notice.txt';
+$notice_file = __DIR__ . '/JapState.txt';
+if (file_exists($notice_file)) {
+    $line = trim(file_get_contents($notice_file));
+    $parts = explode(',', $line);
+    if (count($parts) >= 1) {
+        $notice_text = htmlspecialchars($parts[0], ENT_QUOTES, 'UTF-8');
+    }
+    if (count($parts) >= 2) {
+        $notice_color = htmlspecialchars($parts[1], ENT_QUOTES, 'UTF-8');
+    }
+}
 
-        <?php if ($paid): ?>
-        <div class="paid-label">✅ 決済が完了しました</div>
-        <?php endif; ?>        
+if ($notice_text !== '') {
+    echo '<p style="color:' . $notice_color . '; font-weight: bold;">' . $notice_text . '</p>';
+}
+?>        
 
+
+<!--        <label>本日の残り回数： <?php echo ($exe_enable_count); ?> </label><br><br>-->
         <form method="POST" action="?">
-        <!--
-        <label for="user_id">ユーザーID: 
-            <span id="user_id"><?php echo htmlspecialchars($current_userid); ?></span>
-        </label><br><br>
-        -->
+
+            <!-- JS用にPHP変数を埋め込み -->
+            <script>
+                const maxLikeCount = <?php echo max(0, $exe_enable_like_count); ?>;
+                const maxBookmarkCount = <?php echo max(0, $exe_enable_bookmark_count); ?>;
+                const maxRepostCount = <?php echo max(0, $exe_enable_repost_count); ?>;
+            </script> 
+
         <div class="input-group" checkbox-group">
+            <label>
+                <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートID" required size="80" maxlength="100" require>
+                <br><br>
+                <label><input type="checkbox" name="like_enable">日本人いいね（残り <?php echo max(0, $exe_enable_like_count); ?> 回）</label>
+                <input type="number" id="like_count" name="like_count" min="0" class="short">                
+                <br><br>
+                <label><input type="checkbox" name="bookmark_enable">日本人ブックマーク（残り <?php echo max(0, $exe_enable_bookmark_count); ?> 回）</label>
+                <input type="number" id="bookmark_count" name="bookmark_count" min="0" class="short">                
+                <br><br>
+                <label><input type="checkbox" name="repost_enable">日本人リポスト（残り <?php echo max(0, $exe_enable_repost_count); ?> 回）</label>
+                <input type="number" id="repost_count" name="repost_count" min="0" class="short">                
 
-        <label>
 
-        数量：
-        <input type="number" name="count" id="count" placeholder="いいね数"
-            required size="20" maxlength="20" min="50" required 
-            value="<?= htmlspecialchars($_SESSION['count'] ?? '', ENT_QUOTES) ?>"> 
-        </label><br><br>
-
-        <label>
-        対象ツイートID：
-        <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートID"
-            required size="40" maxlength="40" required 
-            value="<?= htmlspecialchars($_SESSION['tweet_id'] ?? '', ENT_QUOTES) ?>">
-        </label><br><br>
-
-        <?php if (empty($_SESSION['is_guest']) || $_SESSION['is_guest'] === false): ?>
-        <label>
-        <input type="checkbox" name="bookmark_enable" value="1"
-            <?= (!empty($_SESSION['bookmark_enable'])) ? 'checked' : '' ?>>
-        ブックマーク
-        </label><br>
-
-        <label>
-        <input type="checkbox" name="reply_enable" value="1"
-            <?= (!empty($_SESSION['reply_enable'])) ? 'checked' : '' ?>>
-        リプライ
-        <input type="checkbox" name="rep_to_rep" value="1"
-            <?= (!empty($_SESSION['rep_to_rep'])) ? 'checked' : '' ?>>
-        (リプライへのリプライ)
-        </label><br>
-
-        <label>
-        <input type="checkbox" name="repost_enable" value="1"
-            <?= (!empty($_SESSION['repost_enable'])) ? 'checked' : '' ?>>
-        リポスト
-        </label><br>
-        <?php endif; ?>        
-
-    </div>
-
-        <button id="checkout-button" type="button">決済</button>
+            </label><br><br>
         </div>
 
-<!-- 特定商取引法に基づく表記 -->
-<div style="margin: 40px auto; max-width: 800px; font-size: 14px; line-height: 1.6; border-top: 1px solid #ccc; padding-top: 20px;">
-    <h3>特定商取引法に基づく表記</h3>
-    <p><strong>法人名：</strong> 合同会社 Aola</p>
-    <p><strong>代表者：</strong> 橋倉 大輔</p>
-    <p><strong>所在地：</strong> 熊本県玉名市月田2107-12</p>
-    <p><strong>メールアドレス：</strong> <a href="mailto:aola101010@gmail.com">aola101010@gmail.com</a></p>
-    <p><strong>サイトURL：</strong> <a href="https://d-bot.happywinds.net/d-bot/tweet_japanese.php" target="_blank">https://d-bot.happywinds.net/d-bot/tweet_japanese.php</a></p>
-    <p><strong>販売価格：</strong> 各商品の紹介ページに記載された価格となります。</p>
-    <p><strong>商品代金以外の必要料金：</strong> 特にございません。</p>
-    <p><strong>お支払い方法およびお支払い時期：</strong> クレジットカード決済：ご注文時にお支払いが確定いたします。</p>
-    <p><strong>商品の引渡時期：</strong> ご注文確認後、直ちに商品を発送いたします。（最大24時間以内）</p>
-    <p><strong>返品・交換・キャンセルについて：</strong> 商品送信後の返品・交換・キャンセルは、基本的にお受けできません。ただし、商品に欠陥がある場合のみ交換を承りますので、その際はご連絡ください。</p>
-    <p><strong>返品期限：</strong> 商品発送後24時間以内にご連絡ください。</p>
-</div>
+            <button type="submit">実行</button>
 
+                <!-- バリデーションスクリプト -->
+                <script>
+                document.querySelector("form").addEventListener("submit", function(event) {
+                    const likeEnable = document.querySelector("input[name='like_enable']").checked;
+                    const likeCount = parseInt(document.querySelector("input[name='like_count']").value || "0", 10);
+                    const bookmarkEnable = document.querySelector("input[name='bookmark_enable']").checked;
+                    const bookmarkCount = parseInt(document.querySelector("input[name='bookmark_count']").value || "0", 10);
+                    const repostEnable = document.querySelector("input[name='repost_enable']").checked;
+                    const repostCount = parseInt(document.querySelector("input[name='repost_count']").value || "0", 10);
 
-<script>
-document.getElementById('checkout-button').addEventListener('click', function() {
-    const countValue = parseInt(document.getElementById('count').value, 10);
-    const tweetId = document.getElementById('tweet_id').value.trim();
+                    if (likeEnable && likeCount > maxLikeCount) {
+                        alert("指定したいいね数が本日の残り回数を超えています（残り " + maxLikeCount + " 回）");
+                        event.preventDefault();
+                        return;
+                    }
 
-    if (isNaN(countValue) || countValue < 50) {
-        alert("いいね数は最低50以上にしてください。");
-        return;
-    }
+                    if (bookmarkEnable && bookmarkCount > maxBookmarkCount) {
+                        alert("指定したブックマーク数が本日の残り回数を超えています（残り " + maxBookmarkCount + " 回）");
+                        event.preventDefault();
+                        return;
+                    }
 
-    if (!tweetId) {
-        alert("対象ツイートIDを入力してください。");
-        return;
-    }
+                    if (repostEnable && repostCount > maxRepostCount) {
+                        alert("指定したリポスト数が本日の残り回数を超えています（残り " + maxRepostCount + " 回）");
+                        event.preventDefault();
+                        return;
+                    }
+                });
+                </script>
 
-    // 条件を満たしたら送信（必要に応じて）
-    // document.querySelector("form").submit();
-});
-</script>
-        <script>
-
-//    const stripe = Stripe('pk_test_xxxxxxxxxxxxxxxxxxxxxxxx'); // 公開可能キー
-    const stripe = Stripe('pk_test_51REokc2KckKYw0LSWsaxpUUf26UUsmyMQbS1JfwbeNPMJX78DMPeDCZFgIBk9S8yGaDIKIqhf6gnR7WQkXuQKYJP00cJm9372n'); // 公開可能キー
-
-    document.getElementById('checkout-button').addEventListener('click', function () {
-        event.preventDefault(); // ← 念のため
-
-    // 各フォーム要素を取得
-    const count = document.getElementById('count').value;
-    const tweetId = document.getElementById('tweet_id').value;
-    const bookmark = document.querySelector('input[name="bookmark_enable"]')?.checked ? 1 : 0;
-    const reply = document.querySelector('input[name="reply_enable"]')?.checked ? 1 : 0;
-    const repToRep = document.querySelector('input[name="rep_to_rep"]')?.checked ? 1 : 0;
-    const repost = document.querySelector('input[name="repost_enable"]')?.checked ? 1 : 0;
-
-
-    // データをPOST
-    fetch('create-checkout-session.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            count: count,
-            tweet_id: tweetId,
-            bookmark_enable: bookmark,
-            reply_enable: reply,
-            rep_to_rep: repToRep,
-            repost_enable: repost
-        })
-    })
-      .then(response => response.json())
-      .then(session => {
-        return stripe.redirectToCheckout({ sessionId: session.id });
-      })
-      .catch(error => console.error('Error:', error));
-    });
-  </script>            
         </form>
     </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const tweetIdInput = document.querySelector('input[name="tweet_id"]');
+
+    form.addEventListener("submit", function (e) {
+        const actions = [
+            { check: 'like_enable', input: 'like_count', label: 'いいね数' },
+            { check: 'bookmark_enable', input: 'bookmark_count', label: 'ブックマーク数' },
+            { check: 'repost_enable', input: 'repost_count', label: 'リポスト数' },
+        ];
+
+        let requireCheckBox = false;
+        let requireTweetId = false;
+
+        for (const { check, input, label } of actions) {
+            const checkEl = document.querySelector(`input[name="${check}"]`);
+            const inputEl = document.querySelector(`input[name="${input}"]`);
+            const isChecked = checkEl?.checked;
+
+            if (isChecked) {
+
+                requireCheckBox = true;
+
+                const value = parseInt(inputEl?.value || "0", 10);
+                if (isNaN(value) || value <= 0) {
+                    alert(`「${label}」を1以上で入力してください。`);
+                    inputEl?.focus();
+                    e.preventDefault();
+                    return;
+                }
+
+                if (value < 20) {
+                    alert(`「${label}」は20以上で入力してください。`);
+                    inputEl?.focus();
+                    e.preventDefault();
+                    return;
+                }                
+
+                requireTweetId = true;
+            }
+        }
+
+        if(requireCheckBox == false)
+        {
+            alert("いいね、ブックマーク、リポストのチェックボックスがOFFです");
+        }
+        // tweet_idが必要なのに空ならエラー
+        else if (requireTweetId && tweetIdInput?.value.trim() === "") {
+            alert("対象ツイートIDを入力してください。");
+            tweetIdInput.focus();
+            e.preventDefault();
+        }
+      
+    });
+});
+</script>
+
+
+
 
 </body>
 </html>

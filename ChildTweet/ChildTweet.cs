@@ -1,5 +1,7 @@
 namespace ChildTweet
 {
+
+
     public partial class ChildTweet : Form
     {
         private TweetHttpServer server = new TweetHttpServer();
@@ -14,6 +16,10 @@ namespace ChildTweet
         {
             try
             {
+                string logDir = @"C:\DBotManager\ChildTweet\logs";
+                Directory.CreateDirectory(logDir); // なければ作る
+
+
                 buttonStart_Click(sender, e);
             }
             catch (Exception ex)
@@ -27,7 +33,11 @@ namespace ChildTweet
             try
             {
                 server.LogOutput = AppendLog;
+                server.Port = int.Parse(textBoxPort.Text);
                 server.Start();
+
+                buttonStart.Enabled = false;
+                buttonStop.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -40,6 +50,9 @@ namespace ChildTweet
             try
             {
                 server.Stop();
+
+                buttonStart.Enabled = true;
+                buttonStop.Enabled = false;
             }
             catch (Exception ex)
             {
@@ -47,8 +60,14 @@ namespace ChildTweet
             }
         }
 
+        private static readonly object _logLock = new object(); // グローバルに1個定義（クラス内の上の方に）
+
+
         private void AppendLog(string message)
         {
+            // 保存先を固定パスに変更
+            string logDir = @"C:\DBotManager\ChildTweet\logs";
+
             string timestamped = $"{message}";
 
             // ListBoxに追加（UIスレッドで）
@@ -62,7 +81,6 @@ namespace ChildTweet
             }
 
             // ログファイル名に日付を含める（例：log_2025-07-11.txt）
-            string logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
             Directory.CreateDirectory(logDir); // logs フォルダがなければ作る
 
             string logFileName = $"log_{DateTime.Now:yyyy-MM-dd}.log";
@@ -70,7 +88,10 @@ namespace ChildTweet
 
             try
             {
-                File.AppendAllText(logFilePath, timestamped + Environment.NewLine);
+                lock (_logLock) // ← ログファイル書き込みを排他制御
+                {
+                    File.AppendAllText(logFilePath, timestamped + Environment.NewLine);
+                }
             }
             catch (Exception ex)
             {
