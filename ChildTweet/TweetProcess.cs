@@ -87,82 +87,88 @@ namespace ChildTweet
             ReadIniファイル();
 
             _log($"▶ tweet_id: {req.tweet_id}");
+
+            List<Task> allTasks = new();
+
+            // いいね処理
             _log($"┗いいね処理");
-
-//            var likeTasks = req.like_list.Select(async id =>
-            var likeTasks = req.like_list.Select(async id =>
+            foreach (var id in req.like_list)
             {
-                var rand = new Random();
-                int delay = rand.Next(waitMin, waitMax);
-                _log($"　┗いいね実行 ID={id} 待機秒数={delay}mSec");
-                await Task.Delay(delay);
-
-                return Task.Run(() => TweetProc(new TweetCommand
+                allTasks.Add(Task.Run(async () =>
                 {
-                    AccountId = id,
-                    TweetId = req.tweet_id,
-                    TweetProcType = TweetProcTypes.いいね
+                    int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
+                    _log($"　┗いいね実行 ID={id} 待機秒数={delay}mSec");
+                    await Task.Delay(delay);
+
+                    await TweetProc(new TweetCommand
+                    {
+                        AccountId = id,
+                        TweetId = req.tweet_id,
+                        TweetProcType = TweetProcTypes.いいね
+                    });
                 }));
-            }).ToList();
+            }
 
-
+            // ブックマーク処理
             _log($"┗ブックマーク処理");
-
-            var bookmarkTasks = req.bookmark_list.Select(async id =>
+            foreach (var id in req.bookmark_list)
             {
-                var rand = new Random();
-                int delay = rand.Next(waitMin, waitMax);
-                _log($"　┗ブックマーク実行 ID={id} 待機秒数={delay}mSec");
-                await Task.Delay(delay);
-
-                return Task.Run(() => TweetProc(new TweetCommand
+                allTasks.Add(Task.Run(async () =>
                 {
-                    AccountId = id,
-                    TweetId = req.tweet_id,
-                    TweetProcType = TweetProcTypes.ブックマーク
+                    int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
+                    _log($"　┗ブックマーク実行 ID={id} 待機秒数={delay}mSec");
+                    await Task.Delay(delay);
+
+                    await TweetProc(new TweetCommand
+                    {
+                        AccountId = id,
+                        TweetId = req.tweet_id,
+                        TweetProcType = TweetProcTypes.ブックマーク
+                    });
                 }));
-            }).ToList();
+            }
 
-            // TODO: repost, reply も追加
-
+            // リポスト処理
             _log($"┗リポスト処理");
-
-            var repostTasks = req.repost_list.Select(async id =>
+            foreach (var id in req.repost_list)
             {
-                var rand = new Random();
-                int delay = rand.Next(waitMin, waitMax);
-                _log($"　┗リポスト実行 ID={id} 待機秒数={delay}mSec");
-                await Task.Delay(delay);
-
-                return Task.Run(() => TweetProc(new TweetCommand
+                allTasks.Add(Task.Run(async () =>
                 {
-                    AccountId = id,
-                    TweetId = req.tweet_id,
-                    TweetProcType = TweetProcTypes.リポスト
-                }));
-            }).ToList();
+                    int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
+                    _log($"　┗リポスト実行 ID={id} 待機秒数={delay}mSec");
+                    await Task.Delay(delay);
 
+                    await TweetProc(new TweetCommand
+                    {
+                        AccountId = id,
+                        TweetId = req.tweet_id,
+                        TweetProcType = TweetProcTypes.リポスト
+                    });
+                }));
+            }
+
+            // リプライ処理
             _log($"┗リプライ処理");
-
-            var replyTasks = req.reply_list.Select(async item =>
+            foreach (var item in req.reply_list)
             {
-                var rand = new Random();
-                int delay = rand.Next(waitMin, waitMax);
-                _log($"　┗リプライ実行 AccountID={item.AccountId} CommentID={item.CommentId} 待機={delay}ms");
-                await Task.Delay(delay);
-
-                return Task.Run(() => TweetProc(new TweetCommand
+                allTasks.Add(Task.Run(async () =>
                 {
-                    AccountId = item.AccountId,
-                    TweetId =  req.tweet_id,
-                    CommentId = item.CommentId,
-                    TweetProcType = TweetProcTypes.リプライ
+                    int delay = new Random(Guid.NewGuid().GetHashCode()).Next(waitMin, waitMax);
+                    _log($"　┗リプライ実行 AccountID={item.AccountId} CommentID={item.CommentId} 待機秒数={delay}mSec");
+                    await Task.Delay(delay);
+
+                    await TweetProc(new TweetCommand
+                    {
+                        AccountId = item.AccountId,
+                        TweetId = req.tweet_id,
+                        CommentId = item.CommentId,
+                        TweetProcType = TweetProcTypes.リプライ
+                    });
                 }));
-            }).ToList();
+            }
 
-
-            // 並列実行を待機
-            await Task.WhenAll(likeTasks.Concat(bookmarkTasks).Concat(repostTasks));
+            // 全タスク完了待ち
+            await Task.WhenAll(allTasks);
 
             _log("✔ 全ての処理が完了しました。");
         }
@@ -211,7 +217,7 @@ namespace ChildTweet
             }
         }
 
-        public TweetResult TweetProc(TweetCommand tweetCommand)
+        public async Task<TweetResult> TweetProc(TweetCommand tweetCommand)
         {
             // Pythonスクリプトのパスを指定
             string pythonScriptPath = $@"{pythonWorkingPath}\tweet.py";
