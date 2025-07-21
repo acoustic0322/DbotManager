@@ -569,8 +569,8 @@ public class MySqlDataAccess
                         {
                             TweetProcessList item = new TweetProcessList()
                             {
-                                Id = int.Parse(reader["id"].ToString()),
-                                UserId = int.Parse(reader["user_id"].ToString()),
+                                Id = SupportUtil.ParseOrDefault(reader["id"],0),
+                                UserId = SupportUtil.ParseOrDefault(reader["user_id"],0),
                                 UpdateTime = Convert.ToDateTime(reader["updatetime"]),
                                 TweetId = reader["tweet_id"].ToString(),
                                 LikeEnable = reader["like_enable"].ToString() == "1",
