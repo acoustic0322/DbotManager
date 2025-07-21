@@ -27,12 +27,12 @@ namespace ChildTweet
             // 変更前（これだと+:5000で全ポートを要求するのでNG）
 //            _listener.Prefixes.Add("http://+:5000/");
             // 変更後（localhost:5000 だけを対象とする。通常ユーザーでOK）
-            _listener.Prefixes.Add($"http://localhost:{Port}/");
+            _listener.Prefixes.Add($"http://+:{Port}/");
 
             _listener.Start();
             _isRunning = true;
 
-            Log($"✅ サーバー起動中 (http://localhost:{Port})");
+            Log($"✅ サーバー起動中 http://+:{Port}/");
 
             Task.Run(() => ListenLoop());
 //            Console.WriteLine("✅ サーバー起動中 (http://localhost:5000)");
@@ -99,26 +99,6 @@ namespace ChildTweet
             }
         }
 
-        private void ProcessTweet(TweetRequest req)
-        {
-            Console.WriteLine($"▶ tweet_id: {req.tweet_id}");
-            Log($"ChildTweetweet実行 TweetId={req.tweet_id}");
-
-            Log($"┗いいね処理");
-            foreach (var id in req.like_list)
-            {
-                Log($"　┗🖤 いいね実行 ID={id}");
-                Thread.Sleep(100); // 擬似処理
-            }
-
-            Log($"┗ブックマーク処理");
-            foreach (var id in req.bookmark_list)
-            {
-                Log($"　┗🔖 ブックマーク実行 ID={id}");
-                Thread.Sleep(100);
-            }
-            // 以降、repost や reply 処理も同様に記述
-        }
     }
 
     public class TweetRequest

@@ -170,7 +170,8 @@ namespace ChildTweet
 
         private void ReadIniファイル()
         {
-            string filePath = "config_tweet.ini";
+            string baseDir = @"C:\DBotManager\ChildTweet";
+            string filePath = Path.Combine(baseDir, "config_tweet.ini");
 
             // ファイルを読み込み
             if (File.Exists(filePath))
