@@ -1,5 +1,7 @@
 namespace ChildTweet
 {
+
+
     public partial class ChildTweet : Form
     {
         private TweetHttpServer server = new TweetHttpServer();
@@ -27,7 +29,11 @@ namespace ChildTweet
             try
             {
                 server.LogOutput = AppendLog;
+                server.Port = int.Parse(textBoxPort.Text);
                 server.Start();
+
+                buttonStart.Enabled = false;
+                buttonStop.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -40,6 +46,9 @@ namespace ChildTweet
             try
             {
                 server.Stop();
+
+                buttonStart.Enabled = true;
+                buttonStop.Enabled = false;
             }
             catch (Exception ex)
             {

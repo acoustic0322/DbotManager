@@ -31,6 +31,8 @@
             logListBox = new ListBox();
             buttonStop = new Button();
             buttonStart = new Button();
+            label1 = new Label();
+            textBoxPort = new TextBox();
             SuspendLayout();
             // 
             // logListBox
@@ -62,11 +64,30 @@
             buttonStart.UseVisualStyleBackColor = true;
             buttonStart.Click += buttonStart_Click;
             // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(12, 451);
+            label1.Name = "label1";
+            label1.Size = new Size(36, 15);
+            label1.TabIndex = 3;
+            label1.Text = "PORT";
+            // 
+            // textBoxPort
+            // 
+            textBoxPort.Location = new Point(54, 447);
+            textBoxPort.Name = "textBoxPort";
+            textBoxPort.Size = new Size(72, 23);
+            textBoxPort.TabIndex = 4;
+            textBoxPort.Text = "5001";
+            // 
             // ChildTweet
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(416, 482);
+            Controls.Add(textBoxPort);
+            Controls.Add(label1);
             Controls.Add(buttonStart);
             Controls.Add(buttonStop);
             Controls.Add(logListBox);
@@ -76,6 +97,7 @@
             Text = "ChildTweet";
             Load += ChildTweet_Load;
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -83,5 +105,7 @@
         private ListBox logListBox;
         private Button buttonStop;
         private Button buttonStart;
+        private Label label1;
+        private TextBox textBoxPort;
     }
 }

@@ -18,6 +18,7 @@ namespace ChildTweet
         private bool _isRunning;
 
         public Action<string> LogOutput { get; set; }  // ログ出力先
+        public int Port { get; set; }
 
         public void Start()
         {
@@ -26,12 +27,12 @@ namespace ChildTweet
             // 変更前（これだと+:5000で全ポートを要求するのでNG）
 //            _listener.Prefixes.Add("http://+:5000/");
             // 変更後（localhost:5000 だけを対象とする。通常ユーザーでOK）
-            _listener.Prefixes.Add("http://localhost:5000/");
+            _listener.Prefixes.Add($"http://localhost:{Port}/");
 
             _listener.Start();
             _isRunning = true;
 
-            Log("✅ サーバー起動中 (http://localhost:5000)");
+            Log($"✅ サーバー起動中 (http://localhost:{Port})");
 
             Task.Run(() => ListenLoop());
 //            Console.WriteLine("✅ サーバー起動中 (http://localhost:5000)");
