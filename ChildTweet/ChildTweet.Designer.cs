@@ -37,18 +37,18 @@
             // 
             // logListBox
             // 
-            logListBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            logListBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             logListBox.FormattingEnabled = true;
             logListBox.ItemHeight = 15;
             logListBox.Location = new Point(12, 12);
             logListBox.Name = "logListBox";
-            logListBox.Size = new Size(923, 424);
+            logListBox.Size = new Size(923, 574);
             logListBox.TabIndex = 0;
             // 
             // buttonStop
             // 
             buttonStop.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonStop.Location = new Point(862, 447);
+            buttonStop.Location = new Point(862, 608);
             buttonStop.Name = "buttonStop";
             buttonStop.Size = new Size(75, 23);
             buttonStop.TabIndex = 1;
@@ -59,7 +59,7 @@
             // buttonStart
             // 
             buttonStart.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonStart.Location = new Point(781, 447);
+            buttonStart.Location = new Point(781, 608);
             buttonStart.Name = "buttonStart";
             buttonStart.Size = new Size(75, 23);
             buttonStart.TabIndex = 2;
@@ -69,8 +69,9 @@
             // 
             // label1
             // 
+            label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             label1.AutoSize = true;
-            label1.Location = new Point(12, 451);
+            label1.Location = new Point(12, 612);
             label1.Name = "label1";
             label1.Size = new Size(36, 15);
             label1.TabIndex = 3;
@@ -78,7 +79,8 @@
             // 
             // textBoxPort
             // 
-            textBoxPort.Location = new Point(54, 447);
+            textBoxPort.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            textBoxPort.Location = new Point(54, 608);
             textBoxPort.Name = "textBoxPort";
             textBoxPort.Size = new Size(72, 23);
             textBoxPort.TabIndex = 4;
@@ -88,7 +90,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(949, 482);
+            ClientSize = new Size(949, 643);
             Controls.Add(textBoxPort);
             Controls.Add(label1);
             Controls.Add(buttonStart);

@@ -176,6 +176,10 @@ namespace ChildTweet
 
         public async Task<TweetResult> TweetProc(TweetCommand tweetCommand)
         {
+#if DEBUG
+            return null;
+#endif
+
             // Pythonスクリプトのパスを指定
             string pythonScriptPath = $@"{pythonWorkingPath}\tweet.py";
 
