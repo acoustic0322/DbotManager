@@ -119,17 +119,22 @@ namespace ChildTweet
                 _ => "reply"
             };
 
+            var orderLikeList = req.like_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            var orderBookmarkList = req.bookmark_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            var orderRepostList = req.repost_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            var orderReplyList = req.reply_list.OrderBy(_ => _rand.Value.Next()).ToList();
+
             List<int> accountIdList = type switch
             {
-                TweetProcTypes.いいね => req.like_list,
-                TweetProcTypes.ブックマーク => req.bookmark_list,
-                TweetProcTypes.リポスト => req.repost_list,
-                _ => req.reply_list.Select(x => x.AccountId).ToList()
+                TweetProcTypes.いいね => orderLikeList,
+                TweetProcTypes.ブックマーク => orderBookmarkList,
+                TweetProcTypes.リポスト => orderRepostList,
+                _ => orderReplyList.OrderBy(_ => _rand.Value.Next()).ToList().Select(x => x.AccountId).ToList()
             };
 
             List<int> commmentIdList = type switch
             {
-                TweetProcTypes.リプライ => req.reply_list.Select(x => x.CommentId).ToList(),
+                TweetProcTypes.リプライ => orderReplyList.Select(x => x.CommentId).ToList(),
                 _ => null
             };
 
