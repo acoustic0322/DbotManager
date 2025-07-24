@@ -71,7 +71,6 @@ namespace ChildTweet
 
     internal class TweetProcess
     {
-        private string pythonWorkingPath;
         private int waitMin;
         private int waitMax;
 
@@ -95,7 +94,7 @@ namespace ChildTweet
             var repostTask = 順次処理(req, TweetProcTypes.リポスト);
             var replyTask = 順次処理(req, TweetProcTypes.リプライ);
 
-            await Task.WhenAll(likeTask, bookmarkTask, repostTask , replyTask);
+            await Task.WhenAll(likeTask, bookmarkTask, repostTask, replyTask);
 
             _log("✔ 全ての処理が完了しました。");
         }
@@ -194,8 +193,6 @@ namespace ChildTweet
                 // 設定を確認
                 if (settings.ContainsKey("Tweet") && settings["Tweet"].ContainsKey("working"))
                 {
-                    pythonWorkingPath = settings["Tweet"]["working"];
-                    var test = settings["Tweet"]["wait_min"];
                     waitMin = int.Parse(settings["Tweet"]["wait_min"]);
                     waitMax = int.Parse(settings["Tweet"]["wait_max"]);
                 }
@@ -210,23 +207,30 @@ namespace ChildTweet
 #endif
             */
 
-            // Pythonスクリプトのパスを指定
-            string pythonScriptPath = $@"{pythonWorkingPath}\tweet.py";
+            // Pythonファイルへの相対パス
+            string pythonScriptPath = @"python\tweet.py";
+
+            // 実行ディレクトリ（ChildTweet.exe と同じ場所想定）
+            string baseDir = AppContext.BaseDirectory;
+            string fullScriptPath = Path.Combine(baseDir, pythonScriptPath);
+
+            // 引数を組み立て
+            string arguments = $"\"{fullScriptPath}\"";
 
             switch (tweetCommand.TweetProcType)
             {
                 case TweetProcTypes.いいね:
                 case TweetProcTypes.ブックマーク:
                 case TweetProcTypes.リポスト:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId}";
+                    arguments += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId}";
                     break;
 
                 case TweetProcTypes.リプライ:
-                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} tweet_id={tweetCommand.TweetId}";
+                    arguments += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} tweet_id={tweetCommand.TweetId}";
                     break;
             }
 
-            pythonScriptPath += " debug=False";
+            arguments += " debug=False";
 
             // Pythonの実行ファイルのパスを指定（通常 "python" または "python3" でOK）
             string pythonExePath = "python";
@@ -236,19 +240,18 @@ namespace ChildTweet
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = pythonExePath,
-                    Arguments = pythonScriptPath,
+                    Arguments = arguments,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    WorkingDirectory = pythonWorkingPath
-
+                    WorkingDirectory = baseDir
                 }
             };
             // 環境変数を設定
             //            StartInfo.EnvironmentVariables["RUNNING_FROM_CSHARP"] = "1";
 
-            _log($"{DateTime.Now.ToString()} > {pythonScriptPath}");
+            _log($"{DateTime.Now.ToString()} > {arguments}");
 
             TweetResult tweetResult = null;
 
