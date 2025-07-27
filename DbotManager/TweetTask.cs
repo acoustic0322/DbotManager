@@ -169,14 +169,24 @@ namespace DbotManager
 
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
             List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView(1).Where(x => x.Result && x.Mode != TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得 && x.Mode != TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新).ToList();
-            List<AccountMaster> accountMasterList = dataAccess.GetAccountMaster();
             List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
             List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
-            List<UserMaster> userMasterList = dataAccess.GetUserMaster();
 
-            if (UserId != 0)
+            List<UserMaster> userMasterList, userMasterList_リプ;
+            List<AccountMaster> accountMasterList;
+
+            // UserID=0(自ユーザー以外)で処理する場合は、選手権実行フラグがONのユーザーのみ有効
+            if (UserId == 0)
             {
-                accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
+                userMasterList = dataAccess.GetUserMaster().Where(x => x.SensyukenExec).ToList();
+                userMasterList_リプ = dataAccess.GetUserMaster().Where(x => x.SensyukenExecReply).ToList();
+                accountMasterList = dataAccess.GetAccountMaster();
+            }
+            else
+            {
+                userMasterList = dataAccess.GetUserMaster();
+                userMasterList_リプ = dataAccess.GetUserMaster();
+                accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == UserId).ToList();
             }
 
             // 「いいね」リスト抽出

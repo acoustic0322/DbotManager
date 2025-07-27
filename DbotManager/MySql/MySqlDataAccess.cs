@@ -1628,6 +1628,7 @@ public class MySqlDataAccess
 
                 string query = "SELECT id, username , password , admin , enable ,memo , " +
                     "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_mode,post_enable,reserve_enable,media_enable,check_enable,searchrep_enable,jap_api_key" +
+                    " sensyuyken_exec , sensyuken_exec_reply " +
                     " FROM user_master;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1648,6 +1649,8 @@ public class MySqlDataAccess
                                 ReplyEnable = reader["reply_enable"].ToString() == "1",
                                 RepostEnable = reader["repost_enable"].ToString() == "1",
                                 SensyukenEnable = reader["sensyuken_mode"].ToString() == "1",
+                                SensyukenExec = reader["sensyuken_exec"].ToString() == "1",
+                                SensyukenExecReply = reader["sensyuken_exec_reply"].ToString() == "1",
                                 PostEnable = reader["post_enable"].ToString() == "1",
                                 ReserveEnable = reader["reserve_enable"].ToString() == "1",
                                 MediaEnable = reader["media_enable"].ToString() == "1",

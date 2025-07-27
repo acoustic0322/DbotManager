@@ -25,6 +25,14 @@ namespace DbotManager.Table
         public bool CheckEnable { get; set; }
         public bool SearchRepEnable { get; set; }
         public string JapApiKey { get; set; }
+        /// <summary>
+        /// 選手権モード時にAPI処理の対象となるユーザー
+        /// </summary>
+        public bool SensyukenExec { get; set; }
+        /// <summary>
+        /// 選手権モード(リプライ)時にAPI処理の対象となるユーザー
+        /// </summary>
+        public bool SensyukenExecReply { get; set; }
 
 
         // 表示用プロパティ
