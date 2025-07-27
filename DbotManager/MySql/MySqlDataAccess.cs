@@ -1628,7 +1628,7 @@ public class MySqlDataAccess
 
                 string query = "SELECT id, username , password , admin , enable ,memo , " +
                     "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_mode,post_enable,reserve_enable,media_enable,check_enable,searchrep_enable,jap_api_key" +
-                    " sensyuyken_exec , sensyuken_exec_reply " +
+                    " , sensyuken_exec , sensyuken_exec_reply " +
                     " FROM user_master;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {

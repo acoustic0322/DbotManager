@@ -142,7 +142,7 @@ namespace ChildTweet
             for (int i = 0; i < accountIdList.Count; i++)
             {
                 int accountId = accountIdList[i];
-                int commentId = accountIdList[i];
+                int commentId = req.reply_list.Where(x => x.AccountId == accountIdList[i]).FirstOrDefault().CommentId;
                 int delay = _rand.Value.Next(waitMin, waitMax);
 
                 _log($"┗{symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
