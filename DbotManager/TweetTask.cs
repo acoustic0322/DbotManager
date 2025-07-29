@@ -212,7 +212,7 @@ namespace DbotManager
                 BookmarkAccountList.AddRange(bookmarkList2);
             }
 
-            List<AccountMaster> replyList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.リプライ, ユーザー権限無視, ReplyToRep);
+            List<AccountMaster> replyList = FilterAccountList(userMasterList_リプ, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.リプライ, ユーザー権限無視, ReplyToRep);
             List<AccountMaster> repostList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.リポスト, ユーザー権限無視);
 
             var selectedItems = SelectBalancedItems(LikeAccountList, replyList, BookmarkAccountList, repostList, いいね件数, リプライ件数, ブックマーク件数, リポスト件数);

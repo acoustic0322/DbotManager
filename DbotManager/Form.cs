@@ -387,6 +387,7 @@ namespace DbotManager
         private class 処理アカウントInfo
         {
             public int ID { get; set; }
+            public int UserID { get; set; }
             public string UserName { get; set; }
             public string AccountName { get; set; }
             public string Comment { get; set; }
@@ -557,12 +558,22 @@ namespace DbotManager
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.LikeAccountList)
                 {
-                    list.Add(new 処理アカウントInfo()
+                    var userRow = userList.Where(x => x.Id == item.UserId);
+
+                    if (userRow.Count() > 0)
                     {
-                        ID = item.Id,
-                        AccountName = item.Name,
-                        UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
-                    });
+                        list.Add(new 処理アカウントInfo()
+                        {
+                            ID = item.Id,
+                            UserID = item.UserId,
+                            AccountName = item.Name,
+                            UserName = userRow.FirstOrDefault().Name
+                        });
+                    }
+                    else
+                    {
+                        int a = 1;
+                    }
                 }
 
                 if(fillControl)
@@ -587,14 +598,26 @@ namespace DbotManager
                         movieName = mediaList.Where(x => x.MediaId == item.MovieId).FirstOrDefault().Name + "(M)";
                     }
 
-                    list.Add(new 処理アカウントInfo()
+                    var userRow = userList.Where(x => x.Id == item.UserId);
+                    var commentRow = commentList.Where(x => x.Id == item.CommentId);
+
+                    if(userRow.Count() > 0 && commentRow.Count() > 0)
                     {
-                        ID = item.Id,
-                        AccountName = item.Name,
-                        UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name,
-                        Comment = commentList.Where(x => x.Id == item.CommentId).FirstOrDefault().Comment,
-                        Media = photoName + movieName
-                    }) ;
+                        list.Add(new 処理アカウントInfo()
+                        {
+                            ID = item.Id,
+                            UserID = item.UserId,
+                            AccountName = item.Name,
+                            UserName = userRow.FirstOrDefault().Name,
+                            Comment = commentRow.FirstOrDefault().Comment,
+                            Media = photoName + movieName
+                        });
+                    }
+                    else
+                    {
+                        int a = 1;
+                    }
+
                 }
 
                 if(fillControl)
@@ -608,12 +631,22 @@ namespace DbotManager
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.BookmarkAccountList)
                 {
-                    list.Add(new 処理アカウントInfo()
+                    var userRow = userList.Where(x => x.Id == item.UserId);
+
+                    if(userRow.Count() > 0)
                     {
-                        ID = item.Id,
-                        AccountName = item.Name,
-                        UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
-                    });
+                        list.Add(new 処理アカウントInfo()
+                        {
+                            ID = item.Id,
+                            UserID = item.UserId,
+                            AccountName = item.Name,
+                            UserName = userRow.FirstOrDefault().Name
+                        });
+                    }
+                    else
+                    {
+                        int a = 1;
+                    }
                 }
 
                 if(fillControl)
@@ -628,12 +661,22 @@ namespace DbotManager
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.RepostAccountList)
                 {
-                    list.Add(new 処理アカウントInfo()
+                    var userRow = userList.Where(x => x.Id == item.UserId);
+
+                    if (userRow.Count() > 0)
                     {
-                        ID = item.Id,
-                        AccountName = item.Name,
-                        UserName = userList.Where(x => x.Id == item.UserId).FirstOrDefault().Name
-                    });
+                        list.Add(new 処理アカウントInfo()
+                        {
+                            ID = item.Id,
+                            UserID = item.UserId,
+                            AccountName = item.Name,
+                            UserName = userRow.FirstOrDefault().Name
+                        });
+                    }
+                    else
+                    {
+                        int a = 1;
+                    }
                 }
 
                 if(fillControl)
