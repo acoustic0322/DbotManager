@@ -27,7 +27,6 @@ from other import update_profile_image
 
 from jap_api import proc_like_jap
 from jap_api import proc_bookmark_jap
-from jap_api import proc_repost_jap
 
 from twitter_api_v2 import proc_following_v2
 from twitter_api_v2 import proc_unfollowing_v2
@@ -43,11 +42,14 @@ from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
 from mysql import get_search_history
 
-
 from tweet_copy_dmm import tweet_copy_dmm
 
 import config
 from config import outputLog
+
+#from tweet_watch import fetch_latest_tweet
+
+from get_tweet_firefox_to_graphql import proc_get_tweet
 
 # コマンドライン引数の解析関数
 def parse_arguments(args):
@@ -122,6 +124,8 @@ elif mode == "get_search_history":
     outputLog(list1)
     sys.exit(0)
 
+
+
 # 認証情報を取得
 credentials = get_account_master(account_id)
 
@@ -146,10 +150,6 @@ if credentials:
         if not tweet_name:  # None または空文字列のときにTrue
             tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
         result1 , contents1 = proc_bookmark_jap(tweet_name, tweet_id , jap_api_key , quantity)
-    elif mode == "jap_repost":
-        if not tweet_name:  # None または空文字列のときにTrue
-            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_repost_jap(tweet_name, tweet_id , jap_api_key , quantity)
     elif mode == "search":
         result1 , contents1 = proc_search_v2(credentials)
     elif mode == "bookmark":
@@ -185,6 +185,10 @@ if credentials:
         result1 , contents1 = check_replies(credentials , get_account_master(account_id2))
     elif mode == "get_profile":
         proc_profile_image(account_id , credentials['login_id'])
+
+    elif mode == "get_tweet":
+        result1 , contents1 = proc_get_tweet(credentials)
+
     else:
         # エラーメッセージを標準エラーに出力
         outputLog(f"サポートされていないmode: {mode}")

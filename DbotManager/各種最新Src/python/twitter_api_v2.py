@@ -109,6 +109,14 @@ def get_user_id(credentials , username):
 
     if response.status_code == 200:
         user_data = response.json()
+
+        # "data" がない場合（ユーザーが存在しない）
+        if "data" not in user_data:
+            error_msg = user_data.get("errors", [{"detail": "ユーザーが見つかりません。"}])[0].get("detail")
+            outputLog(f"get_user_idエラー: {error_msg}")
+            print(f"get_user_idエラー: {error_msg}")
+            return None, False, error_msg
+
         user_id = user_data["data"]["id"]
         outputLog(f"get_user_id {username}のユーザーID: {user_id}")
         return user_id , True , None

@@ -842,3 +842,249 @@ def get_trend_list_keyword():
 
     # ランダムに2つ選ぶ
     return random.sample(keywords, 2)
+
+def get_tweet_profile_by_display_name(display_name):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            # display_name に一致する path を取得
+            sql = "SELECT * FROM get_tweet_profile WHERE display_name = %s"
+            cursor.execute(sql, (display_name,))  # ← tuple にするためカンマが必要
+            record = cursor.fetchone()            # record は {"path": "..."} の形で返る
+    finally:
+        connection.close()
+
+    if not record:  # ← result → record に修正
+        outputLog("エラー: 該当するプロファイルが見つかりません。")
+        return None
+
+    return record
+
+def update_get_tweet_profile(record):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+
+            sql = """
+                UPDATE get_tweet_profile set display_name = %s , path = %s where id = %s
+            """
+            cursor.execute(sql, (record['display_name'] , record['path'] , record['id'] ))
+            connection.commit()
+    finally:
+        connection.close()   
+
+    if not record:  # ← result → record に修正
+        outputLog("エラー: 該当するプロファイルが見つかりません。")
+        return None
+
+    return record
+
+
+def add_check_tweet_account_master_by_account_name(account_name):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO check_tweet_account_master (account_name)
+                VALUES (%s)
+            """
+            cursor.execute(sql, (account_name))
+            connection.commit() 
+    finally:
+        connection.close()
+
+def get_check_tweet_account_master_by_account_name(account_name):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            # display_name に一致する path を取得
+            sql = "SELECT * FROM check_tweet_account_master WHERE account_name = %s"
+            cursor.execute(sql, (account_name,))  # ← tuple にするためカンマが必要
+            record = cursor.fetchone()            # record は {"path": "..."} の形で返る
+    finally:
+        connection.close()
+
+    if not record:  
+        outputLog("エラー: 該当するレコードが見つかりません。")
+        return None
+
+    return record
+
+def update_check_tweet_account_master(record):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    print(record)
+
+    try:
+        with connection.cursor() as cursor:
+
+            sql = """
+                UPDATE check_tweet_account_master set account_name = %s , user_id = %s where id = %s
+            """
+            cursor.execute(sql, (record['account_name'] , record['user_id'] , record['id'] ))
+            connection.commit()
+    finally:
+        connection.close()   
+
+    if not record:  # ← result → record に修正
+        outputLog("エラー: 該当するプロファイルが見つかりません。")
+        return None
+
+    return record
+
+def get_check_tweet_account_list_by_user_id(user_id):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            # display_name に一致する path を取得
+            sql = "SELECT * FROM check_tweet_account_list WHERE user_id = %s"
+            cursor.execute(sql, (user_id,))  # ← tuple にするためカンマが必要
+            record = cursor.fetchone()            # record は {"path": "..."} の形で返る
+    finally:
+        connection.close()
+
+    if not record:  
+        outputLog("エラー: 該当するレコードが見つかりません。")
+        return None
+
+    return record
+
+def update_check_tweet_account_list(record):
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+    print("update_check_tweet_account_list record =", record)
+
+    if not record:
+        outputLog("エラー: record が空です。")
+        return None
+
+
+    try:
+        with connection.cursor() as cursor:
+            # user_id が PRIMARY（または UNIQUE）前提の UPSERT
+            sql = """
+                INSERT INTO check_tweet_account_list
+                    (account_name, user_id, tweet_id, tweet_text, check_time, update_time, type ,reply_to_tweet_id)
+                VALUES
+                    (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    account_name = VALUES(account_name),
+                    tweet_id   = VALUES(tweet_id),
+                    tweet_text = VALUES(tweet_text),
+                    check_time = VALUES(check_time),
+                    update_time= VALUES(update_time),
+                    type = VALUES(type),
+                    reply_to_tweet_id = VALUES(reply_to_tweet_id)
+            """
+            cursor.execute(sql, (
+                record['account_name'],
+                record['user_id'],
+                record['tweet_id'],
+                record['text'],
+                record['check_time'],        
+                record['created_at_jst'],    
+                record['type'],        
+                record['reply_to_tweet_id'],        
+            ))
+            connection.commit()
+    finally:
+        connection.close()
+
+    return record
+
+def update_check_tweet_account_list_bk(record):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    print("update_check_tweet_account_list record = ",record)
+
+    try:
+        with connection.cursor() as cursor:
+
+            sql = """
+                UPDATE check_tweet_account_list set check_time = %s , update_time = %s , user_id = %s , tweet_text = %s where tweet_id = %s
+            """
+            cursor.execute(sql, (record['check_time'] , record['created_at_jst'] , record['user_id'] , record['text'] , record['tweet_id'] ))
+            connection.commit()
+    finally:
+        connection.close()   
+
+    if not record:  # ← result → record に修正
+        outputLog("エラー: 該当するプロファイルが見つかりません。")
+        return None
+
+    return record    
