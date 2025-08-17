@@ -41,6 +41,7 @@ from twitter_api_v2 import proc_update_refresh_token
 from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
 from mysql import get_search_history
+from mysql import init_check_tweet_account_master_by_search_list
 
 from tweet_copy_dmm import tweet_copy_dmm
 
@@ -123,6 +124,10 @@ elif mode == "get_search_history":
     result1 , list1 = get_search_history("post")
     outputLog(list1)
     sys.exit(0)
+elif mode == "init_check_tweet_account_master":
+    init_check_tweet_account_master_by_search_list()
+    sys.exit(0)
+
 
 
 

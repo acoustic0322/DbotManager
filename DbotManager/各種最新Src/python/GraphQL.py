@@ -1,6 +1,6 @@
 # test2_verbose_complete.py
 # -*- coding: utf-8 -*-
-import os, json, re, sys, traceback
+import os, json, re, sys, traceback, json
 from typing import List, Optional, Tuple, Generator, Any
 
 from curl_cffi import requests as requests  # ブラウザ指紋つきHTTP
@@ -320,41 +320,6 @@ def fetch_latest_tweet_via_profile_v2(s: requests.Session, headers: dict, user_i
         return False, None, f"parse error (v2): {ex}"
 
 # ============== v1.1 user_timeline フォールバック ==============
-
-def fetch_latest_replies_via_user_timeline_v11(
-    s: requests.Session, headers: dict, user_id: str, limit: int = 5
-):
-    url = "https://x.com/i/api/1.1/statuses/user_timeline.json"
-    params = {
-        "user_id": user_id,
-        "count": 50,                # 複数取得（多めに取ってから絞る）
-        "include_rts": True,
-        "trim_user": True,
-        "tweet_mode": "extended",
-        "exclude_replies": False,   # ← リプライも含める
-    }
-    r = s.get(url, headers=headers, params=params, timeout=15)
-    _log(f"[STEP] v1.1 user_timeline (with replies) -> {r.status_code}")
-    if not r.ok:
-        return False, None, r.text[:800]
-
-    arr = r.json()
-    replies = []
-    if isinstance(arr, list):
-        for tw in arr:
-            if tw.get("in_reply_to_status_id_str"):
-                replies.append({
-                    "tweet_id": tw.get("id_str"),
-                    "text": tw.get("full_text") or tw.get("text"),
-                    "created_at": tw.get("created_at")
-                })
-                if len(replies) >= limit:
-                    break
-
-    if replies:
-        return True, replies, None
-    return False, None, "No replies found"
-
 def fetch_latest_tweets_via_user_timeline_v11(
     s: requests.Session,
     headers: dict,
@@ -438,103 +403,6 @@ def fetch_latest_tweets_via_user_timeline_v11(
     except Exception as ex:
         return False, None, f"parse error (v1.1): {ex}"
 
-def fetch_latest_tweets_via_user_timeline_v11_bk(
-    s: requests.Session,
-    headers: dict,
-    user_id: str,
-    limit: int = 5,
-    include_rts: bool = True,
-    exclude_replies: Optional[bool] = None,  # None=API既定(=除外される)、False=含める、True=除外
-) -> Tuple[bool, Optional[List[dict]], Optional[str]]:
-    """
-    v1.1 statuses/user_timeline から“複数件”の最新ツイートを返す。
-    - limit: 返す最大件数（1～200目安）
-    - include_rts: リツイートを含めるか
-    - exclude_replies: リプライを除外するか（NoneでAPI既定=除外）
-    戻り値: (ok, [{"tweet_id","text","created_at"}...], err)
-    """
-    url = "https://x.com/i/api/1.1/statuses/user_timeline.json"
-
-    # APIの count は取得要求件数（最大200）。返す件数は limit で後段絞り込み。
-    # 多少多めに取っておくとフィルタ（リプライ除外など）で件数が減っても安心。
-    req_count = max(1, min(200, max(limit * 2, 20)))
-
-    params = {
-        "user_id": user_id,
-        "count": req_count,
-        "include_rts": include_rts,
-        "trim_user": True,
-        "tweet_mode": "extended",
-    }
-    # exclude_replies は None のときは付けない（API既定=除外）
-    if exclude_replies is not None:
-        params["exclude_replies"] = exclude_replies
-
-    r = s.get(url, headers=headers, params=params, timeout=15)
-    _log(f"[STEP] v1.1 user_timeline (multi) -> {r.status_code}")
-    if r.status_code != 200:
-        return False, None, r.text[:800]
-
-    try:
-        arr = r.json()
-        if not isinstance(arr, list) or not arr:
-            return False, None, "parse error (v1.1): empty or non-list"
-
-        results: List[dict] = []
-        for tw in arr:
-            tid = tw.get("id_str") or (tw.get("id") and str(tw.get("id")))
-            if not tid:
-                continue
-            text = tw.get("full_text") or tw.get("text")
-            if not text:
-                continue
-
-            created = tw.get("created_at")  # 例: 'Wed Aug 14 03:21:00 +0000 2025'
-            reply_to_id = tw.get("in_reply_to_status_id_str")
-            is_reply = bool(reply_to_id)
-
-            results.append({
-                "tweet_id": tid,
-                "text": text,
-                "created_at": created,
-                "type": "reply" if is_reply else "tweet",
-                "reply_to_tweet_id": reply_to_id if is_reply else None
-            })
-            if len(results) >= limit:
-                break
-
-        if results:
-            return True, results, None
-        return False, None, "parse error (v1.1): no tweets after filtering"
-    except Exception as ex:
-        return False, None, f"parse error (v1.1): {ex}"
-
-def fetch_latest_tweet_via_user_timeline_v11(s: requests.Session, headers: dict, user_id: str) -> Tuple[bool, Optional[dict], Optional[str]]:
-    url = "https://x.com/i/api/1.1/statuses/user_timeline.json"
-    params = {
-        "user_id": user_id,
-        "count": 20,
-        "include_rts": True,
-        "trim_user": True,
-        "tweet_mode": "extended",
-    }
-    r = s.get(url, headers=headers, params=params, timeout=15)
-    _log(f"[STEP] v1.1 user_timeline -> {r.status_code}")
-    if r.status_code != 200:
-        return False, None, r.text[:800]
-    try:
-        arr = r.json()
-        if isinstance(arr, list) and arr:
-            tw = arr[0]
-            tid = tw.get("id_str") or str(tw.get("id"))
-            text = tw.get("full_text") or tw.get("text")
-            created = tw.get("created_at")  # 例: 'Wed Aug 14 03:21:00 +0000 2025'
-            if tid and text:
-                return True, {"tweet_id": tid, "text": text, "created_at": created}, None
-        return False, None, "parse error (v1.1): not found"
-    except Exception as ex:
-        return False, None, f"parse error (v1.1): {ex}"
-
 # ============== screen_name 取得（v1.1 users/show） ==============
 def fetch_screen_name_by_user_id(s: requests.Session, headers: dict, user_id: str) -> Optional[str]:
     url = "https://x.com/i/api/1.1/users/show.json"
@@ -581,7 +449,7 @@ def fetch_latest_tweet_via_search_adaptive(s: requests.Session, headers: dict, s
     except Exception as ex:
         return False, None, f"parse error (search): {ex}"
 
-def get_tweet(profile, user_id):
+def get_tweets(profile, user_id, screen_name):
     """
     成功時: dict を返します:
       {
@@ -627,141 +495,19 @@ def get_tweet(profile, user_id):
             _log(auth.text[:400]); _log("X 認証が無効です"); return None
 
         # お好みで有効化。現状は v1.1 を優先（安定しやすい）
-        # 1) GraphQL(UserTweets)
-        if False:
-            ok, payload, err = fetch_latest_tweet_via_graphql(s, headers, user_id, query_id)
-            if ok:
-                utc_str, jst_str = _normalize_created_at(payload.get("created_at"))
-                _log(f"[DONE GraphQL] tweet_id={payload['tweet_id']}")
-                _log(f"text={payload['text']}")
-                _log(f"created_at(raw)={payload.get('created_at')} / UTC={utc_str} / JST={jst_str}")
-                return {
-                    "tweet_id": payload["tweet_id"],
-                    "text": payload["text"],
-                    "created_at_raw": payload.get("created_at"),
-                    "created_at_utc": utc_str,
-                    "created_at_jst": jst_str,
-                    "user_id": '',
-                    "check_time": '',
-                }
-            _log(f"[WARN] GraphQL失敗 -> {err}")
 
-        # 2) v2 timeline/profile
-        if False:
-            ok2, payload2, err2 = fetch_latest_tweet_via_profile_v2(s, headers, user_id)
-            if ok2:
-                utc_str, jst_str = _normalize_created_at(payload2.get("created_at"))
-                _log(f"[DONE v2 profile] tweet_id={payload2['tweet_id']}")
-                _log(f"text={payload2['text']}")
-                _log(f"created_at(raw)={payload2.get('created_at')} / UTC={utc_str} / JST={jst_str}")
-                return {
-                    "tweet_id": payload2["tweet_id"],
-                    "text": payload2["text"],
-                    "created_at_raw": payload2.get("created_at"),
-                    "created_at_utc": utc_str,
-                    "created_at_jst": jst_str,
-                    "user_id": '',
-                    "check_time": '',
-                }
-            _log(f"[WARN] v2 timeline 失敗 -> {err2}")
+#        ok, replies, err = fetch_replies_to_me(s, headers, screen_name, limit=5)
+#        if ok:
+#            for r in replies:
+#                print(f"Reply from tweet {r['reply_to_tweet_id']}: {r['text']}")
 
-        # 3) v1.1 user_timeline（既定で True）
-        if True:
-            ok3, payload3, err3 = fetch_latest_tweet_via_user_timeline_v11(s, headers, user_id)
-            if ok3:
-                utc_str, jst_str = _normalize_created_at(payload3.get("created_at"))
-                _log(f"[DONE v1.1 timeline] tweet_id={payload3['tweet_id']}")
-                _log(f"text={payload3['text']}")
-                _log(f"created_at(raw)={payload3.get('created_at')} / UTC={utc_str} / JST={jst_str}")
-                return {
-                    "tweet_id": payload3["tweet_id"],
-                    "text": payload3["text"],
-                    "created_at_raw": payload3.get("created_at"),
-                    "created_at_utc": utc_str,
-                    "created_at_jst": jst_str,
-                    "user_id": '',
-                    "check_time": '',
-                }
-            _log(f"[WARN] v1.1 timeline 失敗 -> {err3}")
-
-        # 4) v2 search/adaptive（screen_name 取得 → 検索）
-        if False:
-            screen_env = os.getenv("X_SCREEN_NAME")
-            screen = screen_env or fetch_screen_name_by_user_id(s, headers, user_id)
-            _log(f"[STEP] screen_name = {screen or 'N/A'}")
-            if screen:
-                ok4, payload4, err4 = fetch_latest_tweet_via_search_adaptive(s, headers, screen)
-                if ok4:
-                    utc_str, jst_str = _normalize_created_at(payload4.get("created_at"))
-                    _log(f"[DONE search] tweet_id={payload4['tweet_id']}")
-                    _log(f"text={payload4['text']}")
-                    _log(f"created_at(raw)={payload4.get('created_at')} / UTC={utc_str} / JST={jst_str}")
-                    return {
-                        "tweet_id": payload4["tweet_id"],
-                        "text": payload4["text"],
-                        "created_at_raw": payload4.get("created_at"),
-                        "created_at_utc": utc_str,
-                        "created_at_jst": jst_str,
-                        "user_id": '',
-                        "check_time": '',
-                    }
-                _log(f"[WARN] search 失敗 -> {err4}")
-            else:
-                _log("[WARN] screen_name が取れないため search フォールバックはスキップ")
-
-            _log("[FAIL] すべてのルートで取得できませんでした")
-            return None
-
-    except Exception:
-        traceback.print_exc()
-        return None
-
-def get_tweets(profile, user_id):
-    """
-    成功時: dict を返します:
-      {
-        "tweet_id": str,
-        "text": str,
-        "created_at_raw": str|None,     # X既定の文字列
-        "created_at_utc": str|None,     # 'YYYY-mm-dd HH:MM:SS'
-        "created_at_jst": str|None      # 'YYYY-mm-dd HH:MM:SS'
-      }
-    失敗時: None
-    """
-    try:
-        _log("[START] test2_verbose_complete")
-        _log(f"[STEP] profile = {profile}")
-        a, c, e = get_x_cookies_from_firefox(profile)
-        _log(f"[STEP] cookie fetch -> err={e}")
-        _log(f"auth_token={a}")
-        _log(f"ct0={c[:24]}...")
-        if e:
-            _log("Cookie取得エラー、終了"); return None
-
-        s = _new_session()
-        _set_cookies(s, a, c)
-
-        bearer   = fetch_web_bearer_token_with_session(s)
-        query_id = fetch_usertweets_query_id_with_session(s)
-        _log(f"[STEP] bearer(head)={bearer[:20]}..., query_id={query_id}")
-
-        headers = {
-            "authorization": f"Bearer {bearer}",
-            "x-csrf-token": c,
-            "x-twitter-auth-type": "OAuth2Session",
-            "x-twitter-active-user": "yes",
-            "x-twitter-client-language": "ja",
-            "accept-language": "ja,en-US;q=0.9",
-            "referer": "https://x.com/",
-            "origin": "https://x.com",
-            "accept": "*/*",
-        }
-        auth = s.get("https://x.com/i/api/1.1/account/settings.json", headers=headers, timeout=12)
-        _log(f"[STEP] auth check -> {auth.status_code}")
-        if not auth.ok:
-            _log(auth.text[:400]); _log("X 認証が無効です"); return None
-
-        # お好みで有効化。現状は v1.1 を優先（安定しやすい）
+# リプライ取得機能一旦保留
+#        ok, replies, err = fetch_replies_to_me_graphql(s, headers, "@OnSounds", limit=5)
+#        if ok:
+#            for r in replies:
+#                print(r["tweet_id"], r["text"], r["created_at"])
+#        else:
+#            print("Error:", err)
 
         # 3) v1.1 user_timeline（既定で True）
         if True:
@@ -796,3 +542,236 @@ def get_tweets(profile, user_id):
     except Exception:
         traceback.print_exc()
         return None
+
+import time
+
+def fetch_replies_to_me(s, headers, screen_name, limit=5, retries=3, wait=5):
+    if screen_name.startswith("@"):
+        screen_name = screen_name[1:]
+
+    url = "https://x.com/i/api/2/search/adaptive.json"
+    params = {
+        "q": f"to:{screen_name}",
+        "tweet_search_mode": "relevancy",
+        "count": max(10, limit * 2),
+        "query_source": "typed_query",
+        "tweet_mode": "extended",
+    }
+
+    for attempt in range(retries):
+        r = s.get(url, headers=headers, params=params, timeout=15)
+        _log(f"[STEP] search/adaptive (to:{screen_name}) -> {r.status_code}")
+        if r.status_code == 200:
+            break
+        if attempt < retries - 1:
+            time.sleep(wait)
+    else:
+        return False, None, f"HTTP {r.status_code}"
+
+    try:
+        data = r.json()
+        gos = data.get("globalObjects", {}).get("tweets", {})
+        results = []
+        for tid, tw in gos.items():
+            text = tw.get("full_text") or tw.get("text")
+            created = tw.get("created_at")
+            reply_to_id = tw.get("in_reply_to_status_id_str")
+            results.append({
+                "tweet_id": tid,
+                "text": text,
+                "created_at": created,
+                "reply_to_tweet_id": reply_to_id
+            })
+            if len(results) >= limit:
+                break
+
+        if results:
+            return True, results, None
+        return False, None, "no replies found"
+    except Exception as ex:
+        return False, None, f"parse error: {ex}"
+
+import re
+
+def fetch_searchtimeline_query_id_with_session(s: requests.Session) -> Optional[str]:
+    """
+    abs.twimg.com の client-web チャンク(main/vendor含む)を総当たりし、
+    SearchTimeline 系の queryId を robust に抽出して最初の1件を返す。
+    見つからなければ None。
+    """
+    js_urls = _fetch_main_js_urls_with_session(s)
+
+    # ① operationName 候補（大小混在対策）
+    name_candidates = [
+        "SearchTimeline",
+        "searchTimeline",
+        "AdaptiveSearchTimeline",
+        "SearchTimelineQuery",
+        "AdaptiveSearchTimelineQuery",
+    ]
+
+    # ② 代表的な2順序（operationName → queryId / queryId → operationName）
+    #   a) ..."operationName":"SearchTimeline"... "queryId":"XXXX"...
+    pat_op_then_qid = re.compile(
+        r'"operationName"\s*:\s*"(?:' + "|".join(name_candidates) + r')".{0,1500}?"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"',
+        re.IGNORECASE | re.DOTALL
+    )
+    #   b) ..."queryId":"XXXX"... "operationName":"SearchTimeline"...
+    pat_qid_then_op = re.compile(
+        r'"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})".{0,1500}?"operationName"\s*:\s*"(?:' + "|".join(name_candidates) + r')"',
+        re.IGNORECASE | re.DOTALL
+    )
+
+    # ③ 旧来のマップ形式 ..."SearchTimeline": {"queryId":"XXXX", ...}
+    pat_named_map = re.compile(
+        r'"(?:' + "|".join(name_candidates) + r')"\s*:\s*\{\s*"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"',
+        re.IGNORECASE | re.DOTALL
+    )
+
+    # ④ URL 直書き検出 /i/api/graphql/<qid>/SearchTimeline
+    pat_url_embed = re.compile(
+        r'/i/api/graphql/([A-Za-z0-9_-]{10,})/(?:' + "|".join(name_candidates) + r')\b',
+        re.IGNORECASE
+    )
+
+    # ⑤ fallback: 名前だけ先に見つけ、近傍±4000文字を再スキャン
+    pat_name_only = re.compile(
+        r'"operationName"\s*:\s*"(?:' + "|".join(name_candidates) + r')"',
+        re.IGNORECASE
+    )
+    pat_qid_generic = re.compile(r'"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"', re.IGNORECASE)
+
+    seen = set()
+    for js_url in js_urls:
+        r = s.get(js_url, headers={"Accept": "*/*", "Referer": "https://x.com/"}, timeout=15)
+        if not r.ok:
+            continue
+        text = r.text
+
+        # a) op → qid
+        m = pat_op_then_qid.search(text)
+        if m:
+            qid = m.group(1)
+            if qid not in seen:
+                _log(f"[STEP] Found (op→qid) in {js_url}: {qid}")
+                return qid
+        # b) qid → op
+        m = pat_qid_then_op.search(text)
+        if m:
+            qid = m.group(1)
+            if qid not in seen:
+                _log(f"[STEP] Found (qid→op) in {js_url}: {qid}")
+                return qid
+        # c) named map
+        m = pat_named_map.search(text)
+        if m:
+            qid = m.group(1)
+            if qid not in seen:
+                _log(f"[STEP] Found (named map) in {js_url}: {qid}")
+                return qid
+        # d) URL 埋め込み
+        m = pat_url_embed.search(text)
+        if m:
+            qid = m.group(1)
+            if qid not in seen:
+                _log(f"[STEP] Found (url embed) in {js_url}: {qid}")
+                return qid
+
+        # e) 近傍スキャン：まず名前の位置を全部拾って、その周辺に queryId が無いか再検索
+        for nm in pat_name_only.finditer(text):
+            start = max(0, nm.start() - 4000)
+            end   = min(len(text), nm.end() + 4000)
+            window = text[start:end]
+            mq = pat_qid_generic.search(window)
+            if mq:
+                qid = mq.group(1)
+                if qid not in seen:
+                    _log(f"[STEP] Found (vicinity scan) in {js_url}: {qid}")
+                    return qid
+
+    return None
+
+
+def fetch_searchtimeline_query_id_with_session_bk1(s: requests.Session) -> str:
+    """
+    js_urls 全部を走査して GraphQL SearchTimeline 系の queryId を取得
+    """
+    js_urls = _fetch_main_js_urls_with_session(s)
+
+    name_patterns = [
+        "SearchTimeline",
+        "searchTimeline",
+        "AdaptiveSearchTimeline"
+    ]
+    combined_pattern = re.compile(
+        r'"(?:' + "|".join(name_patterns) + r')[^"]*"\s*:\s*\{\s*"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"',
+        re.IGNORECASE | re.DOTALL
+    )
+
+    for js_url in js_urls:
+        print(js_url)
+        r = s.get(js_url, headers={"Accept": "*/*", "Referer": "https://x.com/"}, timeout=15)
+        if not r.ok:
+            continue
+
+        m = combined_pattern.search(r.text)
+        if m:
+            qid = m.group(1)
+            _log(f"[STEP] Found SearchTimeline queryId in {js_url}: {qid}")
+            return qid
+
+    return None
+
+
+def fetch_replies_to_me_graphql(s, headers, screen_name, limit=5):
+    """
+    GraphQL SearchTimeline を使って自分宛のリプライを取得
+    - screen_name: @なし or @付き どちらでもOK
+    - limit: 最大取得件数
+    戻り値: (ok, [dict...], err)
+    """
+    if screen_name.startswith("@"):
+        screen_name = screen_name[1:]
+
+    query_id = fetch_searchtimeline_query_id_with_session(s)
+    if not query_id:
+        return False, None, "queryId not found for SearchTimeline"
+
+    url = f"https://x.com/i/api/graphql/{query_id}/SearchTimeline"
+
+    variables = {
+        "rawQuery": f"to:{screen_name}",
+        "count": limit,
+        "querySource": "typed_query",
+        "product": "Latest"  # 最新順に取得
+    }
+    params = {
+        "variables": json.dumps(variables, separators=(",", ":")),
+        "features": json.dumps(_default_features(), separators=(",", ":")),
+        "fieldToggles": json.dumps(_default_field_toggles(), separators=(",", ":")),
+    }
+
+    r = s.get(url, headers=headers, params=params, timeout=15)
+    _log(f"[STEP] graphql(SearchTimeline to:{screen_name}) -> {r.status_code}")
+    if r.status_code != 200:
+        return False, None, r.text[:800]
+
+    try:
+        data = r.json()
+        results = []
+        # 既存のツイート抽出ロジックを流用
+        for rid, text, created in _yield_tweet_candidates(data):
+            results.append({
+                "tweet_id": rid,
+                "text": text,
+                "created_at": created
+            })
+            if len(results) >= limit:
+                break
+
+        if results:
+            return True, results, None
+        else:
+            return False, None, "no replies found"
+    except Exception as ex:
+        return False, None, f"parse error: {ex}"

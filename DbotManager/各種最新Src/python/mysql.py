@@ -5,6 +5,7 @@ from datetime import datetime  # datetime モジュールをインポート
 from config import outputLog
 from config import convert_tweet_datetime
 import random
+from typing import Optional
 
 def get_comment_by_id(comment_id):
 
@@ -870,6 +871,39 @@ def get_tweet_profile_by_display_name(display_name):
 
     return record
 
+def get_tweet_profile_by_vps_id(vps_id):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                SELECT *
+                FROM get_tweet_profile
+                WHERE vps_id = %s
+                ORDER BY (check_time IS NOT NULL), check_time ASC
+                LIMIT 1
+            """
+            cursor.execute(sql, (vps_id,))  # ← tuple にするためカンマが必要
+            record = cursor.fetchone()            # record は {"path": "..."} の形で返る
+    finally:
+        connection.close()
+
+    if not record:  # ← result → record に修正
+        outputLog("エラー: 該当するプロファイルが見つかりません。")
+        return None
+
+    return record
+
+
 def update_get_tweet_profile(record):
 
     # MySQLデータベースに接続
@@ -950,6 +984,34 @@ def get_check_tweet_account_master_by_account_name(account_name):
 
     return record
 
+def get_check_tweet_account_masters_by_vps_id(vps_id):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            # display_name に一致する path を取得
+            sql = "SELECT * FROM check_tweet_account_master WHERE vps_id = %s"
+            cursor.execute(sql, (vps_id,))  # ← tuple にするためカンマが必要
+            record = cursor.fetchall()     
+    finally:
+        connection.close()
+
+    if not record:  
+        outputLog("エラー: 該当するレコードが見つかりません。")
+        return None
+
+    return record
+
+
 def update_check_tweet_account_master(record):
 
     # MySQLデータベースに接続
@@ -968,9 +1030,9 @@ def update_check_tweet_account_master(record):
         with connection.cursor() as cursor:
 
             sql = """
-                UPDATE check_tweet_account_master set account_name = %s , user_id = %s where id = %s
+                UPDATE check_tweet_account_master set account_name = %s , user_id = %s , result = %s where id = %s
             """
-            cursor.execute(sql, (record['account_name'] , record['user_id'] , record['id'] ))
+            cursor.execute(sql, (record['account_name'] , record['user_id'] , record['result'] , record['id'] ))
             connection.commit()
     finally:
         connection.close()   
@@ -1088,3 +1150,192 @@ def update_check_tweet_account_list_bk(record):
         return None
 
     return record    
+
+
+    
+def get_vps_master_by_ip_address(ip_address):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',              # ユーザー名
+        password='abcd1234',      # パスワード
+        database='d_bot',         # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM vps_master WHERE ip_address = %s"
+            cursor.execute(sql, (ip_address,))  # ← tuple にするためカンマが必要
+            record = cursor.fetchone()            # record は {"path": "..."} の形で返る
+    finally:
+        connection.close()
+
+    if not record:  
+        outputLog("エラー: 該当するレコードが見つかりません。")
+        return None
+
+    return record
+
+def init_check_tweet_account_master_by_search_list():
+    conn = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=False
+    )
+
+    try:
+        with conn.cursor() as cur:
+            # 1) 有効アカウントの一時テーブル（NULL/空文字は除外、重複除去）
+            cur.execute("""
+                CREATE TEMPORARY TABLE active_accounts (
+                  account_name VARCHAR(255) PRIMARY KEY
+                ) AS
+                SELECT DISTINCT TRIM(search_user_name) AS account_name
+                FROM search_list
+                WHERE (post_enable = 1 OR monomane_enable = 1)
+                  AND TRIM(search_user_name) <> ''
+                  AND search_user_name IS NOT NULL
+            """)
+
+            # 2) 有効アカウントをUPSERTで反映（なければINSERT、あればtweet_enable=1に更新）
+            #    ※ account_name に UNIQUE もしくは PRIMARY KEY がある前提
+            cur.execute("""
+                INSERT INTO check_tweet_account_master (account_name, tweet_enable)
+                SELECT account_name, 1
+                FROM active_accounts
+                ON DUPLICATE KEY UPDATE tweet_enable = 1
+            """)
+
+            # 3) 集合に含まれない既存は tweet_enable=0 へ
+            cur.execute("""
+                UPDATE check_tweet_account_master AS t
+                LEFT JOIN active_accounts AS a
+                  ON a.account_name = t.account_name
+                SET t.tweet_enable = 0
+                WHERE a.account_name IS NULL
+            """)
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    conn = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=False
+    )
+    try:
+        with conn.cursor() as cur:
+            # 1) 有効アカウントの一時テーブル（NULL/空文字は除外、重複除去）
+            cur.execute("""
+                CREATE TEMPORARY TABLE active_accounts (
+                  account_name VARCHAR(255) PRIMARY KEY
+                ) AS
+                SELECT DISTINCT TRIM(search_user_name) AS account_name
+                FROM search_list
+                WHERE (reply_enable = 1)
+                  AND TRIM(search_user_name) <> ''
+                  AND search_user_name IS NOT NULL
+            """)
+
+            # 2) 有効アカウントをUPSERTで反映（なければINSERT、あればtweet_enable=1に更新）
+            #    ※ account_name に UNIQUE もしくは PRIMARY KEY がある前提
+            cur.execute("""
+                INSERT INTO check_tweet_account_master (account_name, reply_enable)
+                SELECT account_name, 1
+                FROM active_accounts
+                ON DUPLICATE KEY UPDATE reply_enable = 1
+            """)
+
+            # 3) 集合に含まれない既存は tweet_enable=0 へ
+            cur.execute("""
+                UPDATE check_tweet_account_master AS t
+                LEFT JOIN active_accounts AS a
+                  ON a.account_name = t.account_name
+                SET t.reply_enable = 0
+                WHERE a.account_name IS NULL
+            """)
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    update_check_tweet_account_master_on_vps_id()
+
+
+def update_check_tweet_account_master_on_vps_id(seed: int = None):
+    """
+    VPS_MASTER の check_enable=1 の id を取り出し、
+    check_tweet_account_master の tweet_enable または reply_enable が 1 のレコードに
+    VPS_ID を均等かつランダムに割り振る処理。
+    """
+
+    # === DB接続（あなたの get_connection() を呼ぶ場合は置き換え） ===
+    conn = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=False
+    )
+    cur = conn.cursor(pymysql.cursors.DictCursor)
+
+    # 1. 有効な VPS を取得
+    cur.execute("SELECT id FROM VPS_MASTER WHERE check_enable = 1")
+    vps_list = [row["id"] for row in cur.fetchall()]
+    if not vps_list:
+        print("有効なVPSがありません")
+        return
+
+    # 2. 割り当て対象のアカウントを取得
+    cur.execute("""
+        SELECT id
+        FROM check_tweet_account_master
+        WHERE tweet_enable = 1 OR reply_enable = 1
+    """)
+    accounts = [row["id"] for row in cur.fetchall()]
+    if not accounts:
+        print("対象アカウントがありません")
+        return
+
+    # 3. ランダム化
+    if seed is not None:
+        random.seed(seed)
+    random.shuffle(accounts)
+
+    # 4. 均等に割り振り
+    assignments = []
+    for i, acc_id in enumerate(accounts):
+        vps_id = vps_list[i % len(vps_list)]
+        assignments.append((vps_id, acc_id))
+
+    # 5. DB更新
+    cur.executemany("""
+        UPDATE check_tweet_account_master
+        SET vps_id = %s
+        WHERE id = %s
+    """, assignments)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    print(f"{len(assignments)} 件を割り振りました")

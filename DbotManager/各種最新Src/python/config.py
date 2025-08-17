@@ -68,6 +68,12 @@ def convert_tweet_datetime2(tweet_datetime_str):
     dt_jst = datetime.fromisoformat(tweet_datetime_str.replace("Z", "+00:00"))  # ISO8601をパース
     return dt_jst.astimezone(timezone.utc)  # UTC に変換
 
+def get_ip_address():
+    import socket
+    ip = socket.gethostbyname(socket.gethostname())
+    outputLog(f"ローカルIP:{ip}") 
+    return ip
+
 def outputLog(message):
 
     if debug == False:
