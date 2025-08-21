@@ -1056,6 +1056,7 @@ namespace DbotManager
         {
             Console.WriteLine("監視処理が完了しました。追加処理を行います。");
 
+            /*
             var list = _tweetTask.CheckSearchList.OrderBy(x => x.CheckDate).ToList();
 
             // メインスレッドで UI を更新する
@@ -1070,6 +1071,7 @@ namespace DbotManager
             {
                 UpdateUI(list);
             }
+            */
         }
 
         // UI を更新する処理を別メソッドにまとめる
@@ -1090,12 +1092,15 @@ namespace DbotManager
 
         private void MakeList_監視(bool first_flag = false)
         {
-            _tweetTask.CheckUserId = checkBox監視UserId.Checked ? int.Parse(comboBox監視UserMaster.SelectedValue.ToString()) : 0;
+///            _tweetTask.CheckUserId = checkBox監視UserId.Checked ? int.Parse(comboBox監視UserMaster.SelectedValue.ToString()) : 0;
             _tweetTask.Init監視list(first_flag);
 
+
+            /*
             var list = _tweetTask.CheckSearchList.OrderBy(x => x.CheckDate).ToList();
             dataGridView監視.DataSource = list;
             label監視件数.Text = $"({list.Count}件)";
+            */
 
         }
 

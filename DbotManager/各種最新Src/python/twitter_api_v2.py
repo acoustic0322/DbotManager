@@ -1,4 +1,4 @@
-﻿import requests
+import requests
 import json
 import time
 import sys
@@ -76,6 +76,8 @@ def createClient(credentials):
         outputLog(ex)    
 
     return None
+
+   
 
 def get_user_id(credentials , username):
 
@@ -286,7 +288,10 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
         if ai_enable == False or ai_post_enable == 0 or ai_mode == 0:
             outputLog("固定コメント")
-            comment = get_comment_by_id(comment_id)
+            if comment_id != 0:
+                comment = get_comment_by_id(comment_id)
+            else:
+                outputLog("固定コメントがありません(comment_id=0です)")
         else:
 
             if ai_mode == 1 or ai_mode == 2:

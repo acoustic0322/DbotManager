@@ -828,6 +828,7 @@ public class MySqlDataAccess
 
     #region SearchList
 
+    /*
     public int InsertSearchList(SearchList search)
     {
         using (MySqlConnection connection = new MySqlConnection(connectionString))
@@ -859,7 +860,7 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@SearchUserName", search.SearchUserName);
                     command.Parameters.AddWithValue("@SearchUserId", search.SearchUserId);
                     command.Parameters.AddWithValue("@Enable", search.Enable.HasValue ? (search.Enable.Value ? "1" : "0") : null);
-                    command.Parameters.AddWithValue("@PostAccountId", search.PostAccountId);
+                    command.Parameters.AddWithValue("@PostAccountId", search.AccountId);
                     command.Parameters.AddWithValue("@PostEnable", search.PostEnable.HasValue ? (search.PostEnable.Value ? "1" : "0") : null);
                     command.Parameters.AddWithValue("@LastPostId", search.LastPostId);
                     command.Parameters.AddWithValue("@LastPostTime", search.LastPostTime?.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -885,6 +886,7 @@ public class MySqlDataAccess
             return -1;
         }
     }
+    */
 
 
     public List<SearchList> GetSearchList()
@@ -902,25 +904,14 @@ public class MySqlDataAccess
                     sl.id,
                     sl.enable,
                     sl.search_user_name,
-                    sl.search_user_id, 
-                    sl.post_account_id,
+                    sl.account_id,
                     sl.post_enable,
-                    sl.last_post_id,
-                    sl.last_post_time,
-                    sl.reply_account_id,
                     sl.reply_enable,
-                    sl.last_reply_id, 
-                    sl.last_reply_time,
-                    sl.monomane_account_id,
                     sl.monomane_enable,
-                    sl.last_monomane_id,
-                    sl.last_monomane_time,
                     sl.time_enable ,
                     sl.start_hour ,
-                    sl.end_hour ,
-                    um.searchrep_enable
+                    sl.end_hour 
                 FROM search_list sl
-                LEFT JOIN user_master um on um.id = sl.search_user_id
 ";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -934,25 +925,10 @@ public class MySqlDataAccess
                                 Id = reader["id"] != DBNull.Value ? Convert.ToInt32(reader["id"]) : 0,
                                 Enable = reader["enable"] != DBNull.Value ? reader["enable"].ToString() == "1" : (bool?)null,
                                 SearchUserName = reader["search_user_name"].ToString(),
-                                SearchUserId = reader["search_user_id"] != DBNull.Value ? Convert.ToInt32(reader["search_user_id"]) : 0,
-                                PostAccountId = reader["post_account_id"] != DBNull.Value ? Convert.ToInt32(reader["post_account_id"]) : 0,
+                                AccountId = reader["account_id"] != DBNull.Value ? Convert.ToInt32(reader["account_id"]) : 0,
                                 PostEnable = reader["post_enable"] != DBNull.Value ? reader["post_enable"].ToString() == "1" : (bool?)null,
-                                LastPostId = reader["last_post_id"].ToString(),
-                                LastPostTime = reader["last_post_time"] != DBNull.Value
-                                    ? DateTime.Parse(reader["last_post_time"].ToString())
-                                    : (DateTime?)null,
-                                ReplyAccountId = reader["reply_account_id"] != DBNull.Value ? Convert.ToInt32(reader["reply_account_id"]) : 0,
                                 ReplyEnable = reader["reply_enable"] != DBNull.Value ? reader["reply_enable"].ToString() == "1" : (bool?)null,
-                                LastReplyId = reader["last_reply_id"].ToString(),
-                                LastReplyTime = reader["last_reply_time"] != DBNull.Value
-                                    ? DateTime.Parse(reader["last_reply_time"].ToString())
-                                    : (DateTime?)null,
-                                MonomaneAccountId = reader["monomane_account_id"] != DBNull.Value ? Convert.ToInt32(reader["monomane_account_id"]) : 0,
                                 MonomaneEnable = reader["monomane_enable"] != DBNull.Value ? reader["monomane_enable"].ToString() == "1" : (bool?)null,
-                                LastMonomaneId = reader["last_monomane_id"].ToString(),
-                                LastMonomaneTime = reader["last_monomane_time"] != DBNull.Value
-                                    ? DateTime.Parse(reader["last_monomane_time"].ToString())
-                                    : (DateTime?)null,
                                 TimeEnable = reader["time_enable"] != DBNull.Value ? reader["time_enable"].ToString() == "1" : (bool?)null,
                                 StartHour = reader["start_hour"] != DBNull.Value ? Convert.ToInt32(reader["start_hour"]) : 0,
                                 EndHour = reader["end_hour"] != DBNull.Value ? Convert.ToInt32(reader["end_hour"]) : 0,
@@ -982,7 +958,7 @@ public class MySqlDataAccess
         return searchList;
     }
 
-
+    /*
     public void UpdateSearchList(SearchList item)
     {
         using (MySqlConnection connection = new MySqlConnection(connectionString))
@@ -1017,7 +993,7 @@ public class MySqlDataAccess
                     command.Parameters.AddWithValue("@SearchUserName", item.SearchUserName ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@SearchUserId", item.SearchUserId != 0 ? item.SearchUserId : (object)DBNull.Value);
                     command.Parameters.AddWithValue("@Enable", item.Enable.HasValue ? (item.Enable.Value ? 1 : 0) : (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@PostAccountId", item.PostAccountId != 0 ? item.PostAccountId : (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@PostAccountId", item.AccountId != 0 ? item.AccountId : (object)DBNull.Value);
                     command.Parameters.AddWithValue("@PostEnable", item.PostEnable.HasValue ? (item.PostEnable.Value ? 1 : 0) : (object)DBNull.Value);
                     command.Parameters.AddWithValue("@LastPostId", item.LastPostId ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@LastPostTime", item.LastPostTime.HasValue ? item.LastPostTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : (object)DBNull.Value);
@@ -1039,6 +1015,7 @@ public class MySqlDataAccess
             }
         }
     }
+    */
 
 
     public bool DeleteSearchList(int id)
@@ -2249,4 +2226,72 @@ public class MySqlDataAccess
 
         return vpsList;
     }
+
+    #region CheckTweetAccountList
+    public List<CheckTweetAccountList> GetCheckTweetAccountList(int day = 1)
+    {
+        List<CheckTweetAccountList> list = new List<CheckTweetAccountList>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query1 = @"
+                SELECT 
+                    account_name,
+                    user_id,
+                    check_time,
+                    update_time,
+                    tweet_id,
+                    tweet_text,
+                    type,
+                    reply_to_tweet_id
+                FROM check_tweet_account_list";
+
+                string query2 = $@"
+                WHERE update_time >= NOW() - INTERVAL {day} DAY";
+
+                string query;
+
+                if (day == 0)
+                    query = query1;
+                else
+                    query = query1 + query2;
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var test = reader["user_id"];
+                            CheckTweetAccountList item = new CheckTweetAccountList()
+                            {
+                                AccountName = reader["account_name"].ToString(),
+                                UserId =  Convert.ToInt64(reader["user_id"].ToString()),
+                                CheckTime = Convert.ToDateTime(reader["check_time"].ToString()),
+                                UpdateTime = Convert.ToDateTime(reader["update_time"].ToString()),
+                                TweetId = reader["tweet_id"].ToString(),
+                                TweetText = reader["tweet_text"].ToString(),
+                                Type = reader["type"].ToString(),
+                                ReplyToTweetId = reader["reply_to_tweet_id"].ToString(),
+                            };
+
+                            list.Add(item);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return list;
+    }
+
+    #endregion
 }

@@ -37,7 +37,7 @@ def proc_get_tweet(credentials):
     profile_path = profile_record['path']
 
     if profile_path is None or profile_path == '':
-        profile_path = get_firefox_profile_path("twitter")
+        profile_path = get_firefox_profile_path(profile_record['display_name'])
         print("from os profile_path=",profile_path)
         profile_record['path'] = profile_path
         update_get_tweet_profile(profile_record)
@@ -85,21 +85,23 @@ def proc_get_tweet(credentials):
         else:
             print("from db user_id=",user_id)
 
-        tweets = get_tweets(profile_path , user_id, user_name)
-        if not tweets:
-            print(f"[WARN] {user_name}: ツイートが取得できませんでした（None/空）")
-            # ここでエラー記録して続行
-            errors.append((user_name, "tweets None/empty"))
-            continue
 
-        for tweet in tweets:
-            print(tweet["tweet_id"], tweet["text"], tweet["created_at_jst"])
-            tweet['account_name'] = user_name
-            tweet['user_id'] = user_id
-            tweet['check_time'] = datetime.now()
-            update_check_tweet_account_list(tweet)
+        if check_record['tweet_enable'] == 1:
+            tweets = get_tweets(profile_path , user_id, user_name)
+            if not tweets:
+                print(f"[WARN] {user_name}: ツイートが取得できませんでした（None/空）")
+                # ここでエラー記録して続行
+                errors.append((user_name, "tweets None/empty"))
+                continue
 
-            any_success = True
+            for tweet in tweets:
+                print(tweet["tweet_id"], tweet["text"], tweet["created_at_jst"])
+                tweet['account_name'] = user_name
+                tweet['user_id'] = user_id
+                tweet['check_time'] = datetime.now()
+                update_check_tweet_account_list(tweet)
+
+                any_success = True
 
     # 最後に全体の成否を返す（1件でも成功していれば True）
     if errors:

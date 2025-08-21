@@ -291,7 +291,7 @@ def get_search_list(id):
     try:
         with connection.cursor() as cursor:
             # 認証情報を格納しているテーブルからデータを取得
-            sql = "SELECT id, search_user_name, search_user_id , post_account_id, post_enable , last_post_id , last_post_time , reply_account_id , reply_enable , last_reply_id , last_reply_time , monomane_account_id , monomane_enable , last_monomane_id , last_monomane_time FROM search_list  WHERE id = %s"
+            sql = "SELECT id, search_user_name, account_id, post_enable , reply_enable , monomane_enable FROM search_list  WHERE id = %s"
             cursor.execute(sql, (id,))
             credentials = cursor.fetchone()
             return credentials
@@ -1179,7 +1179,77 @@ def get_vps_master_by_ip_address(ip_address):
 
     return record
 
+
 def init_check_tweet_account_master_by_search_list():
+    def sync_flags():
+        conn = pymysql.connect(
+            host=config.db_host,
+            user="root",
+            password="abcd1234",
+            database="d_bot",
+            charset="utf8mb4",
+            cursorclass=pymysql.cursors.DictCursor,
+            autocommit=False
+        )
+        try:
+            with conn.cursor() as cur:
+                # 集約して1アカウント1行にする
+                cur.execute("""
+                    CREATE TEMPORARY TABLE active_accounts (
+                        account_key   VARCHAR(255) PRIMARY KEY,
+                        account_name  VARCHAR(255),
+                        tweet_flag    TINYINT(1),
+                        reply_flag    TINYINT(1)
+                    ) AS
+                    SELECT
+                        REPLACE(LOWER(TRIM(sl.search_user_name)),'@','') AS account_key,
+                        TRIM(sl.search_user_name)                         AS account_name,
+                        MAX(sl.post_enable)                               AS tweet_flag,
+                        MAX(sl.reply_enable)                              AS reply_flag
+                    FROM search_list sl
+                    LEFT JOIN ACCOUNT_MASTER am on am.id = sl.account_id
+                    LEFT JOIN USER_MASTER um on um.id = am.user_id
+                    WHERE TRIM(sl.search_user_name) <> ''
+                      AND sl.search_user_name IS NOT NULL
+                      AND um.enable = '1'
+                      AND am.enable = '1'
+                    GROUP BY REPLACE(LOWER(TRIM(sl.search_user_name)),'@',''),
+                             TRIM(sl.search_user_name)
+                """)
+
+                # UPSERTで反映
+                cur.execute("""
+                    INSERT INTO check_tweet_account_master (account_name, tweet_enable, reply_enable)
+                    SELECT a.account_name, a.tweet_flag, a.reply_flag
+                    FROM active_accounts a
+                    ON DUPLICATE KEY UPDATE
+                        tweet_enable = VALUES(tweet_enable),
+                        reply_enable = VALUES(reply_enable),
+                        account_name = VALUES(account_name)
+                """)
+
+                # search_listに存在しないアカウントは両方0にする
+                cur.execute("""
+                    UPDATE check_tweet_account_master t
+                    LEFT JOIN active_accounts a
+                      ON a.account_key = REPLACE(LOWER(TRIM(t.account_name)),'@','')
+                    SET t.tweet_enable = 0,
+                        t.reply_enable = 0
+                    WHERE a.account_key IS NULL
+                """)
+
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    # 実行
+    sync_flags()
+    update_check_tweet_account_master_on_vps_id()
+
+def init_check_tweet_account_master_by_search_list_gomi():
     conn = pymysql.connect(
         host=config.db_host,
         user='root',
@@ -1278,6 +1348,7 @@ def init_check_tweet_account_master_by_search_list():
         conn.close()
 
     update_check_tweet_account_master_on_vps_id()
+
 
 
 def update_check_tweet_account_master_on_vps_id(seed: int = None):

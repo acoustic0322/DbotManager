@@ -660,10 +660,24 @@ namespace DbotManager
 
         #region 監視処理
 
+        List<CheckTweetAccountList> _checkTweetAccountList = new List<CheckTweetAccountList>();
+        List<AccountMaster> _accountMasterList = new List<AccountMaster>();
+        List<SearchList> _searchList = new List<SearchList>();
+
         public void Init監視list(bool first_flag = false)
         {
+            _checkTweetAccountList.Clear();
+
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
+
+            _checkTweetAccountList = dataAccess.GetCheckTweetAccountList();
+
+            _accountMasterList = dataAccess.GetAccountMaster(true).Where( x => x.Enable).ToList();
+
+            _searchList = dataAccess.GetSearchList();
+
+            /*
 
             List<UserMaster> userMasterList = dataAccess.GetUserMaster().Where(x => x.Enable && x.CheckEnable).ToList();
 
@@ -686,6 +700,7 @@ namespace DbotManager
 
             dataAccess.InitTweetWatch(tweetWatchMasterList.Select(x => x.WatchUserName).Distinct().ToList());
 
+            */
 
             /*
 
@@ -748,10 +763,10 @@ namespace DbotManager
                 if (first_flag) item.FirstFlag = true;
                 CheckSearchList.Add(item);
             }
+            */
 
             _replyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
             _replyToReplyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.ReplyToReply).ToList();
-            */
 
             _監視list作成日時 = DateTime.Now;
         }
@@ -807,6 +822,7 @@ namespace DbotManager
 
         }
 
+        /*
         private SearchHistory GetSearchHistoryRow(SearchList item , DateTime dtNow)
         {
             // 利用者の履歴に絞る
@@ -821,6 +837,7 @@ namespace DbotManager
 
             return timeSearchHistoryList.FirstOrDefault();
         }
+        */
 
         private void RenewSearchDateTime(SearchHistory item)
         {
@@ -872,6 +889,58 @@ namespace DbotManager
             {
                 Init監視list(false);
             }
+
+            // MySQLデータアクセスの初期化
+            var dataAccess = new MySqlDataAccess(dbConnectin);
+
+            var list = dataAccess.GetCheckTweetAccountList();
+
+            List<CheckTweetAccountList> 新規tweet = new List<CheckTweetAccountList>();
+
+            foreach(var row in list)
+            {
+                if(_checkTweetAccountList.Where(x => x.TweetId == row.TweetId).Count() == 0)
+                {
+                    新規tweet.Add(row);
+                }
+            }
+
+
+            foreach( var item in 新規tweet)
+            {
+                var targetSearchList = _searchList.Where(x => x.SearchUserName == item.AccountName).ToList();
+
+                foreach(var targetRow in targetSearchList)
+                {
+                    if((bool)targetRow.PostEnable)
+                    {
+                        TweetProcReply(targetRow, item.TweetId);
+                    }
+
+                    if ((bool)targetRow.ReplyEnable)
+                    {
+                        //08.22 未実装の為、一旦コメントアウト
+//                        TweetProcReplyToReply(targetRow, item.ReplyToTweetId);
+                    }
+                }
+
+                /*
+                if (tweetResult != null && (bool)item.PostEnable && tweetResult.result1 == true)
+                {
+                    TweetProcReply(item, tweetResult);
+                }
+
+                if (tweetResult != null && (bool)item.ReplyEnable && tweetResult.result2 == true)
+                {
+                    TweetProcReplyToReply(item, tweetResult);
+                }
+                */
+
+            }
+
+            _checkTweetAccountList = list;
+
+            /*
 
             bool renewFlag = false;
 
@@ -929,6 +998,7 @@ namespace DbotManager
                 // コールバックを呼び出し(Formのdatagridview更新のため)
                 callback?.Invoke();
             }
+            */
 
             _監視Timer.Enabled = true;
 
@@ -940,10 +1010,22 @@ namespace DbotManager
 
         #region TweetProc関連
 
+        /// <summary>
+        /// 2025.08.22 commentId取得できない場合も許容するよう変更(AIリプのため)
+        /// </summary>
+        /// <param name="searchList"></param>
+        /// <param name="targetTweetId"></param>
+        public void TweetProcReply(SearchList searchList, string targetTweetId)
+        {
+            int accountId = searchList.AccountId;
+            var commentItem = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList());
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, AccountId = accountId, CommentId = commentItem?.Id ?? 0, TweetId = targetTweetId });
+        }
+
         public void TweetProcReply(SearchList searchList, TweetResult result)
         {
             //            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
-            int accountId = searchList.PostAccountId;
+            int accountId = searchList.AccountId;
 
             if (_replyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
 
@@ -953,10 +1035,24 @@ namespace DbotManager
             TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, AccountId = accountId, CommentId = commentId, TweetId = result.contents1 });
         }
 
+        public void TweetProcReplyToReply(SearchList searchList, string targetTweetId)
+        {
+            //            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
+            int accountId = searchList.AccountId;
+
+            if (_replyToReplyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
+
+            var commentItem = SupportUtil.GetRandomItem(_replyToReplyCommentList.Where(x => x.AccountId == accountId).ToList());
+            if (commentItem == null) return;
+            var commentId = commentItem.Id;
+
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, AccountId = accountId, CommentId = commentId, TweetId = targetTweetId });
+        }
+
         public void TweetProcReplyToReply(SearchList searchList, TweetResult result)
         {
             //            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
-            int accountId = searchList.ReplyAccountId;
+            int accountId = searchList.AccountId;
 
             if (_replyToReplyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
 

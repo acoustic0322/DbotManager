@@ -27,7 +27,6 @@ from other import update_profile_image
 
 from jap_api import proc_like_jap
 from jap_api import proc_bookmark_jap
-from jap_api import proc_repost_jap
 
 from twitter_api_v2 import proc_following_v2
 from twitter_api_v2 import proc_unfollowing_v2
