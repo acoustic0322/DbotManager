@@ -36,7 +36,8 @@ namespace DbotManager
         JAPブックマーク,
         JAPリポスト,
         フォロー追加,
-        フォロー解除
+        フォロー解除,
+        監視初期化
     }
 
     public enum CheckAccountModes
@@ -677,6 +678,8 @@ namespace DbotManager
 
             _searchList = dataAccess.GetSearchList();
 
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.監視初期化 });
+
             /*
 
             List<UserMaster> userMasterList = dataAccess.GetUserMaster().Where(x => x.Enable && x.CheckEnable).ToList();
@@ -768,7 +771,6 @@ namespace DbotManager
             _replyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.Replay).ToList();
             _replyToReplyCommentList = dataAccess.GetCommentMaster().Where(x => x.TweetModeType == TweetModeTypes.ReplyToReply).ToList();
 
-            _監視list作成日時 = DateTime.Now;
         }
 
         public void InitSearchHistory(List<AccountMaster> accountMasterList)
@@ -885,9 +887,11 @@ namespace DbotManager
             _監視Timer.Enabled = false;
             Console.WriteLine($"処理を実行中: {DateTime.Now}");
 
-            if(_監視list作成日時.AddHours(1) <= DateTime.Now)
+            // 日付変更時にに再初期化
+            if(_監視list作成日時.Date != DateTime.Now.Date)
             {
                 Init監視list(false);
+                _監視list作成日時 = DateTime.Now;
             }
 
             // MySQLデータアクセスの初期化
@@ -1233,6 +1237,9 @@ namespace DbotManager
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_name={tweetCommand.TweetName}";
                     break;
 
+                case TweetProcTypes.監視初期化:
+                    pythonScriptPath += $" mode=init_check_tweet_account_master";
+                    break;
             }
 
             //            pythonScriptPath += " debug=True";
