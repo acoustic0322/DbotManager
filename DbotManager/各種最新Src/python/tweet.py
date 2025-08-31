@@ -22,6 +22,7 @@ from twitter_api_v1 import proc_post_v10a
 from twitter_api_v2 import check_replies
 from twitter_api_v2 import get_username_from_tweet_id_v2
 from twitter_api_v2 import proc_search_v2
+#from twitter_api_v2 import proc_monomane_v2
 from other import proc_profile_image
 from other import update_profile_image
 
@@ -141,6 +142,8 @@ if credentials:
             result1 , contents1 = proc_post_v10a(credentials , comment_id , media_type , media_id , tweet_id , ai_enable)               
         else:
             result1 , contents1 = proc_post_v2(credentials , comment_id , "" , ai_enable)               
+#    elif mode == "monomane":
+#        result1 , contents1 = proc_monomane_v2(credentials , tweet_id)
     elif mode == "reply":
         result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id , False)               
 #        result1 , contents1 = True , "" #未実装

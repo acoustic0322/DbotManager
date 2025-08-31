@@ -127,11 +127,108 @@ def fetch_usertweets_query_id_with_session(s: requests.Session) -> str:
     return "jXozWifCk6Vtw7izZseDXA"  # 古い可能性あり
 
 # ============== 日時ユーティリティ ==============
+
 def _normalize_created_at(raw: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
+    """
+    raw: 例 'Sat May 04 06:20:38 +0000 2024' / 'Wed Aug 14 03:21:00 +0000 2025'
+    戻り値: (UTC文字列, JST文字列) いずれも 'YYYY-mm-dd HH:MM:SS'
+    パース不能時は (raw, None)
+    """
+
+    print("_normalize_created_at1")
+
+    # 英語略月→数値（ロケールに依存しない）
+    _MONTHS = {
+        "Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,
+        "Jul":7,"Aug":8,"Sep":9,"Sept":9,"Oct":10,"Nov":11,"Dec":12
+    }
+
+# 例: "Sat May 04 06:20:38 +0000 2024"
+#     "Wed Aug 14 03:21:00 +0000 2025"
+#     "Sat, 04 May 2024 06:20:38 +00:00" などの亜種もある程度吸収
+    _RE_X_TIME = re.compile(
+        r"""^\s*
+            (?:[A-Za-z]{3},?\s+)?      # 先頭の曜日（任意, カンマ付も許容）
+            (?:(\d{1,2})\s+)?          # 先頭に日が来るパターンも一応許容（任意）
+            ([A-Za-z]{3,4})\s+         # 月 (May, Sept など)
+            (\d{1,2})\s+               # 日
+            (\d{2}):(\d{2}):(\d{2})\s+  # 時:分:秒
+            (Z|UTC|[+-]\d{2}:?\d{2}|[+-]\d{4})\s+  # タイムゾーン
+            (\d{4})                     # 年
+            \s*$""",
+        re.VERBOSE
+    )
+
+    print(raw)
+
+    if not raw:
+        return None, None
+
+    print("_normalize_created_at2")
+
+    s = raw.strip()
+
+    # まずは元の書式での高速トライ（通ればそれでOK）
+    try:
+        dt = datetime.strptime(s, "%a %b %d %H:%M:%S %z %Y")
+        utc = dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        jst = dt.astimezone(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M:%S")
+        print("return utc, jst")
+        return utc, jst
+    except Exception:
+        print("test")
+        pass  # 落ちたらロケール非依存の正規表現パースへ
+
+    # タイムゾーンの「+HH:MM」→「+HHMM」に正規化（strptime 互換のため）
+    s_norm = re.sub(r"([+-]\d{2}):(\d{2})\b", r"\1\2", s)
+    # ' Z ' / ' UTC ' を +0000 に正規化
+    s_norm = re.sub(r"\b(?:Z|UTC)\b", "+0000", s_norm)
+
+    # 正規表現でパース（ロケール非依存）
+    m = _RE_X_TIME.match(s_norm)
+    if m:
+        # m.groups() = (opt_day_lead, mon_abbr, day, hh, mm, ss, tz, year)
+        _, mon_abbr, day, hh, mm, ss, tz, year = m.groups()
+        mon_abbr = mon_abbr[:4]  # 'Sept' も許容
+        month = _MONTHS.get(mon_abbr)
+        if month:
+            # タイムゾーンを timedelta に
+            if tz in ("Z", "UTC", "+0000"):
+                offset = timedelta(0)
+            else:
+                tz_clean = tz.replace(":", "")  # +HHMM へ
+                sign = 1 if tz_clean[0] == "+" else -1
+                th = int(tz_clean[1:3])
+                tm = int(tz_clean[3:5])
+                offset = sign * timedelta(hours=th, minutes=tm)
+
+            try:
+                dt = datetime(
+                    year=int(year),
+                    month=month,
+                    day=int(day),
+                    hour=int(hh),
+                    minute=int(mm),
+                    second=int(ss),
+                    tzinfo=timezone(offset),
+                )
+                utc = dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                jst = dt.astimezone(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M:%S")
+                return utc, jst
+            except Exception:
+                pass
+
+    # 最後の保険：そのまま返す
+    return s, None
+
+
+def _normalize_created_at_bk1(raw: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
     """
     raw: 'Wed Aug 14 03:21:00 +0000 2025' のようなXの標準形式想定
     戻り値: (UTC文字列, JST文字列) いずれも 'YYYY-mm-dd HH:MM:SS' 形式
     """
+
+
     if not raw:
         return None, None
     try:
@@ -162,9 +259,11 @@ def _extract_from_tweet_node(node: dict) -> Optional[Tuple[str, str, Optional[st
     rest_id = node.get("rest_id") or (legacy or {}).get("id_str")
     if rest_id:
         text = (legacy or {}).get("full_text") or (node.get("note_tweet_results", {}).get("result", {}) or {}).get("text") or node.get("text")
-        created = (legacy or {}).get("created_at")
+        created_at = (legacy or {}).get("created_at")
         if text:
-            return rest_id, text, created
+            print("created1")
+            print(created_at)
+            return rest_id, text, created_at
     # パターン2: TweetWithVisibilityResults
     tw = node.get("tweet")
     if isinstance(tw, dict):
@@ -172,12 +271,117 @@ def _extract_from_tweet_node(node: dict) -> Optional[Tuple[str, str, Optional[st
         rest_id = tw.get("rest_id") or (leg2 or {}).get("id_str")
         if rest_id:
             text = (leg2 or {}).get("full_text") or (tw.get("note_tweet_results", {}).get("result", {}) or {}).get("text") or tw.get("text")
-            created = (leg2 or {}).get("created_at")
+            created_at = (leg2 or {}).get("created_at")
             if text:
-                return rest_id, text, created
+                print("created2")
+                print(created_at)
+                return rest_id, text, created_at
     return None
 
+    from typing import Any, Optional
+
+def _find_created_nearby(context: Any, target_id: str) -> Optional[str]:
+    """
+    同じレスポンスJSON内を再帰スキャンし、target_id に一致する
+    legacy.id_str/rest_id の created_at を返す（最初に見つかった1件）。
+    """
+    target_id = str(target_id)
+    found: Optional[str] = None
+
+    def walk(x: Any):
+        nonlocal found
+        if found is not None:
+            return
+        if isinstance(x, dict):
+            legacy = x.get("legacy")
+            if isinstance(legacy, dict):
+                tid = x.get("rest_id") or legacy.get("id_str")
+                if tid is not None and str(tid) == target_id:
+                    ca = legacy.get("created_at")
+                    if ca:
+                        found = ca
+                        return
+            # 続きを探索
+            for v in x.values():
+                if found is None:
+                    walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                if found is None:
+                    walk(v)
+
+    walk(context)
+    print("found")
+    print(found)
+
+    return found
+
+
 def _yield_tweet_candidates(obj: Any):
+    """
+    (tweet_id, text, created_at) を yield。
+    _extract_from_tweet_node が created_at を返せない場合は、
+    同一JSON内をスキャンして補完する。
+    """
+
+    try:
+        if isinstance(obj, dict):
+            # 1) tweet_results.result -> 最有力
+            tr = obj.get("tweet_results")
+            if isinstance(tr, dict):
+                print("_yield_tweet_candidates:1")
+                res = tr.get("result") or {}
+                cand = _extract_from_tweet_node(res)
+                if cand:
+                    print(cand)
+                    rid, text, created_at = cand
+                    if not created_at:
+                        created_at = _find_created_nearby(obj, rid) or _find_created_nearby(res, rid)
+                    yield (rid, text, created_at)
+
+            # 2) この dict 自身が Tweet node の場合
+#            print("_yield_tweet_candidates:2")
+            cand2 = _extract_from_tweet_node(obj)
+            if cand2:
+                print(cand2)
+                rid, text, created_at = cand2
+                if not created_at:
+                    created_at = _find_created_nearby(obj, rid)
+                yield (rid, text, created_at)
+
+            # 3) よくある容器の中を辿る
+            tm = obj.get("timelineModule")
+            if isinstance(tm, dict):
+                for it in tm.get("items", []):
+                    yield from _yield_tweet_candidates(it)
+
+            content = obj.get("content")
+            if isinstance(content, dict):
+                ic = content.get("itemContent")
+                if isinstance(ic, dict):
+                    yield from _yield_tweet_candidates(ic)
+
+            item = obj.get("item")
+            if isinstance(item, dict):
+                yield from _yield_tweet_candidates(item)
+
+            moduleItems = obj.get("moduleItems")
+            if isinstance(moduleItems, list):
+                for it in moduleItems:
+                    yield from _yield_tweet_candidates(it)
+
+            # 4) 汎用再帰（最後）
+            for v in obj.values():
+                yield from _yield_tweet_candidates(v)
+
+        elif isinstance(obj, list):
+            for v in obj:
+                yield from _yield_tweet_candidates(v)
+    except Exception:
+        return
+
+
+def _yield_tweet_candidates_bk1(obj: Any):
     try:
         if isinstance(obj, dict):
             tr = obj.get("tweet_results")
@@ -543,6 +747,79 @@ def get_tweets(profile, user_id, screen_name):
         traceback.print_exc()
         return None
 
+def get_replies(profile, user_id, screen_name, kind="tweets", limit=5):
+    """
+    kind:
+      - "tweets"           : 通常ツイートのみ
+      - "replies_outgoing" : 自分が送ったリプ（in_reply_to_* があるツイ）
+      - "replies_incoming" : 自分宛のリプ（to:screen_name）
+    戻り値: 成功時 list[dict] / 失敗時 None
+    """
+    s, headers = _session_and_headers_from_firefox_profile(profile)
+    if not s: return None
+
+    if kind == "tweets":
+        ok, payload, err = fetch_latest_tweets_via_user_timeline_v11(
+            s, headers, user_id, limit=limit, mode="tweets"
+        )
+        if not ok or not isinstance(payload, list): 
+            _log(f"[WARN] tweets失敗: {err}"); 
+            return None
+        return _normalize_result_rows(payload)
+
+    elif kind == "replies_outgoing":
+        ok, payload, err = fetch_latest_tweets_via_user_timeline_v11(
+            s, headers, user_id, limit=limit, mode="replies"
+        )
+        if not ok or not isinstance(payload, list):
+            _log(f"[WARN] outgoing replies 失敗: {err}")
+            return None
+        # v1.1 側で type="reply" / reply_to_tweet_id セット済み
+        return _normalize_result_rows(payload)
+
+    elif kind == "replies_incoming":
+        print("replies_incoming")
+        # GraphQL SearchTimeline（to:screen_name）を優先
+        ok, rows, err = fetch_replies_to_me_graphql(s, headers, screen_name, limit=limit)
+#        print("ok=",ok)
+        print("rows=",rows)
+#        print("err=",err)
+        if not ok or not isinstance(rows, list):
+            _log(f"[WARN] incoming replies graphql失敗: {err}")
+            # フォールバック: v2 search/adaptive
+            sn = screen_name.lstrip("@")
+            ok2, row2, err2 = fetch_latest_tweet_via_search_adaptive(s, headers, sn)
+            if not ok2 or not row2:
+                _log(f"[WARN] incoming replies fallback失敗: {err2}")
+                return None
+            rows = [row2]
+
+        # incoming は type を "reply_to_me" に寄せ、相手の reply_to は不要のことが多い
+        normalized = []
+        for r in rows:
+            print("r.get(created_at)")
+            print(r.get("created_at"))
+            utc_str, jst_str = _normalize_created_at(r.get("created_at"))
+            normalized.append({
+                "tweet_id": r["tweet_id"],
+                "text": r["text"],
+                "created_at": r.get("created_at"),
+                "created_at_raw": r.get("created_at"),
+                "created_at_utc": utc_str,
+                "created_at_jst": jst_str,
+                "user_id": '',
+                "check_time": '',
+                "type": "reply_to_me",
+                "reply_to_tweet_id": r.get("reply_to_tweet_id")  # 取れるときは保持
+            })
+        print(_normalize_result_rows(normalized))
+        return _normalize_result_rows(normalized)
+
+    else:
+        _log(f"[ERR] unknown kind={kind}")
+        return None
+
+
 import time
 
 def fetch_replies_to_me(s, headers, screen_name, limit=5, retries=3, wait=5):
@@ -593,185 +870,522 @@ def fetch_replies_to_me(s, headers, screen_name, limit=5, retries=3, wait=5):
 
 import re
 
-def fetch_searchtimeline_query_id_with_session(s: requests.Session) -> Optional[str]:
+from typing import Optional, Set, List, Tuple
+import re
+
+def fetch_searchtimeline_query_id_with_session(
+    s: requests.Session,
+    prefer: str = "adaptive",   # "adaptive" | "search" | "auto"
+) -> Optional[Tuple[str, str]]:
     """
-    abs.twimg.com の client-web チャンク(main/vendor含む)を総当たりし、
-    SearchTimeline 系の queryId を robust に抽出して最初の1件を返す。
-    見つからなければ None。
+    (operationName, queryId) を返す。優先度は prefer で指定可能。
+    優先度: HTML直書き > JS直書きURL > JS同一オブジェクト > 近傍(±6000) >> 広域(距離<=1200のみ)
     """
-    js_urls = _fetch_main_js_urls_with_session(s)
+    _log("fetch_searchtimeline_query_id_with_session")
 
-    # ① operationName 候補（大小混在対策）
-    name_candidates = [
-        "SearchTimeline",
-        "searchTimeline",
-        "AdaptiveSearchTimeline",
-        "SearchTimelineQuery",
-        "AdaptiveSearchTimelineQuery",
-    ]
+    MAX_GAP_WIDE = 50000
+    OBJ_GAP = 2000
+    VICINITY = 6000
+    WIDE_ACCEPT_GAP = 1200
 
-    # ② 代表的な2順序（operationName → queryId / queryId → operationName）
-    #   a) ..."operationName":"SearchTimeline"... "queryId":"XXXX"...
-    pat_op_then_qid = re.compile(
-        r'"operationName"\s*:\s*"(?:' + "|".join(name_candidates) + r')".{0,1500}?"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"',
+    OP_ANY  = r'(?:operationName|opName)\s*[:=]\s*(?:["\']?)([A-Za-z0-9_.$-]+)'
+    QID_ANY = r'(?:queryId|queryID|qid|id|docId|documentId)\s*[:=]\s*(?:["\']?)([A-Za-z0-9_-]{6,80})'
+
+    pat_op_then_qid_any = re.compile(OP_ANY + r'.{0,' + str(MAX_GAP_WIDE) + r'}?' + QID_ANY,
+                                     re.IGNORECASE | re.DOTALL)
+    pat_qid_then_op_any = re.compile(QID_ANY + r'.{0,' + str(MAX_GAP_WIDE) + r'}?' + OP_ANY,
+                                     re.IGNORECASE | re.DOTALL)
+    pat_named_map_any = re.compile(r'["\']?([A-Za-z0-9_.$-]+)["\']?\s*:\s*\{\s*' + QID_ANY,
+                                   re.IGNORECASE | re.DOTALL)
+
+    pat_url_plain = re.compile(r'/i/api/graphql/([A-Za-z0-9_-]{6,80})/([^"\s/]+)', re.IGNORECASE)
+    pat_url_u002f = re.compile(r'\\u002Fi\\u002Fapi\\u002Fgraphql\\u002F([A-Za-z0-9_-]{6,80})\\u002F([^"\\s/]+)', re.IGNORECASE)
+    pat_url_x2f   = re.compile(r'\\x2Fi\\x2Fapi\\x2Fgraphql\\x2F([A-Za-z0-9_-]{6,80})\\x2F([^"\\s/]+)', re.IGNORECASE)
+
+    pat_obj_op_qid = re.compile(
+        r'\{[^{}]{0,' + str(OBJ_GAP) + r'}"operationName"\s*:\s*"([^"]+)"[^{}]{0,' + str(OBJ_GAP) +
+        r'}"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"[^{}]{0,' + str(OBJ_GAP) + r'}\}',
         re.IGNORECASE | re.DOTALL
     )
-    #   b) ..."queryId":"XXXX"... "operationName":"SearchTimeline"...
-    pat_qid_then_op = re.compile(
-        r'"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})".{0,1500}?"operationName"\s*:\s*"(?:' + "|".join(name_candidates) + r')"',
+    pat_obj_qid_op = re.compile(
+        r'\{[^{}]{0,' + str(OBJ_GAP) + r'}"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"[^{}]{0,' + str(OBJ_GAP) +
+        r'}"operationName"\s*:\s*"([^"]+)"[^{}]{0,' + str(OBJ_GAP) + r'}\}',
         re.IGNORECASE | re.DOTALL
     )
 
-    # ③ 旧来のマップ形式 ..."SearchTimeline": {"queryId":"XXXX", ...}
-    pat_named_map = re.compile(
-        r'"(?:' + "|".join(name_candidates) + r')"\s*:\s*\{\s*"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"',
-        re.IGNORECASE | re.DOTALL
-    )
-
-    # ④ URL 直書き検出 /i/api/graphql/<qid>/SearchTimeline
-    pat_url_embed = re.compile(
-        r'/i/api/graphql/([A-Za-z0-9_-]{10,})/(?:' + "|".join(name_candidates) + r')\b',
+    pat_op_names = re.compile(
+        r'(?:operationName|opName)\s*[:=]\s*["\']?(SearchTimeline|AdaptiveSearchTimeline|SearchTimelineQuery|AdaptiveSearchTimelineQuery)\b',
         re.IGNORECASE
     )
+    pat_qid_near = re.compile(QID_ANY, re.IGNORECASE)
 
-    # ⑤ fallback: 名前だけ先に見つけ、近傍±4000文字を再スキャン
-    pat_name_only = re.compile(
-        r'"operationName"\s*:\s*"(?:' + "|".join(name_candidates) + r')"',
-        re.IGNORECASE
-    )
-    pat_qid_generic = re.compile(r'"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"', re.IGNORECASE)
+    pairs: List[Tuple[str, str, str, int]] = []
+    seen: Set[Tuple[str, str]] = set()
 
-    seen = set()
+    def _add(op: str, qid: str, source: str, gap: int = 0):
+        k = (op, qid)
+        if k in seen:
+            return
+        seen.add(k)
+        pairs.append((op, qid, source, gap))
+
+    # 1) HTML直書き
+    for url in [
+        "https://x.com/home",
+        "https://x.com/explore",
+        "https://x.com/search?q=a&src=typed_query",
+        "https://x.com/i/connect_people",
+    ]:
+        try:
+            r = s.get(url, headers={
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Referer": "https://x.com/",
+                "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+            }, timeout=15)
+            _log(f"[STEP] GET {url} -> {r.status_code}")
+            if not r.ok: continue
+            text = r.text
+            for pat in (pat_url_plain, pat_url_u002f, pat_url_x2f):
+                for m in pat.finditer(text):
+                    qid, op = m.group(1), m.group(2)
+                    _add(op, qid, 'html_url', 0)
+        except Exception as e:
+            _log(f"[WARN] HTML scan {url}: {e}")
+
+    # 2) JS 取得
+    js_urls: Set[str] = set()
+    try:
+        js_urls = set(_fetch_main_js_urls_with_session(s))
+    except Exception as e:
+        _log(f"[WARN] _fetch_main_js_urls_with_session failed: {e}")
+    _log(f"[DEBUG] _fetch_main_js_urls_with_session -> {len(js_urls)} urls")
+    for u in list(js_urls)[:10]:
+        _log(f"[DEBUG] JS seed: {u}")
+
+    # 3) JS 走査
     for js_url in js_urls:
-        r = s.get(js_url, headers={"Accept": "*/*", "Referer": "https://x.com/"}, timeout=15)
-        if not r.ok:
+        try:
+            r = s.get(js_url, headers={"Accept":"*/*","Referer":"https://x.com/"}, timeout=15)
+        except Exception as e:
+            _log(f"[WARN] GET {js_url}: {e}")
             continue
+        if not r.ok: continue
         text = r.text
 
-        # a) op → qid
-        m = pat_op_then_qid.search(text)
-        if m:
-            qid = m.group(1)
-            if qid not in seen:
-                _log(f"[STEP] Found (op→qid) in {js_url}: {qid}")
-                return qid
-        # b) qid → op
-        m = pat_qid_then_op.search(text)
-        if m:
-            qid = m.group(1)
-            if qid not in seen:
-                _log(f"[STEP] Found (qid→op) in {js_url}: {qid}")
-                return qid
-        # c) named map
-        m = pat_named_map.search(text)
-        if m:
-            qid = m.group(1)
-            if qid not in seen:
-                _log(f"[STEP] Found (named map) in {js_url}: {qid}")
-                return qid
-        # d) URL 埋め込み
-        m = pat_url_embed.search(text)
-        if m:
-            qid = m.group(1)
-            if qid not in seen:
-                _log(f"[STEP] Found (url embed) in {js_url}: {qid}")
-                return qid
+        # (A) URL直書き
+        for pat in (pat_url_plain, pat_url_u002f, pat_url_x2f):
+            for m in pat.finditer(text):
+                qid, op = m.group(1), m.group(2)
+                _add(op, qid, 'js_url', 0)
 
-        # e) 近傍スキャン：まず名前の位置を全部拾って、その周辺に queryId が無いか再検索
-        for nm in pat_name_only.finditer(text):
-            start = max(0, nm.start() - 4000)
-            end   = min(len(text), nm.end() + 4000)
+        # (B) 同一オブジェクト
+        for m in pat_obj_op_qid.finditer(text):
+            op, qid = m.group(1), m.group(2)
+            _add(op, qid, 'js_object', 0)
+        for m in pat_obj_qid_op.finditer(text):
+            qid, op = m.group(1), m.group(2)
+            _add(op, qid, 'js_object', 0)
+
+        # (C) 近傍（SearchTimeline系のみ、±6000）
+        for nm in pat_op_names.finditer(text):
+            op = nm.group(1)
+            start = max(0, nm.start() - VICINITY)
+            end   = min(len(text), nm.end() + VICINITY)
             window = text[start:end]
-            mq = pat_qid_generic.search(window)
+            mq = pat_qid_near.search(window)
             if mq:
                 qid = mq.group(1)
-                if qid not in seen:
-                    _log(f"[STEP] Found (vicinity scan) in {js_url}: {qid}")
-                    return qid
+                gap = abs((start + mq.start()) - nm.start())
+                _add(op, qid, 'js_vicinity', gap)
 
-    return None
+        # (D) 広域（距離が小さいものだけ）
+        for m in pat_op_then_qid_any.finditer(text):
+            op, qid = m.group(1), m.group(2)
+            gap = len(m.group(0))
+            if gap <= WIDE_ACCEPT_GAP:
+                _add(op, qid, 'js_wide', gap)
+        for m in pat_qid_then_op_any.finditer(text):
+            qid, op = m.group(1), m.group(2)
+            gap = len(m.group(0))
+            if gap <= WIDE_ACCEPT_GAP:
+                _add(op, qid, 'js_wide', gap)
+        for m in pat_named_map_any.finditer(text):
+            op, qid = m.group(1), m.group(2)
+            _add(op, qid, 'js_wide', 200)
 
+    _log(f"[DEBUG] collected op/qid candidates: {len(pairs)}")
 
-def fetch_searchtimeline_query_id_with_session_bk1(s: requests.Session) -> str:
+    # 選抜
+    def _pref_source(src: str) -> int:
+        return {'html_url':0, 'js_url':1, 'js_object':2, 'js_vicinity':3, 'js_wide':9}.get(src, 9)
+
+    def _pref_op(op: str) -> int:
+        op_l = op.lower()
+        blacklist = (
+            "bookmark","community","list","home","foryou","following","who",
+            "notification","inbox","dm","audio","live","explore","trend",
+            "video","ads","ad","unified","module"
+        )
+        if any(b in op_l for b in blacklist):
+            return 100
+        flat = op.replace(".", "").replace("_","").lower()
+        # ← ここが重要: Adaptive を最優先
+        if prefer == "adaptive":
+            order = ["adaptivesearchtimeline", "searchtimeline",
+                     "adaptivesearchtimelinequery", "searchtimelinequery"]
+        elif prefer == "search":
+            order = ["searchtimeline", "adaptivesearchtimeline",
+                     "searchtimelinequery", "adaptivesearchtimelinequery"]
+        else:  # auto
+            order = ["adaptivesearchtimeline", "searchtimeline",
+                     "searchtimelinequery", "adaptivesearchtimelinequery"]
+        if flat in order:
+            return order.index(flat)
+        if "search" in op_l and "timeline" in op_l:
+            return 10
+        return 50
+
+    if not pairs:
+        _log("None")
+        return None
+
+    pairs.sort(key=lambda t: (_pref_source(t[2]), _pref_op(t[0]), t[3]))
+    best_op, best_qid, best_src, best_gap = pairs[0]
+    if _pref_op(best_op) >= 100:
+        _log("None")
+        return None
+    _log(f"[STEP] PICK src={best_src} operationName={best_op}, queryId={best_qid}")
+    return (best_op, best_qid)
+
+# 追加: 複数候補を返す収集関数
+from typing import Optional, Set, List, Tuple
+import re
+
+def collect_searchtimeline_pairs_with_session(s: requests.Session) -> List[Tuple[str, str, str, int]]:
     """
-    js_urls 全部を走査して GraphQL SearchTimeline 系の queryId を取得
+    (operationName, queryId, source, gap) の候補を優先度順に返す。
+    source: html_url > js_url > js_object > js_vicinity > js_wide
+    gap   : 近さ（小さいほど信頼）
     """
-    js_urls = _fetch_main_js_urls_with_session(s)
+    _log("collect_searchtimeline_pairs_with_session")
 
-    name_patterns = [
-        "SearchTimeline",
-        "searchTimeline",
-        "AdaptiveSearchTimeline"
-    ]
-    combined_pattern = re.compile(
-        r'"(?:' + "|".join(name_patterns) + r')[^"]*"\s*:\s*\{\s*"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"',
+    MAX_GAP_WIDE = 50000
+    OBJ_GAP = 2000
+    VICINITY = 6000
+    WIDE_ACCEPT_GAP = 1200
+
+    OP_ANY  = r'(?:operationName|opName)\s*[:=]\s*(?:["\']?)([A-Za-z0-9_.$-]+)'
+    QID_ANY = r'(?:queryId|queryID|qid|id|docId|documentId)\s*[:=]\s*(?:["\']?)([A-Za-z0-9_-]{6,80})'
+
+    pat_op_then_qid_any = re.compile(OP_ANY + r'.{0,' + str(MAX_GAP_WIDE) + r'}?' + QID_ANY,
+                                     re.IGNORECASE | re.DOTALL)
+    pat_qid_then_op_any = re.compile(QID_ANY + r'.{0,' + str(MAX_GAP_WIDE) + r'}?' + OP_ANY,
+                                     re.IGNORECASE | re.DOTALL)
+    pat_named_map_any = re.compile(r'["\']?([A-Za-z0-9_.$-]+)["\']?\s*:\s*\{\s*' + QID_ANY,
+                                   re.IGNORECASE | re.DOTALL)
+
+    pat_url_plain = re.compile(r'/i/api/graphql/([A-Za-z0-9_-]{6,80})/([^"\s/]+)', re.IGNORECASE)
+    pat_url_u002f = re.compile(r'\\u002Fi\\u002Fapi\\u002Fgraphql\\u002F([A-Za-z0-9_-]{6,80})\\u002F([^"\\s/]+)', re.IGNORECASE)
+    pat_url_x2f   = re.compile(r'\\x2Fi\\x2Fapi\\x2Fgraphql\\x2F([A-Za-z0-9_-]{6,80})\\x2F([^"\\s/]+)', re.IGNORECASE)
+
+    pat_obj_op_qid = re.compile(
+        r'\{[^{}]{0,' + str(OBJ_GAP) + r'}"operationName"\s*:\s*"([^"]+)"[^{}]{0,' + str(OBJ_GAP) +
+        r'}"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"[^{}]{0,' + str(OBJ_GAP) + r'}\}',
+        re.IGNORECASE | re.DOTALL
+    )
+    pat_obj_qid_op = re.compile(
+        r'\{[^{}]{0,' + str(OBJ_GAP) + r'}"queryId"\s*:\s*"([A-Za-z0-9_-]{10,})"[^{}]{0,' + str(OBJ_GAP) +
+        r'}"operationName"\s*:\s*"([^"]+)"[^{}]{0,' + str(OBJ_GAP) + r'}\}',
         re.IGNORECASE | re.DOTALL
     )
 
+    pat_op_names = re.compile(
+        r'(?:operationName|opName)\s*[:=]\s*["\']?(SearchTimeline|AdaptiveSearchTimeline|SearchTimelineQuery|AdaptiveSearchTimelineQuery)\b',
+        re.IGNORECASE
+    )
+    pat_qid_near = re.compile(QID_ANY, re.IGNORECASE)
+
+    pairs: List[Tuple[str, str, str, int]] = []  # (op, qid, src, gap)
+    seen: Set[Tuple[str, str]] = set()
+
+    def _add(op: str, qid: str, src: str, gap: int = 0):
+        # 除外：よく紛れる別物
+        op_l = op.lower()
+        blacklist = ("bookmark","community","list","home","foryou","following","who",
+                     "notification","inbox","dm","audio","live","explore","trend",
+                     "video","ads","ad","unified","module")
+        if any(b in op_l for b in blacklist):
+            return
+        key = (op, qid)
+        if key in seen:
+            return
+        seen.add(key)
+        pairs.append((op, qid, src, gap))
+
+    # 1) HTML 直書き（最優先）
+    for url in [
+        "https://x.com/home",
+        "https://x.com/explore",
+        "https://x.com/search?q=a&src=typed_query",
+        "https://x.com/i/connect_people",
+    ]:
+        try:
+            r = s.get(url, headers={
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Referer": "https://x.com/",
+                "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+            }, timeout=15)
+            _log(f"[STEP] GET {url} -> {r.status_code}")
+            if not r.ok: continue
+            text = r.text
+            for pat in (pat_url_plain, pat_url_u002f, pat_url_x2f):
+                for m in pat.finditer(text):
+                    qid, op = m.group(1), m.group(2)
+                    _add(op, qid, "html_url", 0)
+        except Exception as e:
+            _log(f"[WARN] HTML scan {url}: {e}")
+
+    # 2) JS 一覧
+    js_urls: Set[str] = set()
+    try:
+        js_urls = set(_fetch_main_js_urls_with_session(s))
+    except Exception as e:
+        _log(f"[WARN] _fetch_main_js_urls_with_session failed: {e}")
+    _log(f"[DEBUG] _fetch_main_js_urls_with_session -> {len(js_urls)} urls")
+    for u in list(js_urls)[:10]:
+        _log(f"[DEBUG] JS seed: {u}")
+
+    # 3) JS 走査（直書き > 同一オブジェクト > 近傍 > 広域(距離しきい値)）
     for js_url in js_urls:
-        print(js_url)
-        r = s.get(js_url, headers={"Accept": "*/*", "Referer": "https://x.com/"}, timeout=15)
-        if not r.ok:
+        try:
+            r = s.get(js_url, headers={"Accept":"*/*","Referer":"https://x.com/"}, timeout=15)
+        except Exception as e:
+            _log(f"[WARN] GET {js_url}: {e}")
             continue
+        if not r.ok: continue
+        text = r.text
 
-        m = combined_pattern.search(r.text)
-        if m:
-            qid = m.group(1)
-            _log(f"[STEP] Found SearchTimeline queryId in {js_url}: {qid}")
-            return qid
+        for pat in (pat_url_plain, pat_url_u002f, pat_url_x2f):
+            for m in pat.finditer(text):
+                qid, op = m.group(1), m.group(2)
+                _add(op, qid, "js_url", 0)
 
-    return None
+        for m in pat_obj_op_qid.finditer(text):
+            op, qid = m.group(1), m.group(2)
+            _add(op, qid, "js_object", 0)
+        for m in pat_obj_qid_op.finditer(text):
+            qid, op = m.group(1), m.group(2)
+            _add(op, qid, "js_object", 0)
 
+        for nm in pat_op_names.finditer(text):
+            op = nm.group(1)
+            start = max(0, nm.start() - VICINITY)
+            end   = min(len(text), nm.end() + VICINITY)
+            window = text[start:end]
+            mq = pat_qid_near.search(window)
+            if mq:
+                qid = mq.group(1)
+                gap = abs((start + mq.start()) - nm.start())
+                _add(op, qid, "js_vicinity", gap)
+
+        for m in pat_op_then_qid_any.finditer(text):
+            op, qid = m.group(1), m.group(2)
+            gap = len(m.group(0))
+            if gap <= WIDE_ACCEPT_GAP:
+                _add(op, qid, "js_wide", gap)
+        for m in pat_qid_then_op_any.finditer(text):
+            qid, op = m.group(1), m.group(2)
+            gap = len(m.group(0))
+            if gap <= WIDE_ACCEPT_GAP:
+                _add(op, qid, "js_wide", gap)
+        for m in pat_named_map_any.finditer(text):
+            op, qid = m.group(1), m.group(2)
+            _add(op, qid, "js_wide", 200)
+
+    _log(f"[DEBUG] collected op/qid candidates: {len(pairs)}")
+
+    # 並び替え：source優先 → op優先 → gap 昇順
+    def _pref_source(src: str) -> int:
+        return {"html_url":0, "js_url":1, "js_object":2, "js_vicinity":3, "js_wide":9}.get(src, 9)
+
+    def _pref_op(op: str) -> int:
+        flat = op.replace(".", "").replace("_","").lower()
+        order = [
+            "adaptivesearchtimeline", "searchtimeline",
+            "adaptivesearchtimelinequery", "searchtimelinequery",
+        ]
+        return order.index(flat) if flat in order else (10 if ("search" in flat and "timeline" in flat) else 50)
+
+    pairs.sort(key=lambda t: (_pref_source(t[2]), _pref_op(t[0]), t[3]))
+    return pairs
+import json, re
+
+# 置き換え推奨
+_FEATURES_NULL_RE = re.compile(r"The following features cannot be null:\s*(.+)$", re.DOTALL)
+
+def _augment_features_from_error(features_dict: dict, error_text: str) -> dict:
+    """
+    400 のエラー文から不足 feature を抽出し True で補完。
+    - スネークケースのみ抽出 (例: responsive_web_..., longform_notetweets_...)
+    - ゴミ(extensions/name/tracing/...)は自然に弾かれる
+    """
+    m = _FEATURES_NULL_RE.search(error_text)
+    if not m:
+        return features_dict
+
+    # 例外文全体から snake_case キーだけ拾う
+    # 先頭とどこかに '_' を含む小文字英数+_ のみ
+    keys = set(re.findall(r"\b[a-z][a-z0-9_]*_[a-z0-9_]+\b", m.group(1)))
+    if not keys:
+        return features_dict
+
+    newf = dict(features_dict)
+    added = []
+    for k in sorted(keys):
+        if k not in newf or newf[k] is None:
+            newf[k] = True
+            added.append(k)
+    if added:
+        _log(f"[STEP] features auto-add (clean): {added}")
+    return newf
 
 def fetch_replies_to_me_graphql(s, headers, screen_name, limit=5):
-    """
-    GraphQL SearchTimeline を使って自分宛のリプライを取得
-    - screen_name: @なし or @付き どちらでもOK
-    - limit: 最大取得件数
-    戻り値: (ok, [dict...], err)
-    """
     if screen_name.startswith("@"):
         screen_name = screen_name[1:]
 
-    query_id = fetch_searchtimeline_query_id_with_session(s)
-    if not query_id:
-        return False, None, "queryId not found for SearchTimeline"
+    pairs = collect_searchtimeline_pairs_with_session(s)
+    if not pairs:
+        return False, None, "no (op,qid) candidates"
 
-    url = f"https://x.com/i/api/graphql/{query_id}/SearchTimeline"
+    tried = 0
+    for op, qid, src, gap in pairs[:12]:
+        url = f"https://x.com/i/api/graphql/{qid}/{op}"
 
-    variables = {
-        "rawQuery": f"to:{screen_name}",
-        "count": limit,
-        "querySource": "typed_query",
-        "product": "Latest"  # 最新順に取得
+        variables = {
+            "rawQuery": f"to:{screen_name}",
+            "count": limit,
+            "querySource": "typed_query",
+            "product": "Latest",
+        }
+        base_features = _default_features()
+        field_toggles = _default_field_toggles()
+
+        # 1回目の試行
+        params = {
+            "variables": json.dumps(variables, separators=(",", ":")),
+            "features": json.dumps(base_features, separators=(",", ":")),
+            "fieldToggles": json.dumps(field_toggles, separators=(",", ":")),
+        }
+        r = s.get(url, headers=headers, params=params, timeout=20)
+        _log(f"[STEP] graphql({op} [{src}/gap={gap}] to:{screen_name}) -> {r.status_code} : url={url}")
+        tried += 1
+
+        # 400（features null）の場合は最大2回まで不足分を自動追加してリトライ
+        if r.status_code == 400:
+            text = r.text[:2000]
+            # 1回目の増補
+            feat1 = _augment_features_from_error(base_features, text)
+            if feat1 != base_features:
+                params["features"] = json.dumps(feat1, separators=(",", ":"))
+                r = s.get(url, headers=headers, params=params, timeout=20)
+                _log(f"[STEP] graphql({op} retry1 with augmented features) -> {r.status_code}")
+
+            # それでも 400 ならもう一度増補
+            if r.status_code == 400:
+                text = r.text[:2000]
+                feat2 = _augment_features_from_error(feat1, text)
+                if feat2 != feat1:
+                    params["features"] = json.dumps(feat2, separators=(",", ":"))
+                    r = s.get(url, headers=headers, params=params, timeout=20)
+                    _log(f"[STEP] graphql({op} retry2 with augmented features) -> {r.status_code}")
+
+        if r.status_code == 404:
+            continue  # 別の (op,qid) を試す
+        if r.status_code != 200:
+            return False, None, r.text[:800]
+
+        # ---- 200: 重複ツイート（tweet_id）を除去して limit をユニーク基準で適用 ----
+        try:
+            data = r.json()
+            results = []
+            seen_ids = set()  # 追加: 一意化用セット
+            for rid, text, created_at in _yield_tweet_candidates(data):
+                print("created_at")
+                print(created_at)
+                if rid in seen_ids:
+                    continue  # 重複はスキップ
+                seen_ids.add(rid)
+                results.append({
+                    "tweet_id": rid,
+                    "text": text,
+                    "created_at": created_at
+                })
+                if len(results) >= limit:  # ユニーク件数でカウント
+                    break
+
+            return (True, results, None) if results else (False, None, "no replies found")
+        except Exception as ex:
+            return False, None, f"parse error: {ex}"
+
+    return False, None, f"all {tried} (op,qid) candidates exhausted"
+
+
+# --- GraphQL.py 追記（または既存 get_tweets の下あたりに） ---
+
+def _session_and_headers_from_firefox_profile(profile):
+    """
+    Firefoxプロファイルからcookieを取り、認証済みセッションと共通ヘッダを返す。
+    """
+    _log("[START] _session_and_headers_from_firefox_profile")
+    a, c, e = get_x_cookies_from_firefox(profile)
+    if e:
+        _log(f"[ERR] Cookie取得エラー: {e}")
+        return None, None
+
+    s = _new_session()
+    _set_cookies(s, a, c)
+
+    bearer   = fetch_web_bearer_token_with_session(s)
+    query_id = fetch_usertweets_query_id_with_session(s)  # 取得しておく（tweetsで使う）
+    _log(f"[STEP] bearer(head)={bearer[:20]}..., userTweetsQueryId={query_id}")
+
+    headers = {
+        "authorization": f"Bearer {bearer}",
+        "x-csrf-token": c,
+        "x-twitter-auth-type": "OAuth2Session",
+        "x-twitter-active-user": "yes",
+        "x-twitter-client-language": "ja",
+        "accept-language": "ja,en-US;q=0.9",
+        "referer": "https://x.com/",
+        "origin": "https://x.com",
+        "accept": "*/*",
     }
-    params = {
-        "variables": json.dumps(variables, separators=(",", ":")),
-        "features": json.dumps(_default_features(), separators=(",", ":")),
-        "fieldToggles": json.dumps(_default_field_toggles(), separators=(",", ":")),
-    }
+    auth = s.get("https://x.com/i/api/1.1/account/settings.json", headers=headers, timeout=12)
+    if not auth.ok:
+        _log(auth.text[:300]); _log("[ERR] X 認証が無効")
+        return None, None
+    return s, headers
 
-    r = s.get(url, headers=headers, params=params, timeout=15)
-    _log(f"[STEP] graphql(SearchTimeline to:{screen_name}) -> {r.status_code}")
-    if r.status_code != 200:
-        return False, None, r.text[:800]
 
-    try:
-        data = r.json()
-        results = []
-        # 既存のツイート抽出ロジックを流用
-        for rid, text, created in _yield_tweet_candidates(data):
-            results.append({
-                "tweet_id": rid,
-                "text": text,
-                "created_at": created
-            })
-            if len(results) >= limit:
-                break
+def _normalize_result_rows(rows):
+    """
+    rows: [{"tweet_id","text","created_at","type","reply_to_tweet_id"}...]
+    -> created_at_utc/jst を付加
+    """
+    print("_normalize_result_rows")
 
-        if results:
-            return True, results, None
-        else:
-            return False, None, "no replies found"
-    except Exception as ex:
-        return False, None, f"parse error: {ex}"
+    out = []
+    for tw in rows:
+        print(tw.get("created_at"))
+        utc_str, jst_str = _normalize_created_at(tw.get("created_at"))
+        out.append({
+            "tweet_id": tw["tweet_id"],
+            "text": tw["text"],
+            "created_at_raw": tw.get("created_at"),
+            "created_at_utc": utc_str,
+            "created_at_jst": jst_str,
+            "type": tw.get("type"),
+            "reply_to_tweet_id": tw.get("reply_to_tweet_id")
+        })
+    return out
+

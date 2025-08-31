@@ -926,6 +926,11 @@ namespace DbotManager
                         //08.22 未実装の為、一旦コメントアウト
 //                        TweetProcReplyToReply(targetRow, item.ReplyToTweetId);
                     }
+
+                    if ((bool)targetRow.MonomaneEnable)
+                    {
+                        TweetProcMonomane(targetRow, item.TweetId);
+                    }
                 }
 
                 /*
@@ -1024,6 +1029,12 @@ namespace DbotManager
             int accountId = searchList.AccountId;
             var commentItem = SupportUtil.GetRandomItem(_replyCommentList.Where(x => x.AccountId == accountId).ToList());
             TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, AccountId = accountId, CommentId = commentItem?.Id ?? 0, TweetId = targetTweetId });
+        }
+
+        public void TweetProcMonomane(SearchList searchList, string targetTweetId)
+        {
+            int accountId = searchList.AccountId;
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.モノマネ, AccountId = accountId, TweetId = targetTweetId });
         }
 
         public void TweetProcReply(SearchList searchList, TweetResult result)
@@ -1215,7 +1226,6 @@ namespace DbotManager
 
                 case TweetProcTypes.ポスト監視:
                 case TweetProcTypes.リプ監視:
-                case TweetProcTypes.モノマネ:
                     pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} search_id={tweetCommand.SearchId}";
 //                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_account_name={tweetCommand.CheckAccountName.Replace("@","")} check_list_id={tweetCommand.SearchId}";
                     /*
@@ -1226,6 +1236,10 @@ namespace DbotManager
                     */
 
                     //                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} check_list_id={tweetCommand.CheckListId}";
+                    break;
+
+                case TweetProcTypes.モノマネ:
+                    pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId}";
                     break;
 
                 case TweetProcTypes.AIリプ監視:

@@ -7,6 +7,7 @@ from config import outputLog
 import configparser
 
 from GraphQL import get_tweets
+from GraphQL import get_replies
 
 #from mysql import get_tweet_profile_by_display_name
 from mysql import get_tweet_profile_by_vps_id
@@ -29,7 +30,11 @@ def proc_get_tweet(credentials):
     myIp = get_ip_address()
     vps_record = get_vps_master_by_ip_address(myIp)
     print("vps_record=",vps_record)
+
+    if vps_record is None:
+        return
     vps_id = vps_record['id']
+
     print("vps_id=",vps_id)
 
     profile_record = get_tweet_profile_by_vps_id(vps_id)
@@ -45,6 +50,7 @@ def proc_get_tweet(credentials):
         print("from db profile_path=",profile_path)
 
     check_records = get_check_tweet_account_masters_by_vps_id(vps_id)
+
 #    check_record = get_check_tweet_account_master_by_account_name(user_name)
 
     # 複数レコードをループ処理
@@ -86,22 +92,44 @@ def proc_get_tweet(credentials):
             print("from db user_id=",user_id)
 
 
-        if check_record['tweet_enable'] == 1:
-            tweets = get_tweets(profile_path , user_id, user_name)
-            if not tweets:
-                print(f"[WARN] {user_name}: ツイートが取得できませんでした（None/空）")
-                # ここでエラー記録して続行
-                errors.append((user_name, "tweets None/empty"))
-                continue
 
-            for tweet in tweets:
-                print(tweet["tweet_id"], tweet["text"], tweet["created_at_jst"])
-                tweet['account_name'] = user_name
-                tweet['user_id'] = user_id
-                tweet['check_time'] = datetime.now()
-                update_check_tweet_account_list(tweet)
+        # 既存: 通常ツイート
+        if check_record.get('tweet_enable', 0) == 1:
+            print("tweet_enable")
+            tweets = get_tweets(profile_path, user_id, user_name)  # 既存関数（通常ツイのみ）
+            if tweets:
+                for tweet in tweets:
+                    tweet['account_name'] = user_name
+                    tweet['user_id'] = user_id
+                    tweet['check_time'] = datetime.now()
+                    update_check_tweet_account_list(tweet)
+                    any_success = True
 
-                any_success = True
+        # 追加: 自分が送ったリプ（outgoing）
+#        if check_record.get('reply_enable', 0) == 1:
+#            rows = get_items(profile_path, user_id, user_name, kind="replies_outgoing", limit=10)
+#            if rows:
+#                for tw in rows:
+#                    tw['account_name'] = user_name
+#                    tw['user_id'] = user_id
+#                    tw['check_time'] = datetime.now()
+#                    # tw['type'] は "reply"、tw['reply_to_tweet_id'] も入っている
+#                    update_check_tweet_account_list(tw)
+#                    any_success = True
+
+        # 追加: 自分宛のリプ（incoming）
+        if check_record.get('reply_enable', 0) == 1:
+            print("reply_enable")
+
+            replies = get_replies(profile_path, user_id, user_name, kind="replies_incoming", limit=10)
+            if replies:
+                for reply in replies:
+                    reply['account_name'] = user_name
+                    reply['user_id'] = user_id
+                    reply['check_time'] = datetime.now()
+                    # tw['type'] は "reply_to_me"
+                    update_check_tweet_account_list(reply)
+                    any_success = True
 
     # 最後に全体の成否を返す（1件でも成功していれば True）
     if errors:
