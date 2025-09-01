@@ -2275,7 +2275,7 @@ public class MySqlDataAccess
                                 UpdateTime = Convert.ToDateTime(reader["update_time"].ToString()),
                                 TweetId = reader["tweet_id"].ToString(),
                                 TweetText = reader["tweet_text"].ToString(),
-                                Type = reader["type"].ToString(),
+                                Type = reader["type"].ToString() == "tweet" ? TweetProcTypes.ポスト : reader["type"].ToString() == "reply_to_me" ? TweetProcTypes.リプライ : TweetProcTypes.NONE,
                                 ReplyToTweetId = reader["reply_to_tweet_id"].ToString(),
                             };
 

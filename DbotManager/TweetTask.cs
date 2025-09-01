@@ -916,21 +916,28 @@ namespace DbotManager
 
                 foreach(var targetRow in targetSearchList)
                 {
-                    if((bool)targetRow.PostEnable)
+                    if(item.Type == TweetProcTypes.ポスト)
                     {
-                        TweetProcReply(targetRow, item.TweetId);
+                        if ((bool)targetRow.PostEnable)
+                        {
+                            TweetProcReply(targetRow, item.TweetId);
+                        }
+
+                        if ((bool)targetRow.MonomaneEnable)
+                        {
+                            TweetProcMonomane(targetRow, item.TweetId);
+                        }
+                    }
+                    else if(item.Type == TweetProcTypes.リプライ)
+                    {
+                        if ((bool)targetRow.ReplyEnable)
+                        {
+                            //08.22 未実装の為、一旦コメントアウト
+                            TweetProcReplyToReply(targetRow, item.ReplyToTweetId);
+                        }
                     }
 
-                    if ((bool)targetRow.ReplyEnable)
-                    {
-                        //08.22 未実装の為、一旦コメントアウト
-//                        TweetProcReplyToReply(targetRow, item.ReplyToTweetId);
-                    }
 
-                    if ((bool)targetRow.MonomaneEnable)
-                    {
-                        TweetProcMonomane(targetRow, item.TweetId);
-                    }
                 }
 
                 /*
@@ -1055,6 +1062,10 @@ namespace DbotManager
             //            int accountId = SupportUtil.GetRandomItem(checkAccountList.ExeAccountIdList);
             int accountId = searchList.AccountId;
 
+            var commentItem = SupportUtil.GetRandomItem(_replyToReplyCommentList.Where(x => x.AccountId == accountId).ToList());
+            TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, AccountId = accountId, CommentId = commentItem?.Id ?? 0, TweetId = targetTweetId });
+
+            /*
             if (_replyToReplyCommentList.Where(x => x.AccountId == accountId).Count() == 0) return;
 
             var commentItem = SupportUtil.GetRandomItem(_replyToReplyCommentList.Where(x => x.AccountId == accountId).ToList());
@@ -1062,6 +1073,7 @@ namespace DbotManager
             var commentId = commentItem.Id;
 
             TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.リプライ, AccountId = accountId, CommentId = commentId, TweetId = targetTweetId });
+            */
         }
 
         public void TweetProcReplyToReply(SearchList searchList, TweetResult result)

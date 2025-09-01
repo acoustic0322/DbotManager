@@ -270,14 +270,22 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
     ai_post_enable = credentials['ai_post_enable']
     ai_reply_enable = credentials['ai_reply_enable']
 
+    outputLog(f"ai_enable={ai_enable}")
+    outputLog(f"ai_mode={ai_mode}")
+    outputLog(f"ai_reply_enable={ai_reply_enable}")
+
+    outputLog(f"ai_post_prompt={credentials['ai_post_prompt']}")
+
     # リプライモード
     if reply_to_tweet_id:
-        if ai_enable == False or ai_reply_enable == 0 or ai_mode == 0:
+        # 2025.09.02 AIの判定はpython側にシフトする
+#        if ai_enable == False or ai_reply_enable == 0 or ai_mode == 0:
+        if ai_reply_enable == 0 or ai_mode == 0:
             outputLog("固定コメント")
             comment = get_comment_by_id(comment_id)
         else:
             outputLog("AIコメント")
-            comment = generate_reply(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],'')  #コメント内容
+            comment = generate_reply(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],'','')  #コメント内容
 
             # 裏垢女子モード時は文章を整形
             if ai_mode == 2:

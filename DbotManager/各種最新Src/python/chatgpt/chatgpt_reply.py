@@ -69,7 +69,7 @@ def generate_reply(groq_api_key,prompt,past_tweets,original_tweet):
 
     USEPROMPT = prompt
 
-    print(prompt)
+    outputLog(prompt)
 
 
     # 過去のツイートをランダムに2つ選択

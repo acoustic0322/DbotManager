@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace DbotManager.Table
 {
+
     public class CheckTweetAccountList
     {
         public string AccountName { get; set; }
@@ -14,7 +15,7 @@ namespace DbotManager.Table
         public DateTime UpdateTime { get; set; }
         public string TweetId { get; set; }
         public string TweetText { get; set; }
-        public string Type { get; set; }
+        public TweetProcTypes Type { get; set; }
         public string ReplyToTweetId { get; set; }
     }
 }
