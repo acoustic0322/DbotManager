@@ -1070,33 +1070,6 @@ def get_check_tweet_account_list_by_user_id(user_id):
 
     return record
 
-def get_check_tweet_account_list_by_tweet_id(tweet_id):
-
-    # MySQLデータベースに接続
-    connection = pymysql.connect(
-        host=config.db_host,      # ホスト名
-        user='root',              # ユーザー名
-        password='abcd1234',      # パスワード
-        database='d_bot',         # データベース名
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor        
-    )
-
-    try:
-        with connection.cursor() as cursor:
-            # display_name に一致する path を取得
-            sql = "SELECT * FROM check_tweet_account_list WHERE tweet_id = %s"
-            cursor.execute(sql, (tweet_id,))  # ← tuple にするためカンマが必要
-            record = cursor.fetchone()            # record は {"path": "..."} の形で返る
-    finally:
-        connection.close()
-
-    if not record:  
-        outputLog("エラー: 該当するレコードが見つかりません。")
-        return None
-
-    return record    
-
 def update_check_tweet_account_list(record):
     connection = pymysql.connect(
         host=config.db_host,

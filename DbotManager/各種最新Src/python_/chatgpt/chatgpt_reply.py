@@ -69,25 +69,21 @@ def generate_reply(groq_api_key,prompt,past_tweets,original_tweet):
 
     USEPROMPT = prompt
 
-    # 文字型(改行)で入ってきたら、listに変換
-    if isinstance(past_tweets, str):
-        past_tweets = [line.strip() for line in past_tweets.splitlines() if line.strip()]    
+    outputLog(prompt)
 
-    outputLog(f"prompt:{prompt}")
-    outputLog(f"past_tweets:{past_tweets}")
 
     # 過去のツイートをランダムに2つ選択
     random_past_tweets = random.sample(past_tweets, 2)
-
     # 改行で結合して、自然な文章にする
     random_past_tweets = "\n".join(random_past_tweets)
-    outputLog(f"random_past_tweets:{random_past_tweets}")
 
     payload_generate_reply["messages"] = [
         {"role": "system", "content": "あなたはTwitterでお礼のリプライを作成するAIです。"},
         {"role": "user", "content": f"このツイートに対してリプライを作成してください: {original_tweet}"},
         {"role": "user", "content": f"{USEPROMPT}\n\n以下は過去のツイートの一例です。参考にしてください。\n\n{random_past_tweets}"}
     ]
+
+
 
     #Groq の API にアクセスするための認証情報を送信
     headers = {
@@ -124,9 +120,6 @@ def generate_reply(groq_api_key,prompt,past_tweets,original_tweet):
         content = re.sub(r"#\S+", "", content).strip()  # ハッシュタグを削除
         content = re.sub(r"僕", "私", content)  # 「僕」を「私」に変換
         content = re.sub(r'["\']', "", content).strip()  # ダブルクォートとシングルクォートを削除
-
-
-        outputLog(f"生成文章:{content}")
 
         return content
 

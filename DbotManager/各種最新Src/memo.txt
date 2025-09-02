@@ -1,0 +1,25 @@
+system_masterの初期値設定
+
+UPDATE system_master sm
+SET sm.value = (
+    SELECT am.ai_post_example
+    FROM account_master am
+    WHERE am.id = 10
+)
+WHERE sm.key = 'ai_post_example';
+UPDATE system_master sm
+JOIN account_master am ON am.id = 10
+SET sm.value = CASE sm.key
+    WHEN 'ai_post_example' THEN am.ai_post_example
+    WHEN 'ai_reply_example' THEN am.ai_reply_example
+    WHEN 'ai_post_prompt'  THEN am.ai_post_prompt
+    WHEN 'ai_reply_prompt' THEN am.ai_reply_prompt
+    WHEN 'ai_trend_prompt' THEN am.ai_trend_prompt
+END
+WHERE sm.key IN (
+    'ai_post_example',
+    'ai_reply_example',
+    'ai_post_prompt',
+    'ai_reply_prompt',
+    'ai_trend_prompt'
+);

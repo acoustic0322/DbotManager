@@ -93,8 +93,7 @@ dmmid = args.get("dmmid","")
 
 quantity = args.get("quantity","")
 
-# 2025.09.02 コメントアウト
-#ai_enable = False if args.get("ai_enable","") == "False" else True
+ai_enable = False if args.get("ai_enable","") == "False" else True
 
 jap_api_key = args.get("jap_api_key","")
 
@@ -140,13 +139,13 @@ credentials = get_account_master(account_id)
 if credentials:
     if mode == "post":
         if media_type != '':
-            result1 , contents1 = proc_post_v10a(credentials , comment_id , media_type , media_id , tweet_id )               
+            result1 , contents1 = proc_post_v10a(credentials , comment_id , media_type , media_id , tweet_id , ai_enable)               
         else:
-            result1 , contents1 = proc_post_v2(credentials , comment_id , "" )               
+            result1 , contents1 = proc_post_v2(credentials , comment_id , "" , ai_enable)               
 #    elif mode == "monomane":
 #        result1 , contents1 = proc_monomane_v2(credentials , tweet_id)
     elif mode == "reply":
-        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id )               
+        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id , False)               
 #        result1 , contents1 = True , "" #未実装
     elif mode == "repost":
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)
