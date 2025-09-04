@@ -6,6 +6,8 @@ namespace ChildTweet
     {
         private TweetHttpServer server = new TweetHttpServer();
 
+        const double ver = 1.01;
+
 
         public ChildTweet()
         {
@@ -18,6 +20,8 @@ namespace ChildTweet
             {
                 string logDir = @"C:\DBotManager\ChildTweet\logs";
                 Directory.CreateDirectory(logDir); // Ç»ÇØÇÍÇŒçÏÇÈ
+
+                this.Text += $"[Ver {ver}]";
 
 
                 buttonStart_Click(sender, e);

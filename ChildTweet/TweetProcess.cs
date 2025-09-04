@@ -215,12 +215,6 @@ namespace ChildTweet
 
         public async Task<TweetResult> TweetProc(TweetCommand tweetCommand)
         {
-            /*
-#if DEBUG
-            return null;
-#endif
-            */
-
             // Pythonファイルへの相対パス
             string pythonScriptPath = @"python\tweet.py";
 
@@ -230,7 +224,6 @@ namespace ChildTweet
 
             // 引数を組み立て
             string arguments = $"\"{fullScriptPath}\"";
-
             switch (tweetCommand.TweetProcType)
             {
                 case TweetProcTypes.いいね:
@@ -238,68 +231,157 @@ namespace ChildTweet
                 case TweetProcTypes.リポスト:
                     arguments += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId}";
                     break;
-
                 case TweetProcTypes.リプライ:
                     arguments += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} comment_id={tweetCommand.CommentId} tweet_id={tweetCommand.TweetId}";
                     break;
             }
-
             arguments += " debug=False";
 
-            // Pythonの実行ファイルのパスを指定（通常 "python" または "python3" でOK）
             string pythonExePath = "python";
 
-            var process = new Process
+            var psi = new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = pythonExePath,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WorkingDirectory = baseDir
-                }
+                FileName = pythonExePath,
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = baseDir,
             };
-            // 環境変数を設定
-            //            StartInfo.EnvironmentVariables["RUNNING_FROM_CSHARP"] = "1";
 
-            _log($"{DateTime.Now.ToString()} > {arguments}");
+            var process = new Process { StartInfo = psi, EnableRaisingEvents = false };
+
+            _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} > {arguments}");
 
             TweetResult tweetResult = null;
 
             try
             {
                 process.Start();
-                string output = process.StandardOutput.ReadToEnd(); // Pythonスクリプトの標準出力
-                string debugMessage = process.StandardError.ReadToEnd();   // Pythonスクリプトの標準エラー
-                process.WaitForExit();
 
-                // PythonスクリプトからのJSON結果をデシリアライズ (Newtonsoft.Json)
-                tweetResult = JsonConvert.DeserializeObject<TweetResult>(output);
+                // 非同期で同時読取（デッドロック回避）
+                Task<string> readOutTask = process.StandardOutput.ReadToEndAsync();
+                Task<string> readErrTask = process.StandardError.ReadToEndAsync();
+
+                // タイムアウト（状況に応じて調整：例 60秒）
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
+                Task waitTask = Task.Run(async () =>
+                {
+                    await process.WaitForExitAsync(cts.Token).ConfigureAwait(false);
+                }, cts.Token);
+
+                Task finished = await Task.WhenAny(waitTask, Task.Delay(Timeout.Infinite, cts.Token).ContinueWith(_ => Task.CompletedTask));
+
+                // タイムアウト時は Kill
+                if (!waitTask.IsCompleted)
+                {
+                    try
+                    {
+                        _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc TIMEOUT -> Kill()");
+                        if (!process.HasExited) process.Kill(entireProcessTree: true);
+                    }
+                    catch { /* ignore */ }
+                }
+
+                // 出力の取得（プロセス終了後でもOK）
+                string stdout = await readOutTask.ConfigureAwait(false);
+                string stderr = await readErrTask.ConfigureAwait(false);
+
+//                TweetResult tweetResult = null;
+
+                // まず stderr をログ（長すぎる場合は先頭／末尾だけ）
+                if (!string.IsNullOrWhiteSpace(stderr))
+                {
+                    string errShort = stderr.Length > 4000
+                        ? stderr[..2000] + "\n...(truncated)...\n" + stderr[^2000..]
+                        : stderr;
+                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} [stderr]\n{errShort}");
+                }
+
+                // stdout から JSON を復元（最後の { 以降に限定すると混入対策になる）
+                // もし tweet.py が余計な出力を混ぜる可能性がある場合に備えて、最後の '{' を探す
+                string json = stdout;
+                int lastBrace = stdout.LastIndexOf('{');
+                if (lastBrace >= 0)
+                {
+                    json = stdout.Substring(lastBrace);
+                }
+
+
+                // 出力の取得
+//                string stdout = await readOutTask.ConfigureAwait(false);
+  //              string stderr = await readErrTask.ConfigureAwait(false);
+
+                // ... stderr はログへ
+
+                try
+                {
+                    // 余計な切り出し禁止。素の stdout をそのまま使う
+                    var jsonText = stdout.Trim();
+
+                    // 先頭が { じゃなければパースしない（誤検知回避）
+                    if (!string.IsNullOrEmpty(jsonText) && jsonText[0] == '{')
+                    {
+                        tweetResult = JsonConvert.DeserializeObject<TweetResult>(jsonText);
+                    }
+                    else
+                    {
+                        _log($"Stdout doesn't look like a JSON object. head={jsonText?.Substring(0, Math.Min(80, jsonText.Length))}");
+                    }
+                }
+                catch (Exception jex)
+                {
+                    // 失敗時は生stdoutもログ
+                    string outShort = stdout.Length > 4000
+                        ? stdout[..2000] + "\n...(truncated)...\n" + stdout[^2000..]
+                        : stdout;
+                    //                  _log($"JSON Deserialize Error: {jex.Message}\n[stdout]\n{(stdout.Length > 4000 ? stdout[..2000] +\"\\n...(truncated)...\\n\"+stdout[^2000..]: stdout)}");
+                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} JSON Deserialize Error: {jex.Message}\n[stdout]\n{outShort}");
+                }
+                
+                /*
+                try
+                {
+                    tweetResult = JsonConvert.DeserializeObject<TweetResult>(json);
+                }
+                catch (Exception jex)
+                {
+                    // 失敗時は生stdoutもログ
+                    string outShort = stdout.Length > 4000
+                        ? stdout[..2000] + "\n...(truncated)...\n" + stdout[^2000..]
+                        : stdout;
+
+                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} JSON Deserialize Error: {jex.Message}\n[stdout]\n{outShort}");
+                }
+                */
 
                 if (tweetResult != null)
                 {
-                    Console.WriteLine($"{DateTime.Now.ToString()} < [{tweetResult.result1}]{tweetResult.contents1} [{tweetResult.result2}]{tweetResult.contents2}");
-
-                    _log($"{DateTime.Now.ToString()} < [{tweetResult.result1}]{tweetResult.contents1} [{tweetResult.result2}]{tweetResult.contents2}");
+                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} < [{tweetResult.result1}]{tweetResult.contents1} [{tweetResult.result2}]{tweetResult.contents2}");
                 }
                 else
                 {
-                    Console.WriteLine("Python script returned invalid output.");
-                    _log($"{DateTime.Now.ToString()} TweetProc Python script returned invalid output.");
+                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc Python script returned invalid or empty JSON.");
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc canceled by timeout.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}");
-                _log($"{DateTime.Now.ToString()} TweetProc Exception: {ex.Message}");
+                _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc Exception: {ex}");
+            }
+            finally
+            {
+                try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch { }
+                process.Dispose();
             }
 
             return tweetResult;
         }
-
         private string GetTweetMode(TweetProcTypes type)
         {
             switch (type)
