@@ -124,19 +124,9 @@ def proc_get_tweet(credentials):
             replies = get_replies(profile_path, user_id, user_name, kind="replies_incoming", limit=10)
             if replies:
                 for reply in replies:
-
-                    print("reply=")
-                    print(reply)
-
                     reply['account_name'] = user_name
                     reply['user_id'] = user_id
                     reply['check_time'] = datetime.now()
-
-                    # ★ 追加: リプ先の情報も保持
-#                    reply['reply_to_tweet_id']   = reply.get("reply_to_tweet_id")
-#                    reply['reply_to_user_id']    = reply.get("reply_to_user_id")
-#                    reply['reply_to_screen_name']= reply.get("reply_to_screen_name")
-
                     # tw['type'] は "reply_to_me"
                     update_check_tweet_account_list(reply)
                     any_success = True

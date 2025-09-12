@@ -258,38 +258,6 @@ def _extract_from_tweet_node(node: dict) -> Optional[Tuple[str, str, Optional[st
     legacy = node.get("legacy")
     rest_id = node.get("rest_id") or (legacy or {}).get("id_str")
     if rest_id:
-        text = (legacy or {}).get("full_text") or \
-               (node.get("note_tweet_results", {}).get("result", {}) or {}).get("text") or \
-               node.get("text")
-        created_at = (legacy or {}).get("created_at")
-
-        # ★ 追加：リプライ先情報
-        reply_to_id = (legacy or {}).get("in_reply_to_status_id_str")
-        reply_to_uid = (legacy or {}).get("in_reply_to_user_id_str")
-        reply_to_sn = (legacy or {}).get("in_reply_to_screen_name")
-
-        if text:
-            return rest_id, text, created_at, reply_to_id, reply_to_uid, reply_to_sn
-
-    # パターン2: TweetWithVisibilityResults
-    tw = node.get("tweet")
-    if isinstance(tw, dict):
-        leg2 = tw.get("legacy")
-        rest_id = tw.get("rest_id") or (leg2 or {}).get("id_str")
-        if rest_id:
-            text = (leg2 or {}).get("full_text") or (tw.get("note_tweet_results", {}).get("result", {}) or {}).get("text") or tw.get("text")
-            created_at = (leg2 or {}).get("created_at")
-            if text:
-                print("created2")
-                print(created_at)
-                return rest_id, text, created_at
-    return None
-
-def _extract_from_tweet_node_bk(node: dict) -> Optional[Tuple[str, str, Optional[str]]]:
-    # パターン1: 直Tweet
-    legacy = node.get("legacy")
-    rest_id = node.get("rest_id") or (legacy or {}).get("id_str")
-    if rest_id:
         text = (legacy or {}).get("full_text") or (node.get("note_tweet_results", {}).get("result", {}) or {}).get("text") or node.get("text")
         created_at = (legacy or {}).get("created_at")
         if text:
@@ -310,7 +278,7 @@ def _extract_from_tweet_node_bk(node: dict) -> Optional[Tuple[str, str, Optional
                 return rest_id, text, created_at
     return None
 
-from typing import Any, Optional
+    from typing import Any, Optional
 
 def _find_created_nearby(context: Any, target_id: str) -> Optional[str]:
     """
@@ -350,63 +318,6 @@ def _find_created_nearby(context: Any, target_id: str) -> Optional[str]:
 
 
 def _yield_tweet_candidates(obj: Any):
-    """
-    (tweet_id, text, created_at) を yield。
-    _extract_from_tweet_node が created_at を返せない場合は、
-    同一JSON内をスキャンして補完する。
-    """
-
-    try:
-        if isinstance(obj, dict):
-            tr = obj.get("tweet_results")
-            if isinstance(tr, dict):
-                res = tr.get("result") or {}
-                cand = _extract_from_tweet_node(res)
-                if cand:
-                    rid, text, created_at, reply_to_id, reply_to_uid, reply_to_sn = cand
-                    if not created_at:
-                        created_at = _find_created_nearby(obj, rid) or _find_created_nearby(res, rid)
-                    yield (rid, text, created_at, reply_to_id, reply_to_uid, reply_to_sn)
-
-            cand2 = _extract_from_tweet_node(obj)
-            if cand2:
-                rid, text, created_at, reply_to_id, reply_to_uid, reply_to_sn = cand2
-                if not created_at:
-                    created_at = _find_created_nearby(obj, rid)
-                yield (rid, text, created_at, reply_to_id, reply_to_uid, reply_to_sn)
-
-            # 3) よくある容器の中を辿る
-            tm = obj.get("timelineModule")
-            if isinstance(tm, dict):
-                for it in tm.get("items", []):
-                    yield from _yield_tweet_candidates(it)
-
-            content = obj.get("content")
-            if isinstance(content, dict):
-                ic = content.get("itemContent")
-                if isinstance(ic, dict):
-                    yield from _yield_tweet_candidates(ic)
-
-            item = obj.get("item")
-            if isinstance(item, dict):
-                yield from _yield_tweet_candidates(item)
-
-            moduleItems = obj.get("moduleItems")
-            if isinstance(moduleItems, list):
-                for it in moduleItems:
-                    yield from _yield_tweet_candidates(it)
-
-            # 4) 汎用再帰（最後）
-            for v in obj.values():
-                yield from _yield_tweet_candidates(v)
-
-        elif isinstance(obj, list):
-            for v in obj:
-                yield from _yield_tweet_candidates(v)
-    except Exception:
-        return
-
-def _yield_tweet_candidates_old(obj: Any):
     """
     (tweet_id, text, created_at) を yield。
     _extract_from_tweet_node が created_at を返せない場合は、
@@ -908,12 +819,8 @@ def get_replies(profile, user_id, screen_name, kind="tweets", limit=5):
                 "user_id": '',
                 "check_time": '',
                 "type": "reply_to_me",
-                # ★ 追加
-                "reply_to_tweet_id": r.get("reply_to_tweet_id"),
-                "reply_to_user_id": r.get("reply_to_user_id"),
-                "reply_to_screen_name": r.get("reply_to_screen_name"),                
+                "reply_to_tweet_id": r.get("reply_to_tweet_id")  # 取れるときは保持
             })
-        print("_normalize_result_rows(normalized)")
         print(_normalize_result_rows(normalized))
         return _normalize_result_rows(normalized)
 
@@ -1658,29 +1565,14 @@ def fetch_replies_to_me_graphql(s, headers, screen_name, limit=5):
                     # created_at 補完マップ
                     created_map = _build_created_map_from_search_timeline(json_obj)
 
-#                    # すべての候補を吸い込む
-#                    for rid, text, created in _yield_tweet_candidates(json_obj):
-#                        rid_s = str(rid)
-#                        if rid_s in by_id:
-#                            continue
-#                        created = created or created_map.get(rid_s)
-#
-#                        # 可能なら UTC/JST に正規化
-#                        utc, jst = _normalize_created_at(created)
-#
-#                        by_id[rid_s] = {
-#                            "tweet_id": rid_s,
-#                            "text": text,
-#                            "created_at": created,
-#                            "created_at_utc": utc,
-#                            "created_at_jst": jst,
-#                        }
-
-                    for rid, text, created, reply_to_id, reply_to_uid, reply_to_sn in _yield_tweet_candidates(json_obj):
+                    # すべての候補を吸い込む
+                    for rid, text, created in _yield_tweet_candidates(json_obj):
                         rid_s = str(rid)
                         if rid_s in by_id:
                             continue
                         created = created or created_map.get(rid_s)
+
+                        # 可能なら UTC/JST に正規化
                         utc, jst = _normalize_created_at(created)
 
                         by_id[rid_s] = {
@@ -1689,9 +1581,6 @@ def fetch_replies_to_me_graphql(s, headers, screen_name, limit=5):
                             "created_at": created,
                             "created_at_utc": utc,
                             "created_at_jst": jst,
-                            "reply_to_tweet_id": reply_to_id,
-                            "reply_to_user_id": reply_to_uid,
-                            "reply_to_screen_name": reply_to_sn,  # ← これで相手の @アカウント がわかる
                         }
 
                 data = r.json()
@@ -2087,10 +1976,7 @@ def _normalize_result_rows(rows):
             "created_at_utc": utc_str,
             "created_at_jst": jst_str,
             "type": tw.get("type"),
-            "reply_to_tweet_id": tw.get("reply_to_tweet_id"),
-            # ★ 追加
-            "reply_to_user_id": tw.get("reply_to_user_id"),
-            "reply_to_screen_name": tw.get("reply_to_screen_name"),            
+            "reply_to_tweet_id": tw.get("reply_to_tweet_id")
         })
     return out
 

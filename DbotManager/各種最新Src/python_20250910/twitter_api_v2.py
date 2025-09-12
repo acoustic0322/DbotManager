@@ -423,57 +423,6 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
     return response.status_code in (200, 201), response_str
 
-def proc_post_v2_monomane(credentials ,tweet_text):
-
-    outputLog("proc_post_v2 Start")
-    outputLog(f"GROQ_API_KEY={credentials['GROQ_API_KEY']}")
-    outputLog(f"OPENAI_API_KEY={credentials['OPENAI_API_KEY']}")
-
-    access_token = credentials['bearer_token']
-
-    # エンドポイントURL
-    url = "https://api.twitter.com/2/tweets"
-    
-    # 投稿するデータ
-    data = {
-        "text": tweet_text
-    }
-
-    # ヘッダー
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-
-    # POSTリクエストを送信
-    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
-        outputLog(f"proxy_url={credentials['proxy_url']}")
-        proxies = {
-            "http": credentials['proxy_url'],
-            "https": credentials['proxy_url']
-        }
-        response = requests.post(url, headers=headers, json=data, proxies=proxies)
-    else:
-        response = requests.post(url, headers=headers, json=data)
-
-    if config.debug == True:
-        outputLog(response.json())
-
-    try:
-        # レスポンスを JSON としてパース
-        response_data = response.json()
-    except ValueError as e:
-        if config.debug == True:
-        # JSON パースエラー時の処理
-            outputLog(f"JSON パースエラー:{ str(e)}")
-            outputLog(f"Raw response text:{response.text}")  # 生データを確認
-        return False, f"JSON パースエラー: {str(e)}"
-
-    response_str = json.dumps(response_data)  # json.dumps を使用
-
-    return response.status_code in (200, 201), response_str
-
-
 
 def proc_like_v2(credentials, tweet_id):
     """

@@ -24,12 +24,8 @@ from mysql import update_last_tweet_id_from_check_account_list
 from mysql import get_account_master
 from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
-from mysql import get_check_tweet_account_list_by_tweet_id
-
-#from twitter_api_v2 import get_latest_tweets
 
 from download_media import download_media
-from download_media import get_tweet_media
 
 import config
 from config import convert_tweet_datetime
@@ -56,10 +52,6 @@ def createClient(credentials):
             )
 
         outputLog("Tweepy Client を正常に作成しました")
-        outputLog(f"consumer_key={credentials['api_key']}")
-        outputLog(f"consumer_secret={credentials['api_key_secret']}")
-        outputLog(f"access_token={credentials['access_token']}")
-        outputLog(f"access_token_secret={credentials['access_token_secret']}")
 
         return client
 
@@ -367,87 +359,88 @@ def generate_random_string(length):
     return random_string
 
 def proc_monomane(search_row , tweet_data, tweets):
-    return
 
-
-def proc_monomane_v1(credentials , target_tweet_id):
-
-    from twitter_api_v2 import get_latest_tweets  # ← 関数内でインポート
-    
-    check_tweet_account_record = get_check_tweet_account_list_by_tweet_id(target_tweet_id)
-
-    tweet_text = check_tweet_account_record['tweet_text']
-    update_time = convert_tweet_datetime(check_tweet_account_record['update_time'])
+    tweet_time = convert_tweet_datetime(tweet_data['created_at'])
 
     # 現在時刻（UTC）
     now = convert_tweet_datetime(datetime.now(pytz.UTC))
 
-    # 3時間以上前のツイートはモノマネ対象にしないが、search_listのモノマネ履歴には登録する
-    if now - update_time >= timedelta(hours=3):
-        outputLog(f"ツイートは3時間以上前のためスルーします。 tweet_text={tweet_text}")
+    # １時間以上前のツイートはモノマネ対象にしないが、search_listのモノマネ履歴には登録する
+    if now - tweet_time >= timedelta(hours=3):
+        outputLog(f"ツイートは3時間以上前のためスルーします。 tweet_data={tweet_data}")
         return True , None
 
+    # モノマネ実施のアカウントID取得
+    account_id = search_row['monomane_account_id']
+    credentials = get_account_master(account_id)
+
+    # リプライツイートの判定
+    replyFlag = False
+    if 'in_reply_to_user_id' in tweet_data and tweet_data['in_reply_to_user_id'] is not None:
+        reply_target_tweet_id = tweet_data['referenced_tweets'][0]['id']
+        reply_tweet_id = tweet_data['id']
+        own_twweet_result , own_tweet_id = getOwnTweetId(account_id , reply_target_tweet_id)
+        outputLog(f"reply_target_tweet_id={reply_target_tweet_id}")
+        outputLog(f"reply_tweet_id={reply_tweet_id}")
+        outputLog(f"own_tweet_id={own_tweet_id}")
+        replyFlag = True
+
+        #履歴にリプ先のツイート情報が無かったらリターン
+        if own_twweet_result == False:
+            outputLog(f"履歴にリプ先のツイート情報が無かったらリターン")
+#            return True , None
+            return False , None
+
+    outputLog(account_id)
+
+    credentials = get_account_master(account_id)
     dmmid = credentials['dmm_id']
 
-    medias = get_tweet_media(credentials['bearer_token'] , target_tweet_id)
+    client = createClient(credentials)
+
+    # 認証
+    auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
+    auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
 
     media_files = []
 
-    # 画像
-    for url in medias["photos"]:
-        outputLog(f"photo URL: {url}")
-        file = download_media("photo", target_tweet_id, credentials["bearer_token"])
-        if os.path.isfile(file):
-            media_files.append(file)
-        else:
-            outputLog("photo URL not found.")
-
-    # 動画
-    for url in medias["videos"]:
-        outputLog(f"video URL: {url}")
-        file = download_media("video", target_tweet_id, credentials["bearer_token"])
-        if os.path.isfile(file):
-            media_files.append(file)
-        else:
-            outputLog("video URL not found.")
-
-    # GIF（もし扱うなら）
-    for url in medias["gifs"]:
-        outputLog(f"gif URL: {url}")
-        file = download_media("gif", target_tweet_id, credentials["bearer_token"])
-        if os.path.isfile(file):
-            media_files.append(file)
-        else:
-            outputLog("gif URL not found.")            
-
-    # メディアが無かったらv2によるテキストポスト
-    if not media_files:  
-        from twitter_api_v2 import proc_post_v2_monomane
-        proc_post_v2_monomane(credentials , tweet_text)
-    else:
+    try:
+        media_files = []
         try:
-            # スペースで分割して配列に変換
-            words = tweet_text.replace("\n","【改行】").split(' ')
+            # includes からメディア情報を取得する処理
+            if 'attachments' in tweet_data and 'media_keys' in tweet_data['attachments']:
+                if tweet_data['type'] == 'video' or tweet_data['type'] == 'photo':
+                    outputLog(f"{tweet_data['type']} URL: {tweet_data['url']}")
 
-            # 最後の配列要素を削除
-            if len(media_files)>0:
-                words.pop()
+                    outputLog(f"credentials[bearer_token]={credentials['bearer_token']}")
+                    file = download_media(tweet_data['type'],tweet_data['id'],credentials['bearer_token'])
 
-            # 配列をスペースで結合して文字列に戻す
-            result = " ".join(words).replace("【改行】","\n")
-#            outputLog(f"result={result}")
-            result = dmmurl変換(result, dmmid)
-            response = None
-#            outputLog(f"result2={result}")
+                    if os.path.isfile(file):
+                        media_files.append(file)
+                    else:
+                        outputLog(f"{tweet_data['type']} URL not found.")
 
-#            outputLog(f"1")
-            client = createClient(credentials)
-#            outputLog(f"2")
+        except Exception as ex:
+            outputLog(str(ex))   
+            return False , str(ex)
 
-            # 認証
-            auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
-            auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
-#            outputLog(f"3")
+        outputLog(f"tweet_data={tweet_data}")
+        outputLog(f"media_files={media_files}")
+
+        # スペースで分割して配列に変換
+        words = tweet_data['text'].replace("\n","【改行】").split(' ')
+
+        # 最後の配列要素を削除
+        if len(media_files)>0:
+            words.pop()
+
+        # 配列をスペースで結合して文字列に戻す
+        result = " ".join(words).replace("【改行】","\n")
+        outputLog(f"result={result}")
+        result = dmmurl変換(result, dmmid)
+        response = None
+
+        try:
 
             api = tweepy.API(auth)
 #           if proxy_url!="":
@@ -456,20 +449,19 @@ def proc_monomane_v1(credentials , target_tweet_id):
 #               api = tweepy.API(auth)   
 
             # モノマネツイート処理(モノマネ処理は行わない)
-#            outputLog(f"4")
 
             media_ids = []  
             for file in media_files:
                 try:
                     # ファイルをアップロード
-#                    outputLog(f"test1")
+                    outputLog(f"test1")
 
                     try:
                         media = api.media_upload(file)
                     except Exception as e:
                         outputLog(str(e))
 
-#                    outputLog(f"test2")
+                    outputLog(f"test2")
                     media_ids.append(media.media_id)  # media_idをリストに追加
                     outputLog(f"Media uploaded: {file}, Media ID: {media.media_id}")
                 except Exception as e:
@@ -479,39 +471,46 @@ def proc_monomane_v1(credentials , target_tweet_id):
             if media_files:
                 outputLog(f"media_files={media_files}")
                 media_ids = [api.media_upload(file).media_id for file in media_files]
-#                outputLog(f"test2")
+                outputLog(f"test2")
                 outputLog(f"media_ids={media_ids}")
-#                outputLog("media tweet")  
-                response = client.create_tweet(text=result, media_ids=media_ids)
-#                outputLog(f"5")
+                if replyFlag == True:
+                    outputLog("media reply")  
+                    response = client.create_tweet(
+                        text=result,
+                        media_ids=media_ids,
+                        in_reply_to_tweet_id =own_tweet_id  # 返信先のユーザーIDを指定
+                    )
+                else:
+                    outputLog("media tweet")  
+                    response = client.create_tweet(text=result, media_ids=media_ids)
             else:
-                outputLog("media no tweet")  
+                
+                if replyFlag == True:
+                    outputLog("media no reply")  
+                    outputLog(f"result={result}")  
+                    outputLog(f"own_tweet_id={own_tweet_id}")  
 
-                response = client.create_tweet(text=result)
-                outputLog(f"5")
-
+                    response = client.create_tweet(
+                        text=result,
+                        in_reply_to_tweet_id =own_tweet_id  # 返信先のユーザーIDを指定0
+                    )
+                else:
+                    outputLog("media no tweet")  
+                    response = client.create_tweet(text=result)
 
         except Exception as ex:
             outputLog(str(ex))   
             return False , str(ex)
 
-#        try:
-#           outputLog(f"search_row={search_row}")
-#           outputLog(f"tweet_data={tweet_data}")
-#           outputLog(f"response={response.data}")
-#           insert_tweet_history_monomane2(target_tweet_id , check_tweet_account_record )
-#        except Exception as ex:
-#            outputLog(str(ex))
-
         time.sleep(5)
 
-#        try:
-#           outputLog(f"search_row={search_row}")
-#           outputLog(f"tweet_data={tweet_data}")
-#           outputLog(f"response={response.data}")
-#           insert_tweet_history_monomane(search_row , tweet_data , response.data)
-#        except Exception as ex:
-#            outputLog(str(ex))
+        try:
+           outputLog(f"search_row={search_row}")
+           outputLog(f"tweet_data={tweet_data}")
+           outputLog(f"response={response.data}")
+           insert_tweet_history_monomane(search_row , tweet_data , response.data)
+        except Exception as ex:
+            outputLog(str(ex))
 
         # レスポンス内容を出力
         outputLog("Response from client.create_tweet:")
@@ -538,3 +537,4 @@ def proc_monomane_v1(credentials , target_tweet_id):
                 pass
 
     return False,None
+                

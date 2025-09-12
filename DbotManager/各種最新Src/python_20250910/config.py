@@ -8,51 +8,60 @@ import inspect
 import pytz
 #from dateutil import parser  # dateutilを使用
 
-def convert_tweet_datetime(value, assume_tz="UTC", return_tz="Asia/Tokyo"):
-    """
-    value: str or datetime
-      例1: '2025-09-12T10:30:45.123Z' (UTC)
-      例2: '2025-09-12T10:30:45Z'     (UTC)
-      例3: '2025-01-02 17:15:49'      (TZなし → assume_tz を適用)
-      例4: datetime(…)(naive/aware)
-    assume_tz: value が naive のときに仮定する元タイムゾーン（'UTC' か 'Asia/Tokyo' など）
-    return_tz: 返却するタイムゾーン（既定: JST）
-    戻り値: return_tz の aware datetime
-    """
-    if value is None:
-        return None
+def convert_tweet_datetime(iso_format_date):
 
-    tz_assume = pytz.timezone(assume_tz)
-    tz_return = pytz.timezone(return_tz)
+#    try:
+#        # 文字列をパースし、タイムゾーン付きのdatetimeオブジェクトに変換
+#        parsed_date = parser.parse(iso_format_date)
 
-    # 1) datetime ならそのまま
-    if isinstance(value, datetime):
-        dt = value
+#        # 日本時間に変換 (UTC +9)
+#        japan_zone = pytz.timezone('Asia/Tokyo')
+#        japan_time = parsed_date.astimezone(japan_zone)
+
+#        # フォーマット変更
+#        return japan_time.strftime("%Y-%m-%d %H:%M:%S")
+
+#    except ValueError as e:
+#        return None
+
+    # iso_format_date がすでに datetime オブジェクトの場合は、そのまま処理
+    if isinstance(iso_format_date, datetime):
+        parsed_date = iso_format_date
     else:
-        s = str(value).strip()
-
-        # Z(UTC) 付き ISO
-        msec_z = re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z$", s)
-        sec_z  = re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$", s)
-
-        if msec_z:
-            dt = datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
-        elif sec_z:
-            dt = datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-        else:
-            # 'YYYY-MM-DD HH:MM:SS'（TZなし）想定
+        try:
+            # ミリ秒部分とZを無視してパース
+            parsed_date = datetime.strptime(iso_format_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+        except ValueError as e:
             try:
-                dt = datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                # 他フォーマットに対応したければここで追加
-                raise
+                # ミリ秒が無い場合の処理
+                parsed_date = datetime.strptime(iso_format_date, "%Y-%m-%dT%H:%M:%SZ")
+            except ValueError as e:
+                print(f"ミリ秒なしのパースエラー: {e}")
+                return None
 
-    # 2) naive なら assume_tz を付与
-    if dt.tzinfo is None:
-        dt = tz_assume.localize(dt)
+#    try:
+#        # ミリ秒部分とZを無視してパース
+#        parsed_date = datetime.strptime(iso_format_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+#    except ValueError as e:
+##        print(f"ミリ秒ありのパースエラー: {e}")
+#        try:
+#            # ミリ秒が無い場合の処理
+#            parsed_date = datetime.strptime(iso_format_date, "%Y-%m-%dT%H:%M:%SZ")
+#        except ValueError as e:
+#            print(f"ミリ秒なしのパースエラー: {e}")
+#            return None
 
-    # 3) 返却TZへ変換（JST既定）
-    return dt.astimezone(tz_return)
+    # UTCタイムゾーンを指定
+#    utc_zone = pytz.utc
+#    parsed_date = utc_zone.localize(parsed_date)
+
+    # 日本時間に変換 (UTC + 9)
+    japan_zone = pytz.timezone('Asia/Tokyo')
+    japan_time = parsed_date.astimezone(japan_zone)
+
+    # フォーマット変更
+#    return japan_time.strftime("%Y-%m-%d %H:%M:%S")  
+    return japan_time
 
 def convert_tweet_datetime2(tweet_datetime_str):
     """ツイートの created_at (ISO8601形式の文字列) を UTC の datetime に変換"""

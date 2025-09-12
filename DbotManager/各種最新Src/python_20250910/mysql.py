@@ -680,7 +680,6 @@ def insert_tweet_history_monomane(search_row , ref_tweet , own_tweet):
     finally:
         connection.close() 
 
-
 def getOwnTweetId(account_id , reply_target_tweet_id):
     # MySQLデータベースに接続
     connection = pymysql.connect(
@@ -1120,35 +1119,27 @@ def update_check_tweet_account_list(record):
             # user_id が PRIMARY（または UNIQUE）前提の UPSERT
             sql = """
                 INSERT INTO check_tweet_account_list
-                    (account_name, user_id, tweet_id, tweet_text,
-                     check_time, update_time, type,
-                     reply_to_tweet_id, reply_to_user_id, reply_to_screen_name)
+                    (account_name, user_id, tweet_id, tweet_text, check_time, update_time, type ,reply_to_tweet_id)
                 VALUES
-                    (%s, %s, %s, %s,
-                     %s, %s, %s,
-                     %s, %s, %s)
+                    (%s, %s, %s, %s, %s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE
-                    account_name       = VALUES(account_name),
-                    tweet_id           = VALUES(tweet_id),
-                    tweet_text         = VALUES(tweet_text),
-                    check_time         = VALUES(check_time),
-                    update_time        = VALUES(update_time),
-                    type               = VALUES(type),
-                    reply_to_tweet_id  = VALUES(reply_to_tweet_id),
-                    reply_to_user_id   = VALUES(reply_to_user_id),
-                    reply_to_screen_name = VALUES(reply_to_screen_name)
+                    account_name = VALUES(account_name),
+                    tweet_id   = VALUES(tweet_id),
+                    tweet_text = VALUES(tweet_text),
+                    check_time = VALUES(check_time),
+                    update_time= VALUES(update_time),
+                    type = VALUES(type),
+                    reply_to_tweet_id = VALUES(reply_to_tweet_id)
             """
             cursor.execute(sql, (
                 record['account_name'],
                 record['user_id'],
                 record['tweet_id'],
                 record['text'],
-                record['check_time'],
-                record['created_at_jst'],
-                record['type'],
-                record.get('reply_to_tweet_id'),
-                record.get('reply_to_user_id'),
-                record.get('reply_to_screen_name'),
+                record['check_time'],        
+                record['created_at_jst'],    
+                record['type'],        
+                record['reply_to_tweet_id'],        
             ))
             connection.commit()
     finally:
@@ -1247,7 +1238,6 @@ def init_check_tweet_account_master_by_search_list():
                     LEFT JOIN USER_MASTER um on um.id = am.user_id
                     WHERE TRIM(sl.search_user_name) <> ''
                       AND sl.search_user_name IS NOT NULL
-                      AND sl.enable = '1'
                       AND um.enable = '1'
                       AND am.enable = '1'
                     GROUP BY REPLACE(LOWER(TRIM(sl.search_user_name)),'@',''),
