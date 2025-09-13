@@ -221,25 +221,6 @@ def _normalize_created_at(raw: Optional[str]) -> Tuple[Optional[str], Optional[s
     # 最後の保険：そのまま返す
     return s, None
 
-
-def _normalize_created_at_bk1(raw: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
-    """
-    raw: 'Wed Aug 14 03:21:00 +0000 2025' のようなXの標準形式想定
-    戻り値: (UTC文字列, JST文字列) いずれも 'YYYY-mm-dd HH:MM:SS' 形式
-    """
-
-
-    if not raw:
-        return None, None
-    try:
-        dt = datetime.strptime(raw, "%a %b %d %H:%M:%S %z %Y")
-        utc = dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-        jst = dt.astimezone(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M:%S")
-        return utc, jst
-    except Exception:
-        # 解析できない場合はそのまま返す
-        return raw, None
-
 # ============== 汎用ツイート抽出（created_at対応） ==============
 def _extract_basic_from_legacy_like(node: dict) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
@@ -271,31 +252,6 @@ def _extract_from_tweet_node(node: dict) -> Optional[Tuple[str, str, Optional[st
         if text:
             return rest_id, text, created_at, reply_to_id, reply_to_uid, reply_to_sn
 
-    # パターン2: TweetWithVisibilityResults
-    tw = node.get("tweet")
-    if isinstance(tw, dict):
-        leg2 = tw.get("legacy")
-        rest_id = tw.get("rest_id") or (leg2 or {}).get("id_str")
-        if rest_id:
-            text = (leg2 or {}).get("full_text") or (tw.get("note_tweet_results", {}).get("result", {}) or {}).get("text") or tw.get("text")
-            created_at = (leg2 or {}).get("created_at")
-            if text:
-                print("created2")
-                print(created_at)
-                return rest_id, text, created_at
-    return None
-
-def _extract_from_tweet_node_bk(node: dict) -> Optional[Tuple[str, str, Optional[str]]]:
-    # パターン1: 直Tweet
-    legacy = node.get("legacy")
-    rest_id = node.get("rest_id") or (legacy or {}).get("id_str")
-    if rest_id:
-        text = (legacy or {}).get("full_text") or (node.get("note_tweet_results", {}).get("result", {}) or {}).get("text") or node.get("text")
-        created_at = (legacy or {}).get("created_at")
-        if text:
-            print("created1")
-            print(created_at)
-            return rest_id, text, created_at
     # パターン2: TweetWithVisibilityResults
     tw = node.get("tweet")
     if isinstance(tw, dict):
@@ -400,105 +356,6 @@ def _yield_tweet_candidates(obj: Any):
             for v in obj.values():
                 yield from _yield_tweet_candidates(v)
 
-        elif isinstance(obj, list):
-            for v in obj:
-                yield from _yield_tweet_candidates(v)
-    except Exception:
-        return
-
-def _yield_tweet_candidates_old(obj: Any):
-    """
-    (tweet_id, text, created_at) を yield。
-    _extract_from_tweet_node が created_at を返せない場合は、
-    同一JSON内をスキャンして補完する。
-    """
-
-    try:
-        if isinstance(obj, dict):
-            # 1) tweet_results.result -> 最有力
-            tr = obj.get("tweet_results")
-            if isinstance(tr, dict):
-                print("_yield_tweet_candidates:1")
-                res = tr.get("result") or {}
-                cand = _extract_from_tweet_node(res)
-                if cand:
-                    print(cand)
-                    rid, text, created_at = cand
-                    if not created_at:
-                        created_at = _find_created_nearby(obj, rid) or _find_created_nearby(res, rid)
-                    yield (rid, text, created_at)
-
-            # 2) この dict 自身が Tweet node の場合
-#            print("_yield_tweet_candidates:2")
-            cand2 = _extract_from_tweet_node(obj)
-            if cand2:
-                print(cand2)
-                rid, text, created_at = cand2
-                if not created_at:
-                    created_at = _find_created_nearby(obj, rid)
-                yield (rid, text, created_at)
-
-            # 3) よくある容器の中を辿る
-            tm = obj.get("timelineModule")
-            if isinstance(tm, dict):
-                for it in tm.get("items", []):
-                    yield from _yield_tweet_candidates(it)
-
-            content = obj.get("content")
-            if isinstance(content, dict):
-                ic = content.get("itemContent")
-                if isinstance(ic, dict):
-                    yield from _yield_tweet_candidates(ic)
-
-            item = obj.get("item")
-            if isinstance(item, dict):
-                yield from _yield_tweet_candidates(item)
-
-            moduleItems = obj.get("moduleItems")
-            if isinstance(moduleItems, list):
-                for it in moduleItems:
-                    yield from _yield_tweet_candidates(it)
-
-            # 4) 汎用再帰（最後）
-            for v in obj.values():
-                yield from _yield_tweet_candidates(v)
-
-        elif isinstance(obj, list):
-            for v in obj:
-                yield from _yield_tweet_candidates(v)
-    except Exception:
-        return
-
-
-def _yield_tweet_candidates_bk1(obj: Any):
-    try:
-        if isinstance(obj, dict):
-            tr = obj.get("tweet_results")
-            if isinstance(tr, dict):
-                res = tr.get("result") or {}
-                cand = _extract_from_tweet_node(res)
-                if cand: yield cand
-            cand2 = _extract_from_tweet_node(obj)
-            if cand2: yield cand2
-            tm = obj.get("timelineModule")
-            if isinstance(tm, dict):
-                for it in tm.get("items", []):
-                    yield from _yield_tweet_candidates(it)
-            content = obj.get("content")
-            if isinstance(content, dict):
-                ic = content.get("itemContent")
-                if isinstance(ic, dict):
-                    yield from _yield_tweet_candidates(ic)
-            item = obj.get("item")
-            if isinstance(item, dict):
-                yield from _yield_tweet_candidates(item)
-            moduleItems = obj.get("moduleItems")
-            if isinstance(moduleItems, list):
-                for it in moduleItems:
-                    yield from _yield_tweet_candidates(it)
-            # 再帰
-            for v in obj.values():
-                yield from _yield_tweet_candidates(v)
         elif isinstance(obj, list):
             for v in obj:
                 yield from _yield_tweet_candidates(v)
@@ -1950,86 +1807,6 @@ def _build_created_map_from_search_timeline(data: dict) -> dict:
         pass
 
     return m
-
-def fetch_replies_to_me_graphql_bk1(s, headers, screen_name, limit=5):
-    if screen_name.startswith("@"):
-        screen_name = screen_name[1:]
-
-    pairs = collect_searchtimeline_pairs_with_session(s)
-    if not pairs:
-        return False, None, "no (op,qid) candidates"
-
-    tried = 0
-    for op, qid, src, gap in pairs[:12]:
-        url = f"https://x.com/i/api/graphql/{qid}/{op}"
-
-        variables = {
-            "rawQuery": f"to:{screen_name}",
-            "count": limit,
-            "querySource": "typed_query",
-            "product": "Latest",
-        }
-        base_features = _default_features()
-        field_toggles = _default_field_toggles()
-
-        # 1回目の試行
-        params = {
-            "variables": json.dumps(variables, separators=(",", ":")),
-            "features": json.dumps(base_features, separators=(",", ":")),
-            "fieldToggles": json.dumps(field_toggles, separators=(",", ":")),
-        }
-        r = s.get(url, headers=headers, params=params, timeout=20)
-        _log(f"[STEP] graphql({op} [{src}/gap={gap}] to:{screen_name}) -> {r.status_code} : url={url}")
-        tried += 1
-
-        # 400（features null）の場合は最大2回まで不足分を自動追加してリトライ
-        if r.status_code == 400:
-            text = r.text[:2000]
-            # 1回目の増補
-            feat1 = _augment_features_from_error(base_features, text)
-            if feat1 != base_features:
-                params["features"] = json.dumps(feat1, separators=(",", ":"))
-                r = s.get(url, headers=headers, params=params, timeout=20)
-                _log(f"[STEP] graphql({op} retry1 with augmented features) -> {r.status_code}")
-
-            # それでも 400 ならもう一度増補
-            if r.status_code == 400:
-                text = r.text[:2000]
-                feat2 = _augment_features_from_error(feat1, text)
-                if feat2 != feat1:
-                    params["features"] = json.dumps(feat2, separators=(",", ":"))
-                    r = s.get(url, headers=headers, params=params, timeout=20)
-                    _log(f"[STEP] graphql({op} retry2 with augmented features) -> {r.status_code}")
-
-        if r.status_code == 404:
-            continue  # 別の (op,qid) を試す
-        if r.status_code != 200:
-            return False, None, r.text[:800]
-
-        # ---- 200: 重複ツイート（tweet_id）を除去して limit をユニーク基準で適用 ----
-        try:
-            data = r.json()
-            results = []
-            seen_ids = set()  # 追加: 一意化用セット
-            for rid, text, created_at in _yield_tweet_candidates(data):
-                print("created_at")
-                print(created_at)
-                if rid in seen_ids:
-                    continue  # 重複はスキップ
-                seen_ids.add(rid)
-                results.append({
-                    "tweet_id": rid,
-                    "text": text,
-                    "created_at": created_at
-                })
-                if len(results) >= limit:  # ユニーク件数でカウント
-                    break
-
-            return (True, results, None) if results else (False, None, "no replies found")
-        except Exception as ex:
-            return False, None, f"parse error: {ex}"
-
-    return False, None, f"all {tried} (op,qid) candidates exhausted"
 
 
 # --- GraphQL.py 追記（または既存 get_tweets の下あたりに） ---

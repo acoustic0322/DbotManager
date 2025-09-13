@@ -26,8 +26,6 @@ from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
 from mysql import get_check_tweet_account_list_by_tweet_id
 
-#from twitter_api_v2 import get_latest_tweets
-
 from download_media import download_media
 from download_media import get_tweet_media
 
@@ -206,30 +204,6 @@ def get_media_ids(api, account_id, media_type, media_id):
             print(f"Unexpected error: {e}")
         return []  # その他の予期しないエラーの場合も空のリストを返す
 
-def convert_tweet_datetime_gomi(iso_format_date):
-    try:
-        # ミリ秒部分とZを無視してパース
-        parsed_date = datetime.strptime(iso_format_date, "%Y-%m-%dT%H:%M:%S.%fZ")
-    except ValueError as e:
-#        print(f"ミリ秒ありのパースエラー: {e}")
-        try:
-            # ミリ秒が無い場合の処理
-            parsed_date = datetime.strptime(iso_format_date, "%Y-%m-%dT%H:%M:%SZ")
-        except ValueError as e:
-#            print(f"ミリ秒なしのパースエラー: {e}")
-            return None
-
-    # UTCタイムゾーンを指定
-    utc_zone = pytz.utc
-    parsed_date = utc_zone.localize(parsed_date)
-
-    # 日本時間に変換 (UTC + 9)
-    japan_zone = pytz.timezone('Asia/Tokyo')
-    japan_time = parsed_date.astimezone(japan_zone)
-
-    # フォーマット変更
-    return japan_time.strftime("%Y-%m-%d %H:%M:%S")            
-
 def get_twitter_video_url(tweet_url):
     outputLog(f"test")
     response = requests.get(tweet_url, allow_redirects=True)
@@ -366,14 +340,8 @@ def generate_random_string(length):
     random_string = ''.join(random.choice(characters) for _ in range(length))
     return random_string
 
-def proc_monomane(search_row , tweet_data, tweets):
-    return
-
-
 def proc_monomane_v1(credentials , target_tweet_id):
-
-    from twitter_api_v2 import get_latest_tweets  # ← 関数内でインポート
-    
+  
     check_tweet_account_record = get_check_tweet_account_list_by_tweet_id(target_tweet_id)
 
     tweet_text = check_tweet_account_record['tweet_text']
@@ -421,11 +389,11 @@ def proc_monomane_v1(credentials , target_tweet_id):
             outputLog("gif URL not found.")            
 
     # メディアが無かったらv2によるテキストポスト
-    if not media_files:  
-        from twitter_api_v2 import proc_post_v2_monomane
-        proc_post_v2_monomane(credentials , tweet_text)
-    else:
-        try:
+    try:
+        if not media_files:  
+            from twitter_api_v2 import proc_post_v2_monomane
+            proc_post_v2_monomane(credentials , tweet_text)
+        else:
             # スペースで分割して配列に変換
             words = tweet_text.replace("\n","【改行】").split(' ')
 
@@ -491,10 +459,6 @@ def proc_monomane_v1(credentials , target_tweet_id):
                 outputLog(f"5")
 
 
-        except Exception as ex:
-            outputLog(str(ex))   
-            return False , str(ex)
-
 #        try:
 #           outputLog(f"search_row={search_row}")
 #           outputLog(f"tweet_data={tweet_data}")
@@ -528,6 +492,7 @@ def proc_monomane_v1(credentials , target_tweet_id):
                 
     except Exception as ex:
         outputLog(str(ex))
+        return False , str(ex)
     finally:
         # ダウンロードしたファイルを削除
         for file in media_files:

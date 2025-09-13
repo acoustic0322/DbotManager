@@ -14,9 +14,6 @@ from twitter_api_v2 import proc_like_v2
 from twitter_api_v2 import proc_bookmark_v2
 from twitter_api_v2 import proc_post_v2
 from twitter_api_v2 import proc_repost_v2
-from twitter_api_v2 import proc_check_v2
-from twitter_api_v2 import proc_check_v2_2
-from twitter_api_v2 import get_latest_tweet
 from twitter_api_v2 import refresh_access_token
 from twitter_api_v1 import proc_post_v10a
 from twitter_api_v2 import check_replies
@@ -131,9 +128,6 @@ elif mode == "init_check_tweet_account_master":
     init_check_tweet_account_master_by_search_list()
     sys.exit(0)
 
-
-
-
 # 認証情報を取得
 credentials = get_account_master(account_id)
 
@@ -173,26 +167,6 @@ if credentials:
         result1 , contents1 = proc_following_v2(credentials, tweet_name)
     elif mode == "unfollow":
         result1 , contents1 = proc_unfollowing_v2(credentials, tweet_name)
-
-    # 2025.08.22 不要となる処理
-    elif mode == "check":
-        search_row = get_search_list(search_id)
-        result1 , tweet1 , result2 , tweet2 , tweets , log = proc_check_v2_2(credentials , search_row)
-
-#        contents1 = tweet1.data['id'] if tweet1 else None
-#        contents2 = tweet2.data['id'] if tweet2 else None
-        contents1 = tweet1['id'] if tweet1 else None
-        contents2 = tweet2['id'] if tweet2 else None
-
-        if contents1 is None:
-            contents1 = log
-
-#        if search_row['monomane_enable'] == True and result1 == True:
-#        if True:
-#            outputLog("monomane実行")
-#            outputLog(f"tweet1={tweet1.data}")
-#            result_wk , contents_wk = proc_monomane(search_row , tweet1.data , tweets)
-#            save_tweet_history(search_row['monomane_account_id'], None , 'monomane' , None , result_wk , contents_wk , None , None )
 
     elif mode == "refresh":
         result1 , contents1 , contents2= refresh_access_token(credentials)

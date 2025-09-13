@@ -1240,7 +1240,12 @@ def init_check_tweet_account_master_by_search_list():
                     SELECT
                         REPLACE(LOWER(TRIM(sl.search_user_name)),'@','') AS account_key,
                         TRIM(sl.search_user_name)                         AS account_name,
-                        MAX(sl.post_enable)                               AS tweet_flag,
+                        MAX(
+                            CASE 
+                            WHEN sl.post_enable = 1 OR sl.monomane_enable = 1 
+                                THEN 1 ELSE 0 
+                            END
+                        ) AS tweet_flag,                        
                         MAX(sl.reply_enable)                              AS reply_flag
                     FROM search_list sl
                     LEFT JOIN ACCOUNT_MASTER am on am.id = sl.account_id
