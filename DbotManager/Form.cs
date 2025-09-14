@@ -204,9 +204,9 @@ namespace DbotManager
                 checkBoxWeb一括処理.Checked = true;
 
                 // リプライタブ削除
-                HideTab(1);
+                HideTab(tabPage自動リプライ);
                 // 予約タブ削除
-                HideTab(2);
+                HideTab(tabPage予約);
 
                 this.Text += "(一括処理)";
             }
@@ -215,25 +215,25 @@ namespace DbotManager
                 checkBoxWeb一括処理.Checked = true;
 
                 // 一括処理タブ削除
-                HideTab(0);
+                HideTab(tabPage一括処理);
                 // 予約タブ削除
-                HideTab(2);
+                HideTab(tabPage予約);
 
                 this.Text += "(自動リプライ)";
 
                 // 監視モードの自動開始
-                button監視Start_Click(sender, e);
+//                button監視Start_Click(sender, e);
             }
             else
             {
                 // 一括処理タブ削除
-                HideTab(0);
+                HideTab(tabPage一括処理);
                 // リプライタブ削除
-                HideTab(1);
+                HideTab(tabPage自動リプライ);
 
                 // 予約ポストの自動開始
-                button予約作成_Click(sender, e);
-                button予約Start_Click(sender, e);
+//                button予約作成_Click(sender, e);
+//                button予約Start_Click(sender, e);
 
                 this.Text += "(予約ツイート)";
             }
@@ -245,23 +245,21 @@ namespace DbotManager
         // 非表示にしたいタブを保持するための変数
         TabPage hiddenTabPage;
 
-        // タブを非表示にする
-        private void HideTab(int index)
+        // 特定の TabPage を隠す
+        private void HideTab(TabPage page)
         {
-            if (tabControl.TabPages.Count > index)
+            if (tabControl.TabPages.Contains(page))
             {
-                hiddenTabPage = tabControl.TabPages[index];
-                tabControl.TabPages.RemoveAt(index);
+                tabControl.TabPages.Remove(page);
             }
         }
 
-        // 非表示にしたタブを再表示する
-        private void ShowTab(int index)
+        // 特定の TabPage を再表示する
+        private void ShowTab(TabPage page)
         {
-            if (hiddenTabPage != null && !tabControl.TabPages.Contains(hiddenTabPage))
+            if (!tabControl.TabPages.Contains(page))
             {
-                tabControl.TabPages.Insert(index, hiddenTabPage);
-                hiddenTabPage = null; // 再表示後はクリア
+                tabControl.TabPages.Add(page);
             }
         }
 
