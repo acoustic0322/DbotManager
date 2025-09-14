@@ -212,8 +212,6 @@ namespace DbotManager
             }
             else if (処理モードType == 処理モードTypes.自動リプライ)
             {
-                checkBoxWeb一括処理.Checked = true;
-
                 // 一括処理タブ削除
                 HideTab(tabPage一括処理);
                 // 予約タブ削除
@@ -222,7 +220,7 @@ namespace DbotManager
                 this.Text += "(自動リプライ)";
 
                 // 監視モードの自動開始
-//                button監視Start_Click(sender, e);
+                button監視Start_Click(sender, e);
             }
             else
             {
@@ -232,8 +230,8 @@ namespace DbotManager
                 HideTab(tabPage自動リプライ);
 
                 // 予約ポストの自動開始
-//                button予約作成_Click(sender, e);
-//                button予約Start_Click(sender, e);
+                button予約作成_Click(sender, e);
+                button予約Start_Click(sender, e);
 
                 this.Text += "(予約ツイート)";
             }
