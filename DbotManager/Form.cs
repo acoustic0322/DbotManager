@@ -45,7 +45,8 @@ namespace DbotManager
         private enum 処理モードTypes
         {
             一括処理,
-            監視_予約ツイート
+            予約ツイート,
+            自動リプライ
         }
 
         private  処理モードTypes 処理モードType { get; set; }
@@ -202,27 +203,39 @@ namespace DbotManager
             {
                 checkBoxWeb一括処理.Checked = true;
 
+                // リプライタブ削除
+                HideTab(1);
                 // 予約タブ削除
                 HideTab(2);
 
-                // 履歴タブ削除
-                HideTab(1);
-
                 this.Text += "(一括処理)";
+            }
+            else if (処理モードType == 処理モードTypes.自動リプライ)
+            {
+                checkBoxWeb一括処理.Checked = true;
+
+                // 一括処理タブ削除
+                HideTab(0);
+                // 予約タブ削除
+                HideTab(2);
+
+                this.Text += "(自動リプライ)";
+
+                // 監視モードの自動開始
+                button監視Start_Click(sender, e);
             }
             else
             {
                 // 一括処理タブ削除
                 HideTab(0);
+                // リプライタブ削除
+                HideTab(1);
 
                 // 予約ポストの自動開始
-//                button予約作成_Click(sender, e);
-  //              button予約Start_Click(sender, e);
+                button予約作成_Click(sender, e);
+                button予約Start_Click(sender, e);
 
-                // 監視モードの自動開始
-                button監視Start_Click(sender, e);
-
-                this.Text += "(監視・予約ポスト)";
+                this.Text += "(予約ツイート)";
             }
 
 
@@ -1163,8 +1176,10 @@ namespace DbotManager
                 {
                     if (settings["全体設定"]["処理モード"] == "一括処理")
                         処理モードType = 処理モードTypes.一括処理;
+                    else if (settings["全体設定"]["処理モード"] == "予約ツイート")
+                        処理モードType = 処理モードTypes.予約ツイート;
                     else
-                        処理モードType = 処理モードTypes.監視_予約ツイート;
+                        処理モードType = 処理モードTypes.自動リプライ;
                 }
             }
         }
