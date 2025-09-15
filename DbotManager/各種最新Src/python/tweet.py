@@ -60,8 +60,10 @@ def parse_arguments(args):
     return params
 
 def print_id(text):
-    outputLog("account_id=",account_id, " " , text)
+    outputLog(f"account_id={account_id} {text}")
     return   
+
+
 
 #debug
 #search_row = get_search_list(1)
@@ -109,6 +111,10 @@ result1 = False
 result2 = False
 contents1 = None
 contents2 = None
+
+outputLog(" ")
+outputLog("----- 指示受信 -----")
+outputLog(args)
 
 if mode ==  "check_refresh":
     outputLog("check_refresh")
@@ -196,7 +202,7 @@ if credentials:
 #        sys.exit(1)    #false時?
 
 else:
-    outputLog(f"エラーが発生しました: ID {credential_id} の認証情報が見つかりませんでした。", file=sys.stderr)
+    outputLog(f"エラーが発生しました: ID {credentials} の認証情報が見つかりませんでした。")
     sys.exit(1)
 
 

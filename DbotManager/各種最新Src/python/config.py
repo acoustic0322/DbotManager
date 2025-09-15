@@ -65,7 +65,45 @@ def get_ip_address():
     outputLog(f"ローカルIP:{ip}") 
     return ip
 
+#def outputLog(message, log_dir=None):
 def outputLog(message):
+#    print("log_dir")
+
+#    print(log_dir)
+
+    # log_dir が指定されてなければ Documents 配下を使う
+#    if log_dir is None:
+    home = os.path.expanduser("~")
+    log_dir = os.path.join(home, "Documents", "DBotManager", "log")
+
+    # ログフォルダを作成（存在しなければ作成）
+    os.makedirs(log_dir, exist_ok=True)
+
+    # 日付ごとのログファイル名
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    log_file = os.path.join(log_dir, f"{today_str}.log")
+
+    # 呼び出し元の情報を取得
+    caller_frame = inspect.currentframe().f_back
+    caller_info = inspect.getframeinfo(caller_frame)
+    
+    file_name = os.path.basename(caller_info.filename)
+    function_name = caller_info.function
+    line_number = caller_info.lineno
+
+    # ログメッセージを整形
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_message = f"[{current_time}][{file_name} - {function_name} - Line {line_number}] {message}"
+
+    # debug=True のときだけコンソールに出力
+    if debug:
+        print(log_message)
+
+    # ファイルに追記
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(log_message + "\n")
+
+def outputLog_bk(message):
 
     if debug == False:
         return

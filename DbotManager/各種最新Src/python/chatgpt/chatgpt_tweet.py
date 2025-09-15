@@ -244,9 +244,9 @@ def auto_post_tweet():
                 refined_tweet += "\n#裏垢女子 #DMでいいね" #改行してハッシュタグ
 
             post_tweet(refined_tweet)  # ツイート生成 & 投稿
-            outputLog("ツイートを投稿しました: ", refined_tweet)
+            outputLog(f"ツイートを投稿しました: {refined_tweet}")
         except Exception as e:
-            outputLog("ツイートの投稿に失敗しました: ", e)
+            outputLog(f"ツイートの投稿に失敗しました: {e}")
             retry_count += 1
             time.sleep(300)  # 5分後に再試行
     
@@ -313,4 +313,4 @@ def generate_trend_tweet_by_keyword(open_ai_api_key,trend_prompt,keyword1,keywor
 #            messagebox.showerror("エラー", response.text)
     except Exception as e:
 #        messagebox.showerror("エラー", str(e))
-        outputLog("generate_trend_tweetに失敗しました: ", e)
+        outputLog(f"generate_trend_tweetに失敗しました: {e}")

@@ -29,13 +29,13 @@ def proc_get_tweet(credentials):
     # VPS IDの特定
     myIp = get_ip_address()
     vps_record = get_vps_master_by_ip_address(myIp)
-    print("vps_record=",vps_record)
+    outputLog(f"vps_record={vps_record}")
 
     if vps_record is None:
         return
     vps_id = vps_record['id']
 
-    print("vps_id=",vps_id)
+    outputLog(f"vps_id={vps_id}")
 
     profile_record = get_tweet_profile_by_vps_id(vps_id)
 #    profile_record = get_tweet_profile_by_display_name("twitter")
@@ -43,11 +43,11 @@ def proc_get_tweet(credentials):
 
     if profile_path is None or profile_path == '':
         profile_path = get_firefox_profile_path(profile_record['display_name'])
-        print("from os profile_path=",profile_path)
+        outputLog(f"from os profile_path={profile_path}")
         profile_record['path'] = profile_path
         update_get_tweet_profile(profile_record)
     else:
-        print("from db profile_path=",profile_path)
+        outputLog(f"from db profile_path={profile_path}")
 
     check_records = get_check_tweet_account_masters_by_vps_id(vps_id)
 
@@ -56,7 +56,7 @@ def proc_get_tweet(credentials):
     # 複数レコードをループ処理
 
     for check_record in check_records:
-        print("監視アカウント：",check_record['account_name'])
+        outputLog(f"監視アカウント：{check_record['account_name']}")
 
     any_success = False
     errors = []
@@ -87,15 +87,15 @@ def proc_get_tweet(credentials):
                 check_record['user_id'] = user_id
                 update_check_tweet_account_master(check_record)
 
-            print("from api user_id=",user_id)
+            outputLog(f"from api user_id={user_id}")
         else:
-            print("from db user_id=",user_id)
+            outputLog(f"from db user_id={user_id}")
 
 
 
         # 既存: 通常ツイート
         if check_record.get('tweet_enable', 0) == 1:
-            print("tweet_enable")
+            outputLog(f"tweet_enable")
             tweets = get_tweets(profile_path, user_id, user_name)  # 既存関数（通常ツイのみ）
             if tweets:
                 for tweet in tweets:
@@ -119,14 +119,14 @@ def proc_get_tweet(credentials):
 
         # 追加: 自分宛のリプ（incoming）
         if check_record.get('reply_enable', 0) == 1:
-            print("reply_enable")
+            outputLog("reply_enable")
 
             replies = get_replies(profile_path, user_id, user_name, kind="replies_incoming", limit=10)
             if replies:
                 for reply in replies:
 
-                    print("reply=")
-                    print(reply)
+                    outputLog("reply=")
+                    outputLog(reply)
 
                     reply['account_name'] = user_name
                     reply['user_id'] = user_id
@@ -143,7 +143,7 @@ def proc_get_tweet(credentials):
 
     # 最後に全体の成否を返す（1件でも成功していれば True）
     if errors:
-        print("[SUMMARY] Errors:", errors)
+        outputLog(f"[SUMMARY] Errors:{ errors}")
 
     return (any_success, "OK" if any_success else "NO_SUCCESS")
 

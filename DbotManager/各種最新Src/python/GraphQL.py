@@ -7,9 +7,12 @@ from curl_cffi import requests as requests  # ブラウザ指紋つきHTTP
 from get_x_cookies_firefox import get_x_cookies_from_firefox
 from datetime import datetime, timezone, timedelta
 
+from config import outputLog
+
 def _log(msg: str):
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{now}] {msg}", flush=True)
+    outputLog(msg)
+#    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#    print(f"[{now}] {msg}", flush=True)
 
 # ============== Cookie & Session ==============
 def _set_cookies(s: requests.Session, auth_token: str, ct0: str):

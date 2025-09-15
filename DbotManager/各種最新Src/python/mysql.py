@@ -506,12 +506,12 @@ def get_last_tweet_id_from_check_account_list(id , search_replies):
 
             if search_replies == True:
                 if config.debug == True:
-                    outputLog("credentials['last_reply_id'] =",credentials['last_reply_id'] )
-                    outputLog("credentials['last_reply_datetime'] =",credentials['last_reply_datetime'] )
+                    outputLog(f"credentials['last_reply_id'] ={credentials['last_reply_id']}" )
+                    outputLog(f"credentials['last_reply_datetime'] ={credentials['last_reply_datetime']}" )
                 return credentials['last_reply_id'] , credentials['last_reply_datetime']
             if config.debug == True:
-                outputLog("credentials['last_tweet_id'] =",credentials['last_tweet_id'] )
-                outputLog("credentials['last_tweet_datetime'] =",credentials['last_tweet_datetime'] )
+                outputLog(f"credentials['last_tweet_id'] ={credentials['last_tweet_id']}" )
+                outputLog(f"credentials['last_tweet_datetime'] ={credentials['last_tweet_datetime']}" )
             return credentials['last_tweet_id'] , credentials['last_tweet_datetime']
     finally:
         connection.close()
