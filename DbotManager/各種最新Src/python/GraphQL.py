@@ -532,6 +532,14 @@ def fetch_latest_tweets_via_user_timeline_v11(
             reply_to_id = tw.get("in_reply_to_status_id_str")
             is_reply = bool(reply_to_id)
 
+            # type判定
+            if text.startswith("RT @"):
+                tw_type = "repost"
+            elif is_reply:
+                tw_type = "reply"
+            else:
+                tw_type = "tweet"
+
             # modeがrepliesならリプライのみ残す
             if mode == "replies" and not is_reply:
                 continue
@@ -543,7 +551,8 @@ def fetch_latest_tweets_via_user_timeline_v11(
                 "tweet_id": tid,
                 "text": text,
                 "created_at": created,
-                "type": "reply" if is_reply else "tweet",
+#                "type": "reply" if is_reply else "tweet",
+                "type": tw_type,
                 "reply_to_tweet_id": reply_to_id if is_reply else None
             })
 
@@ -684,7 +693,7 @@ def get_tweets(profile, user_id, screen_name):
                         "created_at_raw": tw.get("created_at"),
                         "created_at_utc": utc_str,
                         "created_at_jst": jst_str,
-                        "user_id": '',
+                        "user_id": user_id,
                         "check_time": '',
                         "type": tw["type"] ,
                         "reply_to_tweet_id": tw["reply_to_tweet_id"]
@@ -758,6 +767,13 @@ def get_replies(profile, user_id, screen_name, kind="tweets", limit=5):
             print("r.get(created_at)")
             print(r.get("created_at"))
             utc_str, jst_str = _normalize_created_at(r.get("created_at"))
+
+            # 自分自身へのリプ
+            if user_id == r.get("reply_to_user_id"):
+                type_wk = "self_reply"
+            else:
+                type_wk = "reply_to_me"
+
             normalized.append({
                 "tweet_id": r["tweet_id"],
                 "text": r["text"],
@@ -765,9 +781,9 @@ def get_replies(profile, user_id, screen_name, kind="tweets", limit=5):
                 "created_at_raw": r.get("created_at"),
                 "created_at_utc": utc_str,
                 "created_at_jst": jst_str,
-                "user_id": '',
+                "user_id": user_id,
                 "check_time": '',
-                "type": "reply_to_me",
+                "type": type_wk,
                 # ★ 追加
                 "reply_to_tweet_id": r.get("reply_to_tweet_id"),
                 "reply_to_user_id": r.get("reply_to_user_id"),
