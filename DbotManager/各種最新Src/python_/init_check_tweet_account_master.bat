@@ -1,1 +1,0 @@
-python tweet.py mode=init_check_tweet_account_master

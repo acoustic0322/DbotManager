@@ -1,1 +1,0 @@
-python tweet.py mode=jap_like account_id=1 quantity=20 tweet_id=1904256687386812553 tweet_name= debug=True 

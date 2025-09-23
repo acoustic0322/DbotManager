@@ -1,1 +1,0 @@
-python tweet.py mode=update_profiles
