@@ -76,6 +76,8 @@ account_id2 = int(args.get("account_id2","0"))
 tweet_id = args.get("tweet_id","")
 tweet_name = args.get("tweet_name","")
 mode = args.get("mode","")
+config.mode = mode
+
 #tweet_text = args.get("text")
 comment_id = args.get("comment_id","")
 
