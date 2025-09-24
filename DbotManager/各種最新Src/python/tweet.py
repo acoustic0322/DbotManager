@@ -26,6 +26,8 @@ from other import update_profile_image
 from jap_api import proc_like_jap
 from jap_api import proc_bookmark_jap
 from jap_api import proc_repost_jap
+from jap_api import proc_profile_jap
+from jap_api import proc_detail_jap
 
 from twitter_api_v2 import proc_following_v2
 from twitter_api_v2 import proc_unfollowing_v2
@@ -185,6 +187,14 @@ if credentials:
     elif mode == "get_tweet":
         result1 , contents1 = proc_get_tweet(credentials)
 
+    elif mode == "jap_profile":
+        if not tweet_name:  # None または空文字列のときにTrue
+            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+        result1 , contents1 = proc_profile_jap(tweet_name, tweet_id , jap_api_key , quantity)
+    elif mode == "jap_detail":
+        if not tweet_name:  # None または空文字列のときにTrue
+            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+        result1 , contents1 = proc_detail_jap(tweet_name, tweet_id , jap_api_key , quantity)        
     else:
         # エラーメッセージを標準エラーに出力
         outputLog(f"サポートされていないmode: {mode}")

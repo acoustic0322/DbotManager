@@ -446,7 +446,8 @@ namespace DbotManager
             if(checkBoxJAPいいね.Checked)
             {
                 TweetTask task = new TweetTask(DbConnection, AppendLog);
-                task.Exe_JAPいいね(
+                task.Exe_JAP(
+                     TweetProcTypes.いいね,
                     GetTweetName(textBoxUrlTweetID.Text),
                     GetTweetId(textBoxUrlTweetID.Text),
                     int.Parse(textBoxJAPいいね件数.Text.ToString()),
@@ -969,7 +970,8 @@ namespace DbotManager
 
                         if(item.LikeEnable && item.JapLikeCount > 0)
                         {
-                            task.Exe_JAPいいね(
+                            task.Exe_JAP(
+                                 TweetProcTypes.JAPいいね,
                                 GetTweetName(item.TweetId),
                                 GetTweetId(item.TweetId),
                                 item.JapLikeCount,
@@ -981,7 +983,8 @@ namespace DbotManager
                         if (item.BookmarkEnable && item.JapBookmarkCount > 0)
                         {
 
-                            task.Exe_JAPブックマーク(
+                            task.Exe_JAP(
+                                 TweetProcTypes.JAPブックマーク,
                             GetTweetName(item.TweetId),
                             GetTweetId(item.TweetId),
                             item.JapBookmarkCount,
@@ -992,10 +995,35 @@ namespace DbotManager
                         if (item.RepostEnable && item.JapRepostCount > 0)
                         {
 
-                            task.Exe_JAPリポスト(
+                            task.Exe_JAP(
+                                 TweetProcTypes.JAPリポスト,
                             GetTweetName(item.TweetId),
                             GetTweetId(item.TweetId),
                             item.JapRepostCount,
+                            item.UserId
+                            );
+                        }
+
+                        if (item.JapProfileCount > 0)
+                        {
+
+                            task.Exe_JAP(
+                                 TweetProcTypes.JAPプロフィール,
+                            GetTweetName(item.TweetId),
+                            GetTweetId(item.TweetId),
+                            item.JapProfileCount,
+                            item.UserId
+                            );
+                        }
+
+                        if (item.JapDetailCount > 0)
+                        {
+
+                            task.Exe_JAP(
+                                 TweetProcTypes.JAP詳細,
+                            GetTweetName(item.TweetId),
+                            GetTweetId(item.TweetId),
+                            item.JapDetailCount,
                             item.UserId
                             );
                         }

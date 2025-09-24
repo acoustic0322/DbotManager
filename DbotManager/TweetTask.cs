@@ -35,6 +35,8 @@ namespace DbotManager
         JAPいいね,
         JAPブックマーク,
         JAPリポスト,
+        JAPプロフィール,
+        JAP詳細,
         フォロー追加,
         フォロー解除,
         監視初期化
@@ -222,40 +224,12 @@ namespace DbotManager
             RepostAccountList = selectedItems.Item4;
         }
 
-
-        public void Exe_JAPいいね(string tweet_name , string tweet_id , int quantity, int userId)
-        {
-            TweetProc(
-                new TweetCommand() {
-                    TweetProcType = TweetProcTypes.JAPいいね, 
-                    AccountId = 1, 
-                    TweetId = tweet_id,
-                    TweetName = tweet_name,
-                    Quantity = quantity,
-                    UserId = userId
-                });
-        }
-
-        public void Exe_JAPブックマーク(string tweet_name, string tweet_id, int quantity, int userId)
+        public void Exe_JAP(TweetProcTypes type, string tweet_name, string tweet_id, int quantity, int userId)
         {
             TweetProc(
                 new TweetCommand()
                 {
-                    TweetProcType = TweetProcTypes.JAPブックマーク,
-                    AccountId = 1,
-                    TweetId = tweet_id,
-                    TweetName = tweet_name,
-                    Quantity = quantity,
-                    UserId =userId
-                });
-        }
-
-        public void Exe_JAPリポスト(string tweet_name, string tweet_id, int quantity, int userId)
-        {
-            TweetProc(
-                new TweetCommand()
-                {
-                    TweetProcType = TweetProcTypes.JAPリポスト,
+                    TweetProcType = type,
                     AccountId = 1,
                     TweetId = tweet_id,
                     TweetName = tweet_name,
@@ -1158,6 +1132,12 @@ namespace DbotManager
                 case TweetProcTypes.フォロー解除:
                     return "unfollow";
                     break;
+                case TweetProcTypes.JAPプロフィール:
+                    return "jap_profile";
+                    break;
+                case TweetProcTypes.JAP詳細:
+                    return "jap_detail";
+                    break;
             }
             return string.Empty;
         }
@@ -1191,35 +1171,15 @@ namespace DbotManager
                     break;
 
                 case TweetProcTypes.JAPいいね:
-                    {
-                        // MySQLデータアクセスの初期化
-                        var dataAccess = new MySqlDataAccess(dbConnectin);
-                        List<UserMaster> userMasterList = dataAccess.GetUserMaster();
-                        var userRow = userMasterList.Where(x => x.Id == tweetCommand.UserId).FirstOrDefault();
-                        pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity} jap_api_key={userRow.JapApiKey}";
-
-                    }
-                    break;
-
                 case TweetProcTypes.JAPブックマーク:
-                    {
-                        // MySQLデータアクセスの初期化
-                        var dataAccess = new MySqlDataAccess(dbConnectin);
-                        List<UserMaster> userMasterList = dataAccess.GetUserMaster();
-                        var userRow = userMasterList.Where(x => x.Id == tweetCommand.UserId).FirstOrDefault();
-
-                        pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity} jap_api_key={userRow.JapApiKey}";
-
-                    }
-                    break;
-
                 case TweetProcTypes.JAPリポスト:
+                case TweetProcTypes.JAPプロフィール:
+                case TweetProcTypes.JAP詳細:
                     {
                         // MySQLデータアクセスの初期化
                         var dataAccess = new MySqlDataAccess(dbConnectin);
                         List<UserMaster> userMasterList = dataAccess.GetUserMaster();
                         var userRow = userMasterList.Where(x => x.Id == tweetCommand.UserId).FirstOrDefault();
-
                         pythonScriptPath += $" mode={GetTweetMode(tweetCommand.TweetProcType)} account_id={tweetCommand.AccountId} tweet_id={tweetCommand.TweetId} tweet_name={tweetCommand.TweetName} quantity={tweetCommand.Quantity} jap_api_key={userRow.JapApiKey}";
 
                     }
