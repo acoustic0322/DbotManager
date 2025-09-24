@@ -81,7 +81,7 @@ def outputLog(message):
 
     # 日付ごとのログファイル名
     today_str = datetime.now().strftime("%Y-%m-%d")
-    log_file = os.path.join(log_dir, f"{today_str}.log")
+    log_file = os.path.join(log_dir, f"{mode}_{today_str}.log")
 
     # 呼び出し元の情報を取得
     caller_frame = inspect.currentframe().f_back
@@ -140,6 +140,7 @@ media_dir = config.get("Paths", "media_dir", fallback=os.path.dirname(os.path.ab
 #print("media_dir=",media_dir)
 
 debug = True
+mode = ''
 
 db_host = "203.137.53.205"
 

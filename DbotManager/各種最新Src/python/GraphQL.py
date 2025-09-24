@@ -745,11 +745,12 @@ def get_replies(profile, user_id, screen_name, kind="tweets", limit=5):
             print("ERR:", err)
 
     elif kind == "replies_incoming":
-        print("replies_incoming")
+        outputLog("replies_incoming")
         # GraphQL SearchTimeline（to:screen_name）を優先
         ok, rows, err = fetch_replies_to_me_graphql(s, headers, screen_name, limit=limit)
+#        ok, rows, err = fetch_replies_to_me_graphql_hybrid(s, headers, screen_name, limit=limit)
 #        print("ok=",ok)
-        print("rows=",rows)
+        outputLog(f"rows={rows}")
 #        print("err=",err)
         if not ok or not isinstance(rows, list):
             _log(f"[WARN] incoming replies graphql失敗: {err}")
@@ -773,6 +774,8 @@ def get_replies(profile, user_id, screen_name, kind="tweets", limit=5):
                 type_wk = "self_reply"
             else:
                 type_wk = "reply_to_me"
+#            type_wk = "reply_to_me"
+
 
             normalized.append({
                 "tweet_id": r["tweet_id"],
@@ -1464,8 +1467,402 @@ def fetch_replies_to_my_tweets(s, headers, user_id: str, total_limit: int = 20, 
     results = sorted(all_by_id.values(), key=lambda x: (x["created_at_utc"] or ""), reverse=True)
     return (True, results[:total_limit], None) if results else (False, None, "no direct replies found")
 
+import json, re, time
+from typing import List, Tuple, Optional
+
+# ---- 追加ヘルパ：screen_name -> user_id（UserByScreenName） -----------------
+def _get_user_id_by_screen_name(s, headers, screen_name: str) -> Optional[str]:
+    # 収集器はあなたの環境に合わせて実装してください。ここでは SearchTimeline 収集器と同様の仕組みを流用する想定で、
+    # よく出回る op 名を総当たりします。
+    # 代表的op: "UserByScreenName"
+    candidates = [
+        ("UserByScreenName", None),
+        # まれに op 名に "UserByScreenNameQuery" のような派生がある
+        ("UserByScreenNameQuery", None),
+    ]
+    # qid はあなたの既存収集器があればそちらを使ってください。ここでは雑に /graphql を総当りしても可。
+    # 既存の collect_searchtimeline_pairs_with_session を流用できない場合は、
+    # すでに保持している (op, qid) マップから取り出す運用にしてください。
+    # 以下は「よくある key 名」だけを試す簡易版です（qidは後述の TweetDetail/UsersTweets 収集器で拾う想定）。
+    if hasattr(s, "known_graphql_pairs"):
+        for op, qid in s.known_graphql_pairs.get("UserByScreenName", []):
+            candidates.append((op, qid))
+
+    # 既知の qid 測定が無い場合はスキップ
+    tried = 0
+    for op, qid in candidates:
+        if not qid:
+            continue
+        url = f"https://x.com/i/api/graphql/{qid}/{op}"
+        variables = {"screen_name": screen_name, "withSafetyModeUserFields": True}
+        params = {
+            "variables": json.dumps(variables, separators=(",", ":")),
+            "features": json.dumps(_default_features(), separators=(",", ":")),
+        }
+        r = s.get(url, headers=headers, params=params, timeout=20)
+        tried += 1
+        if r.status_code != 200:
+            continue
+        data = r.json()
+        user = (
+            data.get("data", {})
+            .get("user", {})
+            .get("result", {})
+        )
+        if not user:
+            continue
+        rest_id = user.get("rest_id")
+        if rest_id:
+            return str(rest_id)
+    return None
+
+# ---- 追加ヘルパ：UserTweets/TweetDetail の (op,qid) 候補収集 -----------------
+def collect_usertweets_pairs_with_session(s):
+    # 代表的 op 候補
+    ops = ["UserTweets", "UserTweetsAndReplies", "UserTweetsWithReplies", "UserTweetsQuery"]
+    pairs = []
+    # 既知マップがセッションにあれば流用
+    if hasattr(s, "known_graphql_pairs"):
+        for name in ops:
+            for op, qid in s.known_graphql_pairs.get(name, []):
+                pairs.append((op, qid, name))
+    # フォールバック：何も無ければ空
+    return pairs or []
+
+def collect_tweetdetail_pairs_with_session(s):
+    ops = ["TweetDetail", "TweetDetailQuery", "TweetResultByRestId"]
+    pairs = []
+    if hasattr(s, "known_graphql_pairs"):
+        for name in ops:
+            for op, qid in s.known_graphql_pairs.get(name, []):
+                pairs.append((op, qid, name))
+    return pairs or []
+
+# ---- 追加ヘルパ：SearchTimeline の JSON から候補をyield -----------------------
+def _yield_search_candidates(json_obj):
+    # SearchTimeline の instructions -> entries から tweet_results を吸い上げる
+    instructions = (
+        json_obj.get("data", {})
+        .get("search_by_raw_query", {})
+        .get("search_timeline", {})
+        .get("timeline", {})
+        .get("instructions", [])
+    )
+    for ins in instructions:
+        entries = ins.get("entries") or []
+        for ent in entries:
+            content = ent.get("content", {})
+            item = content.get("itemContent") or content.get("content")
+            if not item:
+                # timelineModule or operation の場合はスキップ
+                continue
+            tweet = (item.get("tweet_results") or {}).get("result") or {}
+            legacy = tweet.get("legacy") or {}
+            if not legacy:
+                continue
+            rid = legacy.get("id_str")
+            if not rid:
+                continue
+            text = legacy.get("full_text") or legacy.get("text") or ""
+            created_at = legacy.get("created_at")
+            # 返信メタ
+            reply_to_id = legacy.get("in_reply_to_status_id_str")
+            reply_to_uid = legacy.get("in_reply_to_user_id_str")
+            sn = None
+            usr = tweet.get("core", {}).get("user_results", {}).get("result", {})
+            if usr:
+                sn = usr.get("legacy", {}).get("screen_name")
+            # 返信先ユーザーの @ は legacy.entities からも拾える場合あり（省略）
+            yield rid, text, created_at, reply_to_id, reply_to_uid, sn
+
+# ---- 追加ヘルパ：TweetDetail の JSON から “root への返信” をyield ------------
+def _yield_tweetdetail_replies(json_obj, root_tweet_id: str, own_user_id: Optional[str]):
+    """
+    TweetDetailは会話ツリー全体が返る。
+    root(=対象ツイート)への “直接返信” だけでなく、更に下層への返信も含まれる。
+    ここでは root への返信を主対象にしつつ、必要なら下層も拾う場合はコメントアウト解除。
+    """
+    conv = (
+        json_obj.get("data", {})
+        .get("threaded_conversation_with_injections", {})
+        .get("instructions", [])
+    )
+    for ins in conv:
+        entries = ins.get("entries") or []
+        for ent in entries:
+            item = ent.get("content", {}).get("itemContent", {})
+            tweet = (item.get("tweet_results") or {}).get("result") or {}
+            legacy = tweet.get("legacy") or {}
+            if not legacy:
+                continue
+            rid = legacy.get("id_str")
+            if not rid or rid == root_tweet_id:
+                continue
+            in_reply_to_status_id = legacy.get("in_reply_to_status_id_str")
+            in_reply_to_user_id = legacy.get("in_reply_to_user_id_str")
+            text = legacy.get("full_text") or legacy.get("text") or ""
+            created_at = legacy.get("created_at")
+
+            # “root への直接返信” に限定（多段も拾うなら下の if を緩める）
+            if in_reply_to_status_id != root_tweet_id:
+                continue
+
+            # 自分の返信は除外（相手からの返信だけ欲しいケースが多い）
+            if own_user_id and legacy.get("user_id_str") == own_user_id:
+                continue
+
+            yield (
+                rid, text, created_at,
+                in_reply_to_status_id, in_reply_to_user_id,
+                tweet.get("core", {}).get("user_results", {}).get("result", {}).get("legacy", {}).get("screen_name")
+            )
+
+# ---- 既存：検索系（SearchTimeline）強化版 -----------------------------------
+def _fetch_replies_via_searchtimeline_stronger(s, headers, screen_name: str, limit: int):
+    pairs = collect_searchtimeline_pairs_with_session(s)
+    if not pairs:
+        return False, None, "no (op,qid) candidates"
+
+    page_count = max(limit * 3, 80)  # 深掘り強化
+    tried = 0
+    OP_ORDER_BASE = ["AdaptiveSearchTimeline", "SearchTimeline",
+                     "AdaptiveSearchTimelineQuery", "SearchTimelineQuery"]
+    PRODUCTS = ["Latest", "Top"]  # 両方試す
+
+    by_id = {}
+
+    for op, qid, src, gap in pairs[:16]:
+        for op_try in [op] + [x for x in OP_ORDER_BASE if x != op]:
+            for product in PRODUCTS:
+                url = f"https://x.com/i/api/graphql/{qid}/{op_try}"
+                base_features = _default_features()
+                field_toggles = _default_field_toggles()
+                variables = {
+                    "rawQuery": f"to:{screen_name}",
+                    "count": page_count,
+                    "querySource": "typed_query",
+                    "product": product,
+                }
+                params = {
+                    "variables": json.dumps(variables, separators=(",", ":")),
+                    "features": json.dumps(base_features, separators=(",", ":")),
+                    "fieldToggles": json.dumps(field_toggles, separators=(",", ":")),
+                }
+                r = s.get(url, headers=headers, params=params, timeout=20)
+                tried += 1
+                if r.status_code == 400:
+                    text = r.text[:2000]
+                    feat1 = _augment_features_from_error(base_features, text)
+                    if feat1 != base_features:
+                        params["features"] = json.dumps(feat1, separators=(",", ":"))
+                        r = s.get(url, headers=headers, params=params, timeout=20)
+                if r.status_code in (403, 404):
+                    continue
+                if r.status_code != 200:
+                    continue
+
+                data = r.json()
+                for rid, text, created, reply_to_id, reply_to_uid, reply_to_sn in _yield_search_candidates(data):
+                    rid_s = str(rid)
+                    if rid_s in by_id:
+                        continue
+                    utc, jst = _normalize_created_at(created)
+                    by_id[rid_s] = {
+                        "tweet_id": rid_s,
+                        "text": text,
+                        "created_at": created,
+                        "created_at_utc": utc,
+                        "created_at_jst": jst,
+                        "reply_to_tweet_id": reply_to_id,
+                        "reply_to_user_id": reply_to_uid,
+                        "reply_to_screen_name": reply_to_sn,
+                        "_source": f"search:{product}:{op_try}",
+                    }
+
+                # ページング（最大 10 ページ）
+                cursor = _find_bottom_cursor(data)
+                pages = 1
+                while (len(by_id) < limit*3) and cursor and pages < 10:
+                    variables["cursor"] = cursor
+                    params["variables"] = json.dumps(variables, separators=(",", ":"))
+                    r2 = s.get(url, headers=headers, params=params, timeout=20)
+                    if r2.status_code != 200:
+                        break
+                    data2 = r2.json()
+                    for rid, text, created, reply_to_id, reply_to_uid, reply_to_sn in _yield_search_candidates(data2):
+                        rid_s = str(rid)
+                        if rid_s in by_id:
+                            continue
+                        utc, jst = _normalize_created_at(created)
+                        by_id[rid_s] = {
+                            "tweet_id": rid_s,
+                            "text": text,
+                            "created_at": created,
+                            "created_at_utc": utc,
+                            "created_at_jst": jst,
+                            "reply_to_tweet_id": reply_to_id,
+                            "reply_to_user_id": reply_to_uid,
+                            "reply_to_screen_name": reply_to_sn,
+                            "_source": f"search:{product}:{op_try}:p{pages+1}",
+                        }
+                    cursor = _find_bottom_cursor(data2)
+                    pages += 1
+
+    if not by_id:
+        return False, None, "no replies found via SearchTimeline"
+
+    results_all = sorted(by_id.values(), key=lambda x: (x["created_at_utc"] or ""), reverse=True)
+    return True, results_all[:limit], None
+
+# ---- 追加：自分の直近ツイート配下を TweetDetail で掘る -----------------------
+def _fetch_own_recent_tweet_ids(s, headers, user_id: str, max_tweets: int = 30) -> List[str]:
+    pairs = collect_usertweets_pairs_with_session(s)
+    if not pairs:
+        return []
+    by_id = []
+    for op, qid, _src in pairs[:6]:
+        url = f"https://x.com/i/api/graphql/{qid}/{op}"
+        variables = {
+            "userId": user_id,
+            "count": max(50, max_tweets),
+            "includePromotedContent": False,
+            "withQuickPromoteEligibilityTweetFields": True,
+        }
+        params = {
+            "variables": json.dumps(variables, separators=(",", ":")),
+            "features": json.dumps(_default_features(), separators=(",", ":")),
+        }
+        r = s.get(url, headers=headers, params=params, timeout=20)
+        if r.status_code != 200:
+            continue
+        data = r.json()
+        instructions = (
+            data.get("data", {})
+            .get("user", {})
+            .get("result", {})
+            .get("timeline_v2", {})
+            .get("timeline", {})
+            .get("instructions", [])
+        )
+        for ins in instructions:
+            entries = ins.get("entries") or []
+            for ent in entries:
+                content = ent.get("content", {}).get("itemContent", {})
+                tweet = (content.get("tweet_results") or {}).get("result") or {}
+                legacy = tweet.get("legacy") or {}
+                tid = legacy.get("id_str")
+                if tid and tid not in by_id:
+                    by_id.append(tid)
+        if by_id:
+            break
+    return by_id[:max_tweets]
+
+def _fetch_replies_via_tweetdetail(s, headers, root_ids: List[str], own_user_id: Optional[str], limit: int):
+    pairs = collect_tweetdetail_pairs_with_session(s)
+    if not pairs:
+        return False, None, "no (op,qid) for TweetDetail"
+
+    by_id = {}
+    for root_id in root_ids:
+        for op, qid, _src in pairs[:6]:
+            url = f"https://x.com/i/api/graphql/{qid}/{op}"
+            variables = {
+                "focalTweetId": str(root_id),
+                "with_rux_injections": False,
+                "includePromotedContent": False,
+                "withCommunity": True,
+                "withQuickPromoteEligibilityTweetFields": True,
+                "withBirdwatchNotes": False,
+                "withVoice": True,
+            }
+            params = {
+                "variables": json.dumps(variables, separators=(",", ":")),
+                "features": json.dumps(_default_features(), separators=(",", ":")),
+            }
+            r = s.get(url, headers=headers, params=params, timeout=20)
+            if r.status_code != 200:
+                continue
+            data = r.json()
+            for rid, text, created, reply_to_id, reply_to_uid, reply_to_sn in _yield_tweetdetail_replies(data, root_id, own_user_id):
+                rid_s = str(rid)
+                if rid_s in by_id:
+                    continue
+                utc, jst = _normalize_created_at(created)
+                by_id[rid_s] = {
+                    "tweet_id": rid_s,
+                    "text": text,
+                    "created_at": created,
+                    "created_at_utc": utc,
+                    "created_at_jst": jst,
+                    "reply_to_tweet_id": reply_to_id,
+                    "reply_to_user_id": reply_to_uid,
+                    "reply_to_screen_name": reply_to_sn,
+                    "_source": f"detail:{root_id}",
+                }
+                if len(by_id) >= limit * 3:
+                    break
+            if len(by_id) >= limit * 3:
+                break
+        if len(by_id) >= limit * 3:
+            break
+
+    if not by_id:
+        return False, None, "no replies via TweetDetail"
+    results_all = sorted(by_id.values(), key=lambda x: (x["created_at_utc"] or ""), reverse=True)
+    return True, results_all[:limit], None
+
+# ---- 最終：ハイブリッド集約 API ----------------------------------------------
+def fetch_replies_to_me_graphql_hybrid(
+    s, headers, screen_name: str, limit: int = 20, lookback_tweets: int = 25
+) -> Tuple[bool, Optional[List[dict]], Optional[str]]:
+    """
+    1) SearchTimeline（to:screen_name）で幅広く収集
+    2) 自分の直近ツイートIDを取り、TweetDetail から“純返信”を収集
+    3) マージして重複排除＆降順
+    """
+    try:
+        if screen_name.startswith("@"):
+            screen_name = screen_name[1:]
+
+        # A) 検索系（to:me）
+        okA, resA, errA = _fetch_replies_via_searchtimeline_stronger(s, headers, screen_name, limit)
+        resA = resA or []
+
+        # B) スレ掘り（TweetDetail）
+        own_user_id = _get_user_id_by_screen_name(s, headers, screen_name)
+        resB = []
+        if own_user_id:
+            roots = _fetch_own_recent_tweet_ids(s, headers, own_user_id, max_tweets=max(10, lookback_tweets))
+            if roots:
+                okB, resB, errB = _fetch_replies_via_tweetdetail(s, headers, roots, own_user_id, limit)
+                resB = resB or []
+
+        # マージ（tweet_id 一意化）
+        by_id = {}
+        for arr in (resA, resB):
+            for r in arr:
+                rid = r["tweet_id"]
+                # created_at_utc が欠けている場合は補完優先で上書き
+                if rid in by_id:
+                    if not by_id[rid].get("created_at_utc") and r.get("created_at_utc"):
+                        by_id[rid] = r
+                else:
+                    by_id[rid] = r
+
+        if not by_id:
+            return False, None, "no replies found (search+detail)"
+
+        results_all = sorted(by_id.values(), key=lambda x: (x["created_at_utc"] or ""), reverse=True)
+        return True, results_all[:limit], None
+
+    except Exception as ex:
+        return False, None, f"hybrid parse error: {ex}"
+
 
 def fetch_replies_to_me_graphql(s, headers, screen_name, limit=5):
+
+    outputLog("fetch_replies_to_me_graphql Start")
+
     if screen_name.startswith("@"):
         screen_name = screen_name[1:]
 
@@ -1607,11 +2004,16 @@ def fetch_replies_to_me_graphql(s, headers, screen_name, limit=5):
                 )
                 results = results_all[:limit]
 
+                outputLog("fetch_replies_to_me_graphql End True")
                 return (True, results, None) if results else (False, None, "no replies found")
 
             except Exception as ex:
+                outputLog("fetch_replies_to_me_graphql End False1")
+                outputLog(f"parse error: {ex}")
                 return False, None, f"parse error: {ex}"
 
+        outputLog("fetch_replies_to_me_graphql End False2")
+        outputLog(f"all {tried} (op,qid) candidates exhausted")
     return False, None, f"all {tried} (op,qid) candidates exhausted"
 
 from typing import Optional, Any
