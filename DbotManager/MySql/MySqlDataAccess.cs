@@ -48,7 +48,7 @@ public class MySqlDataAccess
                 string query = @"
                 SELECT 
                     user_id, user_name, account_id, account_name, paid, comment, mode, 
-                    target_tweet_id, result, error_log, updatetime , vps_id
+                    target_tweet_id, result, error_log, updatetime , vps_id , error_type
                 FROM 
                     tweet_history_view ";
 
@@ -105,6 +105,7 @@ public class MySqlDataAccess
                                     ErrorLog = reader["error_log"].ToString(),
                                     UpdateTime = Convert.ToDateTime(reader["updatetime"]),
                                     VpsId = int.Parse(reader["vps_id"].ToString()),
+                                    TweetErrorType = GetTweetErrorType(reader["error_type"].ToString())
                                 };
 
                                 tweetHistoryList.Add(tweetHistory);
@@ -143,6 +144,13 @@ public class MySqlDataAccess
         else if (value == "check_refresh") return TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新;
 
         return TweetProcTypes.NONE;
+    }
+
+    private TweetErrorTypes GetTweetErrorType(string value)
+    {
+        if (value == "lock") return TweetErrorTypes.ロック;
+        else if (value == "suspension") return TweetErrorTypes.凍結;
+        return TweetErrorTypes.未設定;
     }
 
     #region AccountMaster

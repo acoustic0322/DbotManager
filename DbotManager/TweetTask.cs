@@ -42,6 +42,13 @@ namespace DbotManager
         監視初期化
     }
 
+    public enum TweetErrorTypes
+    {
+        未設定,
+        ロック,
+        凍結,
+    }
+
     public enum CheckAccountModes
     {
         監視,

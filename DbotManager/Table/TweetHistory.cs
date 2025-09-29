@@ -20,5 +20,6 @@ namespace DbotManager.Table
         public DateTime? UpdateTime { get; set; }
         public string ErrorLog { get; set; }
         public bool Result { get; set; }
+        public TweetErrorTypes TweetErrorType { get; set; }
     }
 }

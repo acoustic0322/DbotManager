@@ -329,12 +329,22 @@ def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , 
         cursorclass=pymysql.cursors.DictCursor        
     )
     try:
+
+        error_type = ""
+
+        if "Your account is temporarily locked" in error_log:
+            error_type = "lock"
+        elif "The user used for authentication is suspended" in error_log:
+            error_type = "suspention"
+        else:
+            error_type = ""        
+
         with connection.cursor() as cursor:
             sql = """
-                INSERT INTO tweet_history (account_id, comment_id, mode, target_tweet_id, updatetime , result , error_log , result2 , error_log2)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO tweet_history (account_id, comment_id, mode, target_tweet_id, updatetime , result , error_log , result2 , error_log2 , error_type)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql, (account_id, comment_id, mode, target_tweet_id, datetime.now(), result , error_log , result2 , error_log2  ))
+            cursor.execute(sql, (account_id, comment_id, mode, target_tweet_id, datetime.now(), result , error_log , result2 , error_log2 , erro_type ))
             connection.commit()
     finally:
         connection.close() 

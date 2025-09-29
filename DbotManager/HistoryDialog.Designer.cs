@@ -42,6 +42,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.checkBoxVPS = new System.Windows.Forms.CheckBox();
             this.comboBoxVPS = new System.Windows.Forms.ComboBox();
+            this.checkBoxErrorType = new System.Windows.Forms.CheckBox();
+            this.comboBoxErrorType = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).BeginInit();
             this.SuspendLayout();
             // 
@@ -55,12 +57,12 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridViewTweetHistory.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.dataGridViewTweetHistory.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewTweetHistory.Location = new System.Drawing.Point(12, 56);
+            this.dataGridViewTweetHistory.Location = new System.Drawing.Point(12, 82);
             this.dataGridViewTweetHistory.Name = "dataGridViewTweetHistory";
             this.dataGridViewTweetHistory.RowHeadersVisible = false;
             this.dataGridViewTweetHistory.RowTemplate.Height = 21;
             this.dataGridViewTweetHistory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.dataGridViewTweetHistory.Size = new System.Drawing.Size(1702, 591);
+            this.dataGridViewTweetHistory.Size = new System.Drawing.Size(1702, 565);
             this.dataGridViewTweetHistory.TabIndex = 1;
             // 
             // buttonSearch
@@ -80,7 +82,7 @@
             this.comboBoxUserMaster.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxUserMaster.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
             this.comboBoxUserMaster.FormattingEnabled = true;
-            this.comboBoxUserMaster.Location = new System.Drawing.Point(95, 14);
+            this.comboBoxUserMaster.Location = new System.Drawing.Point(102, 12);
             this.comboBoxUserMaster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comboBoxUserMaster.Name = "comboBoxUserMaster";
             this.comboBoxUserMaster.Size = new System.Drawing.Size(140, 27);
@@ -103,7 +105,7 @@
             // 
             this.checkBoxAccount.AutoSize = true;
             this.checkBoxAccount.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.checkBoxAccount.Location = new System.Drawing.Point(250, 16);
+            this.checkBoxAccount.Location = new System.Drawing.Point(12, 53);
             this.checkBoxAccount.Name = "checkBoxAccount";
             this.checkBoxAccount.Size = new System.Drawing.Size(83, 23);
             this.checkBoxAccount.TabIndex = 7;
@@ -116,7 +118,7 @@
             this.comboBoxAccount.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxAccount.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
             this.comboBoxAccount.FormattingEnabled = true;
-            this.comboBoxAccount.Location = new System.Drawing.Point(340, 14);
+            this.comboBoxAccount.Location = new System.Drawing.Point(102, 51);
             this.comboBoxAccount.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comboBoxAccount.Name = "comboBoxAccount";
             this.comboBoxAccount.Size = new System.Drawing.Size(151, 27);
@@ -127,7 +129,7 @@
             // 
             this.checkBoxモード.AutoSize = true;
             this.checkBoxモード.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.checkBoxモード.Location = new System.Drawing.Point(503, 16);
+            this.checkBoxモード.Location = new System.Drawing.Point(274, 13);
             this.checkBoxモード.Name = "checkBoxモード";
             this.checkBoxモード.Size = new System.Drawing.Size(62, 23);
             this.checkBoxモード.TabIndex = 9;
@@ -140,10 +142,10 @@
             this.comboBoxモード.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxモード.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
             this.comboBoxモード.FormattingEnabled = true;
-            this.comboBoxモード.Location = new System.Drawing.Point(572, 14);
+            this.comboBoxモード.Location = new System.Drawing.Point(343, 9);
             this.comboBoxモード.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comboBoxモード.Name = "comboBoxモード";
-            this.comboBoxモード.Size = new System.Drawing.Size(151, 27);
+            this.comboBoxモード.Size = new System.Drawing.Size(120, 27);
             this.comboBoxモード.TabIndex = 8;
             this.comboBoxモード.SelectedIndexChanged += new System.EventHandler(this.comboBoxモード_SelectedIndexChanged);
             // 
@@ -165,7 +167,7 @@
             this.checkBoxエラー.Checked = true;
             this.checkBoxエラー.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBoxエラー.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.checkBoxエラー.Location = new System.Drawing.Point(744, 16);
+            this.checkBoxエラー.Location = new System.Drawing.Point(475, 11);
             this.checkBoxエラー.Name = "checkBoxエラー";
             this.checkBoxエラー.Size = new System.Drawing.Size(116, 23);
             this.checkBoxエラー.TabIndex = 11;
@@ -198,7 +200,7 @@
             // 
             this.checkBoxVPS.AutoSize = true;
             this.checkBoxVPS.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
-            this.checkBoxVPS.Location = new System.Drawing.Point(885, 16);
+            this.checkBoxVPS.Location = new System.Drawing.Point(274, 51);
             this.checkBoxVPS.Name = "checkBoxVPS";
             this.checkBoxVPS.Size = new System.Drawing.Size(57, 23);
             this.checkBoxVPS.TabIndex = 15;
@@ -211,18 +213,42 @@
             this.comboBoxVPS.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxVPS.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
             this.comboBoxVPS.FormattingEnabled = true;
-            this.comboBoxVPS.Location = new System.Drawing.Point(954, 14);
+            this.comboBoxVPS.Location = new System.Drawing.Point(343, 49);
             this.comboBoxVPS.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comboBoxVPS.Name = "comboBoxVPS";
-            this.comboBoxVPS.Size = new System.Drawing.Size(151, 27);
+            this.comboBoxVPS.Size = new System.Drawing.Size(112, 27);
             this.comboBoxVPS.TabIndex = 14;
             this.comboBoxVPS.SelectedIndexChanged += new System.EventHandler(this.comboBoxVPS_SelectedIndexChanged);
+            // 
+            // checkBoxErrorType
+            // 
+            this.checkBoxErrorType.AutoSize = true;
+            this.checkBoxErrorType.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.checkBoxErrorType.Location = new System.Drawing.Point(475, 51);
+            this.checkBoxErrorType.Name = "checkBoxErrorType";
+            this.checkBoxErrorType.Size = new System.Drawing.Size(91, 23);
+            this.checkBoxErrorType.TabIndex = 17;
+            this.checkBoxErrorType.Text = "エラー種別";
+            this.checkBoxErrorType.UseVisualStyleBackColor = true;
+            // 
+            // comboBoxErrorType
+            // 
+            this.comboBoxErrorType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxErrorType.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.comboBoxErrorType.FormattingEnabled = true;
+            this.comboBoxErrorType.Location = new System.Drawing.Point(591, 49);
+            this.comboBoxErrorType.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.comboBoxErrorType.Name = "comboBoxErrorType";
+            this.comboBoxErrorType.Size = new System.Drawing.Size(124, 27);
+            this.comboBoxErrorType.TabIndex = 16;
             // 
             // HistoryDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1726, 659);
+            this.Controls.Add(this.checkBoxErrorType);
+            this.Controls.Add(this.comboBoxErrorType);
             this.Controls.Add(this.checkBoxVPS);
             this.Controls.Add(this.comboBoxVPS);
             this.Controls.Add(this.label1);
@@ -262,5 +288,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox checkBoxVPS;
         private System.Windows.Forms.ComboBox comboBoxVPS;
+        private System.Windows.Forms.CheckBox checkBoxErrorType;
+        private System.Windows.Forms.ComboBox comboBoxErrorType;
     }
 }

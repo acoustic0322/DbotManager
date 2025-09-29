@@ -50,6 +50,7 @@ namespace DbotManager
             FillControls_UserName();
             FillControls_AccountName();
             FillControls_Mode();
+            FillControls_ErrorType();
             FillControls_Vps();
         }
 
@@ -113,12 +114,6 @@ namespace DbotManager
         {
             var items = Enum.GetValues(typeof(TweetProcTypes))
                 .Cast<TweetProcTypes>()
-                /*
-                .Where(x => x != TweetProcTypes)  // ← 除外条件
-                .Where(x => x != TweetProcTypes.NONE)  // ← 除外条件
-                .Where(x => x != TweetProcTypes.NONE)  // ← 除外条件
-                .Where(x => x != TweetProcTypes.NONE)  // ← 除外条件
-                */
                 .Select(e => new
                 {
                     Value = e,
@@ -129,6 +124,22 @@ namespace DbotManager
             comboBoxモード.DataSource = items;
             comboBoxモード.DisplayMember = "Display";
             comboBoxモード.ValueMember = "Value";
+        }
+
+        private void FillControls_ErrorType()
+        {
+            var items = Enum.GetValues(typeof(TweetErrorTypes))
+                .Cast<TweetErrorTypes>()
+                .Select(e => new
+                {
+                    Value = e,
+                    Display = GetEnumDescription(e)
+                })
+                .ToList();
+
+            comboBoxErrorType.DataSource = items;
+            comboBoxErrorType.DisplayMember = "Display";
+            comboBoxErrorType.ValueMember = "Value";
         }
 
         private string GetEnumDescription(Enum value)
@@ -164,6 +175,7 @@ namespace DbotManager
                 if (checkBoxAccount.Checked) dspHistoryList = dspHistoryList.Where(x => x.AccountId == (int)comboBoxAccount.SelectedValue).ToList();
                 if (checkBoxモード.Checked) dspHistoryList = dspHistoryList.Where(x => x.Mode == (TweetProcTypes)comboBoxモード.SelectedValue).ToList();
                 if (checkBoxVPS.Checked) dspHistoryList = dspHistoryList.Where(x => x.VpsId == (int)comboBoxVPS.SelectedValue).ToList();
+                if (checkBoxErrorType.Checked) dspHistoryList = dspHistoryList.Where(x => x.TweetErrorType == (TweetErrorTypes)comboBoxErrorType.SelectedValue).ToList();
 
                 // 匿名型で表示用データを作成（表示したい列だけ）
                 var displayList = dspHistoryList.Select(x => new
@@ -175,6 +187,7 @@ namespace DbotManager
                     アカウント名 = $"{x.AccountName}",
                     モード = x.Mode,// GetModeName(x.Mode),
                     結果 = x.Result ? "" : "×",
+                    エラー種別 = x.TweetErrorType,
                     LOG = x.ErrorLog,
                     ポスト内容 = x.Comment,
                 }).ToList();
@@ -191,6 +204,7 @@ namespace DbotManager
                 dataGridViewTweetHistory.Columns["モード"].Width = 80;
                 dataGridViewTweetHistory.Columns["結果"].Width = 50;
                 dataGridViewTweetHistory.Columns["ポスト内容"].Width = 200;
+                dataGridViewTweetHistory.Columns["エラー種別"].Width = 250;
                 dataGridViewTweetHistory.Columns["LOG"].Width = 250;
 
                 dataGridViewTweetHistory.AllowUserToResizeColumns = true;
