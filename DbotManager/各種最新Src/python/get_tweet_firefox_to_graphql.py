@@ -49,6 +49,8 @@ def proc_get_tweet(credentials):
     else:
         outputLog(f"from db profile_path={profile_path}")
 
+#    vps_id = 0
+
     check_records = get_check_tweet_account_masters_by_vps_id(vps_id)
 
 #    check_record = get_check_tweet_account_master_by_account_name(user_name)

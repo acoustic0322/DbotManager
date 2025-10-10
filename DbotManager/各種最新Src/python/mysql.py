@@ -344,7 +344,7 @@ def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , 
                 INSERT INTO tweet_history (account_id, comment_id, mode, target_tweet_id, updatetime , result , error_log , result2 , error_log2 , error_type)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql, (account_id, comment_id, mode, target_tweet_id, datetime.now(), result , error_log , result2 , error_log2 , erro_type ))
+            cursor.execute(sql, (account_id, comment_id, mode, target_tweet_id, datetime.now(), result , error_log , result2 , error_log2 , error_type ))
             connection.commit()
     finally:
         connection.close() 

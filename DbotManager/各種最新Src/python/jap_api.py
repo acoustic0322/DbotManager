@@ -59,8 +59,9 @@ def proc_bookmark_jap(tweet_name, tweet_id , jap_api_key , quantity = 10):
     api_url = 'https://justanotherpanel.com/api/v2'
 
     action = 'add'            # アクションタイプ
-    service_id = '1017'  # Japan Likes専用サービスID
-
+#    service_id = '1017'  # Japan Likes専用サービスID
+    service_id = '7722'  # 2025.10.05 変更
+    
     link = f'https://x.com/{tweet_name}/status/{tweet_id}'
 
 #    outputLog(link)
