@@ -44,6 +44,7 @@
             this.comboBoxVPS = new System.Windows.Forms.ComboBox();
             this.checkBoxErrorType = new System.Windows.Forms.CheckBox();
             this.comboBoxErrorType = new System.Windows.Forms.ComboBox();
+            this.checkBox重複ログを非表示 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTweetHistory)).BeginInit();
             this.SuspendLayout();
             // 
@@ -242,11 +243,26 @@
             this.comboBoxErrorType.Size = new System.Drawing.Size(124, 27);
             this.comboBoxErrorType.TabIndex = 16;
             // 
+            // checkBox重複ログを非表示
+            // 
+            this.checkBox重複ログを非表示.AutoSize = true;
+            this.checkBox重複ログを非表示.Checked = true;
+            this.checkBox重複ログを非表示.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox重複ログを非表示.Font = new System.Drawing.Font("Meiryo UI", 11.25F);
+            this.checkBox重複ログを非表示.Location = new System.Drawing.Point(599, 9);
+            this.checkBox重複ログを非表示.Name = "checkBox重複ログを非表示";
+            this.checkBox重複ログを非表示.Size = new System.Drawing.Size(137, 23);
+            this.checkBox重複ログを非表示.TabIndex = 18;
+            this.checkBox重複ログを非表示.Text = "重複ログを非表示";
+            this.checkBox重複ログを非表示.UseVisualStyleBackColor = true;
+            this.checkBox重複ログを非表示.CheckedChanged += new System.EventHandler(this.checkBox重複ログを非表示_CheckedChanged);
+            // 
             // HistoryDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1726, 659);
+            this.Controls.Add(this.checkBox重複ログを非表示);
             this.Controls.Add(this.checkBoxErrorType);
             this.Controls.Add(this.comboBoxErrorType);
             this.Controls.Add(this.checkBoxVPS);
@@ -290,5 +306,6 @@
         private System.Windows.Forms.ComboBox comboBoxVPS;
         private System.Windows.Forms.CheckBox checkBoxErrorType;
         private System.Windows.Forms.ComboBox comboBoxErrorType;
+        private System.Windows.Forms.CheckBox checkBox重複ログを非表示;
     }
 }

@@ -177,6 +177,24 @@ namespace DbotManager
                 if (checkBoxVPS.Checked) dspHistoryList = dspHistoryList.Where(x => x.VpsId == (int)comboBoxVPS.SelectedValue).ToList();
                 if (checkBoxErrorType.Checked) dspHistoryList = dspHistoryList.Where(x => x.TweetErrorType == (TweetErrorTypes)comboBoxErrorType.SelectedValue).ToList();
 
+                if(checkBox重複ログを非表示.Checked)
+                {
+                    // Result=true のときは ErrorLog を無視、false のときだけ ErrorLog をキーに含める
+                    dspHistoryList = dspHistoryList
+                        .GroupBy(x => new
+                        {
+                            x.AccountId,
+                            x.Mode,
+                            x.Result,
+                            ErrorKey = x.Result ? "" : (x.ErrorLog ?? "").Trim() // trueなら固定キー、falseならErrorLog
+                        })
+                        .Select(g => g
+                            .OrderByDescending(x => x.UpdateTime ?? DateTime.MinValue) // 各グループで最新1件
+                            .First())
+                        .OrderByDescending(x => x.UpdateTime ?? DateTime.MinValue)     // 全体も新しい順に
+                        .ToList();
+                }
+
                 // 匿名型で表示用データを作成（表示したい列だけ）
                 var displayList = dspHistoryList.Select(x => new
                 {
@@ -296,6 +314,12 @@ namespace DbotManager
             if (_isLoading) return;
             button再表示.BackColor = Color.Red;
 
+        }
+
+        private void checkBox重複ログを非表示_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_isLoading) return;
+            button再表示.BackColor = Color.Red;
         }
     }
 }
