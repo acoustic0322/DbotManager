@@ -149,7 +149,7 @@ public class MySqlDataAccess
     private TweetErrorTypes GetTweetErrorType(string value)
     {
         if (value == "lock") return TweetErrorTypes.ロック;
-        else if (value == "suspension") return TweetErrorTypes.凍結;
+        else if (value == "suspention") return TweetErrorTypes.凍結;
         return TweetErrorTypes.未設定;
     }
 
