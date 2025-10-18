@@ -39,7 +39,12 @@ from datetime import datetime, timezone
 sys.path.append(os.path.abspath("chatgpt"))
 
 from chatgpt_reply import generate_reply
-from chatgpt_tweet import generate_tweet,refine_tweet,generate_trend_tweet_by_keyword
+#from chatgpt_tweet import generate_tweet,refine_tweet,generate_trend_tweet_by_keyword
+from chatgpt_tweet import generate_tweet
+
+# 2025.10.15 追加
+from prompt import PROMPT1
+from prompt import past_tweets_1
 
 
 def createClient(credentials):
@@ -286,9 +291,9 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
             comment = generate_reply(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_reply_example'],tweet_text)  #コメント内容
 
             # 裏垢女子モード時は文章を整形
-            if ai_mode == 2:
-                outputLog("裏垢女子")
-                comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
+#            if ai_mode == 2:
+#                outputLog("裏垢女子")
+#                comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
 
             outputLog(f"ツイート文:{tweet_text}")           
             outputLog(f"リプライコメント:{comment}")           
@@ -318,12 +323,14 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
                     outputLog("ai_post_exampleが未設定のため中止")
                     return False, "ai_post_example未設定"                
 
-                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
+#                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
 
-                # 裏垢女子モード時は文章を整形
-                if ai_mode == 2:
-                    outputLog("裏垢女子")
-                    comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
+                comment = generate_tweet(credentials['GROQ_API_KEY'],PROMPT1,past_tweets_1)
+
+#                # 裏垢女子モード時は文章を整形
+#                if ai_mode == 2:
+#                    outputLog("裏垢女子")
+#                    comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
             else:
                 kw1 , kw2 = get_trend_list_keyword()
                 outputLog(f"kw1={kw1}")
@@ -841,10 +848,10 @@ def check_replies(search_account , reply_account):
             text
             )
 
-        refined_tweet = refine_tweet(
-            reply_account['OPENAI_API_KEY'],
-            reply_message
-            )
+#        refined_tweet = refine_tweet(
+#            reply_account['OPENAI_API_KEY'],
+#            reply_message
+#            )
 
         #Twitter に返信
         post_reply_v2(reply_account, tweet_id, username, refined_tweet)

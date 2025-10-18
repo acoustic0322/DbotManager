@@ -40,6 +40,9 @@ api = tweepy.API(auth)
 
 
 def call_api_with_retry(url, payload, headers, retries=5, delay=2):
+
+    print("payload=",payload)
+
     """503エラー時に指数バックオフでリトライするAPI呼び出し関数"""
     for attempt in range(retries):
         response = requests.post(url, headers=headers, json=payload)
@@ -59,41 +62,40 @@ def call_api_with_retry(url, payload, headers, retries=5, delay=2):
     print("最大リトライ回数を超えました。")
     return None
 
-def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
-    """OpenAI GPTで自然なツイートリプライを生成する関数"""
+def generate_reply(groq_api_key,prompt,past_tweets,original_tweet):
 
+    """Groqのmixtral-8x7b-32768を使ってツイートを生成する関数"""
+    # ランダムなプロンプトを選択
 
     USEPROMPT = prompt
 
+    # 文字型(改行)で入ってきたら、listに変換
+    if isinstance(past_tweets, str):
+        past_tweets = [line.strip() for line in past_tweets.splitlines() if line.strip()]    
+
+    outputLog(f"prompt:{prompt}")
+    outputLog(f"past_tweets:{past_tweets}")
 
     # 過去のツイートをランダムに2つ選択
     random_past_tweets = random.sample(past_tweets, 2)
+
     # 改行で結合して、自然な文章にする
     random_past_tweets = "\n".join(random_past_tweets)
+    outputLog(f"random_past_tweets:{random_past_tweets}")
 
-    payload = {
-        "model": "gpt-3.5-turbo",  # または "gpt-4"
-        "messages": [
-            {"role": "system", "content": "あなたはTwitterで自然な日本語のリプライを作成するAIです。以下のルールに従ってください：\
-                ・英語表現はすべて自然な日本語に翻訳する\
-                ・詩的すぎる表現は避ける\
-                ・カジュアルでフレンドリーな口調\
-                ・140文字以内"},
-            {"role": "user", "content": f"このツイートに対して返信を作ってください: {original_tweet}"},
-            {"role": "user", "content": f"{USEPROMPT}\n\n以下は過去のツイートの一例です。参考にしてください：\n{random_past_tweets}"}
-        ],
-        "temperature": 0.7
-    }
+    payload_generate_reply["messages"] = [
+        {"role": "system", "content": "あなたはTwitterでお礼のリプライを作成するAIです。"},
+        {"role": "user", "content": f"このツイートに対してリプライを作成してください: {original_tweet}"},
+        {"role": "user", "content": f"{USEPROMPT}\n\n以下は過去のツイートの一例です。参考にしてください。\n\n{random_past_tweets}"}
+    ]
 
-
-
+    #Groq の API にアクセスするための認証情報を送信
     headers = {
-        "Authorization": f"Bearer {open_ai_api_key}",
-        "Content-Type": "application/json"
+        "Authorization": f"Bearer {groq_api_key}",
+        "Content-Type": "application/json"#APIに送るフォーマット指定
     }
 
-    url = "https://api.openai.com/v1/chat/completions"
-
+    url = "https://api.groq.com/openai/v1/chat/completions"
 
     # APIリクエスト（503エラー時は自動リトライ）
     response_data = call_api_with_retry(url, payload_generate_reply, headers)
@@ -123,12 +125,53 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
         content = re.sub(r"僕", "私", content)  # 「僕」を「私」に変換
         content = re.sub(r'["\']', "", content).strip()  # ダブルクォートとシングルクォートを削除
 
+
+        outputLog(f"生成文章:{content}")
+
         return content
 
     print("最大リトライ回数を超えました。リプライ生成をスキップします。")
     return "リプライ生成エラー"
 
     
+
+def refine_tweet(open_ai_api_key,tweet):
+    """ツイートを再度AIにかけて、英語を日本語に、詩的な表現を抑えて自然にする"""
+
+    payload_refine_tweet["messages"] = [ 
+        {"role": "system", "content": "あなたはツイートを修正するAIです。以下のルールを守ってツイートを自然な日本語に修正してください。\
+            ・**英語の単語があれば、すべて自然な日本語に翻訳する。**\
+            ・**詩的な表現を排除し、カジュアルな話し言葉に変換する。**\
+            ・**140字以内に抑える。**\
+            ・**敬語は禁止し、カジュアルな口調にする。**"},
+        {"role": "user", "content": f"修正してください: {tweet}"}
+    ]
+
+    headers = {
+        "Authorization": f"Bearer {open_ai_api_key}", 
+        "Content-Type": "application/json"
+    }
+
+    url = "https://api.openai.com/v1/chat/completions"
+
+    # APIリクエスト（503エラー時は自動リトライ）
+    response_data = call_api_with_retry(url, payload_refine_tweet, headers)
+
+    if response_data:
+        return response_data["choices"][0]["message"]["content"].strip()
+
+    print("最大リトライ回数を超えました。元のツイートを使用します。")
+    return tweet  # 失敗した場合は元のツイートを返す
+
+    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload_refine_tweet)
+
+    if response.status_code in [200, 201]:
+        return response.json()["choices"][0]["message"]["content"].strip()
+    else:
+        outputLog(f"エラー: {response.status_code}, {response.text}")
+        return tweet  # 修正できなかった場合は元のツイートを返す
+
+
 
 
 
@@ -167,9 +210,12 @@ class AutoReplyStream(tweepy.StreamingClient):
                 text
                 )
 
+            refined_tweet = refine_tweet(OPENAI_API_KEY,reply_message)
+
+
             #Twitter に返信
-            post_reply(tweet_id, username, reply_message)
-            outputLog(f"自動返信: {reply_message}")  #ログ出力
+            post_reply(tweet_id, username, refined_tweet)
+            outputLog(f"自動返信: {refined_tweet}")  #ログ出力
 
         except json.JSONDecodeError as e:
             outputLog(f"JSONデコードエラー: {e}")

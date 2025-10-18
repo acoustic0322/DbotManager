@@ -5,12 +5,11 @@ import requests
 import re 
 import schedule 
 
-# 2025.10.15 コメントアウト
-#from prompt import PROMPT1_FIX1
-#from prompt import PROMPT1_FIX2
-#from prompt import PROMPT1_FREE
 
-from prompt import PROMPT1
+from prompt import PROMPT1_FIX1
+from prompt import PROMPT1_FIX2
+from prompt import PROMPT1_FREE
+
 from prompt import past_tweets_1
 
 from prompt import payload_generate_tweet
@@ -18,6 +17,8 @@ from prompt import payload_generate_reply
 from prompt import payload_refine_tweet
 from prompt import payload_generate_trend_tweet
 
+import tkinter as tk
+from tkinter import ttk, messagebox
 
 from config import outputLog
 #config.debug = False
@@ -29,6 +30,7 @@ ACCESS_TOKEN = ""
 ACCESS_TOKEN_SECRET = ""
 BEARER_TOKEN = ""
 TWITTER_USERNAME = ""
+GROQ_API_KEY = ""
 OPENAI_API_KEY = ""
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
@@ -58,15 +60,15 @@ def call_api_with_retry(url, payload, headers, retries=5, delay=2):
 
 
 # 過去のツイート
-def generate_tweet(OPENAI_API_KEY,prompt,past_tweets):
+def generate_tweet(groq_api_key,prompt,past_tweets):
 
     outputLog(past_tweets)
 
 
-    """GPTを使ってツイートを生成する関数"""
+    """Groqのmixtral-8x7b-32768を使ってツイートを生成する関数"""
 
     # 過去のツイートをランダムに2つ選択
-    random_past_tweets = random.sample(past_tweets,1)
+    random_past_tweets = random.sample(past_tweets, 2)
     # 改行で結合して、自然な文章にする
     random_past_tweets = "\n".join(random_past_tweets)
 
@@ -77,13 +79,16 @@ def generate_tweet(OPENAI_API_KEY,prompt,past_tweets):
         {"role": "user", "content": f"{prompt}\n\n以下は過去のツイートの一例です。参考にしてください。\n\n{random_past_tweets}"}
     ]
         
+    #Groq の API にアクセスするための認証情報を送信
     headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-        "Content-Type": "application/json"
+        "Authorization": f"Bearer {groq_api_key}",
+        "Content-Type": "application/json"#APIに送るフォーマット指定
     }
 
     url = "https://api.groq.com/openai/v1/chat/completions"
-    response_data = call_api_with_retry(url, payload_generate_tweet, headers)
+
+    # APIリクエスト（503エラー時は自動リトライ）
+
 
     ##########ここを追加しました
     response_data = call_api_with_retry(url, payload_generate_tweet, headers) 
@@ -120,11 +125,40 @@ def generate_tweet(OPENAI_API_KEY,prompt,past_tweets):
 
         return content  # 成功したツイートを返す
 
-    outputLog("ツイート生成に失敗しました。")
-    return "ツイート生成エラー"
+    else:
+        outputLog(f"⚠️ エラー: {response.status_code}, {response.text}")
+        return f"エラー: {response.status_code}, {response.text}"
 
 
 
+
+def refine_tweet(open_ai_api_key,tweet):
+    """ツイートを再度AIにかけて、英語を日本語に、詩的な表現を抑えて自然にする"""
+
+    payload_refine_tweet["messages"] = [ 
+        {"role": "system", "content": "あなたはツイートを修正するAIです。以下のルールを守ってツイートを自然な日本語に修正してください。\
+            ・**英語の単語があれば、すべて自然な日本語に翻訳する。**\
+            ・**詩的な表現を排除し、カジュアルな話し言葉に変換する。**\
+            ・**140字以内に抑える。**\
+            ・**敬語は禁止し、カジュアルな口調にする。**"},
+        {"role": "user", "content": f"修正してください: {tweet}"}
+    ]
+
+    headers = {
+        "Authorization": f"Bearer {open_ai_api_key}", 
+        "Content-Type": "application/json"
+    }
+
+    url = "https://api.openai.com/v1/chat/completions"
+
+    # APIリクエスト（503エラー時は自動リトライ）
+    response_data = call_api_with_retry(url, payload_refine_tweet, headers)
+
+    if response_data:
+        return response_data["choices"][0]["message"]["content"].strip()
+
+    print("最大リトライ回数を超えました。元のツイートを使用します。")
+    return tweet  # 失敗した場合は元のツイートを返す
 
 def post_tweet(tweet_content):
     """指定した内容のツイートを投稿"""
@@ -201,18 +235,18 @@ def auto_post_tweet():
              # 5回に1回の確率でハッシュタグを追加
             tweet_content = generate_tweet(
                 GROQ_API_KEY,
-#                PROMPT1_FIX1 + PROMPT1_FREE + PROMPT1_FIX2,
-                PROMPT1,
+                PROMPT1_FIX1 + PROMPT1_FREE + PROMPT1_FIX2,
                 past_tweets_1
                 )
+            refined_tweet = refine_tweet(OPENAI_API_KEY,tweet_content)
 
             if random.randint(1, 5) == 1:  # 1, 2, 3 4 5のうち 1 の場合に追加
                 refined_tweet += "\n#裏垢女子 #DMでいいね" #改行してハッシュタグ
 
             post_tweet(refined_tweet)  # ツイート生成 & 投稿
-            outputLog("ツイートを投稿しました: ", refined_tweet)
+            outputLog(f"ツイートを投稿しました: {refined_tweet}")
         except Exception as e:
-            outputLog("ツイートの投稿に失敗しました: ", e)
+            outputLog(f"ツイートの投稿に失敗しました: {e}")
             retry_count += 1
             time.sleep(300)  # 5分後に再試行
     
@@ -236,3 +270,47 @@ def main():
 
 
 #generate_trend_tweet()はmain処理にまだ追加していません。プロンプトの中身等を可変にすることでどんなツイートも作成することができるシステムです。組み込み方は今後考えていきたいと考えています。
+def generate_trend_tweet_by_keyword(open_ai_api_key,trend_prompt,keyword1,keyword2):
+
+    prompt_text = f"""
+    あなたはSNSの投稿を作成するAIです。
+    データベース上にある過去の人気ツイートを参照して、
+    以下の条件を満たすツイートを作成してください。
+
+    {trend_prompt}
+
+
+    #最新トレンド
+    - [{keyword1}],[{keyword2}]
+    """
+
+    outputLog(f"open_ai_api_key={open_ai_api_key}")
+    outputLog(f"prompt_text={prompt_text}")
+     
+    prompt = prompt_text#.get("1.0", tk.END).strip()
+
+    url = "https://api.openai.com/v1/chat/completions"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {open_ai_api_key}"
+    }
+    data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+        "max_tokens": 300
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            reply = response.json()["choices"][0]["message"]["content"]
+            return reply
+
+#            output_text.delete("1.0", tk.END)
+#            output_text.insert(tk.END, reply)
+#        else:
+#            messagebox.showerror("エラー", response.text)
+    except Exception as e:
+#        messagebox.showerror("エラー", str(e))
+        outputLog(f"generate_trend_tweetに失敗しました: {e}")
