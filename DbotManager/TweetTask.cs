@@ -208,16 +208,19 @@ namespace DbotManager
             // 「ブックマーク」リスト抽出
             {
                 // 2025.10.02 「いいね」「ブックマーク」アカウントは重複しないよう対応
-                /*
+                // 2025.10.18 指示があったため処理復活
+                //                /*
                 // 「いいね」許可したアカウントからブックマークリスト作成
                 List<AccountMaster> list1 = FilterAccountList(userMasterList, LikeAccountList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.ブックマーク, ユーザー権限無視);
-                */
+//                */
 
+                /*
                 // 「いいね」許可したアカウント以外からブックマークリスト作成
                 var いいねを除外したlist = accountMasterList
                     .Where(a1 => !LikeAccountList.Any(a2 => a2.Id == a1.Id))
                     .ToList();
                 List<AccountMaster> list1 = FilterAccountList(userMasterList, いいねを除外したlist, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.ブックマーク, ユーザー権限無視);
+                */
 
                 var bookmarkList1 = list1.OrderBy(_ => Guid.NewGuid()).Take(ブックマーク件数).ToList();
 
