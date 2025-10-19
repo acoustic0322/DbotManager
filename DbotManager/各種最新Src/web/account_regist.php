@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $new_name = $_POST['new_name'];
         $new_login_id = $_POST['new_login_id'];
-        $new_login_pass = $_POST['new_login_pass'];
+//        $new_login_pass = $_POST['new_login_pass'];
         $new_client_id = isset($_POST['new_client_id']) ? $_POST['new_client_id'] : "";//$_POST['new_client_id'];
         $new_client_secret = isset($_POST['new_client_secret']) ? $_POST['new_client_secret'] : "";//$_POST['new_client_secret'];
         $new_api_key = $_POST['new_api_key'];
@@ -164,12 +164,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $ai_post_enable = isset($_POST['ai_post_enable']) ? 1 : 0;
         $ai_reply_enable = isset($_POST['ai_reply_enable']) ? 1 : 0;
-        $ai_post_prompt = $_POST['ai_post_prompt'];
-        $ai_trend_prompt = $_POST['ai_trend_prompt'];
-        $ai_reply_prompt = $_POST['ai_reply_prompt'];
-        $ai_post_example = $_POST['ai_post_example'];
-        $ai_reply_example = $_POST['ai_reply_example'];
-        $ai_mode = $_POST['ai_mode'];
+        $ai_post_prompt = $_POST['ai_post_prompt'] ?? '';
+        $ai_trend_prompt = $_POST['ai_trend_prompt'] ?? '';
+        $ai_reply_prompt = $_POST['ai_reply_prompt'] ?? '';
+        $ai_post_example = $_POST['ai_post_example'] ?? '';
+        $ai_reply_example = $_POST['ai_reply_example'] ?? '';
+        $ai_mode = $_POST['ai_mode'] ?? '';
 
         // 既存のユーザー名を確認
         $stmt = $conn->prepare("SELECT COUNT(*) FROM account_master WHERE user_id = ? and login_id = ?");
@@ -189,7 +189,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 user_id, 
                 name,
                 login_id,
-                login_password,
                 client_id,
                 client_secret,
                 api_key,
@@ -238,14 +237,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ai_reply_example ,
                 ai_mode   ,
                 ai_trend_prompt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             $stmt->bind_param(
-                "ssssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssis",
+                "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssis",
                 $current_userid,    //s
                 $new_name,          //s
                 $new_login_id,      //s
-                $new_login_pass,    //s
+//                $new_login_pass,    //s
                 $new_client_id,     //s
                 $new_client_secret, //s
                 $new_api_key,       //s

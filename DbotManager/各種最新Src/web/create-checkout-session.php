@@ -22,8 +22,10 @@ $tweet_id = $data['tweet_id'] ?? '';
 $like = $data['like_enable'] ?? 0;
 $bookmark = $data['bookmark_enable'] ?? 0;
 $repost = $data['repost_enable'] ?? 0;
+$profile = $data['profile_enable'] ?? 0;
+$detail = $data['detail_enable'] ?? 0;
 
-$actionCount = $like + $bookmark + $repost;
+$actionCount = $like + $bookmark + $repost + $profile + $detail;
 $finalCount = $count * $actionCount;
 
 // 商品名の動的設定
@@ -31,14 +33,21 @@ $product_name = '';
 
 // 判定順はリクエストの順番に応じて組み合わせる
 if ($like) {
-    $product_name = 'いいね';
+    $product_name = '👍';
 }
 if ($bookmark) {
-    $product_name .= ($product_name ? '・' : '') . 'ブックマーク';
+    $product_name .= ($product_name ? '・' : '') . '📌';
 }
 if ($repost) {
-    $product_name .= ($product_name ? '・' : '') . 'リポスト';
+    $product_name .= ($product_name ? '・' : '') . '🔁';
 }
+if ($profile) {
+    $product_name .= ($product_name ? '・' : '') . '👤';
+}
+if ($detail) {
+    $product_name .= ($product_name ? '・' : '') . 'ℹ️';
+}
+
 
 $product_name = $product_name . '(' . $count . '個)';
 
@@ -62,6 +71,8 @@ try {
             'like' => $like,
             'bookmark' => $bookmark,
             'repost' => $repost,
+            'profile' => $profile,
+            'detail' => $detail,
             'count' => $count
             
         ],

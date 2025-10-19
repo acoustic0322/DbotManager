@@ -108,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="number" id="repost_count" name="repost_count" min="0" class="short">
         </div>
 
+        <?php if (isset($_SESSION['follow_enable']) && $_SESSION['follow_enable'] === 1): ?>
         <div class="form-block">
             <label><input type="checkbox" name="follow_enable">フォロー操作</label>
             <label><input type="radio" name="follow_action" value="add" checked>フォロー</label>
@@ -116,6 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="follow_screen_name">対象アカウント名 (@なし)</label>
             <input type="text" id="follow_screen_name" name="follow_screen_name">
         </div>
+        <?php endif; ?> 
+
 
         <button type="submit" class="btn">登録する</button>
     </form>
@@ -189,4 +192,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
-

@@ -55,14 +55,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // コメントをデータベースに登録
         $stmt = $conn->prepare("INSERT INTO search_list (
-            search_user_id, search_user_name, enable, post_enable , reply_enable , monomane_enable, post_account_id , reply_account_id , monomane_account_id ,time_enable,start_hour,end_hour
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?)");
+            search_user_name, enable, post_enable , reply_enable , monomane_enable, account_id , time_enable,start_hour,end_hour
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ? ,? )");
 
         $stmt->bind_param(
-            "isiiiissssss",
-            $_SESSION['user_id'],$new_search_user_name, $new_enable, 
+            "siiiissss",
+            $new_search_user_name, $new_enable, 
             $new_post_enable, $new_reply_enable, $new_monomane_enable,
-            $new_account_id, $new_account_id, $new_account_id ,
+            $new_account_id,
             $new_time_enable , $new_start_hour , $new_end_hour
         );
 
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$stmt = $conn->prepare("SELECT * FROM search_list WHERE post_account_id = ? ");
+$stmt = $conn->prepare("SELECT * FROM search_list WHERE account_id = ? ");
 $stmt->bind_param("i", $account_id);
 $stmt->execute();
 $result_check = $stmt->get_result();

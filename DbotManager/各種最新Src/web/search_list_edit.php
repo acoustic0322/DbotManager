@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //echo "<script>alert('{$account_id}');</script>";
 
 
-    $new_account_id = $edit_account['post_account_id'];
+    $new_account_id = $edit_account['account_id'];
     $new_search_user_name = $_POST['search_user_name'];
 //        $new_search_user_name = "test";
     $new_enable = isset($_POST['enable']) ? 1 : 0;
@@ -51,14 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $conn->prepare("
         UPDATE search_list
         SET 
+            account_id = ? , 
             search_user_name = ?,
             enable = ?,
             post_enable = ? ,
             reply_enable = ? ,
             monomane_enable = ?, 
-            post_account_id = ? , 
-            reply_account_id = ? , 
-            monomane_account_id  = ? ,
             time_enable = ? ,
             start_hour = ? ,
             end_hour = ?
@@ -66,10 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
 
     $stmt->bind_param(
-        "siiiisssssss",
+        "ssiiiissss",
+        $new_account_id,
         $new_search_user_name, $new_enable, 
         $new_post_enable, $new_reply_enable, $new_monomane_enable,
-        $new_account_id, $new_account_id, $new_account_id,
         $new_time_enable , $new_start_hour , $new_end_hour ,
         $id
     );
@@ -84,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     // 登録後にリダイレクト
-    header("Location: search_list.php?account_id={$edit_account['post_account_id']}");
+    header("Location: search_list.php?account_id={$edit_account['account_id']}");
     exit; 
 }
 
@@ -115,14 +113,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="input-group">
             <input type="checkbox" name="enable" placeholder="有効"  <?php echo ($edit_account['enable'] === 1) ? 'checked' : ''; ?> >有効
         </div>
+
+        <?php if (isset($_SESSION['searchrep_enable']) && $_SESSION['searchrep_enable'] == 1): ?>
         <label>
             <input type="checkbox" name="post_enable" value="post_enable" <?php echo ($edit_account['post_enable'] === 1) ? 'checked' : ''; ?>>
-            監視
+            監視toRep
         </label>
         <label>
             <input type="checkbox" name="reply_enable" value="reply_enable" <?php echo ($edit_account['reply_enable'] === 1) ? 'checked' : ''; ?>>
-            監視toRep
+            監視ReptoRep
         </label>
+        <?php endif; ?>        
+        
         <label>
             <input type="checkbox" name="monomane_enable" value="monomane_enable" <?php echo ($edit_account['monomane_enable'] === 1) ? 'checked' : ''; ?>>
             モノマネ

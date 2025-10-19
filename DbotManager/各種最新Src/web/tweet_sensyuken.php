@@ -64,11 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $reply_count = 100;
+    $reply_count = 30;
     $reply_enable = 1;
 
     // reply制限チェック
-    if ($exe_enable_reply_count <= 100) {
+    if ($exe_enable_reply_count <= 30) {
         $reply_count = $exe_enable_reply_count;
     }
 
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- コンテンツエリア -->
     <div class="content" id="content">
         <h2>選手権</h2>
-<!--        <label>本日の残り回数： <?php echo ($exe_enable_count); ?> </label><br><br>-->
+<!--        <label>本日の残り回数： <?php //echo ($exe_enable_count); ?> </label><br><br>-->
         <form method="POST" action="?">
 
             <!-- JS用にPHP変数を埋め込み -->
@@ -179,7 +179,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 });
                 </script>
 
+
+         <!-- 実行履歴 -->
+        <section
+         id="execution-history"
+         style="
+         margin: 40px auto;
+         max-width: 800px;
+         font-size: 14px;
+         line-height: 0.1;
+         padding-top: 0.5px;
+         "
+>
+        <section id="execution-history">
+          <h4>実行履歴</h4>
+          <ul id="history-list">
+
+          <?php
+          // 履歴取得（ソフトデリート対応）
+          $conn = new mysqli(
+            $config['servername'],
+            $config['username'],
+            $config['password'],
+            $config['dbname']
+          );
+          $stmt = $conn->prepare(
+              "SELECT id, tweet_id, like_count, bookmark_count, repost_count, updatetime
+             FROM tweet_process_list
+             WHERE user_id = ? and (japanese_mode != 1 or japanese_mode is null) AND hidden_flag = 0 
+             ORDER BY updatetime DESC LIMIT 30"
+          );
+
+          $stmt->bind_param('i', $current_userid);
+          $stmt->execute();
+          $res = $stmt->get_result();
+          while ($row = $res->fetch_assoc()) {
+                $time = date('Y/m/d H:i', strtotime($row['updatetime']));
+
+                // tweet_idを抽出（数字だけ抽出、URL対応）
+                $tweet_id_raw = $row['tweet_id'];
+                if (preg_match('/status\/(\d{10,})/', $tweet_id_raw, $match)) {
+                    $tweet_id_only = $match[1];
+                } else {
+                    $tweet_id_only = htmlspecialchars($tweet_id_raw);
+                } 
+
+          //    echo "<li>{$time} - <a href='https://twitter.com/i/web/status/{$row['tweet_id']}' target='_blank'>ID:{$row['tweet_id']}</a> , 数量:{$row['total_count']}";
+//              echo "<li>{$time} - <a href='https://twitter.com/i/web/status/{$row['tweet_id']}' target='_blank'>TweetID:{$row['tweet_id']}</a> ID:{$row['id']} ";
+               echo "<li><button class='hidden_tweet_process_list' data-id='{$row['id']}'>削除</button>";
+               echo "{$time} - <a href='https://twitter.com/i/web/status/{$tweet_id_only}' target='_blank'>TweetID:{$tweet_id_only}</a> ID:{$row['id']}";
+
+              if ($row['like_count']) echo " , 👍:{$row['like_count']}";
+              if ($row['bookmark_count']) echo " , 📌:{$row['bookmark_count']}";
+              if ($row['repost_count']) echo " , 🔁:{$row['repost_count']}";
+              echo "</li>";
+            }
+          $stmt->close();
+          $conn->close();
+          ?>
+          </ul>
+        </section>
+
+
         </form>
+
     </div>
 </div>
 
@@ -230,6 +293,28 @@ document.addEventListener("DOMContentLoaded", function () {
       
     });
 });
+
+
+    // 履歴削除
+    document.querySelectorAll('.hidden_tweet_process_list').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('この履歴を削除しますか？')) return;
+        const id = btn.dataset.id;
+        const res = await fetch('hidden_tweet_process_list.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ id })
+        });
+        const json = await res.json();
+        if (json.success) {
+          btn.closest('li').remove();
+        } else {
+          alert('削除に失敗しました');
+        }
+        
+      });
+    });
 </script>
 
 

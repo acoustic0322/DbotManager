@@ -27,6 +27,12 @@ from mysql import get_trend_list_keyword
 from mysql import get_check_tweet_account_list_by_tweet_id
 
 
+from search_chat import get_tweet_text_from_yahoo_trend
+from search_chat import get_tweet_text_from_yahoo_btc
+from search_chat import get_tweet_text_from_yahoo_pair  # レート取得できないため、未対応
+from search_chat import get_tweet_text_from_yahoo_gold  # レート取得できないため、未対応
+
+
 import config
 from config import convert_tweet_datetime
 from config import convert_tweet_datetime2
@@ -309,7 +315,9 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
                 outputLog("固定コメントがありません(comment_id=0です)")
         else:
 
-            if ai_mode == 1 or ai_mode == 2:
+            # 裏垢女子モード
+#            if ai_mode == 1 or ai_mode == 2:
+            if ai_mode == 1:
                 ai_flag = True
                 outputLog("AIコメント")
 
@@ -324,13 +332,25 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
                     return False, "ai_post_example未設定"                
 
 #                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
-
                 comment = generate_tweet(credentials['GROQ_API_KEY'],PROMPT1,past_tweets_1)
 
 #                # 裏垢女子モード時は文章を整形
 #                if ai_mode == 2:
 #                    outputLog("裏垢女子")
 #                    comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
+
+            # yahooトレンドモード
+            elif ai_mode == 2:
+                comment = get_tweet_text_from_yahoo_trend(credentials['GROQ_API_KEY'])
+            # BTC為替レートツイートモード
+            elif ai_mode == 3:
+                comment = get_tweet_text_from_yahoo_btc(credentials['GROQ_API_KEY'])
+            # GOLD為替レートツイートモード(未対応)
+            elif ai_mode == 4:
+                comment = get_tweet_text_from_yahoo_gold(credentials['GROQ_API_KEY'])
+            # 他通貨為替レートツイートモード(未対応)
+            elif ai_mode == 5:
+                comment = get_tweet_text_from_yahoo_pair(credentials['GROQ_API_KEY'])
             else:
                 kw1 , kw2 = get_trend_list_keyword()
                 outputLog(f"kw1={kw1}")

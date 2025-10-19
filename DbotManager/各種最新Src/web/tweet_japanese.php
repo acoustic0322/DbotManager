@@ -144,6 +144,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Twitter拡散サービス</title>
     <link rel="stylesheet" href="./css/admin-dashboard.css" />
+  <style>
+    /* CSS */
+    .history-delete { margin-left:8px; color:#f00; cursor:pointer; border:none; background:none; }
+    /* リンクを白くする */
+    .line-link,
+    .line-link:visited,
+    .footer-links a,
+    .footer-links a:visited,
+    #history-list a {
+    color: #fff !important;
+    }
+  </style>
+    </style>
 </head>
 <body class="tweet-sensyuken-page">
 <div class="layout">
@@ -176,7 +189,7 @@ if ($notice_text !== '') {
 ?>        
 
 
-<!--        <label>本日の残り回数： <?php echo ($exe_enable_count); ?> </label><br><br>-->
+<!--        <label>本日の残り回数： <?php //echo ($exe_enable_count); ?> </label><br><br>-->
         <form method="POST" action="?">
 
             <!-- JS用にPHP変数を埋め込み -->
@@ -204,6 +217,9 @@ if ($notice_text !== '') {
         </div>
 
             <button type="submit">実行</button>
+
+            <div style="margin: 30px auto; max-width: 2000px; font-size: 14px; line-height: 1.6; border-top: 1px solid #ccc; padding-top: 0px;">
+            </div>
 
                 <!-- バリデーションスクリプト -->
                 <script>
@@ -234,6 +250,53 @@ if ($notice_text !== '') {
                     }
                 });
                 </script>
+
+        <!-- 実行履歴 -->
+        <section id="execution-history">
+          <h4>実行履歴</h4>
+          <ul id="history-list">
+
+          <?php
+          // 履歴取得（ソフトデリート対応）
+          $conn = new mysqli(
+            $config['servername'],
+            $config['username'],
+            $config['password'],
+            $config['dbname']
+          );
+          $stmt = $conn->prepare(
+              "SELECT id, tweet_id, jap_like_count, jap_bookmark_count, jap_repost_count, updatetime
+             FROM tweet_process_list
+             WHERE user_id = ? AND japanese_mode = 1 AND hidden_flag = 0
+             ORDER BY updatetime DESC LIMIT 30"
+          );
+          $stmt->bind_param('i', $current_userid);
+          $stmt->execute();
+          $res = $stmt->get_result();
+          while ($row = $res->fetch_assoc()) {
+                $time = date('Y/m/d H:i', strtotime($row['updatetime']));
+
+                // tweet_idを抽出（数字だけ抽出、URL対応）
+                $tweet_id_raw = $row['tweet_id'];
+                if (preg_match('/status\/(\d{10,})/', $tweet_id_raw, $match)) {
+                    $tweet_id_only = $match[1];
+                } else {
+                    $tweet_id_only = htmlspecialchars($tweet_id_raw);
+                }                
+
+                //    echo "<li>{$time} - <a href='https://twitter.com/i/web/status/{$row['tweet_id']}' target='_blank'>ID:{$row['tweet_id']}</a> , 数量:{$row['total_count']}";
+                echo "<li><button class='hidden_tweet_process_list' data-id='{$row['id']}'>削除</button>";
+                echo "{$time} - <a href='https://twitter.com/i/web/status/{$tweet_id_only}' target='_blank'>TweetID:{$tweet_id_only}</a> ID:{$row['id']}";
+                if ($row['jap_like_count']) echo " , 👍:{$row['jap_like_count']}";
+                if ($row['jap_bookmark_count']) echo " , 📌:{$row['jap_bookmark_count']}";
+                if ($row['jap_repost_count']) echo " , 🔁:{$row['jap_repost_count']}";
+                echo "</li>";
+          }
+          $stmt->close();
+          $conn->close();
+          ?>
+          </ul>
+        </section>
 
         </form>
     </div>
@@ -295,6 +358,26 @@ document.addEventListener("DOMContentLoaded", function () {
       
     });
 });
+
+    // 履歴削除
+    document.querySelectorAll('.hidden_tweet_process_list').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('この履歴を削除しますか？')) return;
+        const id = btn.dataset.id;
+        const res = await fetch('hidden_tweet_process_list.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ id })
+        });
+        const json = await res.json();
+        if (json.success) {
+          btn.closest('li').remove();
+        } else {
+          alert('削除に失敗しました');
+        }
+      });
+    });
 </script>
 
 

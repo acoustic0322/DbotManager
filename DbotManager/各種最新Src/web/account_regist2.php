@@ -99,7 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $new_name = $_POST['new_name'];
         $new_login_id = $_POST['new_login_id'];
-        $new_login_pass = $_POST['new_login_pass'];
         $new_client_id = ""; // 貸出モードは指定なし
         $new_client_secret = ""; 
         $new_api_key = $_POST['new_api_key'];
@@ -188,7 +187,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 user_id, 
                 name,
                 login_id,
-                login_password,
                 client_id,
                 client_secret,
                 api_key,
@@ -237,14 +235,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ai_reply_example ,
                 ai_mode   ,
                 ai_trend_prompt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             $stmt->bind_param(
-                "ssssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssis",
+                "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssis",
                 $current_userid,    //s
                 $new_name,          //s
                 $new_login_id,      //s
-                $new_login_pass,    //s
                 $new_client_id,     //s
                 $new_client_secret, //s
                 $new_api_key,       //s

@@ -1,5 +1,5 @@
 <?php
-require __DIR__.'/_lib/config.php';
+require_once __DIR__.'/_lib/config.php';
 session_start(); // セッションを開始する
 $conn = new mysqli($config['servername'], $config['username'], $config['password'], $config['dbname']);
 
@@ -340,6 +340,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     https://cdn.jsdelivr.net/npm/choices.js@11.0.2/public/assets/styles/choices.min.css
     " rel="stylesheet">
     <link rel="stylesheet" href="./css/admin-dashboard.css" />
+
+<style>
+  /* Choices.js の表示色を強制（白文字に上書きされるのを防ぐ） */
+  .choices__inner,
+  .choices__list--single .choices__item,
+  .choices__list--dropdown .choices__item {
+    color: #111 !important;
+  }
+  .choices__list--dropdown,
+  .choices__list--dropdown .choices__list {
+    background: #fff !important;
+  }
+  .choices__placeholder {
+    color: #666 !important;
+    opacity: 1 !important;
+  }
+  .choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background: #f2f2f2 !important;
+    color: #111 !important;
+  }
+
+/* アップロード一覧のサムネイル共通スタイル */
+table td img,
+table td video {
+  width: 120px;        /* 横幅固定 */
+  height: 80px;        /* 高さ固定 */
+  object-fit: cover;   /* 枠いっぱいに収めてトリミング */
+  border-radius: 6px;  /* 角丸（お好みで） */
+}  
+
+  /* 念のため、Choices 置換前の <select>/<option> も黒字に */
+  select, option { color: #111; }
+</style>
+
+
 </head>
 <body class="upload-page">
 <div class="layout">
@@ -423,6 +458,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <?php } ?>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    new Choices('#form_xuser', {
+      searchEnabled: true,
+      itemSelectText: '',
+    });
+  });
+</script>
 
     <script>
 
