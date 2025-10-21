@@ -99,8 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $new_name = $_POST['new_name'];
         $new_login_id = $_POST['new_login_id'];
-        $new_client_id = ""; // 貸出モードは指定なし
-        $new_client_secret = ""; 
+//        $new_login_pass = $_POST['new_login_pass'];
+        $new_client_id = isset($_POST['new_client_id']) ? $_POST['new_client_id'] : "";//$_POST['new_client_id'];
+        $new_client_secret = isset($_POST['new_client_secret']) ? $_POST['new_client_secret'] : "";//$_POST['new_client_secret'];
         $new_api_key = $_POST['new_api_key'];
         $new_api_key_secret = $_POST['new_api_key_secret'];
 
@@ -120,9 +121,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_bookmark_enable = isset($_POST['new_bookmark_enable']) ? 1 : 0;
         $new_repost_enable = isset($_POST['new_repost_enable']) ? 1 : 0;
         $new_post_enable = isset($_POST['new_post_enable']) ? 1 : 0;
-        $new_paid = 1;//isset($_POST['new_paid']) ? 1 : 0;
-        $new_paid_like = 1;//isset($_POST['new_paid_like']) ? 1 : 0;
-        $new_paid_bookmark = 1;//isset($_POST['new_paid_bookmark']) ? 1 : 0;
+        $new_paid = isset($_POST['new_paid']) ? 1 : 0;
+        $new_paid_like = isset($_POST['new_paid_like']) ? 1 : 0;
+        $new_paid_bookmark = isset($_POST['new_paid_bookmark']) ? 1 : 0;
 
         // 予約の処理（Reserve1-4）
         $reserve1_enable = isset($_POST['reserve1_enable']) ? 1 : 0;
@@ -149,31 +150,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reserve2_ai = isset($_POST['reserve2_ai']) ? 1 : 0;
         $reserve3_ai = isset($_POST['reserve3_ai']) ? 1 : 0;
         $reserve4_ai = isset($_POST['reserve4_ai']) ? 1 : 0;
+
         $new_dmm_id = $_POST['new_dmm_id'];
 
-        $new_search_enable = 0;//isset($_POST['new_search_enable']) ? 1 : 0;
-        $new_check_interval = 60;//$_POST['check_interval'] ?? 60;
+        $new_search_enable = isset($_POST['new_search_enable']) ? 1 : 0;
+        $new_check_interval = $_POST['check_interval'] ?? 60;
 
         $new_proxy_enable = isset($_POST['new_proxy_enable']) ? 1 : 0;
         $new_proxy_url = $_POST['new_proxy_url'];
 
-        $new_use_admin_api = 1;//isset($_POST['new_use_admin_api']) ? 1 : 0;
-        $new_api_master_id = $_SESSION['api_master_id'];
-        
+        $new_use_admin_api = 0;//isset($_POST['new_use_admin_api']) ? 1 : 0;
+        $new_api_master_id = 0;//$_SESSION['api_master_id'];
+
         $ai_post_enable = isset($_POST['ai_post_enable']) ? 1 : 0;
         $ai_reply_enable = isset($_POST['ai_reply_enable']) ? 1 : 0;
+        $ai_post_prompt = $_POST['ai_post_prompt'] ?? '';
+        $ai_trend_prompt = $_POST['ai_trend_prompt'] ?? '';
+        $ai_reply_prompt = $_POST['ai_reply_prompt'] ?? '';
+        $ai_post_example = $_POST['ai_post_example'] ?? '';
+        $ai_reply_example = $_POST['ai_reply_example'] ?? '';
+        $ai_mode = $_POST['ai_mode'] ?? '';
 
-//        $ai_post_prompt = $_POST['ai_post_prompt'] ?? '';
-//        $ai_trend_prompt = $_POST['ai_trend_prompt'] ?? '';
-//        $ai_reply_prompt = $_POST['ai_reply_prompt'] ?? '';
-//        $ai_post_example = $_POST['ai_post_example'] ?? '';
-//        $ai_reply_example = $_POST['ai_reply_example'] ?? '';
-
-        $ai_post_prompt = "";
-        $ai_reply_prompt = "";
-        $ai_post_example = "";
-        $ai_reply_example = "";
-        $ai_trend_prompt = "";
         // 既存のユーザー名を確認
         $stmt = $conn->prepare("SELECT COUNT(*) FROM account_master WHERE user_id = ? and login_id = ?");
         $stmt->bind_param("ss", $current_userid, $new_login_id);
@@ -247,6 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $current_userid,    //s
                 $new_name,          //s
                 $new_login_id,      //s
+//                $new_login_pass,    //s
                 $new_client_id,     //s
                 $new_client_secret, //s
                 $new_api_key,       //s
@@ -330,16 +328,17 @@ $result = $stmt->get_result();
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Xアカウント登録(貸出API専用)</title>
+  <title>Xアカウント登録</title>
   <link rel="stylesheet" href="./css/admin-dashboard.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  </style>
 </head>
 <body>
 <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
+<!--    <div class="main"> -->
    <div class="content" id="content">
-   <h2 class="tx-white">Xアカウント登録(貸出API専用)</h2>
+
+    <h2 class="tx-white">Xアカウント登録</h2>
    <form method="POST" action="?">
 
     <div class="input-group">
@@ -355,14 +354,12 @@ $result = $stmt->get_result();
     -->
 
     <!-- チェックボックス (通常モード用) -->
-     <!--
         <div class="input-group">
             <input type="text" name="new_client_id" placeholder="ClientID">
         </div>
         <div class="input-group">
             <input type="text" name="new_client_secret" placeholder="ClientSecret">
         </div>
-    -->
 
     <!--
     <div class="input-group">
@@ -416,7 +413,6 @@ $result = $stmt->get_result();
         </label><br>
         <?php endif; ?>
 
-        <!--
         <?php if (isset($_SESSION['check_enable']) && $_SESSION['check_enable'] == 1): ?>
         <label>
             <input type="checkbox" name="new_search_enable" value="0">監視実施
@@ -428,7 +424,6 @@ $result = $stmt->get_result();
         </div>  
 
         <?php endif; ?>
-        -->
 
         <label>
             <input type="checkbox" name="new_proxy_enable" value="0">プロキシ
@@ -437,7 +432,6 @@ $result = $stmt->get_result();
         <br>
     </div>
 
-    <!--
     <div class="input-group">
         <?php if ((isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1) || 
           (isset($_SESSION['bookmark_enable']) && $_SESSION['bookmark_enable'] == 1)): ?>
@@ -458,7 +452,6 @@ $result = $stmt->get_result();
             </label><br>
         <?php endif; ?>
     </div>
-        -->
 
         <div class="input-group">
             <input type="text" id="new_dmm_id" name="new_dmm_id" placeholder="DMM ID">

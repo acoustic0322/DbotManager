@@ -164,11 +164,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $ai_post_enable = isset($_POST['ai_post_enable']) ? 1 : 0;
         $ai_reply_enable = isset($_POST['ai_reply_enable']) ? 1 : 0;
-        $ai_post_prompt = $_POST['ai_post_prompt'] ?? '';
-        $ai_trend_prompt = $_POST['ai_trend_prompt'] ?? '';
-        $ai_reply_prompt = $_POST['ai_reply_prompt'] ?? '';
-        $ai_post_example = $_POST['ai_post_example'] ?? '';
-        $ai_reply_example = $_POST['ai_reply_example'] ?? '';
+
+//        $ai_post_prompt = $_POST['ai_post_prompt'] ?? '';
+//        $ai_trend_prompt = $_POST['ai_trend_prompt'] ?? '';
+//        $ai_reply_prompt = $_POST['ai_reply_prompt'] ?? '';
+//        $ai_post_example = $_POST['ai_post_example'] ?? '';
+//        $ai_reply_example = $_POST['ai_reply_example'] ?? '';
+
+        $ai_post_prompt = "";
+        $ai_reply_prompt = "";
+        $ai_post_example = "";
+        $ai_reply_example = "";
+        $ai_trend_prompt = "";
+
         $ai_mode = $_POST['ai_mode'] ?? '';
 
         // 既存のユーザー名を確認
@@ -514,17 +522,26 @@ $result = $stmt->get_result();
         <br>
 
         <label>
-            <input type="radio" name="ai_mode" value="0" onclick="filterPresets()" checked> なし
+            <input type="radio" name="ai_mode" value="0" onclick="filterPresets()" > なし
         </label>
         <label>
-            <input type="radio" name="ai_mode" value="1" onclick="filterPresets()" checked> 自由モード
+            <input type="radio" name="ai_mode" value="1" onclick="filterPresets()" checked> 裏垢女子
         </label>
         <label>
-            <input type="radio" name="ai_mode" value="2" onclick="filterPresets()"> 裏垢女子モード
+            <input type="radio" name="ai_mode" value="2" onclick="filterPresets()"> トレンド
         </label>
         <label>
-            <input type="radio" name="ai_mode" value="3" onclick="filterPresets()"> トレンドモード
+            <input type="radio" name="ai_mode" value="3" onclick="filterPresets()"> BTC為替
         </label>
+        <!--
+        <label>
+            <input type="radio" name="ai_mode" value="3" onclick="filterPresets()"> GOLD為替
+        </label>
+        <label>
+            <input type="radio" name="ai_mode" value="3" onclick="filterPresets()"> 他通貨為替
+        </label>
+        -->
+
 
         <br>
         <input type="checkbox" name="ai_post_enable" value="1">AIポスト<br>

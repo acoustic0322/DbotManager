@@ -111,14 +111,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $ai_post_enable = isset($_POST['ai_post_enable']) ? 1 : 0;
     $ai_reply_enable = isset($_POST['ai_reply_enable']) ? 1 : 0;
-    $ai_post_prompt = $_POST['ai_post_prompt'];
-    $ai_reply_prompt = $_POST['ai_reply_prompt'];
-    $ai_post_example = $_POST['ai_post_example'];
-    $ai_reply_example = $_POST['ai_reply_example'];
-//    $ai_mode = isset($_POST['ai_mode']) ? $_POST['ai_mode'] : null;
+
+//    $ai_post_prompt = $_POST['ai_post_prompt'];
+//    $ai_reply_prompt = $_POST['ai_reply_prompt'];
+//    $ai_post_example = $_POST['ai_post_example'];
+//    $ai_reply_example = $_POST['ai_reply_example'];
+//    $ai_trend_prompt = $_POST['ai_trend_prompt'];
+
+    $ai_post_prompt = "";
+    $ai_reply_prompt = "";
+    $ai_post_example = "";
+    $ai_reply_example = "";
+    $ai_trend_prompt = "";
+
+    //    $ai_mode = isset($_POST['ai_mode']) ? $_POST['ai_mode'] : null;
     $ai_mode = $_POST['ai_mode'];
 
-    $ai_trend_prompt = $_POST['ai_trend_prompt'];
 
     // api_master_id が 0 以外なら client_id を空にする
     if (isset($edit_account['api_master_id']) && $edit_account['api_master_id'] != 0) {
@@ -386,9 +394,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <label>AIモード</label>
           <label><input type="radio" name="ai_mode" value="0" <?= ($edit_account['ai_mode'] ?? '') == 0 ? 'checked' : '' ?>>なし</label>
-          <label><input type="radio" name="ai_mode" value="1" <?= ($edit_account['ai_mode'] ?? '') == 1 ? 'checked' : '' ?>>自由</label>
-          <label><input type="radio" name="ai_mode" value="2" <?= ($edit_account['ai_mode'] ?? '') == 2 ? 'checked' : '' ?>>裏垢女子</label>
-          <label><input type="radio" name="ai_mode" value="3" <?= ($edit_account['ai_mode'] ?? '') == 3 ? 'checked' : '' ?>>トレンド</label>
+          <label><input type="radio" name="ai_mode" value="1" <?= ($edit_account['ai_mode'] ?? '') == 1 ? 'checked' : '' ?>>裏垢女子</label>
+          <label><input type="radio" name="ai_mode" value="2" <?= ($edit_account['ai_mode'] ?? '') == 2 ? 'checked' : '' ?>>トレンド</label>
+          <label><input type="radio" name="ai_mode" value="3" <?= ($edit_account['ai_mode'] ?? '') == 3 ? 'checked' : '' ?>>BTC為替</label>
+
+          <!--
+          <label><input type="radio" name="ai_mode" value="4" <?= ($edit_account['ai_mode'] ?? '') == 4 ? 'checked' : '' ?>>GOLD為替</label>
+          <label><input type="radio" name="ai_mode" value="5" <?= ($edit_account['ai_mode'] ?? '') == 5 ? 'checked' : '' ?>>他通貨為替</label>
 
           <label>ポスト用プロンプト</label>
           <textarea name="ai_post_prompt"><?= htmlspecialchars($edit_account['ai_post_prompt'] ?? '') ?></textarea>
@@ -404,6 +416,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <label>トレンドプロンプト</label>
           <textarea name="ai_trend_prompt"><?= htmlspecialchars($edit_account['ai_trend_prompt'] ?? '') ?></textarea>
+          -->
 
           <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
           <button class="btn" type="submit">更新</button>

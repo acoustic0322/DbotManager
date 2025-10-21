@@ -27,10 +27,6 @@ from mysql import get_trend_list_keyword
 from mysql import get_check_tweet_account_list_by_tweet_id
 
 
-from search_chat import get_tweet_text_from_yahoo_trend
-from search_chat import get_tweet_text_from_yahoo_btc
-from search_chat import get_tweet_text_from_yahoo_pair  # レート取得できないため、未対応
-from search_chat import get_tweet_text_from_yahoo_gold  # レート取得できないため、未対応
 
 
 import config
@@ -47,6 +43,11 @@ sys.path.append(os.path.abspath("chatgpt"))
 from chatgpt_reply import generate_reply
 #from chatgpt_tweet import generate_tweet,refine_tweet,generate_trend_tweet_by_keyword
 from chatgpt_tweet import generate_tweet
+
+from search_chat import get_tweet_text_from_yahoo_trend
+from search_chat import get_tweet_text_from_yahoo_btc
+from search_chat import get_tweet_text_from_yahoo_pair  # レート取得できないため、未対応
+from search_chat import get_tweet_text_from_yahoo_gold  # レート取得できないため、未対応
 
 # 2025.10.15 追加
 from prompt import PROMPT1
@@ -281,7 +282,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
     ai_flag = False
 
     # リプライモード
-    if reply_to_tweet_id:
+    if reply_to_tweet_id != "":
         # 2025.09.02 AIの判定はpython側にシフトする
         if ai_reply_enable == 0 or ai_mode == 0:
             outputLog("固定コメント")
@@ -321,18 +322,21 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
                 ai_flag = True
                 outputLog("AIコメント")
 
+                #プロンプト、past_tweetを固定にするためとりあえずコメントアウト
                 # ai_post_promptが未設定ならFalseを返す
-                if not credentials.get('ai_post_prompt'):
-                    outputLog("ai_post_promptが未設定のため中止")
-                    return False, "ai_post_prompt未設定"                
-
+#                if not credentials.get('ai_post_prompt'):
+#                    outputLog("ai_post_promptが未設定のため中止")
+#                    return False, "ai_post_prompt未設定"                
                 # ai_post_exampleが未設定ならFalseを返す
-                if not credentials.get('ai_post_example'):
-                    outputLog("ai_post_exampleが未設定のため中止")
-                    return False, "ai_post_example未設定"                
+#                if not credentials.get('ai_post_example'):
+#                    outputLog("ai_post_exampleが未設定のため中止")
+#                    return False, "ai_post_example未設定"                
 
+
+                outputLog("past_tweet_1")
+                outputLog(past_tweets_1)
 #                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
-                comment = generate_tweet(credentials['GROQ_API_KEY'],PROMPT1,past_tweets_1)
+                comment = generate_tweet(credentials['OPENAI_API_KEY'],PROMPT1,past_tweets_1)
 
 #                # 裏垢女子モード時は文章を整形
 #                if ai_mode == 2:
@@ -341,16 +345,16 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
             # yahooトレンドモード
             elif ai_mode == 2:
-                comment = get_tweet_text_from_yahoo_trend(credentials['GROQ_API_KEY'])
+                result , comment = get_tweet_text_from_yahoo_trend(credentials['OPENAI_API_KEY'])
             # BTC為替レートツイートモード
             elif ai_mode == 3:
-                comment = get_tweet_text_from_yahoo_btc(credentials['GROQ_API_KEY'])
+                result , comment = get_tweet_text_from_yahoo_btc(credentials['OPENAI_API_KEY'])
             # GOLD為替レートツイートモード(未対応)
             elif ai_mode == 4:
-                comment = get_tweet_text_from_yahoo_gold(credentials['GROQ_API_KEY'])
+                result , comment = get_tweet_text_from_yahoo_gold(credentials['OPENAI_API_KEY'])
             # 他通貨為替レートツイートモード(未対応)
             elif ai_mode == 5:
-                comment = get_tweet_text_from_yahoo_pair(credentials['GROQ_API_KEY'])
+                result , comment = get_tweet_text_from_yahoo_pair(credentials['OPENAI_API_KEY'])
             else:
                 kw1 , kw2 = get_trend_list_keyword()
                 outputLog(f"kw1={kw1}")
