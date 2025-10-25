@@ -521,13 +521,16 @@ $result = $stmt->get_result();
         <br>
 
         <label>
-            <input type="radio" name="ai_mode" value="0" onclick="filterPresets()" > なし
+            <input type="radio" name="ai_mode" value="0" onclick="filterPresets()" checked> なし
         </label>
         <label>
-            <input type="radio" name="ai_mode" value="1" onclick="filterPresets()" checked> 裏垢女子
+            <input type="radio" name="ai_mode" value="1" onclick="filterPresets()"> 裏垢女子
         </label>
         <label>
-            <input type="radio" name="ai_mode" value="2" onclick="filterPresets()"> トレンド
+            <input type="radio" name="ai_mode" value="2" onclick="filterPresets()"> yahooトレンド
+        </label>
+        <label>
+            <input type="radio" name="ai_mode" value="6" onclick="filterPresets()"> Xトレンド
         </label>
         <label>
             <input type="radio" name="ai_mode" value="3" onclick="filterPresets()"> BTC為替

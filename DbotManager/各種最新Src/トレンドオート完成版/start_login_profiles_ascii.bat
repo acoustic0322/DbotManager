@@ -65,7 +65,7 @@ if "%RC%"=="0" (
   echo [WARN] Exit code: %RC%
 )
 echo.
-rem pause
+pause
 
 popd
 endlocal

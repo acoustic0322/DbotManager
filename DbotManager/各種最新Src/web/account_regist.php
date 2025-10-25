@@ -54,6 +54,22 @@ while ($row = $result->fetch_assoc()) {
     $presets[] = $row;
 }
 
+$system_prompts = [];
+$result = $conn->query("SELECT `key`, `value` FROM system_master");
+
+while ($row = $result->fetch_assoc()) {
+    $system_prompts[$row['key']] = [
+        'value' => $row['value']
+    ];
+}
+
+/*
+echo '<pre>';
+print_r($system_prompts);
+echo '</pre>';
+//exit; // ここで処理を止める
+*/
+
 $xusers = [];
 $xuser = null;
 while ($row = $result->fetch_assoc()){
@@ -177,7 +193,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ai_reply_example = "";
         $ai_trend_prompt = "";
 
+
         $ai_mode = $_POST['ai_mode'] ?? '';
+
+        // 2025.10.25 AIプロンプト関連の列追加
+        $ai_uraaka_prompt       = $system_prompts['ai_uraaka_prompt']['value']       ?? '';
+        $ai_uraaka_past_tweet   = $system_prompts['ai_uraaka_past_tweet']['value']   ?? '';
+        $ai_trend_prompt_yahoo  = $system_prompts['ai_trend_prompt_yahoo']['value']  ?? '';
+        $ai_trend_prompt_x      = $system_prompts['ai_trend_prompt_x']['value']      ?? '';
+        $ai_btc_prompt          = $system_prompts['ai_btc_prompt']['value']          ?? '';      
+
+        $ai_prompt_textbox = trim($_POST['ai_prompt'] ?? '');
+        $ai_past_tweet_textbox = trim($_POST['ai_past_tweet'] ?? '');
+
+        // --- ラジオボタンに応じて上書き ---
+        switch ($ai_mode) {
+            case '1': // 裏垢女子
+                if ($ai_prompt_textbox !== '') {
+                    $ai_uraaka_prompt = $ai_prompt_textbox;
+                }
+                if ($ai_past_tweet_textbox !== '') {
+                    $ai_uraaka_past_tweet = $ai_past_tweet_textbox;
+                }
+                break;
+            case '2': // Yahooトレンド
+                if ($ai_prompt_textbox !== '') {
+                    $ai_trend_prompt_yahoo = $ai_prompt_textbox;
+                }
+                break;
+            case '6': // Xトレンド
+                if ($ai_prompt_textbox !== '') {
+                    $ai_trend_prompt_x = $ai_prompt_textbox;
+                }
+                break;
+            case '3': // BTC為替
+                if ($ai_prompt_textbox !== '') {
+                    $ai_btc_prompt = $ai_prompt_textbox;
+                }
+                break;
+        }
 
         // 既存のユーザー名を確認
         $stmt = $conn->prepare("SELECT COUNT(*) FROM account_master WHERE user_id = ? and login_id = ?");
@@ -245,10 +299,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ai_reply_example ,
                 ai_mode   ,
                 ai_trend_prompt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                ,ai_uraaka_prompt 
+                ,ai_uraaka_past_tweet 
+                ,ai_trend_prompt_yahoo 
+                ,ai_trend_prompt_x 
+                ,ai_btc_prompt 
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
+
+//var_dump($ai_post_prompt, $ai_reply_prompt, $ai_post_example, $ai_reply_example, $ai_trend_prompt);
+//var_dump($ai_uraaka_prompt, $ai_uraaka_past_tweet, $ai_trend_prompt_yahoo, $ai_trend_prompt_x, $ai_btc_prompt);
+//exit;            
             $stmt->bind_param(
-                "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssis",
+                "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssissssss",
                 $current_userid,    //s
                 $new_name,          //s
                 $new_login_id,      //s
@@ -301,7 +364,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ai_reply_example ,         
                 $ai_mode ,
                 $ai_trend_prompt  
-                );
+                ,$ai_uraaka_prompt 
+                ,$ai_uraaka_past_tweet 
+                ,$ai_trend_prompt_yahoo 
+                ,$ai_trend_prompt_x 
+                ,$ai_btc_prompt 
+
+            );
 
             $stmt->execute();
             $stmt->close();
@@ -517,18 +586,23 @@ $result = $stmt->get_result();
         <br>
 
         <?php if (isset($_SESSION['ai_enable']) && $_SESSION['ai_enable'] == 1): ?>
-        <br>
-        【AIコメント設定】
-        <br>
+        <input type="checkbox" name="ai_post_enable" value="1">AIポスト<br>
 
+        <br>
+        <br>
+        AIポストモード
+        <br>
         <label>
-            <input type="radio" name="ai_mode" value="0" onclick="filterPresets()" > なし
+            <input type="radio" name="ai_mode" value="0" onclick="filterPresets()" checked> なし
         </label>
         <label>
-            <input type="radio" name="ai_mode" value="1" onclick="filterPresets()" checked> 裏垢女子
+            <input type="radio" name="ai_mode" value="1" onclick="filterPresets()"> 裏垢女子
         </label>
         <label>
-            <input type="radio" name="ai_mode" value="2" onclick="filterPresets()"> トレンド
+            <input type="radio" name="ai_mode" value="2" onclick="filterPresets()"> yahooトレンド
+        </label>
+        <label>
+            <input type="radio" name="ai_mode" value="6" onclick="filterPresets()"> Xトレンド
         </label>
         <label>
             <input type="radio" name="ai_mode" value="3" onclick="filterPresets()"> BTC為替
@@ -544,31 +618,13 @@ $result = $stmt->get_result();
 
 
         <br>
-        <input type="checkbox" name="ai_post_enable" value="1">AIポスト<br>
-        プロンプト設定      
 
-        <select id="post_preset_select" onchange="loadPresetText_post()">
-            <option value="">選択してください</option>  
-            <?php foreach ($presets as $preset): ?>
-                <?php if ($preset['mode'] === 'post'):  ?>
-                <!-- モードが自由の場合、preset['type'] が '自由' のものだけ表示 -->
-                    <option value="<?= htmlspecialchars($preset['prompt'], ENT_QUOTES, 'UTF-8') ?>" 
-                    class="preset-option" 
-                    data-type="<?= htmlspecialchars($preset['type'], ENT_QUOTES, 'UTF-8') ?>"
-                    data-example="<?= htmlspecialchars($preset['example'], ENT_QUOTES, 'UTF-8') ?>">
-                    <?= htmlspecialchars($preset['name'], ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </select>
 
         <br>
-        <textarea id="ai_post_prompt" name="ai_post_prompt" cols="80" rows="5" maxlength="1000" 
+        <textarea id="ai_prompt" name="ai_prompt" cols="80" rows="5" maxlength="1000" 
         style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>        
-        <textarea id="ai_post_example" name="ai_post_example" cols="80" rows="5" maxlength="2000" 
+        <textarea id="ai_past_tweet" name="ai_past_tweet" cols="80" rows="5" maxlength="2000" 
         style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>    
-        <textarea id="ai_trend_prompt" name="ai_trend_prompt" cols="80" rows="5" maxlength="1000" 
-        style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>               
         <br>
 
         <input type="checkbox" name="ai_reply_enable" value="1">AIリプライ<br>
@@ -644,9 +700,46 @@ function loadPresetText_reply() {
 
 </script>
 
+
+<script>
+const systemPrompts = <?= json_encode($system_prompts, JSON_UNESCAPED_UNICODE); ?>;
+</script>
+
 <script>
 // AIモードが変更された時に実行される関数
 function filterPresets() {
+
+    const selectedMode = document.querySelector('input[name="ai_mode"]:checked').value;
+    const promptBox = document.getElementById("ai_prompt");
+    const pastTweetBox = document.getElementById("ai_past_tweet");
+
+    // 初期化
+    ai_prompt.value = "";
+
+    if (selectedMode === "1") {
+        promptBox.value = systemPrompts["ai_uraaka_prompt"]?.value || "";
+        pastTweetBox.value = systemPrompts["ai_uraaka_past_tweet"]?.value || "";
+        promptBox.style.display = 'block';
+        pastTweetBox.style.display = 'block';
+    } else if (selectedMode === "2") {
+        promptBox.value = systemPrompts["ai_trend_prompt_yahoo"]?.value || "";
+        promptBox.style.display = 'block';
+        pastTweetBox.style.display = 'none';
+    } else if (selectedMode === "6") {
+        promptBox.value = systemPrompts["ai_trend_prompt_x"]?.value || "";
+        promptBox.style.display = 'block';
+        pastTweetBox.style.display = 'none';
+    } else if (selectedMode === "3") {
+        promptBox.value = systemPrompts["ai_btc_prompt"]?.value || "";
+        promptBox.style.display = 'block';
+        pastTweetBox.style.display = 'none';
+    } else {
+        promptBox.value = "";
+        promptBox.style.display = 'none';
+        pastTweetBox.style.display = 'none';
+    }
+
+    /*
     const selectedMode = document.querySelector('input[name="ai_mode"]:checked').value;
     const options = document.querySelectorAll('.preset-option');
 
@@ -731,6 +824,7 @@ function filterPresets() {
         replyPresetSelect.style.display = 'none';
         trendPrompt.style.display = 'block';
     }
+        */
 }
 
 // ページが読み込まれたときにフィルタリングを実行

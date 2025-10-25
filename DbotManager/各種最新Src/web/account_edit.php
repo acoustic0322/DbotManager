@@ -127,6 +127,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //    $ai_mode = isset($_POST['ai_mode']) ? $_POST['ai_mode'] : null;
     $ai_mode = $_POST['ai_mode'];
 
+    // 2025.10.25 AIプロンプト関連の列追加
+    $ai_uraaka_prompt       = $edit_account['ai_uraaka_prompt']       ?? '';
+    $ai_uraaka_past_tweet   = $edit_account['ai_uraaka_past_tweet']   ?? '';
+    $ai_trend_prompt_yahoo  = $edit_account['ai_trend_prompt_yahoo']  ?? '';
+    $ai_trend_prompt_x      = $edit_account['ai_trend_prompt_x']      ?? '';
+    $ai_btc_prompt          = $edit_account['ai_btc_prompt']          ?? '';        
+    
+    {
+        $ai_prompt_textbox = trim($_POST['ai_prompt'] ?? '');
+        $ai_past_tweet_textbox = trim($_POST['ai_past_tweet'] ?? '');
+
+        // --- ラジオボタンに応じて上書き ---
+        switch ($ai_mode) {
+            case '1': // 裏垢女子
+                if ($ai_prompt_textbox !== '') {
+                    $ai_uraaka_prompt = $ai_prompt_textbox;
+                }
+                if ($ai_past_tweet_textbox !== '') {
+                    $ai_uraaka_past_tweet = $ai_past_tweet_textbox;
+                }
+                break;
+            case '2': // Yahooトレンド
+                if ($ai_prompt_textbox !== '') {
+                    $ai_trend_prompt_yahoo = $ai_prompt_textbox;
+                }
+                break;
+            case '6': // Xトレンド
+                if ($ai_prompt_textbox !== '') {
+                    $ai_trend_prompt_x = $ai_prompt_textbox;
+                }
+                break;
+            case '3': // BTC為替
+                if ($ai_prompt_textbox !== '') {
+                    $ai_btc_prompt = $ai_prompt_textbox;
+                }
+                break;
+        }    
+      }
+
 
     // api_master_id が 0 以外なら client_id を空にする
     if (isset($edit_account['api_master_id']) && $edit_account['api_master_id'] != 0) {
@@ -203,12 +242,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ai_reply_example = ?,
             ai_mode   = ? ,
             ai_trend_prompt = ? 
+            ,ai_uraaka_prompt = ?
+            ,ai_uraaka_past_tweet = ?
+            ,ai_trend_prompt_yahoo = ? 
+            ,ai_trend_prompt_x = ? 
+            ,ai_btc_prompt = ?
         WHERE id = ?
     ");
 
 //    "sssssssssssiiiiiiiiiiiiiiiiiiiiiiiiii", // 型指定
     $stmt->bind_param(
-        "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiissssiss", // 型指定
+        "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiissssisssssss", // 型指定
         $name, 
         $login_id, 
 #        $hashed_password, 
@@ -258,8 +302,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ai_post_example  ,
         $ai_reply_example , 
         $ai_mode   ,
-        $ai_trend_prompt  ,
-        $id
+        $ai_trend_prompt  
+
+        ,$ai_uraaka_prompt 
+        ,$ai_uraaka_past_tweet 
+        ,$ai_trend_prompt_yahoo 
+        ,$ai_trend_prompt_x 
+        ,$ai_btc_prompt 
+        ,$id
     );
     
     // SQLクエリ実行
@@ -388,20 +438,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           
           <label>AIコメントON <input type="checkbox" name="reserve1_ai" value="1" <?= !empty($edit_account['reserve1_ai']) ? 'checked' : '' ?>></label>
 
-          <h3>AI設定</h3>
           <label>AIポスト <input type="checkbox" name="ai_post_enable" value="1" <?= !empty($edit_account['ai_post_enable']) ? 'checked' : '' ?>></label>
-          <label>AIリプライ <input type="checkbox" name="ai_reply_enable" value="1" <?= !empty($edit_account['ai_reply_enable']) ? 'checked' : '' ?>></label>
-
-          <label>AIモード</label>
-          <label><input type="radio" name="ai_mode" value="0" <?= ($edit_account['ai_mode'] ?? '') == 0 ? 'checked' : '' ?>>なし</label>
-          <label><input type="radio" name="ai_mode" value="1" <?= ($edit_account['ai_mode'] ?? '') == 1 ? 'checked' : '' ?>>裏垢女子</label>
-          <label><input type="radio" name="ai_mode" value="2" <?= ($edit_account['ai_mode'] ?? '') == 2 ? 'checked' : '' ?>>トレンド</label>
-          <label><input type="radio" name="ai_mode" value="3" <?= ($edit_account['ai_mode'] ?? '') == 3 ? 'checked' : '' ?>>BTC為替</label>
+          <label><input type="radio" name="ai_mode" value="0" onclick="filterPresets()" <?= ($edit_account['ai_mode'] ?? '') == 0 ? 'checked' : '' ?>>なし</label>
+          <label><input type="radio" name="ai_mode" value="1" onclick="filterPresets()" <?= ($edit_account['ai_mode'] ?? '') == 1 ? 'checked' : '' ?>>裏垢女子</label>
+          <label><input type="radio" name="ai_mode" value="2" onclick="filterPresets()" <?= ($edit_account['ai_mode'] ?? '') == 2 ? 'checked' : '' ?>>yhooトレンド</label>
+          <label><input type="radio" name="ai_mode" value="6" onclick="filterPresets()" <?= ($edit_account['ai_mode'] ?? '') == 6 ? 'checked' : '' ?>>Xトレンド</label>
+          <label><input type="radio" name="ai_mode" value="3" onclick="filterPresets()" <?= ($edit_account['ai_mode'] ?? '') == 3 ? 'checked' : '' ?>>BTC為替</label>
 
           <!--
-          <label><input type="radio" name="ai_mode" value="4" <?= ($edit_account['ai_mode'] ?? '') == 4 ? 'checked' : '' ?>>GOLD為替</label>
-          <label><input type="radio" name="ai_mode" value="5" <?= ($edit_account['ai_mode'] ?? '') == 5 ? 'checked' : '' ?>>他通貨為替</label>
+          <label><input type="radio" name="ai_mode" value="4" onclick="filterPresets()" <?= ($edit_account['ai_mode'] ?? '') == 4 ? 'checked' : '' ?>>GOLD為替</label>
+          <label><input type="radio" name="ai_mode" value="5" onclick="filterPresets()" <?= ($edit_account['ai_mode'] ?? '') == 5 ? 'checked' : '' ?>>他通貨為替</label>
+          -->
 
+          <label>プロンプト</label><br>
+          <textarea id="ai_prompt" name="ai_prompt" cols="80" rows="5" 
+          style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>
+
+          <br>
+          <label>ポスト例</label><br>
+          <textarea id="ai_past_tweet" name="ai_past_tweet" cols="80" rows="5" 
+          style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>
+          <br>
+
+          <label>AIリプライ <input type="checkbox" name="ai_reply_enable" value="1" <?= !empty($edit_account['ai_reply_enable']) ? 'checked' : '' ?>></label>
+
+          <!--
           <label>ポスト用プロンプト</label>
           <textarea name="ai_post_prompt"><?= htmlspecialchars($edit_account['ai_post_prompt'] ?? '') ?></textarea>
 
@@ -426,3 +487,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 </body>
 </html>
+
+
+<script>
+/**
+ * AIモード切り替え時に、対応するsystem_masterのプロンプトを
+ * ai_prompt / ai_past_tweet テキストエリアへ反映する
+ */
+// PHPで取得したアカウント情報をJavaScriptに渡す
+const editAccount = <?= json_encode($edit_account ?? new stdClass(), JSON_UNESCAPED_UNICODE); ?>;
+
+function filterPresets() {
+    const selectedMode = document.querySelector('input[name="ai_mode"]:checked').value;
+    const promptBox = document.getElementById("ai_prompt");
+    const pastTweetBox = document.getElementById("ai_past_tweet");
+
+    // 一旦クリア
+    promptBox.value = "";
+    pastTweetBox.value = "";
+
+
+//    console.log("editAccount =", editAccount);
+//    console.log("selectedMode =", selectedMode);
+
+    switch (selectedMode) {
+        case "1": // 裏垢女子
+            promptBox.value = editAccount["ai_uraaka_prompt"] || "";
+            pastTweetBox.value = editAccount["ai_uraaka_past_tweet"] || "";
+            promptBox.style.display = 'block';
+            pastTweetBox.style.display = 'block';
+            break;
+
+        case "2": // Yahooトレンド
+            promptBox.value = editAccount["ai_trend_prompt_yahoo"] || "";
+            promptBox.style.display = 'block';
+            pastTweetBox.style.display = 'none';
+            break;
+
+        case "6": // Xトレンド
+            promptBox.value = editAccount["ai_trend_prompt_x"] || "";
+            promptBox.style.display = 'block';
+            pastTweetBox.style.display = 'none';
+            break;
+
+        case "3": // BTC為替
+            promptBox.value = editAccount["ai_btc_prompt"] || "";
+            promptBox.style.display = 'block';
+            pastTweetBox.style.display = 'none';
+            break;
+
+        default: // なし
+            promptBox.value = "";
+            pastTweetBox.value = "";
+            promptBox.style.display = 'none';
+            pastTweetBox.style.display = 'none';
+            break;
+    }
+
+}
+
+// ページ初期表示時にも反映（現在のai_modeに合わせて）
+window.addEventListener('DOMContentLoaded', filterPresets);
+</script>

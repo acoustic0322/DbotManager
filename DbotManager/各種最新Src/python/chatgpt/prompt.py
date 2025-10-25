@@ -244,6 +244,24 @@ REPLY_PROMPT1_FIX2 ="""
 
 """
 
+TREND_PROMPT ="""
+    あなたはSNSの投稿を作成するAIです。
+    データベース上にある過去の人気ツイートを参照して、
+    以下の条件を満たすツイートを作成してください。
+    
+必ず最新のトレンドに沿った内容にする
+140文字以内
+カジュアルな口調で、ユーザーが興味を持ちそうな内容
+日本語で自然な文章にする
+内容を膨らませてツイート作成する。
+必ずツイートの中身のみ出力してください。
+
+    #最新トレンド
+    
+[{keyword1}],[{keyword2}]
+
+"""
+
 PREFERRED_MODELS = [
     "llama-3.3-70b-versatile",   # Meta最新・128K対応・高精度・多用途
     "llama3-70b-8192",           # Meta安定版・高精度
@@ -282,7 +300,8 @@ payload_refine_tweet = {
 
 payload_generate_trend_tweet = {
 #    "model": "gpt-3.5-turbo",
-    "model": "gpt-4.0-turbo",
+#    "model": "gpt-4.0-turbo",      # gpt-4.0-turboが古い名称のため変更
+    "model": "gpt-4-turbo",
     "messages": "",
     "max_tokens": 150,
     "temperature": 0.7

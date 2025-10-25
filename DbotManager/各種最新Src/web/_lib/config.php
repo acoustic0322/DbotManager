@@ -2,6 +2,7 @@
 
 require __DIR__.'/twitteroauth/vendor/autoload.php';
 
+if (!defined('OAUTH_CALLBACK')) {
 //define('OAUTH_CALLBACK' , 'http://localhost:8000/callback.php');
 define('OAUTH_CALLBACK' , 'https://d-bot.happywinds.net/d-bot/callback.php');
 //define('OAUTH_CALLBACK' , 'https://d-bot.happywinds.net/callback.php');
@@ -30,6 +31,7 @@ define('DB_HOST', '203.137.53.205');
 
 define('MAX_MOVIE_COUNT', 200);
 define('MAX_PHOTO_COUNT', 200);
+}
 
 $config = [
     'servername' => DB_HOST,
@@ -38,6 +40,7 @@ $config = [
     'dbname' => 'd_bot'
 ];
 
+if (!function_exists('return_bytes')) {
 function return_bytes($val) {
     $val = trim($val);
     $last = strtolower(substr($val, -1));
@@ -241,7 +244,6 @@ function get_user($conn,$id){
     return $re;
 }
 
-
 function get_account($conn, $id)
 {
     $re = null;
@@ -305,6 +307,11 @@ function get_account($conn, $id)
         am.ai_post_example  ,
         am.ai_reply_example ,
         am.ai_mode 
+        ,am.ai_uraaka_prompt
+        ,am.ai_uraaka_past_tweet
+        ,am.ai_trend_prompt_yahoo
+        ,am.ai_trend_prompt_x
+        ,am.ai_btc_prompt
     FROM account_master am
     LEFT JOIN api_master api ON api.id = am.api_master_id
     WHERE am.id = ?;
@@ -376,6 +383,11 @@ function get_account($conn, $id)
             $ai_post_example  ,
             $ai_reply_example ,
             $ai_mode     
+            ,$ai_uraaka_prompt
+            ,$ai_uraaka_past_tweet
+            ,$ai_trend_prompt_yahoo
+            ,$ai_trend_prompt_x
+            ,$ai_btc_prompt
         );
 
         if ($stmt->fetch()) {
@@ -438,6 +450,13 @@ function get_account($conn, $id)
                 'ai_post_example' => $ai_post_example,
                 'ai_reply_example' => $ai_reply_example ,
                 'ai_mode' => $ai_mode 
+
+                ,'ai_uraaka_prompt' => $ai_uraaka_prompt
+                ,'ai_uraaka_past_tweet' => $ai_uraaka_past_tweet
+                ,'ai_trend_prompt_yahoo' => $ai_trend_prompt_yahoo
+                ,'ai_trend_prompt_x' => $ai_trend_prompt_x
+                ,'ai_btc_prompt' => $ai_btc_prompt
+
             ];
         }
     }
@@ -564,14 +583,12 @@ function get_search_list_row($conn, $id)
 
     $query = "
     SELECT 
+        account_id , 
         search_user_name, 
         enable, 
         post_enable , 
         reply_enable , 
         monomane_enable, 
-        post_account_id , 
-        reply_account_id , 
-        monomane_account_id ,
         time_enable ,
         start_hour , 
         end_hour
@@ -588,9 +605,9 @@ function get_search_list_row($conn, $id)
 
         // 結果をバインド
         $stmt->bind_result(
+            $account_id,
             $search_user_name, $enable, 
             $post_enable, $reply_enable, $monomane_enable,
-            $post_account_id, $reply_account_id, $monomane_account_id ,
             $time_enable , $start_hour , $end_hour
             );
 
@@ -598,14 +615,12 @@ function get_search_list_row($conn, $id)
             // データが取得できた場合
             $re = [
                 'id' => $id,
+                'account_id' => $account_id , 
                 'search_user_name' => $search_user_name,
                 'enable' => $enable,
                 'post_enable' => $post_enable ,
                 'reply_enable' => $reply_enable ,
                 'monomane_enable' => $monomane_enable, 
-                'post_account_id' => $post_account_id , 
-                'reply_account_id' => $reply_account_id , 
-                'monomane_account_id'  => $monomane_account_id ,
                 'time_enable'  => $time_enable ,
                 'start_hour'  => $start_hour ,
                 'end_hour'  => $end_hour 
@@ -616,14 +631,10 @@ function get_search_list_row($conn, $id)
     return $re; // データがない場合はnullを返す
 }
 
-
-
 function e($value, $doubleEncode = false){
     if (is_null($value)) {return '';}
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8', $doubleEncode);
 }
-
-
 
 function duplicateData_comment($conn, $accountId, $formAccountId , $mode) {
     // 取得するデータ
@@ -886,4 +897,5 @@ function updatesSearchEnable_AccountMaster($conn, $accountId , $value) {
         'message' => "監視実施設定を更新しました",
         'errors' => ''
     ];
+}
 }

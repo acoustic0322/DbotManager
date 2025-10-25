@@ -13,6 +13,7 @@ import schedule
 from prompt import PROMPT1
 from prompt import past_tweets_1
 
+
 from prompt import payload_generate_tweet
 from prompt import payload_generate_reply
 from prompt import payload_refine_tweet
@@ -191,8 +192,7 @@ def generate_trend_tweet(open_ai_api_key,prompt):
 
     print("最大リトライ回数を超えました。ツイート生成をスキップします。")
     return "エラーが発生しました"
-
-
+    
 #定期的にツイートをLLMで実行
 def auto_post_tweet():
     retry_count = 0

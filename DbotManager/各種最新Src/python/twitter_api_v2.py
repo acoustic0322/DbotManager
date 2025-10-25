@@ -43,6 +43,7 @@ sys.path.append(os.path.abspath("chatgpt"))
 from chatgpt_reply import generate_reply
 #from chatgpt_tweet import generate_tweet,refine_tweet,generate_trend_tweet_by_keyword
 from chatgpt_tweet import generate_tweet
+from chatgpt_tweet import generate_trend_tweet
 
 from search_chat import get_tweet_text_from_yahoo_trend
 from search_chat import get_tweet_text_from_yahoo_btc
@@ -52,6 +53,7 @@ from search_chat import get_tweet_text_from_yahoo_gold  # レート取得でき�
 # 2025.10.15 追加
 from prompt import PROMPT1
 from prompt import past_tweets_1
+from prompt import TREND_PROMPT
 
 
 def createClient(credentials):
@@ -355,17 +357,24 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
             # 他通貨為替レートツイートモード(未対応)
             elif ai_mode == 5:
                 result , comment = get_tweet_text_from_yahoo_pair(credentials['OPENAI_API_KEY'])
-            else:
+            else: # Xトレンド
                 kw1 , kw2 = get_trend_list_keyword()
                 outputLog(f"kw1={kw1}")
                 outputLog(f"kw2={kw2}")
 
+                trend_prompt = TREND_PROMPT
+#                trend_prompt = credentials.get('ai_trend_prompt')
+
                 # ai_trend_promptが未設定ならFalseを返す
-                if not credentials.get('ai_trend_prompt'):
+                if not trend_prompt:
                     outputLog("ai_trend_promptが未設定のため中止")
                     return False, "ai_trend_prompt未設定"                
 
-                comment = generate_trend_tweet_by_keyword(credentials['OPENAI_API_KEY'],credentials['ai_trend_prompt'],kw1,kw2)
+                    
+                # 置き換え実行
+                prompt_text = TREND_PROMPT.format(keyword1=kw1, keyword2=kw2)
+
+                comment = generate_trend_tweet(credentials['OPENAI_API_KEY'],prompt_text)
 
 
     outputLog(f"comment={comment}")

@@ -27,6 +27,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
+from mysql import insert_trend
+from mysql import delete_trend
+
 # ---------------------------
 # 設定（必要ならここを変える）
 # ---------------------------
@@ -206,8 +209,17 @@ def main():
         selected = select_by_indices(gathered, INDEX_LIST_1BASED)
         print(f"[STEP] Selected {len(selected)} items from the index list (before trim): {selected}")
 
+        delete_trend("test_profile")
+
+        # selected の各要素を処理（rankを1から順に付与）
+        for rank, item in enumerate(selected, start=1):
+            insert_trend("test_profile", rank, "trend", item, 0)
+
         # その中の先頭3件だけを最終ワードにする
         final = selected[:3]
+
+        print(f"final : {final}")
+
         if not final:
             print("[WARN] No items selected after index filtering.")
             driver.quit()

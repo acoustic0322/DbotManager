@@ -420,7 +420,7 @@ function toggleMenu(menuEl) {
 
 <div style="margin-top: 20px; font-size: 14px; color: #fff;">
   <strong>アイコン凡例：</strong>
-  ✅=通常認証 / 🎞️=メディア認証 / 🔍=監視 / 🏷️=API貸出 / 🤖=AI（自由） / 👩=AI（裏垢） / 📈=AI（トレンド）
+  ✅=通常認証 / 🎞️=メディア認証 / 🔍=監視 / 🏷️=API貸出 / 👩=AI（裏垢） / 🔥=AI(Xトレンド) / 💬=AI（yahooトレンド） / ₿=AI(BTC為替)
 </div>
     <table>
 <thead>
@@ -474,9 +474,10 @@ function toggleMenu(menuEl) {
   <?php endif; ?>
   <?php
     switch ($row['ai_mode'] ?? 0) {
-      case 1: echo '<span title="AIモード：自由">🤖</span>'; break;
-      case 2: echo '<span title="AIモード：裏垢女子">👩</span>'; break;
-      case 3: echo '<span title="AIモード：トレンド">📈</span>'; break;
+      case 1: echo '<span title="AIモード：裏垢女子">👩</span>'; break;
+      case 2: echo '<span title="AIモード：yahooトレンド">💬</span>'; break;
+      case 6: echo '<span title="AIモード：Xトレンド">🔥</span>'; break;
+      case 3: echo '<span title="AIモード：BTC為替">₿</span>'; break;
     }
   ?>
 </td>    <td>
