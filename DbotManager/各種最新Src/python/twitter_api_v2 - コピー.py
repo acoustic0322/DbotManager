@@ -335,13 +335,10 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 #                    return False, "ai_post_example未設定"                
 
 
-                outputLog("裏垢女子プロンプト：")
-                outputLog(credentials['ai_uraaka_prompt'])
-                outputLog("裏垢女子PastTweet：")
-                outputLog(credentials['ai_uraaka_past_tweet'])
-
+                outputLog("past_tweet_1")
+                outputLog(past_tweets_1)
 #                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
-                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_uraaka_prompt'],credentials['ai_uraaka_past_tweet'])
+                comment = generate_tweet(credentials['OPENAI_API_KEY'],PROMPT1,past_tweets_1)
 
 #                # 裏垢女子モード時は文章を整形
 #                if ai_mode == 2:
@@ -350,52 +347,29 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
             # yahooトレンドモード
             elif ai_mode == 2:
-                outputLog("yahooトレンドプロンプト：")
-                outputLog(credentials['ai_trend_prompt_yahoo'])
-                result , comment = get_tweet_text_from_yahoo_trend(credentials['OPENAI_API_KEY'],credentials['ai_trend_prompt_yahoo'])
+                result , comment = get_tweet_text_from_yahoo_trend(credentials['OPENAI_API_KEY'])
             # BTC為替レートツイートモード
             elif ai_mode == 3:
-                outputLog("BTC為替プロンプト：")
-                outputLog(credentials['ai_btc_prompt'])
-                result , comment = get_tweet_text_from_yahoo_btc(credentials['OPENAI_API_KEY'],credentials['ai_btc_prompt'])
+                result , comment = get_tweet_text_from_yahoo_btc(credentials['OPENAI_API_KEY'])
             # GOLD為替レートツイートモード(未対応)
             elif ai_mode == 4:
-                prompt = f"""
-                以下の情報をもとに、金価格に関するX（旧Twitter）投稿文を1つ生成してください。
-                ・リアルタイムの価格を含める
-                ・140文字以内
-                ・自然でカジュアルな日本語
-                ・トレーダーや一般人が興味を持つように
-                
-                金価格情報: 「{gold_info}」
-                """
-                result , comment = get_tweet_text_from_yahoo_gold(credentials['OPENAI_API_KEY'],prompt)
+                result , comment = get_tweet_text_from_yahoo_gold(credentials['OPENAI_API_KEY'])
             # 他通貨為替レートツイートモード(未対応)
             elif ai_mode == 5:
-                # --- プロンプト生成とGPT呼び出し ---
-                prompt = f"""
-                    以下の情報を元に、X（旧Twitter）に投稿するような自然で短いツイートを日本語で1つ作成してください。
-                    今のリアルタイムでの値段を含めてお願いします。
-                    140文字以内で、カジュアルに。
-                    為替情報: 「{rate_info}」
-                    """                
-                result , comment = get_tweet_text_from_yahoo_pair(credentials['OPENAI_API_KEY'],prompt)
+                result , comment = get_tweet_text_from_yahoo_pair(credentials['OPENAI_API_KEY'])
             else: # Xトレンド
                 kw1 , kw2 = get_trend_list_keyword()
                 outputLog(f"kw1={kw1}")
                 outputLog(f"kw2={kw2}")
 
-#                trend_prompt = TREND_PROMPT
+                trend_prompt = TREND_PROMPT
 #                trend_prompt = credentials.get('ai_trend_prompt')
-                trend_prompt = credentials['ai_trend_prompt_x']
-
-                outputLog("Xトレンドプロンプト：")
-                outputLog(credentials['ai_trend_prompt_x'])
 
                 # ai_trend_promptが未設定ならFalseを返す
                 if not trend_prompt:
-                    outputLog("ai_trend_prompt_xが未設定のため中止")
-                    return False, "ai_trend_prompt_x未設定"                
+                    outputLog("ai_trend_promptが未設定のため中止")
+                    return False, "ai_trend_prompt未設定"                
+
                     
                 # 置き換え実行
                 prompt_text = TREND_PROMPT.format(keyword1=kw1, keyword2=kw2)

@@ -59,7 +59,7 @@ def call_api_with_retry(url, payload, headers, retries=5, delay=2):
 
 
 # 過去のツイート
-def generate_tweet(OPENAI_API_KEY,prompt,past_tweets):
+def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
 
     outputLog(past_tweets)
 
@@ -79,7 +79,7 @@ def generate_tweet(OPENAI_API_KEY,prompt,past_tweets):
     ]
         
     headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
 

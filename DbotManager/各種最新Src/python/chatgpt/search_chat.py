@@ -179,7 +179,7 @@ def create_agent(openai_api_key: str):
 
 
 # --- mainA 修正版（複数通貨対応） ---
-def get_tweet_text_from_yahoo_pair(open_ai_api_key, target_currency = "USD/JPY"):
+def get_tweet_text_from_yahoo_pair(open_ai_api_key, prompt, target_currency = "USD/JPY"):
     # 対象通貨をここで指定（必要に応じて "EUR/JPY" などに変更可能。他の通貨も可能です。）
 
 	#USD/JPY,EUR/JPY,GBP/JPY,AUD/JPY,CAD/JPY,CHF/JPY
@@ -207,13 +207,18 @@ def get_tweet_text_from_yahoo_pair(open_ai_api_key, target_currency = "USD/JPY")
         rate_info = f"{target_currency} のレート取得中にエラーが発生しました: {str(e)}"
 
     # --- プロンプト生成とGPT呼び出し ---
-    prompt = f"""
-以下の情報を元に、X（旧Twitter）に投稿するような自然で短いツイートを日本語で1つ作成してください。
-今のリアルタイムでの値段を含めてお願いします。
-140文字以内で、カジュアルに。
-為替情報: 「{rate_info}」
-"""
+#    prompt = f"""
+#以下の情報を元に、X（旧Twitter）に投稿するような自然で短いツイートを日本語で1つ作成してください。
+#今のリアルタイムでの値段を含めてお願いします。
+#140文字以内で、カジュアルに。
+#為替情報: 「{rate_info}」
+#"""
     try:
+
+        prompt = prompt + f"""
+        為替情報: 「{rate_info}」
+        """
+
         llm = create_llm(open_ai_api_key)
         result = llm.invoke(prompt)
         outputLog(f"\n💱 {target_currency} のツイート:")
@@ -224,7 +229,7 @@ def get_tweet_text_from_yahoo_pair(open_ai_api_key, target_currency = "USD/JPY")
         return False , f"{target_currency} のツイート生成中にエラー: {e}"
 
 
-def get_tweet_text_from_yahoo_trend(open_ai_api_key):
+def get_tweet_text_from_yahoo_trend(open_ai_api_key,prompt):
     trends = get_yahoo_trends()
     if not trends or isinstance(trends, str):
         outputLog(f"トレンド取得失敗: {trends}")
@@ -233,14 +238,17 @@ def get_tweet_text_from_yahoo_trend(open_ai_api_key):
     # トレンドの中からランダムに1つ選ぶ（または1位でも可）
     selected = trends[0]  # トップ1位を使用
 
-    prompt = f"""
-以下のトレンドワードを使って、X（旧Twitter）に投稿するような自然なツイートを1つ日本語で作成してください。
-・140文字以内
-・話題性を活かしてインパクトのあるカジュアルな文にしてください
-・絵文字を1〜2個入れてもOKです
-
-トレンドワード: 「{selected}」
-"""
+#    prompt = f"""
+#以下のトレンドワードを使って、X（旧Twitter）に投稿するような自然なツイートを1つ日本語で作成してください。
+#・140文字以内
+#・話題性を活かしてインパクトのあるカジュアルな文にしてください
+#・絵文字を1〜2個入れてもOKです
+#
+#トレンドワード: 「{selected}」
+#"""
+    prompt = prompt + f"""
+    トレンドワード: 「{selected}」
+    """
 
     try:
         llm = create_llm(open_ai_api_key)
@@ -254,19 +262,24 @@ def get_tweet_text_from_yahoo_trend(open_ai_api_key):
 
 
 # --- メインC（ゴールド価格ツイート） ---
-def get_tweet_text_from_yahoo_gold(open_ai_api_key):
+def get_tweet_text_from_yahoo_gold(open_ai_api_key, prompt):
     gold_info = get_gold_price_yahoo()
 
-    prompt = f"""
-以下の情報をもとに、金価格に関するX（旧Twitter）投稿文を1つ生成してください。
-・リアルタイムの価格を含める
-・140文字以内
-・自然でカジュアルな日本語
-・トレーダーや一般人が興味を持つように
-
-金価格情報: 「{gold_info}」
-"""
+#    prompt = f"""
+#以下の情報をもとに、金価格に関するX（旧Twitter）投稿文を1つ生成してください。
+#・リアルタイムの価格を含める
+#・140文字以内
+#・自然でカジュアルな日本語
+#・トレーダーや一般人が興味を持つように
+#
+#金価格情報: 「{gold_info}」
+#"""
     try:
+
+        prompt = prompt + f"""
+        金価格情報: 「{gold_info}」
+        """
+
         llm = create_llm(open_ai_api_key)
         result = llm.invoke(prompt)
         outputLog(f"\n🥇 金価格ツイート:\n{result.content}")
@@ -276,19 +289,22 @@ def get_tweet_text_from_yahoo_gold(open_ai_api_key):
         return False , f"エラー: {e}"
 
 # --- メインD（BTC価格ツイート） ---
-def get_tweet_text_from_yahoo_btc(open_ai_api_key):
+def get_tweet_text_from_yahoo_btc(open_ai_api_key, prompt):
     btc_info = get_bitcoin_price()
 
-    prompt = f"""
-以下の情報をもとに、ビットコインに関するX（旧Twitter）投稿文を1つ生成してください。
-・リアルタイムの価格を含める
-・140文字以内
-・自然でカジュアルな日本語
-・仮想通貨に興味ある人が食いつくように
-
-BTC価格情報: 「{btc_info}」
-"""
+#    prompt = f"""
+#以下の情報をもとに、ビットコインに関するX（旧Twitter）投稿文を1つ生成してください。
+#・リアルタイムの価格を含める
+#・140文字以内
+#・自然でカジュアルな日本語
+#・仮想通貨に興味ある人が食いつくように
+#
+#BTC価格情報: 「{btc_info}」
+#"""
     try:
+        prompt = prompt + f"""
+        BTC価格情報: 「{btc_info}」
+        """
         llm = create_llm(open_ai_api_key)
         result = llm.invoke(prompt)
         outputLog(f"\n₿ ビットコイン価格ツイート:\n{result.content}")
