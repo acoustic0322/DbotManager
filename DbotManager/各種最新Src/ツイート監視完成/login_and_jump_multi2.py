@@ -45,7 +45,7 @@ def open_firefox_with_profile(profile_path: Path, headless: bool = False):
     service = FirefoxService()
     return webdriver.Firefox(service=service, options=opts)
 
-def get_latest_tweets_info(driver, username: str, limit: int = MAX_TWEETS_PER_USER) -> List[Tuple[str, str, str]]:
+def get_latest_tweets_info(driver, limit: int = MAX_TWEETS_PER_USER) -> List[Tuple[str, str]]:
     tweets = []
     try:
         articles = WebDriverWait(driver, WAIT_TIMEOUT).until(
@@ -53,7 +53,6 @@ def get_latest_tweets_info(driver, username: str, limit: int = MAX_TWEETS_PER_US
         )
         for article in articles:
             try:
-                # 日時と本文を取得
                 time_el = article.find_element(By.XPATH, ".//time")
                 tweet_time_str = time_el.get_attribute("datetime")
                 tweet_time = datetime.fromisoformat(tweet_time_str.replace("Z", "+00:00"))
@@ -61,12 +60,7 @@ def get_latest_tweets_info(driver, username: str, limit: int = MAX_TWEETS_PER_US
                 text_el = article.find_element(By.XPATH, ".//div[@data-testid='tweetText']")
                 tweet_text = text_el.text.strip()
 
-                # ツイートへのURLを抽出
-                # <a href="/username/status/123456789"> の形式になっている
-                link_el = article.find_element(By.XPATH, f".//a[contains(@href, '/{username}/status/')]")
-                href = link_el.get_attribute("href")
-
-                tweets.append((tweet_time.isoformat(), tweet_text, href))
+                tweets.append((tweet_time.isoformat(), tweet_text))
 
                 if len(tweets) >= limit:
                     break
@@ -104,13 +98,12 @@ def get_latest_tweet_info(driver) -> Optional[Tuple[str, str]]:
         print(f"[ERR] ツイート取得タイムアウト: {e}")
         return None
 
-def append_result(username: str, tweet_time: str, tweet_text: str, tweet_url: str):
+def append_result(username: str, tweet_time: str, tweet_text: str):
     try:
         with RESULTS_TXT.open("a", encoding="utf-8") as f:
-            f.write(f"@{username}\n📅 {tweet_time}\n📝 {normalize(tweet_text)}\n🔗 {tweet_url}\n\n")
+            f.write(f"@{username}\n📅 {tweet_time}\n📝 {normalize(tweet_text)}\n\n")
     except Exception as e:
         print(f"[ERR] 書き込み失敗: {e}")
-
 
 def load_existing_tweet_keys(path: Path) -> Set[Tuple[str, str]]:
     if not path.exists():
@@ -135,12 +128,12 @@ def process_chunk(driver, usernames: List[str], processed_keys: Set[Tuple[str, s
             driver.get(url)
             time.sleep(3)
 
-            results = get_latest_tweets_info(driver, uname)
+            results = get_latest_tweets_info(driver)
             if not results:
                 print(f"[WARN] @{uname} のツイートが取得できませんでした")
                 continue
 
-            for tweet_time, tweet_text, tweet_url in results:
+            for tweet_time, tweet_text in results:
                 tweet_key = (tweet_time, normalize(tweet_text))
                 if tweet_key in processed_keys:
                     print(f"[SKIP] @{uname} のツイートは既に記録済み: {tweet_time}")
@@ -149,10 +142,8 @@ def process_chunk(driver, usernames: List[str], processed_keys: Set[Tuple[str, s
                 print(f"[TWEET] @{uname}")
                 print(f"  📅 {tweet_time}")
                 print(f"  📝 {tweet_text}")
-                print(f"  🔗 {tweet_url}")
-                append_result(uname, tweet_time, tweet_text, tweet_url)
+                append_result(uname, tweet_time, tweet_text)
                 processed_keys.add(tweet_key)
-
 
 #            result = get_latest_tweet_info(driver)
 #            if result:
