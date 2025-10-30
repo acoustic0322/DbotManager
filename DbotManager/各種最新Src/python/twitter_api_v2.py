@@ -300,10 +300,17 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
             if not credentials['OPENAI_API_KEY']:
                 outputLog("OPENAI_API_KEYが未設定です")
-                return False , ""
+                return False , "OPENAI_API_KEYが未設定です"
 
-#            comment = generate_reply(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_reply_example'],tweet_text)  #コメント内容
-            result , comment = generate_reply(credentials['OPENAI_API_KEY'],credentials['ai_post_prompt'],credentials['ai_reply_example'],tweet_text)  #コメント内容
+            if not credentials['ai_reply_prompt']:
+                outputLog("ai_reply_promptが未設定です")
+                return False , "ai_reply_promptが未設定です"
+
+            if not credentials['ai_reply_example']:
+                outputLog("ai_reply_exampleが未設定です")
+                return False , "ai_reply_exampleが未設定です"
+
+            result , comment = generate_reply(credentials['OPENAI_API_KEY'],credentials['ai_reply_prompt'],credentials['ai_reply_example'],tweet_text)  #コメント内容
 
             # 裏垢女子モード時は文章を整形
 #            if ai_mode == 2:
@@ -311,7 +318,10 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 #                comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
 
             outputLog(f"ツイート文:{tweet_text}")           
-            outputLog(f"リプライコメント:{comment}")           
+            outputLog(f"リプライコメント:{comment}")     
+
+
+            return False , ""      
 
     # ポストモード
     else:
@@ -322,6 +332,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
                 comment = get_comment_by_id(comment_id)
             else:
                 outputLog("固定コメントがありません(comment_id=0です)")
+                return False , "固定コメントがありません"
         else:
 
             # 裏垢女子モード
@@ -348,15 +359,15 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
                 if not credentials['GROQ_API_KEY']:
                     outputLog("GROQ_API_KEYが未設定です")
-                    return False , ""
+                    return False , "GROQ_API_KEYが未設定です"
 
                 if not credentials['ai_uraaka_prompt']:
                     outputLog("ai_uraaka_promptが未設定です")
-                    return False , ""
+                    return False , "ai_uraaka_promptが未設定です"
 
                 if not credentials['ai_uraaka_past_tweet']:
                     outputLog("ai_uraaka_past_tweetが未設定です")
-                    return False , ""
+                    return False , "ai_uraaka_past_tweetが未設定です"
 
 
 #                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
@@ -374,11 +385,11 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
                 if not credentials['OPENAI_API_KEY']:
                     outputLog("OPENAI_API_KEYが未設定です")
-                    return False , ""
+                    return False , "OPENAI_API_KEYが未設定です"
 
                 if not credentials['ai_trend_prompt_yahoo']:
                     outputLog("ai_trend_prompt_yahooが未設定です")
-                    return False , ""
+                    return False , "ai_trend_prompt_yahooが未設定です"
 
                 result , comment = get_tweet_text_from_yahoo_trend(credentials['OPENAI_API_KEY'],credentials['ai_trend_prompt_yahoo'])
             # BTC為替レートツイートモード
@@ -388,10 +399,10 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
                 if not credentials['OPENAI_API_KEY']:
                     outputLog("OPENAI_API_KEYが未設定です")
-                    return False , ""
+                    return False , "OPENAI_API_KEYが未設定です"
                 if not credentials['ai_btc_prompt']:
                     outputLog("ai_btc_promptが未設定です")
-                    return False , ""
+                    return False , "ai_btc_promptが未設定です"
 
                 result , comment = get_tweet_text_from_yahoo_btc(credentials['OPENAI_API_KEY'],credentials['ai_btc_prompt'])
             # GOLD為替レートツイートモード(未対応)
@@ -408,7 +419,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
                 if not credentials['OPENAI_API_KEY']:
                     outputLog("OPENAI_API_KEYが未設定です")
-                    return False , ""
+                    return False , "OPENAI_API_KEYが未設定です"
                     
                 result , comment = get_tweet_text_from_yahoo_gold(credentials['OPENAI_API_KEY'],prompt)
             # 他通貨為替レートツイートモード(未対応)
@@ -423,7 +434,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
                 if not credentials['OPENAI_API_KEY']:
                     outputLog("OPENAI_API_KEYが未設定です")
-                    return False , ""
+                    return False , "OPENAI_API_KEYが未設定です"
 
                 result , comment = get_tweet_text_from_yahoo_pair(credentials['OPENAI_API_KEY'],prompt)
             else: # Xトレンド
@@ -445,7 +456,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
                 if not credentials['OPENAI_API_KEY']:
                     outputLog("OPENAI_API_KEYが未設定です")
-                    return False , ""
+                    return False , "OPENAI_API_KEYが未設定です"
 
                 # 置き換え実行
                 prompt_text = TREND_PROMPT.format(keyword1=kw1, keyword2=kw2)
@@ -457,12 +468,12 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
     if result == False:
         outputLog("コメント取得が出来ませんでした")
-        return False , ""
+        return False , "コメント取得が出来ませんでした"
 
     # コメントが取得できなかった場合、処理を終了
     if comment is None:
         outputLog("comment is None")
-        return False , ""
+        return False , "comment is None"
 
     access_token = credentials['bearer_token']
 

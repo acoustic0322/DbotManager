@@ -96,7 +96,10 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
 
 
     # APIリクエスト（503エラー時は自動リトライ）
-    response_data = call_api_with_retry(url, payload_generate_reply, headers)
+
+    # payload_generate_replyだとエラーになるため、payloadを使用
+#    response_data = call_api_with_retry(url, payload_generate_reply, headers)
+    response_data = call_api_with_retry(url, payload, headers)
 
     if response_data:
         content = response_data["choices"][0]["message"]["content"].strip()
@@ -127,10 +130,6 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
 
     outputLog("最大リトライ回数を超えました。リプライ生成をスキップします。")
     return False , "リプライ生成エラー"
-
-    
-
-
 
 #AutoReplyStream クラス（リアルタイムリプライ監視 & 自動返信）
 class AutoReplyStream(tweepy.StreamingClient):
