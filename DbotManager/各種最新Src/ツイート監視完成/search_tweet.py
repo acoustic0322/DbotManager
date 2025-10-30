@@ -149,7 +149,7 @@ def proc_get_tweet(credentials):
 
         # 既存: 通常ツイート
         if tweet_enable == 1 or reply_enable == 1:
-            check_tweets(profile_path, user_name, user_id , tweet_enable , reply_enable)  # 既存関数（通常ツイのみ）
+            check_tweets(profile_path, user_name, user_id , tweet_enable , reply_enable, vps_id)  # 既存関数（通常ツイのみ）
 
 def get_user_id(credentials , username):
 
@@ -197,7 +197,7 @@ def get_user_id(credentials , username):
         outputLog(f"get_user_idエラー: {response.status_code}, {response.text}")
         return None , False , response.text
 
-def check_tweets(profile_path, user_name, user_id , tweet_enable , reply_enable):
+def check_tweets(profile_path, user_name, user_id , tweet_enable , reply_enable, vps_id):
 
     outputLog(f"[INFO] プロファイル切替: {profile_path}")
 
@@ -221,7 +221,7 @@ def check_tweets(profile_path, user_name, user_id , tweet_enable , reply_enable)
                         tweet['account_name'] = user_name
                         tweet['user_id'] = user_id
                         tweet['check_time'] = datetime.now()
-                        update_check_tweet_account_list(tweet)
+                        update_check_tweet_account_list(tweet , vps_id)
                         any_success = True   
 
                     # リプ検索有効時
@@ -236,7 +236,7 @@ def check_tweets(profile_path, user_name, user_id , tweet_enable , reply_enable)
                                 reply['account_name'] = user_name
                                 reply['user_id'] = user_id
                                 reply['check_time'] = datetime.now()
-                                update_check_tweet_account_list(reply)
+                                update_check_tweet_account_list(reply , vps_id)
                                 any_success = True   
 
             else:     

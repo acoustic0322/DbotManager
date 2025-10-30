@@ -183,13 +183,13 @@ def get_tweet_text_from_yahoo_pair(open_ai_api_key, prompt, target_currency = "U
     # 対象通貨をここで指定（必要に応じて "EUR/JPY" などに変更可能。他の通貨も可能です。）
 
 	#USD/JPY,EUR/JPY,GBP/JPY,AUD/JPY,CAD/JPY,CHF/JPY
-    target_currency = "GBP/JPY"
+#    target_currency = "GBP/JPY"
 
     # 設定に含まれているかチェック
     config = currency_config.get(target_currency)
     if not config:
         outputLog(f"{target_currency} は currency_config に存在しません。")
-        return
+        return False , ""
 
     # --- レート取得 ---
     headers = {"User-Agent": "Mozilla/5.0"}

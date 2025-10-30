@@ -119,10 +119,10 @@ def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
         content = re.sub(r"#\S+", "", content).strip()
         content = re.sub(r"僕", "私", content)
 
-        return content  # 成功したツイートを返す
+        return True , content  # 成功したツイートを返す
 
     outputLog("ツイート生成に失敗しました。")
-    return "ツイート生成エラー"
+    return False , "ツイート生成エラー"
 
 
 
@@ -188,10 +188,10 @@ def generate_trend_tweet(open_ai_api_key,prompt):
             if content.startswith(phrase):
                 content = content[len(phrase):].strip()
 
-        return content  # 成功した場合、ツイートを返す
+        return True , content  # 成功した場合、ツイートを返す
 
-    print("最大リトライ回数を超えました。ツイート生成をスキップします。")
-    return "エラーが発生しました"
+    outputLog("最大リトライ回数を超えました。ツイート生成をスキップします。")
+    return False , "エラーが発生しました"
     
 #定期的にツイートをLLMで実行
 def auto_post_tweet():

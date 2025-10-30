@@ -1119,7 +1119,7 @@ def get_check_tweet_account_list_by_tweet_id(tweet_id):
 
     return record    
 
-def update_check_tweet_account_list(record):
+def update_check_tweet_account_list(record , vps_id):
     connection = pymysql.connect(
         host=config.db_host,
         user='root',
@@ -1143,11 +1143,11 @@ def update_check_tweet_account_list(record):
                 INSERT INTO check_tweet_account_list
                     (account_name, user_id, tweet_id, tweet_text,
                      check_time, update_time, type,
-                     reply_to_tweet_id, reply_to_user_id, reply_to_screen_name)
+                     reply_to_tweet_id, reply_to_user_id, reply_to_screen_name , vps_id)
                 VALUES
                     (%s, %s, %s, %s,
                      %s, %s, %s,
-                     %s, %s, %s)
+                     %s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE
                     account_name       = VALUES(account_name),
                     tweet_id           = VALUES(tweet_id),
@@ -1157,7 +1157,8 @@ def update_check_tweet_account_list(record):
                     type               = VALUES(type),
                     reply_to_tweet_id  = VALUES(reply_to_tweet_id),
                     reply_to_user_id   = VALUES(reply_to_user_id),
-                    reply_to_screen_name = VALUES(reply_to_screen_name)
+                    reply_to_screen_name = VALUES(reply_to_screen_name),
+                    vps_id = VALUES(vps_id)
             """
             cursor.execute(sql, (
                 record['account_name'],
@@ -1170,6 +1171,7 @@ def update_check_tweet_account_list(record):
                 record.get('reply_to_tweet_id'),
                 record.get('reply_to_user_id'),
                 record.get('reply_to_screen_name'),
+                record.get('vps_id'),
             ))
             connection.commit()
     finally:

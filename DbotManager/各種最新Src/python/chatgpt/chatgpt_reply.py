@@ -123,10 +123,10 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
         content = re.sub(r"僕", "私", content)  # 「僕」を「私」に変換
         content = re.sub(r'["\']', "", content).strip()  # ダブルクォートとシングルクォートを削除
 
-        return content
+        return True , content
 
-    print("最大リトライ回数を超えました。リプライ生成をスキップします。")
-    return "リプライ生成エラー"
+    outputLog("最大リトライ回数を超えました。リプライ生成をスキップします。")
+    return False , "リプライ生成エラー"
 
     
 

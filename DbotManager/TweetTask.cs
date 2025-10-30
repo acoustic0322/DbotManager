@@ -893,18 +893,19 @@ namespace DbotManager
 
             var list = dataAccess.GetCheckTweetAccountList();
 
-            List<CheckTweetAccountList> 新規tweet = new List<CheckTweetAccountList>();
+            List<CheckTweetAccountList> 追加tweetItems = new List<CheckTweetAccountList>();
 
             foreach(var row in list)
             {
-                if(_checkTweetAccountList.Where(x => x.TweetId == row.TweetId).Count() == 0)
+                if(!_checkTweetAccountList.Any(x => x.TweetId == row.TweetId))
+//                if (_checkTweetAccountList.Where(x => x.TweetId == row.TweetId).Count() == 0)
                 {
-                    新規tweet.Add(row);
+                    追加tweetItems.Add(row);
                 }
             }
 
 
-            foreach( var item in 新規tweet)
+            foreach( var item in 追加tweetItems)
             {
                 var targetSearchList = _searchList.Where(x => x.SearchUserName == item.AccountName).ToList();
 
@@ -948,7 +949,8 @@ namespace DbotManager
 
             }
 
-            _checkTweetAccountList = list;
+//            _checkTweetAccountList = list;
+            _checkTweetAccountList.AddRange(追加tweetItems);
 
             /*
 
