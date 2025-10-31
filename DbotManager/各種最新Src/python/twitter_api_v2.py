@@ -298,30 +298,50 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
             target_check_tweet_account_list = get_check_tweet_account_list_by_tweet_id(reply_to_tweet_id)
             tweet_text = target_check_tweet_account_list['tweet_text']
 
+            # 裏垢女子モード
+            if ai_mode == 1:   
+                outputLog(f"裏垢女子")           
+                prompt = credentials['ai_uraaka_prompt_rep']
+                past_reply = credentials['ai_uraaka_past_rep']
+
+                if not credentials['ai_uraaka_prompt_rep']:
+                    outputLog("ai_uraaka_prompt_repが未設定です")
+                    return False , "ai_uraaka_prompt_repが未設定です"
+
+                if not credentials['ai_uraaka_past_rep']:
+                    outputLog("ai_uraaka_past_repが未設定です")
+                    return False , "ai_uraaka_past_repが未設定です"
+
+            else:
+                outputLog(f"裏垢女子以外")           
+                prompt = credentials['ai_free_prompt_rep']
+                past_reply = credentials['ai_free_past_rep']
+
+                if not credentials['ai_free_prompt_rep']:
+                    outputLog("ai_free_prompt_repが未設定です")
+                    return False , "ai_free_prompt_repが未設定です"
+
+                if not credentials['ai_free_past_rep']:
+                    outputLog("ai_free_past_repが未設定です")
+                    return False , "ai_free_past_repが未設定です"
+
             if not credentials['OPENAI_API_KEY']:
                 outputLog("OPENAI_API_KEYが未設定です")
                 return False , "OPENAI_API_KEYが未設定です"
 
-            if not credentials['ai_reply_prompt']:
-                outputLog("ai_reply_promptが未設定です")
-                return False , "ai_reply_promptが未設定です"
+            outputLog(f"prompt:{prompt}")           
+            outputLog(f"past_reply:{past_reply}")           
+            outputLog(f"ツイート文:{tweet_text}")           
 
-            if not credentials['ai_reply_example']:
-                outputLog("ai_reply_exampleが未設定です")
-                return False , "ai_reply_exampleが未設定です"
-
-            result , comment = generate_reply(credentials['OPENAI_API_KEY'],credentials['ai_reply_prompt'],credentials['ai_reply_example'],tweet_text)  #コメント内容
+            result , comment = generate_reply(credentials['OPENAI_API_KEY'],prompt,past_reply,tweet_text)  #コメント内容
+#            result , comment = generate_reply(credentials['OPENAI_API_KEY'],credentials['ai_reply_prompt'],credentials['ai_reply_example'],tweet_text)  #コメント内容
 
             # 裏垢女子モード時は文章を整形
 #            if ai_mode == 2:
 #                outputLog("裏垢女子")
 #                comment = refine_tweet(credentials['OPENAI_API_KEY'],comment)
 
-            outputLog(f"ツイート文:{tweet_text}")           
             outputLog(f"リプライコメント:{comment}")     
-
-
-            return False , ""      
 
     # ポストモード
     else:
@@ -437,6 +457,25 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
                     return False , "OPENAI_API_KEYが未設定です"
 
                 result , comment = get_tweet_text_from_yahoo_pair(credentials['OPENAI_API_KEY'],prompt)
+
+            # 自由モード
+            elif ai_mode == 9:
+
+                if not credentials['GROQ_API_KEY']:
+                    outputLog("GROQ_API_KEYが未設定です")
+                    return False , "GROQ_API_KEYが未設定です"
+
+                if not credentials['ai_free_prompt']:
+                    outputLog("ai_uraaka_promptが未設定です")
+                    return False , "ai_uraaka_promptが未設定です"
+
+                if not credentials['ai_uraaka_past_tweet']:
+                    outputLog("ai_uraaka_past_tweetが未設定です")
+                    return False , "ai_uraaka_past_tweetが未設定です"
+
+                # TBD ai_uraaka_past_tweet は使っちゃダメ
+                result , comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_free_prompt'],credentials['ai_uraaka_past_tweet'])
+
             else: # Xトレンド
                 kw1 , kw2 = get_trend_list_keyword()
                 outputLog(f"kw1={kw1}")

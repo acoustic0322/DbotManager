@@ -140,10 +140,14 @@ def get_account_master(id):
             am.ai_reply_example,
             um.jap_api_key
             ,am.ai_uraaka_prompt
+            ,am.ai_uraaka_prompt_rep
             ,am.ai_uraaka_past_tweet
+            ,am.ai_uraaka_past_rep
             ,am.ai_trend_prompt_yahoo
             ,am.ai_trend_prompt_x
             ,am.ai_btc_prompt
+            ,am.ai_free_prompt_rep
+            ,am.ai_free_past_rep
             FROM 
             account_master am
             left join api_master api on api.id = am.api_master_id
