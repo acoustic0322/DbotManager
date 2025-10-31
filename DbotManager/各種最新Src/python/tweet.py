@@ -141,6 +141,8 @@ elif mode == "init_check_tweet_account_master":
 # 認証情報を取得
 credentials = get_account_master(account_id)
 
+#print(credentials)
+
 if credentials:
     if mode == "post":
         if media_type != '':
