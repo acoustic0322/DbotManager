@@ -927,8 +927,12 @@ namespace DbotManager
                     {
                         if ((bool)targetRow.ReplyEnable)
                         {
-                            //08.22 未実装の為、一旦コメントアウト
-                            TweetProcReplyToReply(targetRow, item.TweetId);
+                            // 自分宛のリプライは除外
+                            if(item.TweetId != item.ReplyToTweetId)
+                            {
+                                //08.22 未実装の為、一旦コメントアウト
+                                TweetProcReplyToReply(targetRow, item.TweetId);
+                            }
                         }
                     }
 
