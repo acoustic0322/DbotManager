@@ -66,11 +66,20 @@ def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
 
     """GPTを使ってツイートを生成する関数"""
 
-    # 過去のツイートをランダムに2つ選択
-    random_past_tweets = random.sample(past_tweets,1)
-    # 改行で結合して、自然な文章にする
+    # --- 改行で分割してリスト化（空行除去＋strip()）---
+    lines = [line.strip() for line in past_tweets.splitlines() if line.strip()]
+
+    # --- 要素数が1以上ならランダムに1行選ぶ ---
+    if len(lines) >= 1:
+        random_past_tweets = random.sample(lines, 1)
+    else:
+        random_past_tweets = []
+
+    # --- 改行で結合して自然な文章に（1行でもjoin()でOK）---
     random_past_tweets = "\n".join(random_past_tweets)
 
+#    print("lines:", lines)
+#    print("random_past_tweets:", random_past_tweets)    
 
     # `messages` を先に定義する
     payload_generate_tweet["messages"] = [ 

@@ -6,9 +6,12 @@ from langchain_openai import ChatOpenAI  #新しいimport
 from langchain_community.tools import DuckDuckGoSearchRun  #新しいimport
 from langchain.agents import Tool, initialize_agent
 from bs4 import BeautifulSoup
-from langchain.utilities import SerpAPIWrapper
-import requests
 
+#2025.11.01 ライブラリを入替え
+#from langchain.utilities import SerpAPIWrapper
+from langchain_community.utilities import SerpAPIWrapperimport requests
+
+from config import outputLog
 
 
 OPENAI_API_KEY = "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"
@@ -94,7 +97,7 @@ def get_bitcoin_price():
     except Exception as e:
         return f"BTC価格取得エラー: {e}"
 
-print(get_bitcoin_price())
+#outputLog(get_bitcoin_price())
 
 
 def get_gold_price_yahoo():
@@ -136,44 +139,59 @@ def get_currency_bid_rate(currency_code: str) -> str:
     except Exception as e:
         return f"{currency_code} のレート取得中にエラーが発生しました: {str(e)}"
 
+# --- Toolリストを作る関数 ---
+def create_tools():
+    tools = [
+        Tool(
+            name="為替レート取得",
+            func=lambda input_text: get_currency_bid_rate(input_text.strip()),
+            description="為替レート（USD/JPY, EUR/JPY など）をYahooファイナンスから取得します。通貨ペア名を入力してください。"
+        ),
+    ]
+    return tools
 
 
-# --- LangChain用ツール定義 ---
-tools = [
-    Tool(
-        name="為替レート取得",
-        func=lambda input_text: get_currency_bid_rate(input_text.strip()),
-        description="為替レート（USD/JPY, EUR/JPY など）をYahooファイナンスから取得します。通貨ペア名を入力してください。"
-    ),
-]
+# --- LLM（GPTモデル）を作る関数 ---
+def create_llm(openai_api_key: str):
+    llm = ChatOpenAI(
+        model="gpt-4-turbo",
+        openai_api_key=openai_api_key,
+        temperature=0.5,
+        max_tokens=512,
+    )
+    return llm
 
-# --- GPT-4-turbo モデル定義 ---
-llm = ChatOpenAI(
-    model="gpt-4-turbo",
-    openai_api_key=OPENAI_API_KEY,
-    temperature=0.5,
-    max_tokens=512,
-)
 
-# --- エージェント定義 ---
-agent = initialize_agent(
-    tools=tools,
-    llm=llm,
-    agent="zero-shot-react-description",
-    verbose=True,
-    agent_kwargs={"prefix": "あなたは日本語で自然に返答する有能なツール活用エージェントです。"}
-)
+# --- エージェントを作る関数 ---
+def create_agent(openai_api_key: str):
+    tools = create_tools()
+    llm = create_llm(openai_api_key)
+
+    agent = initialize_agent(
+        tools=tools,
+        llm=llm,
+        agent="zero-shot-react-description",
+        verbose=True,
+        agent_kwargs={
+            "prefix": "あなたは日本語で自然に返答する有能なツール活用エージェントです。"
+        }
+    )
+
+    return agent
+
 
 # --- mainA 修正版（複数通貨対応） ---
-def mainA():
+def get_tweet_text_from_yahoo_pair(open_ai_api_key, prompt, target_currency = "USD/JPY"):
     # 対象通貨をここで指定（必要に応じて "EUR/JPY" などに変更可能。他の通貨も可能です。）
-    target_currency = "USD/JPY"
+
+	#USD/JPY,EUR/JPY,GBP/JPY,AUD/JPY,CAD/JPY,CHF/JPY
+#    target_currency = "GBP/JPY"
 
     # 設定に含まれているかチェック
     config = currency_config.get(target_currency)
     if not config:
-        print(f"{target_currency} は currency_config に存在しません。")
-        return
+        outputLog(f"{target_currency} は currency_config に存在しません。")
+        return False , ""
 
     # --- レート取得 ---
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -191,88 +209,118 @@ def mainA():
         rate_info = f"{target_currency} のレート取得中にエラーが発生しました: {str(e)}"
 
     # --- プロンプト生成とGPT呼び出し ---
-    prompt = f"""
-以下の情報を元に、X（旧Twitter）に投稿するような自然で短いツイートを日本語で1つ作成してください。
-今のリアルタイムでの値段を含めてお願いします。
-140文字以内で、カジュアルに。
-為替情報: 「{rate_info}」
-"""
+#    prompt = f"""
+#以下の情報を元に、X（旧Twitter）に投稿するような自然で短いツイートを日本語で1つ作成してください。
+#今のリアルタイムでの値段を含めてお願いします。
+#140文字以内で、カジュアルに。
+#為替情報: 「{rate_info}」
+#"""
     try:
+
+        prompt = prompt + f"""
+        為替情報: 「{rate_info}」
+        """
+
+        llm = create_llm(open_ai_api_key)
         result = llm.invoke(prompt)
-        print(f"\n💱 {target_currency} のツイート:")
-        print(result.content)
+        outputLog(f"\n💱 {target_currency} のツイート:")
+        outputLog(result.content)
+        return True , result.content
     except Exception as e:
-        print(f"{target_currency} のツイート生成中にエラー: {e}")
+        outputLog(f"{target_currency} のツイート生成中にエラー: {e}")
+        return False , f"{target_currency} のツイート生成中にエラー: {e}"
 
 
-def mainB():
+def get_tweet_text_from_yahoo_trend(open_ai_api_key,prompt):
     trends = get_yahoo_trends()
     if not trends or isinstance(trends, str):
-        print(f"トレンド取得失敗: {trends}")
+        outputLog(f"トレンド取得失敗: {trends}")
         return
 
     # トレンドの中からランダムに1つ選ぶ（または1位でも可）
     selected = trends[0]  # トップ1位を使用
 
-    prompt = f"""
-以下のトレンドワードを使って、X（旧Twitter）に投稿するような自然なツイートを1つ日本語で作成してください。
-・140文字以内
-・話題性を活かしてインパクトのあるカジュアルな文にしてください
-・絵文字を1〜2個入れてもOKです
-
-トレンドワード: 「{selected}」
-"""
+#    prompt = f"""
+#以下のトレンドワードを使って、X（旧Twitter）に投稿するような自然なツイートを1つ日本語で作成してください。
+#・140文字以内
+#・話題性を活かしてインパクトのあるカジュアルな文にしてください
+#・絵文字を1〜2個入れてもOKです
+#
+#トレンドワード: 「{selected}」
+#"""
+    prompt = prompt + f"""
+    トレンドワード: 「{selected}」
+    """
 
     try:
+        llm = create_llm(open_ai_api_key)
         result = llm.invoke(prompt)
-        print(f"\n📈 トレンド: {selected}")
-        print(f"{result.content}")
+        outputLog(f"\n📈 トレンド: {selected}")
+        outputLog(f"{result.content}")
+        return True,  result.content
     except Exception as e:
-        print(f"エラー: {e}")
+        outputLog(f"エラー: {e}")
+        return False , f"エラー: {e}"
 
 
 # --- メインC（ゴールド価格ツイート） ---
-def mainC():
+def get_tweet_text_from_yahoo_gold(open_ai_api_key, prompt):
     gold_info = get_gold_price_yahoo()
 
-
-    prompt = f"""
-以下の情報をもとに、金価格に関するX（旧Twitter）投稿文を1つ生成してください。
-・リアルタイムの価格を含める
-・140文字以内
-・自然でカジュアルな日本語
-・トレーダーや一般人が興味を持つように
-
-金価格情報: 「{gold_info}」
-"""
+#    prompt = f"""
+#以下の情報をもとに、金価格に関するX（旧Twitter）投稿文を1つ生成してください。
+#・リアルタイムの価格を含める
+#・140文字以内
+#・自然でカジュアルな日本語
+#・トレーダーや一般人が興味を持つように
+#
+#金価格情報: 「{gold_info}」
+#"""
     try:
+
+        prompt = prompt + f"""
+        金価格情報: 「{gold_info}」
+        """
+
+        llm = create_llm(open_ai_api_key)
         result = llm.invoke(prompt)
-        print(f"\n🥇 金価格ツイート:\n{result.content}")
+        outputLog(f"\n🥇 金価格ツイート:\n{result.content}")
+        return True,  result.content
     except Exception as e:
-        print(f"エラー: {e}")
+        outputLog(f"エラー: {e}")
+        return False , f"エラー: {e}"
 
 # --- メインD（BTC価格ツイート） ---
-def mainD():
+def get_tweet_text_from_yahoo_btc(open_ai_api_key, prompt):
     btc_info = get_bitcoin_price()
 
-    prompt = f"""
-以下の情報をもとに、ビットコインに関するX（旧Twitter）投稿文を1つ生成してください。
-・リアルタイムの価格を含める
-・140文字以内
-・自然でカジュアルな日本語
-・仮想通貨に興味ある人が食いつくように
-
-BTC価格情報: 「{btc_info}」
-"""
+#    prompt = f"""
+#以下の情報をもとに、ビットコインに関するX（旧Twitter）投稿文を1つ生成してください。
+#・リアルタイムの価格を含める
+#・140文字以内
+#・自然でカジュアルな日本語
+#・仮想通貨に興味ある人が食いつくように
+#
+#BTC価格情報: 「{btc_info}」
+#"""
     try:
+        prompt = prompt + f"""
+        BTC価格情報: 「{btc_info}」
+        """
+        llm = create_llm(open_ai_api_key)
         result = llm.invoke(prompt)
-        print(f"\n₿ ビットコイン価格ツイート:\n{result.content}")
+        outputLog(f"\n₿ ビットコイン価格ツイート:\n{result.content}")
+        return True,  result.content
     except Exception as e:
-        print(f"エラー: {e}")
-
+        outputLog(f"エラー: {e}")
+        return False , f"エラー: {e}"
 
 
 if __name__ == "__main__":
-    mainA()
+#    get_tweet_text_from_yahoo_pair(OPENAI_API_KEY)
+#    get_tweet_text_from_yahoo_trend(OPENAI_API_KEY)
+#    get_tweet_text_from_yahoo_gold(OPENAI_API_KEY)
+    get_tweet_text_from_yahoo_btc(OPENAI_API_KEY)
+#    mainB()
 
 

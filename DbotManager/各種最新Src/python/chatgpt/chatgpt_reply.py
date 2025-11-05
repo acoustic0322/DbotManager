@@ -65,11 +65,22 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
 
     USEPROMPT = prompt
 
+    # --- 改行で分割し、前後の空白を除去、空行を除く ---
+    lines = [line.strip() for line in past_tweets.splitlines() if line.strip()]
 
-    # 過去のツイートをランダムに2つ選択
-    random_past_tweets = random.sample(past_tweets, 2)
-    # 改行で結合して、自然な文章にする
+    # --- 要素数が2以上あればランダムで2つ選ぶ ---
+    if len(lines) >= 2:
+        random_past_tweets = random.sample(lines, 2)
+    else:
+        random_past_tweets = lines  # 要素が1個以下の場合はそのまま
+
+    # --- 改行で結合して自然な文に ---
     random_past_tweets = "\n".join(random_past_tweets)
+
+#    print("past_tweets")
+#    print(past_tweets)
+#    print("random_past_tweets")
+#    print(random_past_tweets)
 
     payload = {
         "model": "gpt-3.5-turbo",  # または "gpt-4"

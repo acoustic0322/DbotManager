@@ -345,6 +345,10 @@ def proc_monomane_v1(credentials , target_tweet_id):
     check_tweet_account_record = get_check_tweet_account_list_by_tweet_id(target_tweet_id)
 
     tweet_text = check_tweet_account_record['tweet_text']
+#    tweet_text = tweet_text + "test"
+
+    outputLog(f"tweet_text={tweet_text}")
+
     update_time = convert_tweet_datetime(check_tweet_account_record['update_time'])
 
     # 現在時刻（UTC）
@@ -358,11 +362,13 @@ def proc_monomane_v1(credentials , target_tweet_id):
     dmmid = credentials['dmm_id']
 
     medias = get_tweet_media(credentials['bearer_token'] , target_tweet_id)
+    outputLog(f"medias={medias}")
 
     media_files = []
 
     # 画像
     for url in medias["photos"]:
+        outputLog("画像アリ")
         outputLog(f"photo URL: {url}")
         file = download_media("photo", target_tweet_id, credentials["bearer_token"])
         if os.path.isfile(file):
@@ -372,6 +378,7 @@ def proc_monomane_v1(credentials , target_tweet_id):
 
     # 動画
     for url in medias["videos"]:
+        outputLog("動画アリ")
         outputLog(f"video URL: {url}")
         file = download_media("video", target_tweet_id, credentials["bearer_token"])
         if os.path.isfile(file):
@@ -403,19 +410,19 @@ def proc_monomane_v1(credentials , target_tweet_id):
 
             # 配列をスペースで結合して文字列に戻す
             result = " ".join(words).replace("【改行】","\n")
-#            outputLog(f"result={result}")
+            outputLog(f"result={result}")
             result = dmmurl変換(result, dmmid)
             response = None
-#            outputLog(f"result2={result}")
+            outputLog(f"result2={result}")
 
-#            outputLog(f"1")
+            outputLog(f"1")
             client = createClient(credentials)
-#            outputLog(f"2")
+            outputLog(f"2")
 
             # 認証
             auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
             auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
-#            outputLog(f"3")
+            outputLog(f"3")
 
             api = tweepy.API(auth)
 #           if proxy_url!="":
@@ -424,7 +431,7 @@ def proc_monomane_v1(credentials , target_tweet_id):
 #               api = tweepy.API(auth)   
 
             # モノマネツイート処理(モノマネ処理は行わない)
-#            outputLog(f"4")
+            outputLog(f"4")
 
             media_ids = []  
             for file in media_files:
