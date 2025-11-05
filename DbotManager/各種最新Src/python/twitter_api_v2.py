@@ -483,13 +483,10 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
 
 #                trend_prompt = TREND_PROMPT
 #                trend_prompt = credentials.get('ai_trend_prompt')
-                trend_prompt = credentials['ai_trend_prompt_x']
-
-                outputLog("Xトレンドプロンプト：")
-                outputLog(credentials['ai_trend_prompt_x'])
+                template1 = credentials['ai_trend_prompt_x']
 
                 # ai_trend_promptが未設定ならFalseを返す
-                if not trend_prompt:
+                if not template1:
                     outputLog("ai_trend_prompt_xが未設定のため中止")
                     return False, "ai_trend_prompt_x未設定"                
 
@@ -497,8 +494,19 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
                     outputLog("OPENAI_API_KEYが未設定です")
                     return False , "OPENAI_API_KEYが未設定です"
 
+                template2 = """
+                    #最新トレンド
+                    - [{keyword1}],[{keyword2}]
+                    """                
+                # 結合
+                full_template = template1 + "\n" + template2                    
+
+
                 # 置き換え実行
-                prompt_text = TREND_PROMPT.format(keyword1=kw1, keyword2=kw2)
+                prompt_text = full_template.format(keyword1=kw1, keyword2=kw2)
+
+                outputLog("Xトレンドプロンプト：")
+                outputLog(prompt_text)
 
                 result , comment = generate_trend_tweet(credentials['OPENAI_API_KEY'],prompt_text)
 

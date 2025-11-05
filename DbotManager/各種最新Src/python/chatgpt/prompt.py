@@ -302,8 +302,11 @@ payload_generate_trend_tweet = {
 #    "model": "gpt-3.5-turbo",
 #    "model": "gpt-4.0-turbo",      # gpt-4.0-turboが古い名称のため変更
     "model": "gpt-4-turbo",
+#    "model": "gpt-4",               # 本田さんのツールのバージョン
+#    "model": "gpt-3.5-turbo",       # 本田さんのツールのバージョン
     "messages": "",
     "max_tokens": 150,
+#    "max_tokens": 300,
     "temperature": 0.7
 }
 
