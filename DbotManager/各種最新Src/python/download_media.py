@@ -5,9 +5,9 @@ import json
 from config import outputLog
 import os
 
-def download_video(video_url, filename="video"):
+def download_video(video_url, idx, filename="video"):
 
-    filename = f"media/{filename}.mp4"
+    filename = f"media/{filename}_{idx}.mp4"
 
     """動画をダウンロード"""
     outputLog("download_video")
@@ -22,10 +22,10 @@ def download_video(video_url, filename="video"):
     outputLog(f"動画を {file_path} に保存しました。")
     return file_path  # ダウンロードしたファイルの絶対パスを返す    
 
-def download_photo(photo_url, filename="photo"):
+def download_photo(photo_url, idx, filename="photo"):
 
     """画像をダウンロード"""
-    filename = f"media/{filename}.jpeg"
+    filename = f"media/{filename}_{idx}.jpeg"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     outputLog("download_photo")
@@ -79,6 +79,20 @@ def download_media(media_type , tweet_id , bearer_token):
 
         elif media_type == "photo":
             return download_photo(media_url, tweet_id)        
+
+    except Exception as ex:
+        outputLog(str(ex))
+
+    return None
+
+def download_media_url(media_type , tweet_id, media_url , idx, bearer_token):
+    
+    try:
+        if media_type == "video":
+            return download_video(media_url ,idx , tweet_id)
+
+        elif media_type == "photo":
+            return download_photo(media_url, idx, tweet_id)        
 
     except Exception as ex:
         outputLog(str(ex))

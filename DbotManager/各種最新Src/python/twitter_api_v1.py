@@ -27,6 +27,7 @@ from mysql import getOwnTweetId
 from mysql import get_check_tweet_account_list_by_tweet_id
 
 from download_media import download_media
+from download_media import download_media_url
 from download_media import get_tweet_media
 
 import config
@@ -367,14 +368,27 @@ def proc_monomane_v1(credentials , target_tweet_id):
     media_files = []
 
     # 画像
-    for url in medias["photos"]:
+#    for url in medias["photos"]:
+#        outputLog("画像アリ")
+#        outputLog(f"photo URL: {url}")
+#        file = download_media("photo", target_tweet_id, credentials["bearer_token"])
+#        if os.path.isfile(file):
+#            media_files.append(file)
+#        else:
+#            outputLog("photo URL not found.")
+
+    for idx, url in enumerate(medias["photos"]):
         outputLog("画像アリ")
         outputLog(f"photo URL: {url}")
-        file = download_media("photo", target_tweet_id, credentials["bearer_token"])
-        if os.path.isfile(file):
+
+        # URLから直接ダウンロード
+        file = download_media_url("photo", target_tweet_id, url, idx, credentials["bearer_token"])
+        outputLog(f"file: {file}")
+
+        if file and os.path.isfile(file):
             media_files.append(file)
         else:
-            outputLog("photo URL not found.")
+            outputLog("photo URL not found.")        
 
     # 動画
     for url in medias["videos"]:
