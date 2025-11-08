@@ -401,12 +401,20 @@ def proc_monomane_v1(credentials , target_tweet_id):
             from twitter_api_v2 import proc_post_v2_monomane
             proc_post_v2_monomane(credentials , tweet_text)
         else:
+            outputLog(f"tweet_text={tweet_text}")
+
             # スペースで分割して配列に変換
             words = tweet_text.replace("\n","【改行】").split(' ')
+            outputLog(f"words={words}")
 
             # 最後の配列要素を削除
-            if len(media_files)>0:
-                words.pop()
+#            if len(media_files)>0:
+#                words.pop()
+            # 最後の要素がURLっぽい場合のみ削除（http または https で始まる）
+            if len(media_files) > 0 and len(words) > 0:
+                last_word = words[-1]
+                if last_word.startswith("http"):
+                    words.pop()
 
             # 配列をスペースで結合して文字列に戻す
             result = " ".join(words).replace("【改行】","\n")

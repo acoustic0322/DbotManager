@@ -6,8 +6,9 @@ from langchain_openai import ChatOpenAI  #新しいimport
 from langchain_community.tools import DuckDuckGoSearchRun  #新しいimport
 from langchain.agents import Tool, initialize_agent
 from bs4 import BeautifulSoup
+
 from langchain.utilities import SerpAPIWrapper
-import requests
+#from langchain_community.utilities import SerpAPIWrapperimport requests
 
 from config import outputLog
 
