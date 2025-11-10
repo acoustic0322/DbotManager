@@ -266,7 +266,7 @@ def check_access_token_validity(access_token):
         outputLog(response.json())  # エラーメッセージを表示
         return response.status_code , json.dumps(response.json())
 
-def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
+def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
     outputLog("proc_post_v2 Start")
     outputLog(f"comment_id={comment_id}")
@@ -287,7 +287,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
     # リプライモード
     if reply_to_tweet_id != "":
         # 2025.09.02 AIの判定はpython側にシフトする
-        if ai_reply_enable == 0 or ai_mode == 0:
+        if ai_reply_enable == 0 or ai_mode == 0 or ai_enable == False:
             outputLog("固定コメント")
             comment = get_comment_by_id(comment_id)
         else:
@@ -346,7 +346,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id ):
     # ポストモード
     else:
 
-        if ai_post_enable == 0 or ai_mode == 0:
+        if ai_post_enable == 0 or ai_mode == 0 or ai_enable == False:
             outputLog("固定コメント")
             if comment_id != 0:
                 comment = get_comment_by_id(comment_id)

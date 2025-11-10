@@ -7,7 +7,8 @@ from langchain_community.tools import DuckDuckGoSearchRun  #新しいimport
 from langchain.agents import Tool, initialize_agent
 from bs4 import BeautifulSoup
 
-from langchain.utilities import SerpAPIWrapper
+#from langchain.utilities import SerpAPIWrapper
+from langchain_community.utilities import SerpAPIWrapper
 #from langchain_community.utilities import SerpAPIWrapperimport requests
 
 from config import outputLog

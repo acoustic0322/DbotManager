@@ -74,7 +74,7 @@ def createClient(credentials):
 
     return None
 
-def proc_post_v10a(credentials ,comment_id, media_type , media_id, reply_to_tweet_id):
+def proc_post_v10a(credentials ,comment_id, media_type , media_id, reply_to_tweet_id , ai_enable):
 
     account_id = credentials['id']
 
@@ -91,6 +91,7 @@ def proc_post_v10a(credentials ,comment_id, media_type , media_id, reply_to_twee
         client.session.proxies = {"http": credentials['proxy_url'],"https": credentials['proxy_url']}
 
     # コメントの取得
+    # AIモードにも対応する必要あり
     comment = get_comment_by_id(comment_id)
 
     # 認証
