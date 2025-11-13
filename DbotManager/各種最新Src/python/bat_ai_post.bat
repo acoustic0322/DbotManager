@@ -1,1 +1,1 @@
-python tweet.py mode=post account_id=1 comment_id=0 ai_enable=True
+python tweet.py mode=post account_id=1 comment_id=0 ai_enable=True debug=True

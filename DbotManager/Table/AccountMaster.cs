@@ -68,6 +68,9 @@ namespace DbotManager.Table
         public string AiPostPrompt { get; set; }
         public string AiReplyPrompt { get; set; }
 
+        public bool? AiPhotoEnable { get; set; }
+        public bool? AiMovieEnable { get; set; }
+        public int AiMediaSelectionRate { get; set; }
 
         // TweetTask用
         public int? CommentId { get; set; }

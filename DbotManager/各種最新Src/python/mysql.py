@@ -146,6 +146,7 @@ def get_account_master(id):
             ,am.ai_trend_prompt_yahoo
             ,am.ai_trend_prompt_x
             ,am.ai_btc_prompt
+            ,am.ai_free_prompt
             ,am.ai_free_prompt_rep
             ,am.ai_free_past_rep
             FROM 

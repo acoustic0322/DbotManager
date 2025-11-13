@@ -278,6 +278,9 @@ public class MySqlDataAccess
                     am.reserve4_ai,
                     am.api_master_id,
                     am.use_admin_api
+                    ,am.ai_photo_enable
+                    ,am.ai_movie_enable
+                    ,am.ai_media_selection_rate
                     FROM account_master am
                     left join user_master um on um.id = am.user_id
                     ";
@@ -364,9 +367,9 @@ public class MySqlDataAccess
                                     UseAdminApi = reader["use_admin_api"].ToString() == "1",
                                     ApiMasterId = SupportUtil.ParseOrDefault(reader["api_master_id"], 0),
 
-
-
-
+                                    AiPhotoEnable = reader["ai_photo_enable"].ToString() == "1",
+                                    AiMovieEnable = reader["ai_movie_enable"].ToString() == "1",
+                                    AiMediaSelectionRate = int.Parse(reader["ai_media_selection_rate"].ToString()),
                                 };
 
                                 accountMasterList.Add(accountItem);

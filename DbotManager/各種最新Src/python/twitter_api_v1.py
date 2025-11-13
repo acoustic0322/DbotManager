@@ -74,7 +74,7 @@ def createClient(credentials):
 
     return None
 
-def proc_post_v10a(credentials ,comment_id, media_type , media_id, reply_to_tweet_id , ai_enable):
+def proc_post_v10a(credentials ,comment, media_type , media_id, reply_to_tweet_id , ai_enable):
 
     account_id = credentials['id']
 
@@ -92,7 +92,7 @@ def proc_post_v10a(credentials ,comment_id, media_type , media_id, reply_to_twee
 
     # コメントの取得
     # AIモードにも対応する必要あり
-    comment = get_comment_by_id(comment_id)
+#    comment = get_comment_by_id(comment_id)
 
     # 認証
     auth = tweepy.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
@@ -106,7 +106,7 @@ def proc_post_v10a(credentials ,comment_id, media_type , media_id, reply_to_twee
     if config.debug == True:
         print("media_type=",media_type)
         print("media_id=",media_id)
-        print("comment_id=",comment_id)
+#        print("comment_id=",comment_id)
         print("reply_to_tweet_id=",reply_to_tweet_id)
         print("comment=",comment)
 

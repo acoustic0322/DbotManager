@@ -266,9 +266,9 @@ def check_access_token_validity(access_token):
         outputLog(response.json())  # エラーメッセージを表示
         return response.status_code , json.dumps(response.json())
 
-def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
+def proc_get_comment_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
-    outputLog("proc_post_v2 Start")
+    outputLog("proc_get_comment_v2 Start")
     outputLog(f"comment_id={comment_id}")
     outputLog(f"reply_to_tweet_id={reply_to_tweet_id}")
     outputLog(f"GROQ_API_KEY={credentials['GROQ_API_KEY']}")
@@ -427,6 +427,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
                 result , comment = get_tweet_text_from_yahoo_btc(credentials['OPENAI_API_KEY'],credentials['ai_btc_prompt'])
             # GOLD為替レートツイートモード(未対応)
             elif ai_mode == 4:
+                outputLog("GOLD為替")
                 prompt = f"""
                 以下の情報をもとに、金価格に関するX（旧Twitter）投稿文を1つ生成してください。
                 ・リアルタイムの価格を含める
@@ -444,6 +445,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
                 result , comment = get_tweet_text_from_yahoo_gold(credentials['OPENAI_API_KEY'],prompt)
             # 他通貨為替レートツイートモード(未対応)
             elif ai_mode == 5:
+                outputLog("他為替")
                 # --- プロンプト生成とGPT呼び出し ---
                 prompt = f"""
                     以下の情報を元に、X（旧Twitter）に投稿するような自然で短いツイートを日本語で1つ作成してください。
@@ -460,7 +462,7 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
             # 自由モード
             elif ai_mode == 9:
-
+                outputLog("自由モード")
                 if not credentials['GROQ_API_KEY']:
                     outputLog("GROQ_API_KEYが未設定です")
                     return False , "GROQ_API_KEYが未設定です"
@@ -521,6 +523,10 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
     if comment is None:
         outputLog("comment is None")
         return False , "comment is None"
+
+    return True , comment
+
+def proc_post_v2(credentials ,comment, reply_to_tweet_id , ai_enable):
 
     access_token = credentials['bearer_token']
 
@@ -590,8 +596,8 @@ def proc_post_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
     response_str = json.dumps(response_data)  # json.dumps を使用
 
-    if ai_flag == True:
-        return response.status_code in (200, 201), 'ai_post'
+#    if ai_flag == True:
+#        return response.status_code in (200, 201), 'ai_post'
 
     return response.status_code in (200, 201), response_str
 

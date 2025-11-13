@@ -40,9 +40,9 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
-//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).Where(x => x.Id == 1).ToList();
-
+//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
+            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Id == 1). Where(x => x.Enable && x.PostEnable).ToList();
+            
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
             List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
@@ -245,7 +245,38 @@ namespace DbotManager
 
                 if (ai_enable)
                 {
+                    int aiMediaSelectionRate = account.AiMediaSelectionRate; // 例: 30 なら 30% の確率でメディアを使う
 
+                    int randomValue = random.Next(1, 101); // 1〜100 の乱数を生成
+
+                    // 乱数が選択率以上の場合はスルー（何もせず抜ける）
+                    if (randomValue <= aiMediaSelectionRate)
+                    {
+                        if ((bool)account.AiPhotoEnable && (bool)account.AiMovieEnable)
+                        {
+                            var mediaList = mediaMasterList.Where(x => x.AccountId == account.Id).ToList();
+                            if (mediaList.Count > 0)
+                            {
+                                mediaRow = mediaList[random.Next(mediaList.Count)];
+                            }
+                        }
+                        else if ((bool)account.AiPhotoEnable)
+                        {
+                            var mediaList = mediaMasterList.Where(x => x.AccountId == account.Id && x.MediaType == MediaTypes.Photo).ToList();
+                            if (mediaList.Count > 0)
+                            {
+                                mediaRow = mediaList[random.Next(mediaList.Count)];
+                            }
+                        }
+                        else if ((bool)account.AiMovieEnable)
+                        {
+                            var mediaList = mediaMasterList.Where(x => x.AccountId == account.Id && x.MediaType == MediaTypes.Movie).ToList();
+                            if (mediaList.Count > 0)
+                            {
+                                mediaRow = mediaList[random.Next(mediaList.Count)];
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -259,10 +290,8 @@ namespace DbotManager
 
                     // CommentMaster からランダムに1つ選択
                     randomComment = commentList_重複除外[random.Next(commentList_重複除外.Count)];
-
-
                     
-                    if (randomComment.MovieEnable)
+                    if (randomComment.PhotoEnable)
                     {
                         var mediaList = mediaMasterList.Where(x => x.AccountId == randomComment.AccountId && x.MediaType == MediaTypes.Photo).ToList();
                         if (mediaList.Count > 0)
@@ -279,8 +308,6 @@ namespace DbotManager
                         }
                     }
                 }
-
-
 
 
                 // スケジュールを追加
@@ -300,7 +327,7 @@ namespace DbotManager
                     AiEnable = ai_enable,
                 });
 
-                if (!ai_enable)
+                 if (!ai_enable)
                 {
                     withoutCommentIdList.Add(randomComment.Id);
                 }

@@ -13,6 +13,7 @@ from datetime import datetime, timezone, timedelta
 from twitter_api_v2 import proc_like_v2
 from twitter_api_v2 import proc_bookmark_v2
 from twitter_api_v2 import proc_post_v2
+from twitter_api_v2 import proc_get_comment_v2
 from twitter_api_v2 import proc_repost_v2
 from twitter_api_v2 import refresh_access_token
 from twitter_api_v1 import proc_post_v10a
@@ -143,14 +144,20 @@ credentials = get_account_master(account_id)
 
 if credentials:
     if mode == "post":
+
+        result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
+
         if media_type != '':
-            result1 , contents1 = proc_post_v10a(credentials , comment_id , media_type , media_id , tweet_id , ai_enable)               
+            result1 , contents1 = proc_post_v10a(credentials , comment , media_type , media_id , tweet_id , ai_enable)               
         else:
-            result1 , contents1 = proc_post_v2(credentials , comment_id , "" , ai_enable)               
+            result1 , contents1 = proc_post_v2(credentials , comment , "" , ai_enable)               
     elif mode == "monomane":
         result1 , contents1 = proc_monomane_v1(credentials , tweet_id)
     elif mode == "reply":
-        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id )               
+        result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
+        result1 , contents1 = proc_post_v2(credentials , comment , tweet_id )               
+
+#        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id )               
 #        result1 , contents1 = True , "" #未実装
     elif mode == "repost":
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)

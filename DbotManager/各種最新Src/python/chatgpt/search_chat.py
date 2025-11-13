@@ -1,6 +1,7 @@
 # search_chat.py
 
 import os
+import requests
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI  #新しいimport
 from langchain_community.tools import DuckDuckGoSearchRun  #新しいimport
