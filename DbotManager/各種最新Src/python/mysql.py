@@ -34,6 +34,33 @@ def get_comment_by_id(comment_id):
     
     return result["comment"]  # コメントを返す
 
+def get_media_file_name_by_id(media_id):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',           # ユーザー名
+        password='abcd1234',   # パスワード
+        database='d_bot',      # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            # 認証情報を格納しているテーブルからデータを取得
+            sql = "SELECT name FROM media_master WHERE media_id=%s"
+            cursor.execute(sql, (media_id,))
+            result = cursor.fetchone()
+    finally:
+        connection.close()
+
+    if result is None:
+        outputLog("エラー: 指定したコメントIDに対応するレコードが見つかりません。")
+        return None
+    
+    return result["name"]  # コメントを返す
+
 def get_random_comment_id(account_id , mode):
 
     # MySQLデータベースに接続

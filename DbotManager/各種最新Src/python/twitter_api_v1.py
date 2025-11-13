@@ -25,6 +25,7 @@ from mysql import get_account_master
 from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
 from mysql import get_check_tweet_account_list_by_tweet_id
+from mysql import get_media_file_name_by_id
 
 from download_media import download_media
 from download_media import download_media_url
@@ -157,7 +158,7 @@ def proc_post_v10a(credentials ,comment, media_type , media_id, reply_to_tweet_i
 def get_media_ids(api, account_id, media_type, media_id):
     try:
         media_dir = config.media_dir
-
+        media_filename = get_media_file_name_by_id(media_id)
         media_ext = "jpg"
         media_head = "p"
         if media_type == "video":
@@ -167,9 +168,9 @@ def get_media_ids(api, account_id, media_type, media_id):
         if config.debug == True:
             print("media_dir=", media_dir)
             print("account_id=", account_id)
-            print(f"media_file={media_id}.{media_ext}")
+            print(f"media_file={media_filename}")
 
-        media_path = os.path.join(media_dir, f"{account_id}", f"{media_head}{media_id}.{media_ext}")
+        media_path = os.path.join(media_dir, f"{account_id}", f"{media_filename}")
 
         if config.debug == True:
             print("media_path=", media_path)
