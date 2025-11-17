@@ -40,8 +40,8 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
-            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Id == 1). Where(x => x.Enable && x.PostEnable).ToList();
+            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
+//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Id == 1). Where(x => x.Enable && x.PostEnable).ToList();
             
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
