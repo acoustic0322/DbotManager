@@ -11,6 +11,9 @@ from prompt import payload_generate_tweet
 from prompt import payload_generate_reply
 from prompt import payload_refine_tweet
 from prompt import payload_generate_trend_tweet
+from prompt import get_model_price
+
+from mysql import save_token_usage
 
 import json
 import time
@@ -113,6 +116,41 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
     response_data = call_api_with_retry(url, payload, headers)
 
     if response_data:
+
+        # ================================
+        # ★ Token Usage / Cost calculation
+        # ================================
+        model_name = payload["model"]
+        prices = get_model_price(model_name)
+
+        usage = response_data.get("usage", {})
+        prompt_tokens = usage.get("prompt_tokens", 0)
+        completion_tokens = usage.get("completion_tokens", 0)
+        total_tokens = prompt_tokens + completion_tokens
+
+        cost_usd = (
+            prompt_tokens * prices["input"] +
+            completion_tokens * prices["output"]
+        )
+
+        # ログ
+        outputLog(f"[MODEL] {model_name}")
+        outputLog(f"[Token Usage] prompt={prompt_tokens}, completion={completion_tokens}")
+        outputLog(f"[COST] {cost_usd:.6f} USD")
+
+        # DB保存（process_type = generate_reply）
+        save_token_usage(
+            "generate_reply",
+            model_name,
+            prompt_tokens,
+            completion_tokens,
+            total_tokens,
+            cost_usd
+        )
+
+        # ================================
+        # 本文整形
+        # ================================
         content = response_data["choices"][0]["message"]["content"].strip()
 
         # 余計な前置きを削除

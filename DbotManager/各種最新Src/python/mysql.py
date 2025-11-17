@@ -1505,3 +1505,33 @@ def update_check_tweet_account_master_on_vps_id(seed: int = None):
     cur.close()
     conn.close()
     print(f"{len(assignments)} 件を割り振りました")
+
+def save_token_usage(proc_name, model_name, prompt_tokens, completion_tokens, total_tokens, cost_usd):
+    conn = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=False
+    )
+
+    try:
+        with conn.cursor() as cursor:
+            sql = """
+                INSERT INTO token_usage_log 
+                (proc_name, model_name, prompt_tokens, completion_tokens, total_tokens, cost_usd)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, (
+                proc_name,
+                model_name,
+                prompt_tokens,
+                completion_tokens,
+                total_tokens,
+                cost_usd
+            ))
+            conn.commit()
+    finally:
+        conn.close()

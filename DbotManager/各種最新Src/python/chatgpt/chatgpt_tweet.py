@@ -4,6 +4,8 @@ import random
 import requests
 import re 
 import schedule 
+import pymysql
+import config
 
 # 2025.10.15 コメントアウト
 #from prompt import PROMPT1_FIX1
@@ -18,7 +20,9 @@ from prompt import payload_generate_tweet
 from prompt import payload_generate_reply
 from prompt import payload_refine_tweet
 from prompt import payload_generate_trend_tweet
+from prompt import get_model_price
 
+from mysql import save_token_usage
 
 from config import outputLog
 #config.debug = False
@@ -96,10 +100,35 @@ def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
     response_data = call_api_with_retry(url, payload_generate_tweet, headers)
 
     ##########ここを追加しました
-    response_data = call_api_with_retry(url, payload_generate_tweet, headers) 
+#    response_data = call_api_with_retry(url, payload_generate_tweet, headers) 
     ##########ここを追加しました
     
     if response_data:
+
+        # --- モデル名をpayloadから取得 ---
+        model_name = payload_generate_tweet["model"]
+        prices = get_model_price(model_name)
+        price_in = prices["input"]
+        price_out = prices["output"]
+
+        # --- Token usage 取得 ---
+        usage = response_data.get("usage", {})
+        prompt_tokens = usage.get("prompt_tokens", 0)
+        completion_tokens = usage.get("completion_tokens", 0)
+        total_tokens = prompt_tokens + completion_tokens
+
+        # --- 費用計算 ---
+        cost_usd = prompt_tokens * price_in + completion_tokens * price_out
+
+        # --- ログ出力 ---
+        outputLog(f"[MODEL] {model_name}")
+        outputLog(f"[Token Usage] prompt={prompt_tokens}, completion={completion_tokens}")
+        outputLog(f"[COST] {cost_usd:.6f} USD")
+
+        # ---- DB 保存 ----
+        save_token_usage("generate_tweet", model_name, prompt_tokens, completion_tokens, total_tokens, cost_usd)
+
+
         content = response_data["choices"][0]["message"]["content"].strip()
 
         # 余計な前置きを削除
@@ -201,6 +230,30 @@ def generate_trend_tweet(open_ai_api_key,prompt):
     response_data = call_api_with_retry(url, payload_generate_trend_tweet, headers)
 
     if response_data:
+
+        # --- モデル名をpayloadから取得 ---
+        model_name = payload_generate_trend_tweet["model"]
+        prices = get_model_price(model_name)
+        price_in = prices["input"]
+        price_out = prices["output"]
+
+        # --- Token usage 取得 ---
+        usage = response_data.get("usage", {})
+        prompt_tokens = usage.get("prompt_tokens", 0)
+        completion_tokens = usage.get("completion_tokens", 0)
+        total_tokens = prompt_tokens + completion_tokens
+
+        # --- 費用計算 ---
+        cost_usd = prompt_tokens * price_in + completion_tokens * price_out
+
+        # --- ログ出力 ---
+        outputLog(f"[MODEL] {model_name}")
+        outputLog(f"[Token Usage] prompt={prompt_tokens}, completion={completion_tokens}")
+        outputLog(f"[COST] {cost_usd:.6f} USD")
+
+        # ---- DB 保存 ----
+        save_token_usage("generate_trend_tweet", model_name, prompt_tokens, completion_tokens, total_tokens, cost_usd)
+
         content = response_data["choices"][0]["message"]["content"].strip()
 
         # 余計な前置きを削除
@@ -264,3 +317,5 @@ def main():
 
 
 #generate_trend_tweet()はmain処理にまだ追加していません。プロンプトの中身等を可変にすることでどんなツイートも作成することができるシステムです。組み込み方は今後考えていきたいと考えています。
+
+

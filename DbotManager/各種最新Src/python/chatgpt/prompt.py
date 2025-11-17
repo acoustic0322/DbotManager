@@ -310,3 +310,21 @@ payload_generate_trend_tweet = {
     "temperature": 0.7
 }
 
+MODEL_PRICES = {
+    # ===== Groq =====
+    "llama-3.3-70b-versatile": {"input": 0.0000025, "output": 0.0000050},
+    "llama3-70b-8192":         {"input": 0.0000023, "output": 0.0000045},
+    "mixtral-8x7b-instruct":   {"input": 0.0000010, "output": 0.0000010},
+    "gemma2-9b-it":            {"input": 0.0000005, "output": 0.0000010},
+    "llama-3.1-8b-instant":    {"input": 0.0000002, "output": 0.0000004},
+    "llama3-8b-8192":          {"input": 0.0000002, "output": 0.0000004},
+    "llama-guard-3-8b":        {"input": 0.0000010, "output": 0.0000020},
+
+    # ===== OpenAI ===== (2025年時点の参考価格)
+    "gpt-3.5-turbo": {"input": 0.0000005, "output": 0.0000015},
+    "gpt-4-turbo":   {"input": 0.0000100, "output": 0.0000300},
+    "gpt-4":         {"input": 0.0000300, "output": 0.0000600},
+}
+
+def get_model_price(model_name):
+    return MODEL_PRICES.get(model_name, {"input": 0, "output": 0})
