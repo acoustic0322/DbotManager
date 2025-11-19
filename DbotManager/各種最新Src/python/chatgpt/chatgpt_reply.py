@@ -85,9 +85,9 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
 #    print("random_past_tweets")
 #    print(random_past_tweets)
 
-    payload = {
-        "model": "gpt-3.5-turbo",  # または "gpt-4"
-        "messages": [
+   
+    # `messages` を先に定義する
+    payload_generate_reply["messages"] = [ 
             {"role": "system", "content": "あなたはTwitterで自然な日本語のリプライを作成するAIです。以下のルールに従ってください：\
                 ・英語表現はすべて自然な日本語に翻訳する\
                 ・詩的すぎる表現は避ける\
@@ -95,9 +95,7 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
                 ・140文字以内"},
             {"role": "user", "content": f"このツイートに対して返信を作ってください: {original_tweet}"},
             {"role": "user", "content": f"{USEPROMPT}\n\n以下は過去のツイートの一例です。参考にしてください：\n{random_past_tweets}"}
-        ],
-        "temperature": 0.7
-    }
+    ]
 
 
 
@@ -110,10 +108,7 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
 
 
     # APIリクエスト（503エラー時は自動リトライ）
-
-    # payload_generate_replyだとエラーになるため、payloadを使用
-#    response_data = call_api_with_retry(url, payload_generate_reply, headers)
-    response_data = call_api_with_retry(url, payload, headers)
+    response_data = call_api_with_retry(url, payload_generate_reply, headers)
 
     if response_data:
 

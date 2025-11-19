@@ -61,14 +61,19 @@ def call_api_with_retry(url, payload, headers, retries=5, delay=2):
     print("最大リトライ回数を超えました。")
     return None
 
-
 # 過去のツイート
-def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
+def generate_tweet(OPENAI_API_KEY,prompt,past_tweets):
 
     outputLog(past_tweets)
 
 
     """GPTを使ってツイートを生成する関数"""
+
+    # 過去のツイートをランダムに2つ選択
+#    random_past_tweets = random.sample(past_tweets,1)
+    # 改行で結合して、自然な文章にする
+#    random_past_tweets = "\n".join(random_past_tweets)
+
 
     # --- 改行で分割してリスト化（空行除去＋strip()）---
     lines = [line.strip() for line in past_tweets.splitlines() if line.strip()]
@@ -82,8 +87,6 @@ def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
     # --- 改行で結合して自然な文章に（1行でもjoin()でOK）---
     random_past_tweets = "\n".join(random_past_tweets)
 
-#    print("lines:", lines)
-#    print("random_past_tweets:", random_past_tweets)    
 
     # `messages` を先に定義する
     payload_generate_tweet["messages"] = [ 
@@ -92,15 +95,16 @@ def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
     ]
         
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+ #       "Content-Type": "application/json"
     }
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
+#    url = "https://api.groq.com/openai/v1/chat/completions"
+    url = "https://api.openai.com/v1/chat/completions"
     response_data = call_api_with_retry(url, payload_generate_tweet, headers)
 
     ##########ここを追加しました
-#    response_data = call_api_with_retry(url, payload_generate_tweet, headers) 
+    response_data = call_api_with_retry(url, payload_generate_tweet, headers) 
     ##########ここを追加しました
     
     if response_data:
@@ -127,7 +131,6 @@ def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
 
         # ---- DB 保存 ----
         save_token_usage("generate_tweet", model_name, prompt_tokens, completion_tokens, total_tokens, cost_usd)
-
 
         content = response_data["choices"][0]["message"]["content"].strip()
 
@@ -161,8 +164,6 @@ def generate_tweet(GROQ_API_KEY,prompt,past_tweets):
 
     outputLog("ツイート生成に失敗しました。")
     return False , "ツイート生成エラー"
-
-
 
 
 def post_tweet(tweet_content):

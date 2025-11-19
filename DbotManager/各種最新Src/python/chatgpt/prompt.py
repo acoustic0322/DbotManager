@@ -275,7 +275,9 @@ PREFERRED_MODELS = [
 # APIリクエスト用のデータ
 payload_generate_tweet = {
 #    "model": "mixtral-8x7b-32768",
-    "model": PREFERRED_MODELS[0],
+#    "model": PREFERRED_MODELS[0],      # 本田さん対応 旧版
+#    "model": "gpt-3.5-turbo",           # 仮運用(4.1miniにする)
+    "model": "gpt-4o-mini",
     "messages": "",
     "max_tokens": 150,
     "temperature": 0.7  # ランダム性
@@ -284,7 +286,9 @@ payload_generate_tweet = {
 
 payload_generate_reply = {
 #    "model": "mixtral-8x7b",
-    "model": PREFERRED_MODELS[0],
+#    "model": PREFERRED_MODELS[0],
+#    "model": "gpt-3.5-turbo",           # 仮運用(4.1miniにする)
+    "model": "gpt-4o-mini",
     "messages": "",
     "max_tokens": 150,
 #    "temperature": 0.6  # ランダム性
@@ -292,7 +296,8 @@ payload_generate_reply = {
 }
 
 payload_refine_tweet = {
-    "model": "gpt-3.5-turbo", 
+#    "model": "gpt-3.5-turbo", 
+    "model": "gpt-4o-mini",
     "messages": "",
     "max_tokens": 140,
     "temperature": 0.5 
@@ -301,7 +306,8 @@ payload_refine_tweet = {
 payload_generate_trend_tweet = {
 #    "model": "gpt-3.5-turbo",
 #    "model": "gpt-4.0-turbo",      # gpt-4.0-turboが古い名称のため変更
-    "model": "gpt-4-turbo",
+#    "model": "gpt-4-turbo",
+    "model": "gpt-4o-mini",
 #    "model": "gpt-4",               # 本田さんのツールのバージョン
 #    "model": "gpt-3.5-turbo",       # 本田さんのツールのバージョン
     "messages": "",
@@ -324,6 +330,7 @@ MODEL_PRICES = {
     "gpt-3.5-turbo": {"input": 0.0000005, "output": 0.0000015},
     "gpt-4-turbo":   {"input": 0.0000100, "output": 0.0000300},
     "gpt-4":         {"input": 0.0000300, "output": 0.0000600},
+    "gpt-4o-mini":   {"input": 0.00000015,"output": 0.00000060},
 }
 
 def get_model_price(model_name):
