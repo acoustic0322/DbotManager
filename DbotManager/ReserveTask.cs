@@ -351,93 +351,106 @@ namespace DbotManager
             _予約監視Timer.Enabled = false;
         }
 
+        private static object _lockObj = new object();
+
         public void OnTimedEvent(object sender, ElapsedEventArgs e)
         {
-            Console.WriteLine($"処理を実行中: {DateTime.Now}");
 
-            DateTime dtNow = DateTime.Now;
-
-            // 日付が変わったらリスト再作成
-            if(DateTime.Today != dtBk)
+            if (!Monitor.TryEnter(_lockObj))
             {
-                MakeScheduleList();
+                // 既に実行中
+                Console.WriteLine($"OnTimedEvent:実行中の処理がある為return({DateTime.Now})");
+                return;
             }
 
-            foreach(var reserveSchedule in _reserveScheduleList)
+            try
             {
-                if (reserveSchedule.Result) continue;
+                Console.WriteLine($"OnTimedEvent:処理を実行中({DateTime.Now})");
 
-                if (reserveSchedule.ReserveDate == null) continue;
-                if (reserveSchedule.ReserveTime == null) continue;
+                DateTime dtNow = DateTime.Now;
 
-                if ((DateTime)reserveSchedule.ReserveDate.Value.Date != dtNow.Date) continue;
-
-                // 未来の予約をスルー
-                if ((DateTime)reserveSchedule.ReserveTime.Value > dtNow) continue;
-
-                // 過去３分以上過ぎたものをスルー
-                if ((DateTime)reserveSchedule.ReserveTime.Value < dtNow.AddMinutes(-3)) continue;
-
-                // 無効ユーザーの処理は無視
-                if(_accountList.Where(x => x.Id == reserveSchedule.AccountId).Count() == 0)
+                // 日付が変わったらリスト再作成
+                if (DateTime.Today != dtBk)
                 {
-                    Console.WriteLine($"OnTimedEvent　無効ユーザーの処理は無視: {DateTime.Now}");
-                    continue;
+                    MakeScheduleList();
                 }
 
-                TweetTask task = new TweetTask(dbConnectin, logAction);
-                var result = task.TweetProc(new TweetCommand() { 
-                    TweetProcType = TweetProcTypes.ポスト,
-                    AccountId = (int)reserveSchedule.AccountId,
-                    CommentId = (int)reserveSchedule.CommentId ,
-                    MediaId = reserveSchedule.MediaId,
-                    MediaType = reserveSchedule.MediaType,
-                    AiEnable = (bool)reserveSchedule.AiEnable,
-                }
-                );
-
-                if(result != null)
+                foreach (var reserveSchedule in _reserveScheduleList)
                 {
-                    if (result.result1 == true)
+                    if (reserveSchedule.Result) continue;
+
+                    if (reserveSchedule.ReserveDate == null) continue;
+                    if (reserveSchedule.ReserveTime == null) continue;
+
+                    if ((DateTime)reserveSchedule.ReserveDate.Value.Date != dtNow.Date) continue;
+
+                    // 未来の予約をスルー
+                    if ((DateTime)reserveSchedule.ReserveTime.Value > dtNow) continue;
+
+                    // 過去３分以上過ぎたものをスルー
+                    if ((DateTime)reserveSchedule.ReserveTime.Value < dtNow.AddMinutes(-5)) continue;
+
+                    // 無効ユーザーの処理は無視
+                    if (_accountList.Where(x => x.Id == reserveSchedule.AccountId).Count() == 0)
                     {
-                        reserveSchedule.Result = true;
+                        Console.WriteLine($"OnTimedEvent　無効ユーザーの処理は無視: {DateTime.Now}");
+                        continue;
                     }
-                    else
+
+                    TweetTask task = new TweetTask(dbConnectin, logAction);
+                    var result = task.TweetProc(new TweetCommand()
                     {
-                        if(result.contents1.Contains("Too Many Requests"))
+                        TweetProcType = TweetProcTypes.ポスト,
+                        AccountId = (int)reserveSchedule.AccountId,
+                        CommentId = (int)reserveSchedule.CommentId,
+                        MediaId = reserveSchedule.MediaId,
+                        MediaType = reserveSchedule.MediaType,
+                        AiEnable = (bool)reserveSchedule.AiEnable,
+                    }
+                    );
+
+                    if (result != null)
+                    {
+                        if (result.result1 == true)
                         {
                             reserveSchedule.Result = true;
                         }
+                        else
+                        {
+                            if (result.contents1.Contains("Too Many Requests"))
+                            {
+                                reserveSchedule.Result = true;
+                            }
+                        }
+
+                        reserveSchedule.Result = true;
                     }
 
+                    //2025.06.20 Taskエラーでnullが帰ってきたときにリトライ処理を行わせないための暫定対応
                     reserveSchedule.Result = true;
+
                 }
 
-                //2025.06.20 Taskエラーでnullが帰ってきたときにリトライ処理を行わせないための暫定対応
-                reserveSchedule.Result = true;
+                dtBk = DateTime.Today;
 
-            }
+                /*
 
-            dtBk = DateTime.Today;
-
-
-
-            /*
-
-            foreach (var item in CheckAccountList_監視)
-            {
-                int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
-                var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount, TweetId = item.SinceTweetId });
-
-                if (tweetResult != null && tweetResult.result == true)
+                foreach (var item in CheckAccountList_監視)
                 {
-                    TweetProcReply(item, tweetResult);
+                    int exeAccountId = SupportUtil.GetRandomItem(item.ExeAccountIdList);
+                    var tweetResult = TweetProc(new TweetCommand() { TweetProcType = TweetProcTypes.CHECK, AccountId = 監視実施AccountId, AccountId2 = exeAccountId, CheckAccountName = item.CheckAccount, TweetId = item.SinceTweetId });
+
+                    if (tweetResult != null && tweetResult.result == true)
+                    {
+                        TweetProcReply(item, tweetResult);
+                    }
                 }
+                */
             }
-            */
-
+            finally
+            {
+                Monitor.Exit(_lockObj);
+            }
         }
-
-
     }
 }
