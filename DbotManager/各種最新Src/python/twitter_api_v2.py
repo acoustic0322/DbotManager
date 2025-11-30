@@ -377,9 +377,9 @@ def proc_get_comment_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
                 outputLog("裏垢女子PastTweet：")
                 outputLog(credentials['ai_uraaka_past_tweet'])
 
-                if not credentials['GROQ_API_KEY']:
-                    outputLog("GROQ_API_KEYが未設定です")
-                    return False , "GROQ_API_KEYが未設定です"
+                if not credentials['OPENAI_API_KEY']:
+                    outputLog("OPENAI_API_KEYが未設定です")
+                    return False , "OPENAI_API_KEYが未設定です"
 
                 if not credentials['ai_uraaka_prompt']:
                     outputLog("ai_uraaka_promptが未設定です")
@@ -391,7 +391,8 @@ def proc_get_comment_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
 
 #                comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_post_prompt'],credentials['ai_post_example'])
-                result , comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_uraaka_prompt'],credentials['ai_uraaka_past_tweet'])
+#                result , comment = generate_tweet(credentials['GROQ_API_KEY'],credentials['ai_uraaka_prompt'],credentials['ai_uraaka_past_tweet'])
+                result , comment = generate_tweet(credentials['OPENAI_API_KEY'],credentials['ai_uraaka_prompt'],credentials['ai_uraaka_past_tweet'])
 
 #                # 裏垢女子モード時は文章を整形
 #                if ai_mode == 2:

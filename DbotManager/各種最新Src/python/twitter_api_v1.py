@@ -5,6 +5,7 @@ import sys
 #import tweepy
 #import pymysql
 import os
+import glob
 import base64
 import pymysql
 import pytz
@@ -158,6 +159,46 @@ def proc_post_v10a(credentials ,comment, media_type , media_id, reply_to_tweet_i
 def get_media_ids(api, account_id, media_type, media_id):
     try:
         media_dir = config.media_dir
+        media_head = "p" if media_type == "photo" else "m"
+
+        # 自動で拡張子付きファイルを検索
+        search_pattern = os.path.join(media_dir, str(account_id), f"{media_head}{media_id}.*")
+        files = glob.glob(search_pattern)
+
+        if config.debug:
+            print("search_pattern =", search_pattern)
+            print("found files =", files)
+
+        if not files:
+            raise FileNotFoundError(f"Media file not found: {search_pattern}")
+
+        # 1件だけ取得（通常は1ファイル）
+        media_path = files[0]
+
+        if config.debug:
+            print("media_path =", media_path)
+
+        media_ids = []
+
+        # アップロード
+        if media_type == 'photo':
+            media = api.media_upload(filename=media_path)
+        elif media_type == 'video':
+            media = api.media_upload(filename=media_path, media_category='tweet_video')
+        else:
+            raise ValueError(f"Unsupported media type: {media_type}")
+
+        media_ids.append(media.media_id)
+        return media_ids
+
+    except Exception as e:
+        if config.debug:
+            print(f"Error: {e}")
+        return []
+
+def get_media_ids_bk(api, account_id, media_type, media_id):
+    try:
+        media_dir = config.media_dir
         media_filename = get_media_file_name_by_id(media_id)
         media_ext = "jpg"
         media_head = "p"
@@ -170,7 +211,7 @@ def get_media_ids(api, account_id, media_type, media_id):
             print("account_id=", account_id)
             print(f"media_file={media_filename}")
 
-        media_path = os.path.join(media_dir, f"{account_id}", f"{media_filename}")
+        media_path = os.path.join(media_dir, f"{account_id}", f"{media_head}{media_id}.{media_ext}")
 
         if config.debug == True:
             print("media_path=", media_path)

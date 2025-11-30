@@ -92,7 +92,7 @@ def generate_reply(open_ai_api_key, prompt, past_tweets, original_tweet):
                 ・英語表現はすべて自然な日本語に翻訳する\
                 ・詩的すぎる表現は避ける\
                 ・カジュアルでフレンドリーな口調\
-                ・140文字以内"},
+                ・70文字以内"},
             {"role": "user", "content": f"このツイートに対して返信を作ってください: {original_tweet}"},
             {"role": "user", "content": f"{USEPROMPT}\n\n以下は過去のツイートの一例です。参考にしてください：\n{random_past_tweets}"}
     ]

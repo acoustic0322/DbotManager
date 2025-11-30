@@ -147,10 +147,12 @@ if credentials:
 
         result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
 
-        if media_type != '':
-            result1 , contents1 = proc_post_v10a(credentials , comment , media_type , media_id , tweet_id , ai_enable)               
-        else:
-            result1 , contents1 = proc_post_v2(credentials , comment , "" , ai_enable)               
+        if result1 == True:
+            if media_type != '':
+                result1 , contents1 = proc_post_v10a(credentials , comment , media_type , media_id , tweet_id , ai_enable)               
+            else:
+                result1 , contents1 = proc_post_v2(credentials , comment , "" , ai_enable)     
+                          
     elif mode == "monomane":
         result1 , contents1 = proc_monomane_v1(credentials , tweet_id)
     elif mode == "reply":
