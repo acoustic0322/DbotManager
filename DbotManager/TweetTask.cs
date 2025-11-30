@@ -90,6 +90,7 @@ namespace DbotManager
     public class TweetVpsCommand
     {
         public string VpsIp { get; set; }
+        public int VpsId { get; set; }
         public string VpsPort { get; set; }
         public string TweetId { get; set; }
         public List<int> LikeList { get; set; }
@@ -302,6 +303,7 @@ namespace DbotManager
                 TweetVpsCommand tweetVpsCommand = new TweetVpsCommand()
                 {
                     VpsIp = vps.IpAddress,
+                    VpsId = vps.Id,
                     VpsPort = vps.Port,
                     LikeList = likeList.Select(x => x.Id).ToList(),
                     BookmarkList = bookmarkList.Select(x => x.Id).ToList(),
@@ -1326,7 +1328,8 @@ namespace DbotManager
                 bookmark_list = tweetVpsCommand.BookmarkList,
                 repost_list = tweetVpsCommand.RepostList,
                 reply_list = tweetVpsCommand.ReplyList,  // ここはそのままリストで渡す
-                rep_to_rep = tweetVpsCommand.RepToRep    // これは bool 型なのでそのままでOK
+                rep_to_rep = tweetVpsCommand.RepToRep,    // これは bool 型なのでそのままでOK
+                id = tweetVpsCommand.VpsId
                 /*
                 tweet_id = tweetVpsCommand.TweetId ,
                 like_list = string.Join(",", tweetVpsCommand.LikeList),

@@ -19,6 +19,7 @@ namespace ChildTweet
 
         public Action<string> LogOutput { get; set; }  // ログ出力先
         public int Port { get; set; }
+        public int ID { get; set; }
 
         public void Start()
         {
@@ -81,6 +82,22 @@ namespace ChildTweet
                 //                    processor.Execute(data);
                 //                });
 
+                // ⭐ IDチェック（1以外は無視）
+                if (data.id != ID)
+                {
+                    Log($"⚠️ ID={data.id} の要求を無視しました");
+
+                    string skipResponse = JsonSerializer.Serialize(
+                        new { status = "ignored", message = $"ID {data.id} ignored" });
+
+                    byte[] skipBuffer = Encoding.UTF8.GetBytes(skipResponse);
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentEncoding = Encoding.UTF8;
+                    await context.Response.OutputStream.WriteAsync(skipBuffer, 0, skipBuffer.Length);
+                    context.Response.Close();
+                    return;
+                }
+
                 var processor = new TweetProcess(Log);
                 await processor.ExecuteAsync(data); // 呼び出し側が async メソッドである必要があります
 
@@ -103,6 +120,7 @@ namespace ChildTweet
 
     public class TweetRequest
     {
+        public int id { get; set; }          // ★追加
         public string tweet_id { get; set; }
         public List<int> like_list { get; set; }
         public List<int> bookmark_list { get; set; }

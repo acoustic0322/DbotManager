@@ -8,6 +8,8 @@ namespace ChildTweet
 
         const double ver = 1.01;
 
+        public int ID { get; set; }
+
 
         public ChildTweet()
         {
@@ -18,10 +20,12 @@ namespace ChildTweet
         {
             try
             {
+                ReadIniファイル();
+
                 string logDir = @"C:\DBotManager\ChildTweet\logs";
                 Directory.CreateDirectory(logDir); // なければ作る
 
-                this.Text += $"[Ver {ver}]";
+                this.Text += $"[Ver:{ver}][ID:{ID}]";
 
 
                 buttonStart_Click(sender, e);
@@ -38,6 +42,7 @@ namespace ChildTweet
             {
                 server.LogOutput = AppendLog;
                 server.Port = int.Parse(textBoxPort.Text);
+                server.ID = ID;
                 server.Start();
 
                 buttonStart.Enabled = false;
@@ -103,6 +108,43 @@ namespace ChildTweet
             }
         }
 
+        private void ReadIniファイル()
+        {
+            string filePath = "config.ini";
+
+            // ファイルを読み込み
+            if (File.Exists(filePath))
+            {
+                var lines = File.ReadAllLines(filePath);
+                var settings = new Dictionary<string, Dictionary<string, string>>();
+                string currentSection = "";
+
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith("[") && line.EndsWith("]"))
+                    {
+                        currentSection = line.Trim('[', ']');
+                        if (!settings.ContainsKey(currentSection))
+                        {
+                            settings[currentSection] = new Dictionary<string, string>();
+                        }
+                    }
+                    else if (!string.IsNullOrWhiteSpace(line) && line.Contains('='))
+                    {
+                        var keyValue = line.Split(new[] { '=' }, 2);
+                        if (!string.IsNullOrEmpty(currentSection) && keyValue.Length == 2)
+                        {
+                            settings[currentSection][keyValue[0].Trim()] = keyValue[1].Trim();
+                        }
+                    }
+                }
+
+                if (settings.ContainsKey("全体設定") && settings["全体設定"].ContainsKey("ID"))
+                {
+                    ID = int.Parse(settings["全体設定"]["ID"].ToString());
+                }
+            }
+        }
 
     }
 }
