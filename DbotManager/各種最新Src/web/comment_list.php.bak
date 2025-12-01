@@ -73,51 +73,9 @@ $reply_to_reply_comments = $stmt->get_result();
     
     <div class="main">
 
-<style>
-.bulk-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.bulk-row {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.bulk-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    width: 120px;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-.bulk-options {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.bulk-options label {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-}
-</style>
-
-<form method="POST" action="comment_bulk_update.php">
-    <input type="hidden" name="account_id" value="<?= $account_id ?>">
-    <input type="hidden" name="ids" id="bulk_ids">
-
       <h2>ポスト一覧</h2>
       <table>
         <tr>
-          <th><input type="checkbox" id="check_all_post"></th>
           <th>有効</th>
           <th>コメント</th>
           <?php if (!empty($_SESSION['media_enable'])) echo '<th>動画/画像</th>'; ?>
@@ -127,7 +85,6 @@ $reply_to_reply_comments = $stmt->get_result();
         <?php if ($post_comments && $post_comments instanceof mysqli_result): ?>
           <?php while ($row = $post_comments->fetch_assoc()): ?>
           <tr>
-　           <td><input type="checkbox" class="post_check" name="ids_src[]" value="<?= $row['id'] ?>"></td>
             <td><?= $row['enable'] ? '〇' : '×' ?></td>
             <td><?= htmlspecialchars($row['comment']) ?></td>
             <?php if (!empty($_SESSION['media_enable'])): ?>
@@ -137,7 +94,7 @@ $reply_to_reply_comments = $stmt->get_result();
             <?php endif; ?>
             <td><?= '時間帯'.$row['reserve_mode'] ?></td>
             <td>
-              <button type="button" class="btn" onclick="editComment(<?= $row['id'] ?>)">編集</button>
+              <button class="btn" onclick="editComment(<?= $row['id'] ?>)">編集</button>
               <form method="POST" action="?" style="display:inline;">
                 <input type="hidden" name="type" value="comment_del">
                 <input type="hidden" name="id" value="<?= $row['id'] ?>">
@@ -153,7 +110,6 @@ $reply_to_reply_comments = $stmt->get_result();
       <h2>リプライ一覧</h2>
       <table>
         <tr>
-          <th><input type="checkbox" id="check_all_reply"></th>         
           <th>有効</th>
           <th>コメント</th>
           <?php if (!empty($_SESSION['media_enable'])) echo '<th>動画/画像</th>'; ?>
@@ -162,7 +118,6 @@ $reply_to_reply_comments = $stmt->get_result();
         <?php if ($reply_comments && $reply_comments instanceof mysqli_result): ?>
           <?php while ($row = $reply_comments->fetch_assoc()): ?>
           <tr>
-            <td><input type="checkbox" class="reply_check" name="ids_src[]" value="<?= $row['id'] ?>"></td>
             <td><?= $row['enable'] ? '〇' : '×' ?></td>
             <td><?= htmlspecialchars($row['comment']) ?></td>
             <?php if (!empty($_SESSION['media_enable'])): ?>
@@ -171,7 +126,7 @@ $reply_to_reply_comments = $stmt->get_result();
               </td>
             <?php endif; ?>
             <td>
-              <button type="button" class="btn" onclick="editComment(<?= $row['id'] ?>)">編集</button>
+              <button class="btn" onclick="editComment(<?= $row['id'] ?>)">編集</button>
               <form method="POST" action="?" style="display:inline;">
                 <input type="hidden" name="type" value="comment_del">
                 <input type="hidden" name="id" value="<?= $row['id'] ?>">
@@ -187,7 +142,6 @@ $reply_to_reply_comments = $stmt->get_result();
       <h2>リプtoリプ一覧</h2>
       <table>
         <tr>
-          <th><input type="checkbox" id="check_all_rtr"></th>
           <th>有効</th>
           <th>コメント</th>
           <?php if (!empty($_SESSION['media_enable'])) echo '<th>動画/画像</th>'; ?>
@@ -196,7 +150,6 @@ $reply_to_reply_comments = $stmt->get_result();
         <?php if ($reply_to_reply_comments && $reply_to_reply_comments instanceof mysqli_result): ?>
           <?php while ($row = $reply_to_reply_comments->fetch_assoc()): ?>
           <tr>
-            <td><input type="checkbox" class="rtr_check" name="ids_src[]" value="<?= $row['id'] ?>"></td>
             <td><?= $row['enable'] ? '〇' : '×' ?></td>
             <td><?= htmlspecialchars($row['comment']) ?></td>
             <?php if (!empty($_SESSION['media_enable'])): ?>
@@ -205,7 +158,7 @@ $reply_to_reply_comments = $stmt->get_result();
               </td>
             <?php endif; ?>
             <td>
-              <button type="button" class="btn" onclick="editComment(<?= $row['id'] ?>)">編集</button>
+              <button class="btn" onclick="editComment(<?= $row['id'] ?>)">編集</button>
               <form method="POST" action="?" style="display:inline;">
                 <input type="hidden" name="type" value="comment_del">
                 <input type="hidden" name="id" value="<?= $row['id'] ?>">
@@ -217,124 +170,12 @@ $reply_to_reply_comments = $stmt->get_result();
           <?php endwhile; ?>
         <?php endif; ?>
       </table>
-
-        <h2>一括変更</h2>
-
-    <div class="bulk-container">
-
-        <!-- 有効/無効 -->
-        <div class="bulk-row">
-            <span class="bulk-label">
-                <input type="checkbox" name="apply_enable" value="1">有効/無効
-            </span>
-            <div class="bulk-options">
-                <label><input type="radio" name="enable_value" value="1">有効</label>
-                <label><input type="radio" name="enable_value" value="0">無効</label>
-            </div>
-        </div>
-
-        <!-- 時間帯 -->
-        <div class="bulk-row">
-            <span class="bulk-label">
-                <input type="checkbox" name="apply_time" value="1">時間帯
-            </span>
-            <div class="bulk-options">
-                <label><input type="radio" name="time_value" value="0">なし</label>
-                <label><input type="radio" name="time_value" value="1">時間帯１</label>
-                <label><input type="radio" name="time_value" value="2">時間帯２</label>
-                <label><input type="radio" name="time_value" value="3">時間帯３</label>
-                <label><input type="radio" name="time_value" value="4">時間帯４</label>
-            </div>
-        </div>
-
-        <!-- メディア -->
-        <div class="bulk-row">
-            <span class="bulk-label">
-                <input type="checkbox" name="apply_media" value="1">動画/画像
-            </span>
-            <div class="bulk-options">
-                <label><input type="radio" name="media_value" value="">なし</label>
-                <label><input type="radio" name="media_value" value="video">動画</label>
-                <label><input type="radio" name="media_value" value="photo">画像</label>
-            </div>
-        </div>
-
     </div>
-
-    <button class="btn" type="submit" name="bulk_action" value="update"
-            onclick="return beforeBulkUpdate();">
-        一括変更を反映
-    </button>
-
-    <button class="btn" type="submit" name="bulk_action" value="delete"
-            onclick="return beforeBulkDelete();"
-            style="background:#c0392b; margin-left:10px;">
-        一括削除
-    </button>
-  </form>
-
-
-    </div>
-
-
   </div>
-
-
   <script>
     function editComment(id) {
       location.href = './comment_edit.php?id=' + id;
     }
   </script>
-
-<script>
-// --- ポスト一覧 ---
-document.getElementById("check_all_post").addEventListener("click", function() {
-    document.querySelectorAll(".post_check").forEach(ch => ch.checked = this.checked);
-});
-
-// --- リプライ一覧 ---
-document.getElementById("check_all_reply").addEventListener("click", function() {
-    document.querySelectorAll(".reply_check").forEach(ch => ch.checked = this.checked);
-});
-
-// --- リプtoリプ ---
-document.getElementById("check_all_rtr").addEventListener("click", function() {
-    document.querySelectorAll(".rtr_check").forEach(ch => ch.checked = this.checked);
-});
-</script>
-
-<script>
-
-function beforeBulkUpdate() {
-    const ids = [...document.querySelectorAll('input[name="ids_src[]"]:checked')]
-        .map(e => e.value);
-
-    if (ids.length === 0) {
-        alert("一括変更する項目が選択されていません。");
-        return false;
-    }
-
-    document.getElementById('bulk_ids').value = ids.join(",");
-    return true;
-}
-
-function beforeBulkDelete() {
-    const ids = [...document.querySelectorAll('input[name="ids_src[]"]:checked')]
-        .map(e => e.value);
-
-    if (ids.length === 0) {
-        alert("削除対象が選択されていません。");
-        return false;
-    }
-    if (!confirm(ids.length + "件を削除しますか？")) {
-        return false;
-    }
-
-    document.getElementById('bulk_ids').value = ids.join(",");
-    return true;
-}
-</script>
-
-
 </body>
 </html>

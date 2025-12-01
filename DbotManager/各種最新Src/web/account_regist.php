@@ -63,13 +63,6 @@ while ($row = $result->fetch_assoc()) {
     ];
 }
 
-/*
-echo '<pre>';
-print_r($system_prompts);
-echo '</pre>';
-//exit; // ここで処理を止める
-*/
-
 $xusers = [];
 $xuser = null;
 while ($row = $result->fetch_assoc()){
@@ -181,6 +174,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ai_post_enable = isset($_POST['ai_post_enable']) ? 1 : 0;
         $ai_reply_enable = isset($_POST['ai_reply_enable']) ? 1 : 0;
 
+        $ai_photo_enable = isset($_POST['ai_photo_enable']) ? 1 : 0;
+        $ai_movie_enable = isset($_POST['ai_movie_enable']) ? 1 : 0;
+        $ai_media_selection_rate = $_POST['ai_media_selection_rate'];
+
+
 //        $ai_post_prompt = $_POST['ai_post_prompt'] ?? '';
 //        $ai_trend_prompt = $_POST['ai_trend_prompt'] ?? '';
 //        $ai_reply_prompt = $_POST['ai_reply_prompt'] ?? '';
@@ -202,9 +200,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ai_trend_prompt_yahoo  = $system_prompts['ai_trend_prompt_yahoo']['value']  ?? '';
         $ai_trend_prompt_x      = $system_prompts['ai_trend_prompt_x']['value']      ?? '';
         $ai_btc_prompt          = $system_prompts['ai_btc_prompt']['value']          ?? '';      
+        $ai_free_prompt          = $system_prompts['ai_free_prompt']['value']          ?? '';      
+
+        $ai_free_prompt_rep     = $system_prompts['ai_free_prompt_rep']['value']          ?? '';      
+        $ai_free_past_rep     = $system_prompts['ai_free_past_rep']['value']          ?? '';      
+        $ai_uraaka_prompt_rep     = $system_prompts['ai_free_prompt_rep']['value']          ?? '';      
+        $ai_uraaka_past_rep   = $system_prompts['ai_uraaka_past_rep']['value']   ?? '';
 
         $ai_prompt_textbox = trim($_POST['ai_prompt'] ?? '');
         $ai_past_tweet_textbox = trim($_POST['ai_past_tweet'] ?? '');
+
+        $ai_prompt_rep_textbox = trim($_POST['ai_reply_prompt'] ?? '');
+        $ai_past_rep_textbox = trim($_POST['ai_past_reply'] ?? '');
 
         // --- ラジオボタンに応じて上書き ---
         switch ($ai_mode) {
@@ -215,20 +222,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($ai_past_tweet_textbox !== '') {
                     $ai_uraaka_past_tweet = $ai_past_tweet_textbox;
                 }
+
+                if ($ai_prompt_rep_textbox !== '') {
+                    $ai_uraaka_prompt_rep = $ai_prompt_rep_textbox;
+                }
+                if ($ai_past_rep_textbox !== '') {
+                    $ai_uraaka_past_rep = $ai_past_rep_textbox;
+                }
+
                 break;
             case '2': // Yahooトレンド
                 if ($ai_prompt_textbox !== '') {
                     $ai_trend_prompt_yahoo = $ai_prompt_textbox;
+                }
+                if ($ai_prompt_rep_textbox !== '') {
+                    $ai_free_prompt_rep = $ai_prompt_rep_textbox;
+                }
+
+                if ($ai_past_rep_textbox !== '') {
+                    $ai_free_past_rep = $ai_past_rep_textbox;
                 }
                 break;
             case '6': // Xトレンド
                 if ($ai_prompt_textbox !== '') {
                     $ai_trend_prompt_x = $ai_prompt_textbox;
                 }
+                if ($ai_prompt_rep_textbox !== '') {
+                    $ai_free_prompt_rep = $ai_prompt_rep_textbox;
+                }
+
+                if ($ai_past_rep_textbox !== '') {
+                    $ai_free_past_rep = $ai_past_rep_textbox;
+                }
                 break;
             case '3': // BTC為替
                 if ($ai_prompt_textbox !== '') {
                     $ai_btc_prompt = $ai_prompt_textbox;
+                }
+                if ($ai_prompt_rep_textbox !== '') {
+                    $ai_free_prompt_rep = $ai_prompt_rep_textbox;
+                }
+
+                if ($ai_past_rep_textbox !== '') {
+                    $ai_free_past_rep = $ai_past_rep_textbox;
+                }
+                break;
+            case '9': // FREE
+                if ($ai_prompt_textbox !== '') {
+                    $ai_free_prompt = $ai_prompt_textbox;
+                }
+                if ($ai_prompt_rep_textbox !== '') {
+                    $ai_free_prompt_rep = $ai_prompt_rep_textbox;
+                }
+
+                if ($ai_past_rep_textbox !== '') {
+                    $ai_free_past_rep = $ai_past_rep_textbox;
                 }
                 break;
         }
@@ -304,14 +352,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ,ai_trend_prompt_yahoo 
                 ,ai_trend_prompt_x 
                 ,ai_btc_prompt 
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                ,ai_free_prompt
+                ,ai_uraaka_prompt_rep
+                ,ai_uraaka_past_rep
+                ,ai_free_prompt_rep                
+                ,ai_free_past_rep                
+                ,ai_photo_enable
+                ,ai_movie_enable
+                ,ai_media_selection_rate
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
 
 //var_dump($ai_post_prompt, $ai_reply_prompt, $ai_post_example, $ai_reply_example, $ai_trend_prompt);
 //var_dump($ai_uraaka_prompt, $ai_uraaka_past_tweet, $ai_trend_prompt_yahoo, $ai_trend_prompt_x, $ai_btc_prompt);
 //exit;            
             $stmt->bind_param(
-                "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssissssss",
+                "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssissssssssssssss",
                 $current_userid,    //s
                 $new_name,          //s
                 $new_login_id,      //s
@@ -369,7 +425,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ,$ai_trend_prompt_yahoo 
                 ,$ai_trend_prompt_x 
                 ,$ai_btc_prompt 
-
+                ,$ai_free_prompt
+                ,$ai_uraaka_prompt_rep
+                ,$ai_uraaka_past_rep
+                ,$ai_free_prompt_rep
+                ,$ai_free_past_rep
+                ,$ai_photo_enable
+                ,$ai_movie_enable
+                ,$ai_media_selection_rate
             );
 
             $stmt->execute();
@@ -586,8 +649,6 @@ $result = $stmt->get_result();
         <br>
 
         <?php if (isset($_SESSION['ai_enable']) && $_SESSION['ai_enable'] == 1): ?>
-        <input type="checkbox" name="ai_post_enable" value="1">AIポスト<br>
-
         <br>
         <br>
         AIポストモード
@@ -607,6 +668,9 @@ $result = $stmt->get_result();
         <label>
             <input type="radio" name="ai_mode" value="3" onclick="filterPresets()"> BTC為替
         </label>
+        <label>
+            <input type="radio" name="ai_mode" value="9" onclick="filterPresets()"> 自由ﾓｰﾄﾞ
+        </label>
         <!--
         <label>
             <input type="radio" name="ai_mode" value="3" onclick="filterPresets()"> GOLD為替
@@ -616,10 +680,13 @@ $result = $stmt->get_result();
         </label>
         -->
 
+        <input type="checkbox" name="ai_photo_enable" value="1">画像
+        <input type="checkbox" name="ai_movie_enable" value="1">動画
+        <input type="number" id="ai_media_selection_rate" name="ai_media_selection_rate" class="short" placeholder="ﾒﾃﾞｨｱ選択率" min="1" max="100" step="1" value="100"> ％
+
 
         <br>
-
-
+        <input type="checkbox" name="ai_post_enable" value="1">AIポスト プロンプト/ポスト例文(裏垢女子のみ)<br>
         <br>
         <textarea id="ai_prompt" name="ai_prompt" cols="80" rows="5" maxlength="1000" 
         style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>        
@@ -627,29 +694,15 @@ $result = $stmt->get_result();
         style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>    
         <br>
 
-        <input type="checkbox" name="ai_reply_enable" value="1">AIリプライ<br>
-        プロンプト設定
-        <select id="reply_preset_select" onchange="loadPresetText_reply()">
-            <option value="">選択してください</option>  
-            <?php foreach ($presets as $preset): ?>
-                <?php if ($preset['mode'] === 'reply'):  ?>
+        <input type="checkbox" name="ai_reply_enable" value="1">AIリプライ プロンプト/リプライ例文<br>
 
-                    <!-- モードが自由の場合、preset['type'] が '自由' のものだけ表示 -->
-                    <option value="<?= htmlspecialchars($preset['prompt'], ENT_QUOTES, 'UTF-8') ?>" 
-                    class="preset-option" 
-                    data-type="<?= htmlspecialchars($preset['type'], ENT_QUOTES, 'UTF-8') ?>"
-                    data-example="<?= htmlspecialchars($preset['example'], ENT_QUOTES, 'UTF-8') ?>">
-                    <?= htmlspecialchars($preset['name'], ENT_QUOTES, 'UTF-8') ?>
-                    </option>                    
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </select>        
         <br>
         <textarea id="ai_reply_prompt" name="ai_reply_prompt" cols="80" rows="5" maxlength="1000" 
         style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>        
-        <textarea id="ai_reply_example" name="ai_reply_example" cols="80" rows="5" maxlength="2000" 
-        style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>        
+        <textarea id="ai_past_reply" name="ai_past_reply" cols="80" rows="5" maxlength="2000" 
+        style="width: 100%; height: 200px; resize: vertical; overflow-y: auto;"></textarea>    
         <br>
+
         <?php endif; ?>
         <button type="submit">登録</button>
         </div>
@@ -659,31 +712,6 @@ $result = $stmt->get_result();
 </div>
 
 <script>
-function loadPresetText_post() {
-    var select = document.getElementById("post_preset_select");
-    var selectedOption = select.options[select.selectedIndex]; // 選択されたオプション
-
-    // ラジオボタン（ai_mode）の選択状態を取得
-    var selectedMode = document.querySelector('input[name="ai_mode"]:checked').value;
-
-    if(selectedMode === "3")
-    {
-        // 選択されたオプションの value を ai_trend_prompt に設定
-        var promptTextArea = document.getElementById("ai_trend_prompt");
-        promptTextArea.value = selectedOption.value;
-    }
-    else{
-        // 選択されたオプションの value を ai_post_prompt に設定
-        var promptTextArea = document.getElementById("ai_post_prompt");
-        promptTextArea.value = selectedOption.value;
-
-        // 選択されたオプションの data-example を ai_post_example に設定
-        var exampleTextArea = document.getElementById("ai_post_example");
-        exampleTextArea.value = selectedOption.dataset.example || "";    
-    }
-
-}
-
 function loadPresetText_reply() {
     var select = document.getElementById("reply_preset_select");
     var selectedOption = select.options[select.selectedIndex]; // 選択されたオプション
@@ -713,30 +741,59 @@ function filterPresets() {
     const promptBox = document.getElementById("ai_prompt");
     const pastTweetBox = document.getElementById("ai_past_tweet");
 
+    const repPromptBox = document.getElementById("ai_reply_prompt");
+    const pastRepBox = document.getElementById("ai_past_reply");
+    
+
     // 初期化
     ai_prompt.value = "";
+
+    // AIリプは常時表示
+    promptBox.style.display = 'block';
+    repPromptBox.style.display = 'block';
+    pastRepBox.style.display = 'block';
 
     if (selectedMode === "1") {
         promptBox.value = systemPrompts["ai_uraaka_prompt"]?.value || "";
         pastTweetBox.value = systemPrompts["ai_uraaka_past_tweet"]?.value || "";
-        promptBox.style.display = 'block';
+
+        repPromptBox.value = systemPrompts["ai_uraaka_prompt_rep"]?.value || "";
+        pastRepBox.value = systemPrompts["ai_uraaka_past_rep"]?.value || "";
+
         pastTweetBox.style.display = 'block';
+
     } else if (selectedMode === "2") {
         promptBox.value = systemPrompts["ai_trend_prompt_yahoo"]?.value || "";
-        promptBox.style.display = 'block';
+
+        repPromptBox.value = systemPrompts["ai_free_prompt_rep"]?.value || "";
+        pastRepBox.value = systemPrompts["ai_free_past_rep"]?.value || "";
+
         pastTweetBox.style.display = 'none';
     } else if (selectedMode === "6") {
         promptBox.value = systemPrompts["ai_trend_prompt_x"]?.value || "";
-        promptBox.style.display = 'block';
+
+        repPromptBox.value = systemPrompts["ai_free_prompt_rep"]?.value || "";
+        pastRepBox.value = systemPrompts["ai_free_past_rep"]?.value || "";
+
         pastTweetBox.style.display = 'none';
     } else if (selectedMode === "3") {
         promptBox.value = systemPrompts["ai_btc_prompt"]?.value || "";
-        promptBox.style.display = 'block';
+        repPromptBox.value = systemPrompts["ai_free_prompt_rep"]?.value || "";
+        pastRepBox.value = systemPrompts["ai_free_past_rep"]?.value || "";
+
+        pastTweetBox.style.display = 'none';
+    } else if (selectedMode === "9") {
+        promptBox.value = systemPrompts["ai_free_prompt"]?.value || "";
+
+        repPromptBox.value = systemPrompts["ai_free_prompt_rep"]?.value || "";
+        pastRepBox.value = systemPrompts["ai_free_past_rep"]?.value || "";
+
         pastTweetBox.style.display = 'none';
     } else {
         promptBox.value = "";
-        promptBox.style.display = 'none';
         pastTweetBox.style.display = 'none';
+        pastRepBox.style.display = 'none';
+        repPromptBox.style.display = 'none';
     }
 
     /*

@@ -7,6 +7,18 @@
         <!-- ゲストモード用メニュー -->
         <a href="tweet_japanese.php">日本人いいね</a> 
     <?php else: ?>
+
+        <?php if (isset($_SESSION['japanese_mode']) && $_SESSION['japanese_mode'] === 1): ?>
+            <a href="tweet_japanese.php">Twitter拡散サービス</a>
+        <?php endif; ?>
+        <?php if (isset($_SESSION['japanese_mode']) && $_SESSION['japanese_mode'] === 2): ?>
+            <a href="tweet_japanese2.php">Twitter拡散サービス</a>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['sensyuken_mode']) && $_SESSION['sensyuken_mode'] !== 0): ?>
+            <a href="tweet_sensyuken.php">選手権</a>
+        <?php endif; ?>        
+
         <?php if (
             (isset($_SESSION['like_enable']) && $_SESSION['like_enable'] == 1) ||
             (isset($_SESSION['reply_enable']) && $_SESSION['reply_enable'] == 1) ||
@@ -14,18 +26,6 @@
             (isset($_SESSION['repost_enable']) && $_SESSION['repost_enable'] == 1) ||
             (isset($_SESSION['follow_enable']) && $_SESSION['follow_enable'] == 1) 
        ): ?>    
-
-            <?php if (isset($_SESSION['japanese_mode']) && $_SESSION['japanese_mode'] === 1): ?>
-                <a href="tweet_japanese.php">Twitter拡散サービス<BR>(日本人いいね)</a>
-            <?php endif; ?>
-            <?php if (isset($_SESSION['japanese_mode']) && $_SESSION['japanese_mode'] === 2): ?>
-                <a href="tweet_japanese2.php">Twitter拡散サービス<BR>(日本人いいね)</a>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['sensyuken_mode']) && $_SESSION['sensyuken_mode'] !== 0): ?>
-                <a href="tweet_sensyuken.php">選手権</a>
-            <?php endif; ?>
-
             <a href="tweet.php">(自)いいね・ブクマ</a>
         <?php endif; ?>
 

@@ -138,7 +138,7 @@ if ($sessionId) {
         <!-- 遅延等をアナウンスする -->      
         <p class="input-note" id="tweet-id-note" style="color: red; margin: 0 0 20px;">
         使用可能※いいね復活してます。
-        最高500いいねまで可能です
+        最高300いいねまで可能です
         ブクマは500まで可能です。
         お間違えにならぬようご注意ください
         </p>  

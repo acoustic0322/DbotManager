@@ -171,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <label for="comment">コメント:</label>
-        <textarea id="comment" name="comment" rows="4" style="width:100%;" required><?= htmlspecialchars($edit_account['comment'] ?? '') ?></textarea>
+        <input type="text" id="comment" name="comment" placeholder="コメント" value="<?= htmlspecialchars($edit_account['comment'] ?? '') ?>" required>
 
         <label for="time_zone_setting">時間帯設定:</label>
         <select name="time_zone_setting" id="time_zone_setting">

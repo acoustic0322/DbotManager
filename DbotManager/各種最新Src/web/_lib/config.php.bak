@@ -312,14 +312,6 @@ function get_account($conn, $id)
         ,am.ai_trend_prompt_yahoo
         ,am.ai_trend_prompt_x
         ,am.ai_btc_prompt
-        ,am.ai_free_prompt
-        ,am.ai_uraaka_prompt_rep
-        ,am.ai_uraaka_past_rep
-        ,am.ai_free_prompt_rep
-        ,am.ai_free_past_rep
-        ,am.ai_photo_enable
-        ,am.ai_movie_enable
-        ,am.ai_media_selection_rate
     FROM account_master am
     LEFT JOIN api_master api ON api.id = am.api_master_id
     WHERE am.id = ?;
@@ -396,14 +388,6 @@ function get_account($conn, $id)
             ,$ai_trend_prompt_yahoo
             ,$ai_trend_prompt_x
             ,$ai_btc_prompt
-            ,$ai_free_prompt
-            ,$ai_uraaka_prompt_rep
-            ,$ai_uraaka_past_rep
-            ,$ai_free_prompt_rep
-            ,$ai_free_past_rep
-            ,$ai_photo_enable
-            ,$ai_movie_enable
-            ,$ai_media_selection_rate
         );
 
         if ($stmt->fetch()) {
@@ -473,15 +457,6 @@ function get_account($conn, $id)
                 ,'ai_trend_prompt_x' => $ai_trend_prompt_x
                 ,'ai_btc_prompt' => $ai_btc_prompt
 
-                ,'ai_free_prompt' => $ai_free_prompt
-                ,'ai_uraaka_prompt_rep' => $ai_uraaka_prompt_rep
-                ,'ai_uraaka_past_rep' => $ai_uraaka_past_rep
-                ,'ai_free_prompt_rep' => $ai_free_prompt_rep
-                ,'ai_free_past_rep' => $ai_free_past_rep
-
-                ,'ai_photo_enable' => $ai_photo_enable
-                ,'ai_movie_enable' => $ai_photo_enable
-                ,'ai_media_selection_rate' => $ai_media_selection_rate
             ];
         }
     }
