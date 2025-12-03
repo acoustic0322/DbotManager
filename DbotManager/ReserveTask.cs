@@ -40,8 +40,8 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
-            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
-//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Id == 1). Where(x => x.Enable && x.PostEnable).ToList();
+//            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Enable && x.PostEnable).ToList();
+            _accountList = dataAccess.GetAccountMaster(true).Where(x => x.Id == 3228). Where(x => x.Enable && x.PostEnable).ToList();
             
             List<ReserveMaster> reserveMasterList = new List<ReserveMaster>();
             List<CommentMaster> commentMasterList = dataAccess.GetCommentMaster();
@@ -210,11 +210,11 @@ namespace DbotManager
             var random = new Random();
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
 
-            Thread.Sleep(1);
+            Thread.Sleep(10);
             // ランダムな件数を設定 (0 ～ count)
 //            int randomCount = random.Next(count+1); // countを含めるため +1
             int randomCount = random.Next(1 , count + 1); // 0を除外してランダムカウント生成
-            Thread.Sleep(1);
+            Thread.Sleep(10);
 
             // 今日の日付
             var today = DateTime.Today;
@@ -232,9 +232,19 @@ namespace DbotManager
             for (int i = 0; i < randomCount; i++)
             {
                 DateTime randomTime;
+                int attempt = 0;
+                const int maxAttempt = 20;
 
                 do
                 {
+                    attempt++;
+                    if (attempt > maxAttempt)
+                    {
+                        // ★ 20 回失敗 → 無限ループ回避のため return
+                        Console.WriteLine("ランダム時間生成に失敗したため return します");
+                        return schedules;
+                    }
+
                     Thread.Sleep(1);
 
                     // ランダムな時刻を生成
