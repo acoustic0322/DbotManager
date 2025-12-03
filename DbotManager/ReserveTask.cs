@@ -203,14 +203,18 @@ namespace DbotManager
 
 
             var schedules = new List<ReserveSchedule>();
+
+            // 2025.12.03 時間設定が正常に出ていないと無限ループになるため、リターン
+            if (startHour >= endHour) return schedules;
+
             var random = new Random();
             var withoutCommentIdList = reserveList.Select(x => (int)x.CommentId).ToList();
 
-            Thread.Sleep(10);
+            Thread.Sleep(1);
             // ランダムな件数を設定 (0 ～ count)
 //            int randomCount = random.Next(count+1); // countを含めるため +1
             int randomCount = random.Next(1 , count + 1); // 0を除外してランダムカウント生成
-            Thread.Sleep(10);
+            Thread.Sleep(1);
 
             // 今日の日付
             var today = DateTime.Today;

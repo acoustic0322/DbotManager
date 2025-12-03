@@ -6,9 +6,10 @@ namespace ChildTweet
     {
         private TweetHttpServer server = new TweetHttpServer();
 
-        const double ver = 1.01;
+        const double ver = 1.10;
 
         public int ID { get; set; }
+        public int PORT { get; set; }
 
 
         public ChildTweet()
@@ -26,6 +27,8 @@ namespace ChildTweet
                 Directory.CreateDirectory(logDir); // なければ作る
 
                 this.Text += $"[Ver:{ver}][ID:{ID}]";
+
+                textBoxPort.Text = PORT.ToString();
 
 
                 buttonStart_Click(sender, e);
@@ -142,6 +145,11 @@ namespace ChildTweet
                 if (settings.ContainsKey("全体設定") && settings["全体設定"].ContainsKey("ID"))
                 {
                     ID = int.Parse(settings["全体設定"]["ID"].ToString());
+                }
+
+                if (settings.ContainsKey("全体設定") && settings["全体設定"].ContainsKey("PORT"))
+                {
+                    PORT = int.Parse(settings["全体設定"]["PORT"].ToString());
                 }
             }
         }
