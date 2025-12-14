@@ -1171,7 +1171,7 @@ namespace DbotManager
         }
 
         //        public void TweetProc(TweetProcTypes tweetProcType, int userId, int accountId, int commentId, string tweetId)
-        public TweetResult TweetProc(TweetCommand tweetCommand)
+        public  TweetResult TweetProc(TweetCommand tweetCommand)
         {
             ReadIniファイル();
 
@@ -1285,10 +1285,63 @@ namespace DbotManager
 
             try
             {
+                int timeoutMs = 15000; // 15秒でタイムアウト（必要に応じて変更）
+
+                process.Start();
+
+                // 非同期で出力を読む（デッドロック防止）
+                Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+                Task<string> errorTask = process.StandardError.ReadToEndAsync();
+
+                // プロセス終了を待つ（タイムアウト付き）
+                if (!process.WaitForExit(timeoutMs))
+                {
+                    process.Kill();
+                    logAction?.Invoke($"{DateTime.Now.ToString()} < タイムアウト {pythonScriptPath}");
+                    return new TweetResult { result1 = false, contents1 = "TIMEOUT" };
+                }
+
+                // 同期で結果を取得（ここがポイント）
+                string output = outputTask.GetAwaiter().GetResult();
+                string debugMessage = errorTask.GetAwaiter().GetResult();
+
+                /*
+                // 非同期で出力を読む（ReadToEnd のデッドロック防止）
+                Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+                Task<string> errorTask = process.StandardError.ReadToEndAsync();
+
+                // プロセス終了を待つ（タイムアウト付き）
+                if (!process.WaitForExit(timeoutMs))
+                {
+                    // タイムアウト発生！
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch { }
+
+                    logAction?.Invoke($"{DateTime.Now} TweetProc TIMEOUT after {timeoutMs}ms");
+
+                    return new TweetResult
+                    {
+                        result1 = false,
+                        contents1 = "TIMEOUT",
+                        result2 = false,
+                        contents2 = ""
+                    };
+                }
+
+                // 出力取得（プロセスが正常終了した場合）
+                string output = await outputTask;
+                string debugMessage = await errorTask;
+                */
+
+                /*
                 process.Start();
                 string output = process.StandardOutput.ReadToEnd(); // Pythonスクリプトの標準出力
                 string debugMessage = process.StandardError.ReadToEnd();   // Pythonスクリプトの標準エラー
                 process.WaitForExit();
+                */
 
                 // PythonスクリプトからのJSON結果をデシリアライズ (Newtonsoft.Json)
                 tweetResult = JsonConvert.DeserializeObject<TweetResult>(output);

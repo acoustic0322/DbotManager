@@ -37,6 +37,7 @@ namespace DbotManager
 
         public List<ReserveSchedule> MakeScheduleList()
         {
+            logAction?.Invoke($"{DateTime.Now.ToString()} MakeScheduleList Start");
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
@@ -162,6 +163,8 @@ namespace DbotManager
 
             _reserveScheduleList.Clear();
             _reserveScheduleList.AddRange(reserveScheduleList.OrderBy(x => x.ReserveDate).ThenBy(x => x.ReserveTime));
+
+            logAction?.Invoke($"{DateTime.Now.ToString()} MakeScheduleList End");
 
             return reserveScheduleList;
         }
@@ -369,16 +372,26 @@ namespace DbotManager
 
         public void OnTimedEvent(object sender, ElapsedEventArgs e)
         {
+              logAction?.Invoke($"{DateTime.Now.ToString()} ReserveTask:OnTimedEvent Start");
 
-            if (!Monitor.TryEnter(_lockObj))
-            {
-                // 既に実行中
-                Console.WriteLine($"OnTimedEvent:実行中の処理がある為return({DateTime.Now})");
-                return;
-            }
+
+            bool lockTaken = false;
 
             try
             {
+
+                Monitor.TryEnter(_lockObj, ref lockTaken);
+
+                if (!lockTaken)
+                {
+                    Console.WriteLine($"実行中のためスキップ {DateTime.Now}");
+                    logAction?.Invoke($"{DateTime.Now.ToString()} ReserveTask:lockTaken=false");
+                    return; // ★ この return は OK（lockTaken = false）
+                }
+
+//                _予約監視Timer.Stop(); // ★ タイマー停止
+                logAction?.Invoke($"{DateTime.Now.ToString()} ReserveTask:_予約監視Timer.End()");
+
                 Console.WriteLine($"OnTimedEvent:処理を実行中({DateTime.Now})");
 
                 DateTime dtNow = DateTime.Now;
@@ -431,9 +444,13 @@ namespace DbotManager
                         }
                         else
                         {
-                            if (result.contents1.Contains("Too Many Requests"))
+                            if(result.contents1 != null)
                             {
-                                reserveSchedule.Result = true;
+                                if (result.contents1.Contains("Too Many Requests"))
+                                {
+                                    reserveSchedule.Result = true;
+                                }
+
                             }
                         }
 
@@ -463,8 +480,23 @@ namespace DbotManager
             }
             finally
             {
-                Monitor.Exit(_lockObj);
+                logAction?.Invoke($"{DateTime.Now} ReserveTask:finally ENTER lockTaken={lockTaken}");
+
+                if (lockTaken)
+                {
+                    logAction?.Invoke($"{DateTime.Now.ToString()} ReserveTask:Monitor.Exit(_lockObj) Start");
+                    Monitor.Exit(_lockObj);
+                    logAction?.Invoke($"{DateTime.Now.ToString()} ReserveTask:Monitor.Exit(_lockObj) End");
+                }
+
+                logAction?.Invoke($"{DateTime.Now} ReserveTask:finally BEFORE Start()");
+//                _予約監視Timer.Start();
+                Console.WriteLine($" _予約監視Timer.Start()");
+                logAction?.Invoke($"{DateTime.Now.ToString()} ReserveTask:_予約監視Timer.Start()");
             }
+
+            logAction?.Invoke($"{DateTime.Now.ToString()} ReserveTask:OnTimedEvent End");
+
         }
     }
 }
