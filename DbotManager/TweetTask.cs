@@ -588,9 +588,10 @@ namespace DbotManager
                     }
 #endif
                     // 無料アカウントは制限時間内の取引を中止
-                    if (制限時間以内に履歴ありの無料アカウントを排除)
+//                    if (制限時間以内に履歴ありの無料アカウントを排除)
+                    if (false)  // 2026.03.02 無料アカウントの制限を解除
                     {
-                        if (tweetProcType == TweetProcTypes.いいね)
+                            if (tweetProcType == TweetProcTypes.いいね)
                         {
                             // 無料アカウント or 有料アカウントの無料いいね
                             if (!account.Paid || !account.PaidLike)

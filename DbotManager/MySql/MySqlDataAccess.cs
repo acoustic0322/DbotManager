@@ -252,6 +252,42 @@ public class MySqlDataAccess
                 connection.Open();
 
                 // AccountMasterのVpsIdを使用
+                string query = @"SELECT am.id,am.user_id,am.name,
+                   am.login_id,am.login_password,
+                   am.api_key,am.api_key_secret,
+                   am.client_id,am.client_secret,
+                   am.access_token,am.access_token_secret,
+                   am.bearer_token,am.refresh_token,am.enable
+                   ,am.like_enable,am.reply_enable,am.bookmark_enable,am.repost_enable,am.post_enable,am.paid
+                   ,am.reserve1_enable,am.reserve1_start_hour,am.reserve1_end_hour,am.reserve1_count
+                   ,am.reserve2_enable,am.reserve2_start_hour,am.reserve2_end_hour,am.reserve2_count
+                   ,am.reserve3_enable,am.reserve3_start_hour,am.reserve3_end_hour,am.reserve3_count
+                   ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
+                   ,am.paid_like,am.paid_bookmark
+                   ,am.check_interval
+                   ,am.search_enable
+                   ,am.vps_id,
+                   um.GROQ_API_KEY,
+                   um.OPENAI_API_KEY,
+                   am.ai_mode,
+                   am.ai_post_enable,
+                   am.ai_reply_enable,
+                   am.ai_post_prompt,
+                   am.ai_reply_prompt,
+                   am.reserve1_ai,
+                   am.reserve2_ai,
+                   am.reserve3_ai,
+                   am.reserve4_ai,
+                   am.api_master_id,
+                   am.use_admin_api
+                   ,am.ai_photo_enable
+                   ,am.ai_movie_enable
+                   ,am.ai_media_selection_rate
+                   FROM account_master am
+                   left join user_master um on um.id = am.user_id
+                   ";
+
+                // UserMasterのVpsIdを使用
                 //string query = @"SELECT am.id,am.user_id,am.name,
                 //    am.login_id,am.login_password,
                 //    am.api_key,am.api_key_secret,
@@ -266,7 +302,7 @@ public class MySqlDataAccess
                 //    ,am.paid_like,am.paid_bookmark
                 //    ,am.check_interval
                 //    ,am.search_enable
-                //    ,am.vps_id,
+                //    ,um.vps_id,
                 //    um.GROQ_API_KEY,
                 //    um.OPENAI_API_KEY,
                 //    am.ai_mode,
@@ -286,42 +322,6 @@ public class MySqlDataAccess
                 //    FROM account_master am
                 //    left join user_master um on um.id = am.user_id
                 //    ";
-
-                // UserMasterのVpsIdを使用
-                string query = @"SELECT am.id,am.user_id,am.name,
-                    am.login_id,am.login_password,
-                    am.api_key,am.api_key_secret,
-                    am.client_id,am.client_secret,
-                    am.access_token,am.access_token_secret,
-                    am.bearer_token,am.refresh_token,am.enable
-                    ,am.like_enable,am.reply_enable,am.bookmark_enable,am.repost_enable,am.post_enable,am.paid
-                    ,am.reserve1_enable,am.reserve1_start_hour,am.reserve1_end_hour,am.reserve1_count
-                    ,am.reserve2_enable,am.reserve2_start_hour,am.reserve2_end_hour,am.reserve2_count
-                    ,am.reserve3_enable,am.reserve3_start_hour,am.reserve3_end_hour,am.reserve3_count
-                    ,am.reserve4_enable,am.reserve4_start_hour,am.reserve4_end_hour,am.reserve4_count
-                    ,am.paid_like,am.paid_bookmark
-                    ,am.check_interval
-                    ,am.search_enable
-                    ,um.vps_id,
-                    um.GROQ_API_KEY,
-                    um.OPENAI_API_KEY,
-                    am.ai_mode,
-                    am.ai_post_enable,
-                    am.ai_reply_enable,
-                    am.ai_post_prompt,
-                    am.ai_reply_prompt,
-                    am.reserve1_ai,
-                    am.reserve2_ai,
-                    am.reserve3_ai,
-                    am.reserve4_ai,
-                    am.api_master_id,
-                    am.use_admin_api
-                    ,am.ai_photo_enable
-                    ,am.ai_movie_enable
-                    ,am.ai_media_selection_rate
-                    FROM account_master am
-                    left join user_master um on um.id = am.user_id
-                    ";
 
                 if (userEnable)
                 {
