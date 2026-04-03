@@ -716,11 +716,7 @@ def proc_like_v2(credentials, tweet_id):
 
     # ユーザーIDの取得
     user_id, result, contents = get_user_id(credentials, credentials['login_id'])
-    
     if result == False:
-        # ID取得に失敗（凍結・401エラーなど）した場合も、ここで履歴を保存する！
-        # これを入れないと PHP管理画面にエラーが飛びません
-        save_tweet_history(credentials['id'], '', 'like', str(tweet_id), False, contents)
         return False, contents
 
     outputLog(f"user_id={user_id} (target={target})")

@@ -2,22 +2,11 @@
 
 import os
 import requests
-import json
-from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_core.tools import Tool
-
-# LangChain 0.3対応：エラーが出る古いインポートを避け、ダミー関数を用意する
-try:
-    from langchain.agents import AgentExecutor
-except ImportError:
-    pass
-
-# プログラム全体の読み込みエラーを防ぐための空関数
-def initialize_agent(*args, **kwargs):
-    return None
+from langchain_openai import ChatOpenAI  #新しいimport
+from langchain_community.tools import DuckDuckGoSearchRun  #新しいimport
+from langchain.agents import Tool, initialize_agent
+from bs4 import BeautifulSoup
 
 #from langchain.utilities import SerpAPIWrapper
 from langchain_community.utilities import SerpAPIWrapper

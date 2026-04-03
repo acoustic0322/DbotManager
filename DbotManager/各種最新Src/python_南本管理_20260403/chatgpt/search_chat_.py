@@ -1,34 +1,17 @@
 # search_chat.py
 
 import os
-import requests
-import json
-from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_core.tools import Tool
+from langchain_openai import ChatOpenAI  #新しいimport
+from langchain_community.tools import DuckDuckGoSearchRun  #新しいimport
+from langchain.agents import Tool, initialize_agent
+from bs4 import BeautifulSoup
 
-# LangChain 0.3対応：エラーが出る古いインポートを避け、ダミー関数を用意する
-try:
-    from langchain.agents import AgentExecutor
-except ImportError:
-    pass
-
-# プログラム全体の読み込みエラーを防ぐための空関数
-def initialize_agent(*args, **kwargs):
-    return None
-
+#2025.11.01 ライブラリを入替え
 #from langchain.utilities import SerpAPIWrapper
-from langchain_community.utilities import SerpAPIWrapper
-#from langchain_community.utilities import SerpAPIWrapperimport requests
+from langchain_community.utilities import SerpAPIWrapperimport requests
 
 from config import outputLog
-
-from UsageLLM import UsageLLM
-
-from mysql import save_token_usage
-
 
 
 OPENAI_API_KEY = "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"
@@ -168,13 +151,15 @@ def create_tools():
     return tools
 
 
+# --- LLM（GPTモデル）を作る関数 ---
 def create_llm(openai_api_key: str):
-    return UsageLLM(
-        api_key=openai_api_key,
-        model="gpt-4-turbo",  # ここは好きなモデルに
-        temperature=0.7,
+    llm = ChatOpenAI(
+        model="gpt-4-turbo",
+        openai_api_key=openai_api_key,
+        temperature=0.5,
         max_tokens=512,
-    )    
+    )
+    return llm
 
 
 # --- エージェントを作る関数 ---
@@ -196,12 +181,17 @@ def create_agent(openai_api_key: str):
 
 
 # --- mainA 修正版（複数通貨対応） ---
-def get_tweet_text_from_yahoo_pair(open_ai_api_key, prompt, target_currency="USD/JPY"):
-    # 設定チェック
+def get_tweet_text_from_yahoo_pair(open_ai_api_key, prompt, target_currency = "USD/JPY"):
+    # 対象通貨をここで指定（必要に応じて "EUR/JPY" などに変更可能。他の通貨も可能です。）
+
+	#USD/JPY,EUR/JPY,GBP/JPY,AUD/JPY,CAD/JPY,CHF/JPY
+#    target_currency = "GBP/JPY"
+
+    # 設定に含まれているかチェック
     config = currency_config.get(target_currency)
     if not config:
         outputLog(f"{target_currency} は currency_config に存在しません。")
-        return False, ""
+        return False , ""
 
     # --- レート取得 ---
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -218,155 +208,112 @@ def get_tweet_text_from_yahoo_pair(open_ai_api_key, prompt, target_currency="USD
     except Exception as e:
         rate_info = f"{target_currency} のレート取得中にエラーが発生しました: {str(e)}"
 
-    # --- GPT処理 ---
+    # --- プロンプト生成とGPT呼び出し ---
+#    prompt = f"""
+#以下の情報を元に、X（旧Twitter）に投稿するような自然で短いツイートを日本語で1つ作成してください。
+#今のリアルタイムでの値段を含めてお願いします。
+#140文字以内で、カジュアルに。
+#為替情報: 「{rate_info}」
+#"""
     try:
-        # プロンプトへ追加
-        prompt = prompt + f"\n為替情報: 「{rate_info}」\n"
 
-        # usage付きLLM
+        prompt = prompt + f"""
+        為替情報: 「{rate_info}」
+        """
+
         llm = create_llm(open_ai_api_key)
-
-        # (content, usage) が返る
-        content, usage = llm.invoke(prompt)
-
-        # ================================
-        # ★ DB保存（process_type: yahoo_pair_USDJPY など）
-        # ================================
-        process_type = f"yahoo_pair_{target_currency.replace('/', '')}"
-
-        save_token_usage(
-            process_type,
-            llm.model,
-            usage.get("prompt_tokens", 0),
-            usage.get("completion_tokens", 0),
-            usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0),
-            usage.get("cost_usd", 0)
-        )
-
-        # 出力ログ
+        result = llm.invoke(prompt)
         outputLog(f"\n💱 {target_currency} のツイート:")
-        outputLog(content)
-
-        return True, content
-
+        outputLog(result.content)
+        return True , result.content
     except Exception as e:
         outputLog(f"{target_currency} のツイート生成中にエラー: {e}")
-        return False, f"{target_currency} のツイート生成中にエラー: {e}"
+        return False , f"{target_currency} のツイート生成中にエラー: {e}"
 
 
-def get_tweet_text_from_yahoo_trend(open_ai_api_key, prompt):
+def get_tweet_text_from_yahoo_trend(open_ai_api_key,prompt):
     trends = get_yahoo_trends()
     if not trends or isinstance(trends, str):
         outputLog(f"トレンド取得失敗: {trends}")
-        return False, "トレンド取得失敗"
+        return
 
-    selected = trends[0]
+    # トレンドの中からランダムに1つ選ぶ（または1位でも可）
+    selected = trends[0]  # トップ1位を使用
 
-    prompt = prompt + f"\nトレンドワード: 「{selected}」\n"
+#    prompt = f"""
+#以下のトレンドワードを使って、X（旧Twitter）に投稿するような自然なツイートを1つ日本語で作成してください。
+#・140文字以内
+#・話題性を活かしてインパクトのあるカジュアルな文にしてください
+#・絵文字を1〜2個入れてもOKです
+#
+#トレンドワード: 「{selected}」
+#"""
+    prompt = prompt + f"""
+    トレンドワード: 「{selected}」
+    """
 
     try:
         llm = create_llm(open_ai_api_key)
-
-        # ★ invoke の戻りは (content, usage)
-        content, usage = llm.invoke(prompt)
-
-        # --- DB保存 ---
-        save_token_usage(
-            "yahoo_trend",
-            llm.model,
-            usage.get("prompt_tokens", 0),
-            usage.get("completion_tokens", 0),
-            usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0),
-            usage.get("cost_usd", 0)
-        )
-
+        result = llm.invoke(prompt)
         outputLog(f"\n📈 トレンド: {selected}")
-        outputLog(content)
-
-        return True, content
-
+        outputLog(f"{result.content}")
+        return True,  result.content
     except Exception as e:
         outputLog(f"エラー: {e}")
-        return False, f"エラー: {e}"
+        return False , f"エラー: {e}"
 
-# --- メインC（ゴールド価格ツイート） ---
+
 # --- メインC（ゴールド価格ツイート） ---
 def get_tweet_text_from_yahoo_gold(open_ai_api_key, prompt):
     gold_info = get_gold_price_yahoo()
 
-    if not gold_info:
-        outputLog("金価格取得失敗")
-        return False, "金価格取得エラー"
-
+#    prompt = f"""
+#以下の情報をもとに、金価格に関するX（旧Twitter）投稿文を1つ生成してください。
+#・リアルタイムの価格を含める
+#・140文字以内
+#・自然でカジュアルな日本語
+#・トレーダーや一般人が興味を持つように
+#
+#金価格情報: 「{gold_info}」
+#"""
     try:
-        # ゴールド情報をプロンプトに追加
-        prompt = prompt + f"\n金価格情報: 「{gold_info}」\n"
 
-        # 新しい usage 付き LLM を生成
+        prompt = prompt + f"""
+        金価格情報: 「{gold_info}」
+        """
+
         llm = create_llm(open_ai_api_key)
-
-        # ★ invoke の戻り値は (content, usage)
-        content, usage = llm.invoke(prompt)
-
-        # ================================
-        # ★ DB 保存（process_type = "yahoo_gold"）
-        # ================================
-        save_token_usage(
-            "yahoo_gold",
-            llm.model,
-            usage.get("prompt_tokens", 0),
-            usage.get("completion_tokens", 0),
-            usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0),
-            usage.get("cost_usd", 0)
-        )
-
-        # 出力ログ
-        outputLog(f"\n🥇 金価格ツイート:\n{content}")
-
-        return True, content
-
+        result = llm.invoke(prompt)
+        outputLog(f"\n🥇 金価格ツイート:\n{result.content}")
+        return True,  result.content
     except Exception as e:
         outputLog(f"エラー: {e}")
-        return False, f"エラー: {e}"
+        return False , f"エラー: {e}"
 
 # --- メインD（BTC価格ツイート） ---
 def get_tweet_text_from_yahoo_btc(open_ai_api_key, prompt):
     btc_info = get_bitcoin_price()
 
-    if not btc_info:
-        outputLog("BTC価格取得失敗")
-        return False, "BTC価格取得エラー"
-
+#    prompt = f"""
+#以下の情報をもとに、ビットコインに関するX（旧Twitter）投稿文を1つ生成してください。
+#・リアルタイムの価格を含める
+#・140文字以内
+#・自然でカジュアルな日本語
+#・仮想通貨に興味ある人が食いつくように
+#
+#BTC価格情報: 「{btc_info}」
+#"""
     try:
-        # プロンプトにBTC情報を追加
-        prompt = prompt + f"\nBTC価格情報: 「{btc_info}」\n"
-
-        # usage 付き独自 LLM（create_llm）を作成
+        prompt = prompt + f"""
+        BTC価格情報: 「{btc_info}」
+        """
         llm = create_llm(open_ai_api_key)
-
-        # invoke → (content, usage)
-        content, usage = llm.invoke(prompt)
-
-        # ================================
-        # ★ DB 保存（process_type = yahoo_btc）
-        # ================================
-        save_token_usage(
-            "yahoo_btc",
-            llm.model,
-            usage.get("prompt_tokens", 0),
-            usage.get("completion_tokens", 0),
-            usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0),
-            usage.get("cost_usd", 0)
-        )
-
-        # 出力
-        outputLog(f"\n₿ ビットコイン価格ツイート:\n{content}")
-
-        return True, content
-
+        result = llm.invoke(prompt)
+        outputLog(f"\n₿ ビットコイン価格ツイート:\n{result.content}")
+        return True,  result.content
     except Exception as e:
         outputLog(f"エラー: {e}")
-        return False, f"エラー: {e}"
+        return False , f"エラー: {e}"
 
 
 if __name__ == "__main__":

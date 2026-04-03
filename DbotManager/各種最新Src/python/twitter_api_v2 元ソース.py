@@ -9,7 +9,6 @@ import base64
 import pymysql
 from datetime import datetime  # datetime モジュールをインポート
 import re
-import random
 
 from mysql import get_comment_by_id
 from mysql import get_account_master_for_update_refresh
@@ -58,108 +57,15 @@ from prompt import TREND_PROMPT
 
 
 
-# --- 2026年最新UAリスト (curl_cffi 0.14.0の指紋に合わせる) ---
-# =============================================================================
-# 2026年最新版：最強擬装ロジック (curl_cffi 0.14.0 + 100パターン超分散)
-# =============================================================================
-
-# --- iOS Safari (iPhone/iPad) 統合リスト ---
-IOS_SAFARI_UAS = [
-    # iOS 18系 (最新)
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
-    # iOS 17系 (主力)
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_7_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.7 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
-    # iOS 16/15系 (iPhone 8/X/11)
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_7_10 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.7.10 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_8_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.8.3 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_7_9 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.7.9 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1",
-    # iOS 14系以下 (超古い・iPhone 7/6s)
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_8_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.8 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.7 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.5.7 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 14_8 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.8 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 12_5_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.5.5 Mobile/15E148 Safari/604.1"
-]
-
-# --- Android Chrome 統合リスト ---
-ANDROID_CHROME_UAS = [
-    # Android 15/14 (Pixel 9, Galaxy S24)
-    "Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.204 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 15; Pixel 8a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.204 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 14; SH-51E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 14; SO-51E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-    # Android 13/12 (Xperia, Galaxy S21, AQUOS sense7)
-    "Mozilla/5.0 (Linux; Android 13; SO-52D) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 12; SO-53C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 12; SCG13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-    # Android 11/10 (Galaxy S10, Xperia 5, AQUOS sense3)
-    "Mozilla/5.0 (Linux; Android 11; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 11; SH-41A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 10; SO-01M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 10; SH-02M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36",
-    # Android 9/8以下 (超古い名機 Galaxy S9, S8)
-    "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 8.1.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 10; L-01L) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Mobile Safari/537.36",
-    # 格安スマホ・中華系 (OPPO, Xiaomi)
-    "Mozilla/5.0 (Linux; Android 14; CPH2523) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 14; 23127PN0CC) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
-]
-
-# --- Desktop リスト ---
-DESKTOP_UAS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0"
-]
-
-def get_action_config(credentials):
-    """指紋(target)とUAを完全に一致させ、アカウントごとに固定する"""
-    import random
-    account_id = int(credentials.get('id', 0))
-    mod = account_id % 5
-    
-    # 1. 指紋の決定
-    if mod in [0, 4]: target = "safari_ios"
-    elif mod == 1:    target = "chrome_android"
-    elif mod == 2:    target = "safari"
-    else:             target = "chrome"
-    
-    # 2. UAの決定 (アカウントごとに固定)
-    random.seed(account_id)
-    if "safari_ios" in target:
-        ua = random.choice(IOS_SAFARI_UAS)
-    elif "chrome_android" in target:
-        ua = random.choice(ANDROID_CHROME_UAS)
-    else:
-        ua = random.choice(DESKTOP_UAS)
-    random.seed() 
-    
-    headers = {
-        "Authorization": f"Bearer {credentials['bearer_token']}",
-        "Content-Type": "application/json",
-        "User-Agent": ua,
-        "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
-        "DNT": "1"
-    }
-    return target, headers
+def get_impersonate_target(credentials):
+    # account_id (id) が偶数なら iPhone (Safari), 奇数なら Android (Chrome)
+    try:
+        if int(credentials.get('id', 0)) % 2 == 0:
+            return "safari15_5"
+        else:
+            return "chrome110"
+    except:
+        return "chrome110"
 
 def createClient(credentials):
     try:
@@ -197,116 +103,158 @@ def createClient(credentials):
 
    
 
-def get_user_id(credentials, username):
-    """ユーザーID取得（擬装通信版）"""
-    # 認証用の一時的な設定取得
-    target, headers = get_action_config(credentials)
+def get_user_id(credentials , username):
 
+    access_token = credentials['bearer_token']
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-type": "application/json"
+    }
+
+    # ユーザーIDを取得するURL
     url = f"https://api.twitter.com/2/users/by/username/{username}"
-    
-    proxies = {"http": credentials['proxy_url'], "https": credentials['proxy_url']} if credentials.get('proxy_enable') else None
 
-    # impersonateを適用してGETリクエスト
-    response = requests.get(url, headers=headers, proxies=proxies, impersonate=target)
+    outputLog(f"credentials['proxy_enable']  {credentials['proxy_enable'] }")    
+    outputLog(f"credentials['proxy_url']  {credentials['proxy_url']}")    
+
+    # POSTリクエストを送信
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+#        response = requests.get(url, headers=headers ,proxies=proxies)
+        response = requests.get(url, headers=headers, impersonate=get_impersonate_target(credentials))
+    else:
+        outputLog(f"proxy_url None")
+        response = requests.get(url, headers=headers, impersonate=get_impersonate_target(credentials))
+
+#    response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
         user_data = response.json()
+
+        # "data" がない場合（ユーザーが存在しない）
         if "data" not in user_data:
-            return None, False, "User not found"
-        return user_data["data"]["id"], True, None
+            error_msg = user_data.get("errors", [{"detail": "ユーザーが見つかりません。"}])[0].get("detail")
+            outputLog(f"get_user_idエラー: {error_msg}")
+            print(f"get_user_idエラー: {error_msg}")
+            return None, False, error_msg
+
+        user_id = user_data["data"]["id"]
+        outputLog(f"get_user_id {username}のユーザーID: {user_id}")
+        return user_id , True , None
     else:
-        return None, False, response.text
+        outputLog(f"get_user_idエラー: {response.status_code}, {response.text}")
+        return None , False , response.text
 
 def check_access_token(credentials):
+
     bearer_token = credentials['bearer_token']
     refresh_token = credentials['refresh_token']
 
-    # 最新のターゲット取得
-    target, _ = get_action_config(credentials)
+    target = get_impersonate_target(credentials)
     status_code , contents = check_access_token_validity(credentials['bearer_token'], target)
 
     if status_code == 401:
         bearer_token , refresh_token = refresh_access_token(credentials)
 
-    return bearer_token , refresh_token
+    return bearer_token , refresh_token 
 
 def proc_update_refresh_token():
     outputLog("proc_update_refresh_token")
     credentials_list = get_account_master_for_update_refresh()
     outputLog(f"credentials_list={credentials_list}")
-    
     for credentials in credentials_list:
-        # 新しいトークンを取得
-        result, access_token, refresh_token = refresh_access_token(credentials)
+#        outputLog(f"target={credentials['id']}")
+        result , access_token , refresh_token = refresh_access_token(credentials)
 
-        # 【重要】取得に成功した場合は、メモリ上の credentials も最新にする
-        # これをしないと、この後のループ処理で古いトークンを使ってエラーになります
-        if result:
-            credentials['bearer_token'] = access_token
-            credentials['refresh_token'] = refresh_token
-            outputLog(f"ID:{credentials['id']} のトークンをメモリ上でも更新しました。")
-
-        # 最新のトークン情報で履歴を保存
-        save_tweet_history(
-            credentials['id'], 
-            '', 
-            'check_refresh', 
-            '', 
-            result, 
-            f"refresh:{refresh_token} access:{access_token}"
-        )
+        save_tweet_history(credentials['id'], '' , 'check_refresh' , '' , result , f"refresh:{refresh_token} access:{access_token}")
 
 
 def refresh_access_token(credentials):
     try:
         client_id = credentials['client_id']
-        client_secret = credentials.get('client_secret')
+        client_secret = credentials['client_secret']
         refresh_token = credentials['refresh_token']
 
-        outputLog(f"id={credentials['id']} リフレッシュ開始")
+        outputLog(f"id={credentials['id']}")
+        outputLog(f"client_id={client_id}")
+        outputLog(f"client_secret={client_secret}")
+        outputLog(f"refresh_token={refresh_token}")
+
         url = "https://api.twitter.com/2/oauth2/token"
+
+        # Base64エンコードされたAuthorizationヘッダーを作成
+        client_credentials = f"{client_id}:{client_secret}"
+        encoded_credentials = base64.b64encode(client_credentials.encode()).decode()
 
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": f"Basic {encoded_credentials}"  # Authorizationヘッダーを追加
         }
 
-        # 送信データの基本セット
         data = {
             "refresh_token": refresh_token,
-            "grant_type": "refresh_token",
+            "grant_type": "refresh_token"
         }
 
-        # 【修正の肝】
-        # client_secretがある場合：Authorizationヘッダーのみを使い、ボディにはIDを入れない
-        # client_secretがない場合：ヘッダーは使わず、ボディにclient_idを入れる
-        if client_secret and client_secret.strip():
-            client_credentials = f"{client_id}:{client_secret}"
-            encoded_credentials = base64.b64encode(client_credentials.encode()).decode()
-            headers["Authorization"] = f"Basic {encoded_credentials}"
-        else:
-            data["client_id"] = client_id
+        # POSTリクエストを送信
+#        if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+#            outputLog(f"proxy_url={credentials['proxy_url']}")
+#            proxies = {
+#                "http": credentials['proxy_url'],
+#                "https": credentials['proxy_url']
+#            }
+#            response = requests.post(url, headers=headers, json=data, proxies=proxies)
+#        else:
+#            response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, headers=headers, data=data, impersonate=get_impersonate_target(credentials))
 
-        # 送信（指紋はデスクトップに固定）
-        response = requests.post(url, headers=headers, data=data, impersonate="chrome110")
+        outputLog(f"response={response}")
 
-        outputLog(f"ID:{credentials['id']} response={response.status_code}")
 
+        # HTTPエラーの場合の処理
         if response.status_code == 200:
-            response_data = response.json()
-            access_token = response_data.get("access_token")
-            refresh_token = response_data.get("refresh_token")
+            response_data = response.json()  # JSONデータを取得
+#            outputLog(f"response.json()={response_data}")
 
-            update_refresh_token(credentials['id'], access_token, refresh_token)
+            # access_token を抜き出す
+            access_token = response_data.get("access_token")
+#            outputLog(f"access_token={access_token}")
+
+            refresh_token = response_data.get("refresh_token")
+#            outputLog(f"refresh_token={refresh_token}")
+
+            # スコープを確認する
+            scope = response_data.get("scope")
+            if scope:
+                outputLog(f"付与されたスコープ={scope}")
+            else:
+                outputLog("スコープ情報が返されていません")
+
             credentials['refresh_token'] = refresh_token
             credentials['bearer_token'] = access_token
 
+            update_refresh_token(credentials['id'], access_token, refresh_token)
+
             return True, access_token, refresh_token
         else:
-            outputLog(f"リフレッシュ失敗: {response.status_code}, {response.text}")
+            outputLog(f"refresh_access_tokenエラー:ID {credentials['id']} {response.status_code}, {response.text}")
             return False, None, None
 
+    except requests.exceptions.RequestException as req_err:
+        outputLog(f"リクエストエラーが発生しました: {req_err}")
+        return False, None, None
+
+    except KeyError as key_err:
+        outputLog(f"キーエラーが発生しました: 必要なキーが見つかりません: {key_err}")
+        return False, None, None
+
     except Exception as e:
-        outputLog(f"エラー: {e}")
+        outputLog(f"予期しないエラーが発生しました: {e}")
         return False, None, None
 
 
@@ -591,34 +539,80 @@ def proc_get_comment_v2(credentials ,comment_id, reply_to_tweet_id , ai_enable):
 
     return True , comment
 
-def proc_post_v2(credentials, comment, reply_to_tweet_id=None):
-    """
-    新規ツイートまたはリプライを投稿する関数。
-    """
-    target, headers = get_action_config(credentials)
-    # 投稿は最も重いアクションなので長めに待機
-    time.sleep(random.uniform(3.0, 7.0))
+def proc_post_v2(credentials ,comment, reply_to_tweet_id , ai_enable):
 
+    access_token = credentials['bearer_token']
+
+    # エンドポイントURL
     url = "https://api.twitter.com/2/tweets"
-    data = {"text": comment}
     
-    # リプライの場合の設定
-    if reply_to_tweet_id:
-        data["reply"] = {"in_reply_to_tweet_id": str(reply_to_tweet_id)}
+    # 投稿するデータ
+    data = {
+        "text": comment
+    }
 
-    proxies = None
-    if credentials.get('proxy_enable') == True and credentials.get('proxy_url') is not None:
-        p_url = credentials['proxy_url']
-        proxies = {"http": p_url, "https": p_url}
+    if reply_to_tweet_id:
+        data["reply"] = {
+            "in_reply_to_tweet_id": reply_to_tweet_id
+        }
+
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    if config.debug == True:
+        outputLog(headers)
+        outputLog(data)
+        outputLog(comment)
+
+    # POSTリクエストを送信
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.post(url, headers=headers, json=data, proxies=proxies, impersonate=get_impersonate_target(credentials))
+    else:
+        response = requests.post(url, headers=headers, json=data, impersonate=get_impersonate_target(credentials))
+
+    if config.debug == True:
+        outputLog(response.json())
 
     try:
-        response = requests.post(
-            url, headers=headers, json=data, proxies=proxies, impersonate=target, timeout=20
-        )
-        return response.status_code in (200, 201), json.dumps(response.json())
-    except Exception as e:
-        outputLog(f"proc_post_v2 通信エラー: {str(e)}")
-        return False, str(e)
+        # レスポンスを JSON としてパース
+        response_data = response.json()
+    except ValueError as e:
+        if config.debug == True:
+        # JSON パースエラー時の処理
+            outputLog(f"JSON パースエラー:{ str(e)}")
+            outputLog(f"Raw response text:{response.text}")  # 生データを確認
+        return False, f"JSON パースエラー: {str(e)}"
+
+#    # レスポンスコードを確認
+#    if response.status_code == 201:
+#        outputLog("ツイートが成功しました:", response_data)
+#    else:
+#        outputLog(f"エラー: {response.status_code}")
+#        outputLog(response_data)
+
+    # レスポンスを確認
+#    if response.status_code == 201:
+#        outputLog("proc_post_v2 ポスト/リプライしました:")
+#        outputLog(response_data)  # 成功時のレスポンス
+#    else:
+#        outputLog(f"proc_post_v2 エラー: {response.status_code}")
+#        outputLog(response_data)
+
+
+    response_str = json.dumps(response_data)  # json.dumps を使用
+
+#    if ai_flag == True:
+#        return response.status_code in (200, 201), 'ai_post'
+
+    return response.status_code in (200, 201), response_str
 
 def proc_post_v2_monomane(credentials ,tweet_text):
 
@@ -672,100 +666,61 @@ def proc_post_v2_monomane(credentials ,tweet_text):
 
 
 
-def get_action_config(credentials):
-    """指紋(target)とUAを完全に一致させ、アカウントごとに固定する"""
-    import random
-    account_id = int(credentials.get('id', 0))
-    mod = account_id % 5
-    
-    # 1. 指紋の決定
-    if mod in [0, 4]: target = "safari_ios"
-    elif mod == 1:    target = "chrome_android"
-    elif mod == 2:    target = "safari"
-    else:             target = "chrome"
-    
-    # 2. UAの決定 (アカウントごとに固定)
-    random.seed(account_id)
-    if "safari_ios" in target:
-        ua = random.choice(IOS_SAFARI_UAS)
-    elif "chrome_android" in target:
-        ua = random.choice(ANDROID_CHROME_UAS)
-    else:
-        ua = random.choice(DESKTOP_UAS)
-    random.seed() 
-    
-    headers = {
-        "Authorization": f"Bearer {credentials['bearer_token']}",
-        "Content-Type": "application/json",
-        "User-Agent": ua,
-        "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
-        "DNT": "1"
-    }
-    return target, headers
-
 def proc_like_v2(credentials, tweet_id):
     """
     指定されたツイートに「いいね」を付ける関数。
-    （curl_cffi 0.14.0 + プロキシ修正済 + モバイル擬装統合版）
+
+    :param credentials: Twitter APIの認証情報を含む辞書
+    :param tweet_id: いいねする対象のツイートID
     """
-    # 1. 指紋とUAをセットで取得
-    target, headers = get_action_config(credentials)
-    
-    # 2. 人間らしいランダム遅延
-    time.sleep(random.uniform(0.5, 1.5))
-
-    # ユーザーIDの取得
-    user_id, result, contents = get_user_id(credentials, credentials['login_id'])
-    
+    access_token = credentials['bearer_token']
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
     if result == False:
-        # ID取得に失敗（凍結・401エラーなど）した場合も、ここで履歴を保存する！
-        # これを入れないと PHP管理画面にエラーが飛びません
-        save_tweet_history(credentials['id'], '', 'like', str(tweet_id), False, contents)
-        return False, contents
+        return False , contents        
 
-    outputLog(f"user_id={user_id} (target={target})")
+    outputLog(f"user_id={user_id}")
 
     # 「いいね」エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/likes"
 
-    # 3. 投稿データ (必ず文字列に変換)
+    # 投稿するデータ（ツイートIDを指定）
     data = {
-        "tweet_id": str(tweet_id)
+        "tweet_id": tweet_id
     }
 
-    # 4. プロキシ設定 (http/https両方に対応)
-    proxies = None
-    if credentials.get('proxy_enable') == True and credentials.get('proxy_url') is not None:
-        p_url = credentials['proxy_url']
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    outputLog(f"client_id={credentials['client_id']}")
+
+    # POSTリクエストを送信
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
         proxies = {
-            "http": p_url,
-            "https": p_url
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
         }
 
-    # 5. curl_cffiによるPOST送信
-    try:
-        response = requests.post(
-            url, 
-            headers=headers, 
-            json=data, 
-            proxies=proxies, 
-            impersonate=target,
-            timeout=15
-        )
-        
-        # 成功判定とJSON文字列の返却
-        response_str = json.dumps(response.json())
-        result = response.status_code == 200
-        # エラーログ保存
-        save_tweet_history(credentials['id'], '', 'like', '', result, response_str)
-        
-        return response.status_code == 200, response_str
+        # 2025.05.16  一旦プロキシ無効
+#        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, headers=headers, json=data, proxies=proxies, impersonate=get_impersonate_target(credentials))
+    else:
+        response = requests.post(url, headers=headers, json=data, impersonate=get_impersonate_target(credentials))
 
-        
-        
-    except Exception as e:
-        outputLog(f"proc_like_v2 通信エラー: {str(e)}")
-        return False, str(e)
+    # レスポンスを確認
+#    if response.status_code == 200:
+#        outputLog("proc_like_v2 ツイートにいいねを付けました:")
+#        outputLog(response.json())  # 成功時のレスポンス
+#    else:
+#        outputLog(f"proc_like_v2 エラー: {response.status_code}")
+#        outputLog(response.json())
+
+    response_str = json.dumps(response.json())  # json.dumps を使用
+
+    return response.status_code == 200, response_str
 
 def proc_search_v2(credentials):
 
@@ -810,73 +765,153 @@ def proc_search_v2(credentials):
 def proc_bookmark_v2(credentials, tweet_id):
     """
     指定されたツイートをブックマークする関数。
+
+    :param credentials: Twitter APIの認証情報を含む辞書
+    :param tweet_id: ブックマークする対象のツイートID
     """
-    target, headers = get_action_config(credentials)
-    time.sleep(random.uniform(0.5, 1.5))
 
-    user_id, result, contents = get_user_id(credentials, credentials['login_id'])
+#    outputLog("login_id:",credentials['login_id'])
+
+    access_token = credentials['bearer_token']
+
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
     if result == False:
-        return False, contents
+        return False , contents        
 
+
+    # ブックマーク用エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
-    data = {"tweet_id": str(tweet_id)}
 
-    proxies = None
-    if credentials.get('proxy_enable') == True and credentials.get('proxy_url') is not None:
-        p_url = credentials['proxy_url']
-        proxies = {"http": p_url, "https": p_url}
+    # 投稿するデータ（ツイートIDを指定）
+    data = {
+        "tweet_id": tweet_id
+    }
 
-    try:
-        response = requests.post(
-            url, headers=headers, json=data, proxies=proxies, impersonate=target, timeout=15
-        )
-        return response.status_code == 200, json.dumps(response.json())
-    except Exception as e:
-        outputLog(f"proc_bookmark_v2 通信エラー: {str(e)}")
-        return False, str(e)
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    # POSTリクエストを送信
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
+        proxies = {
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
+        }
+        response = requests.post(url, headers=headers, json=data, proxies=proxies, impersonate=get_impersonate_target(credentials))
+    else:
+        response = requests.post(url, headers=headers, json=data, impersonate=get_impersonate_target(credentials))
+
+#    # レスポンスを確認
+#    if response.status_code == 200:
+#        outputLog("ツイートをブックマークしました:")
+#        outputLog(response.json())  # 成功時のレスポンス
+#    else:
+#        outputLog(f"エラー: {response.status_code}")
+#        outputLog(response.json())
+
+    response_str = json.dumps(response.json())  # json.dumps を使用
+
+    return response.status_code == 200, response_str
+
+def post_reply_v2(credentials, tweet_id, username, message):
+    """
+    OAuth 2.0 を使用して指定されたツイートにリプライを送信する
+
+    :param credentials: Twitter APIの認証情報を含む辞書
+    :param tweet_id: リプライを送る対象のツイートID
+    :param username: リプライ先のユーザー名
+    :param message: 返信メッセージ
+    :return: APIレスポンスのJSONデータ
+    """
+    access_token = credentials['bearer_token']
+
+    # リプライのエンドポイント
+    url = "https://api.twitter.com/2/tweets"
+
+    # リプライの内容を設定
+    payload = {
+        "text": f"@{username} {message}",  # リプライ内容
+        "reply": {
+            "in_reply_to_tweet_id": tweet_id  # 返信対象のツイートID
+        }
+    }
+
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    # APIリクエストを送信
+    response = requests.post(url, headers=headers, data=json.dumps(payload), impersonate=get_impersonate_target(credentials))
+
+    # レスポンスを解析
+    if response.status_code == 201:
+        outputLog(f"返信成功: {response.json()}")
+        return response.json()
+    else:
+        outputLog(f"返信失敗: {response.status_code} - {response.text}")
+        return None
     
 
 def proc_repost_v2(credentials, tweet_id):
     """
-    リポスト実行（モバイル擬装 + プロキシ修正版）
+    指定されたツイートIDをリツイートする関数。
+
+    Args:
+        credentials (dict): API認証情報を含む辞書（'bearer_token'が必要）。
+        tweet_id (str): リツイート対象のツイートID。
+
+    Returns:
+        bool: リツイートが成功した場合はTrue、それ以外はFalse。
+        str: レスポンスデータまたはエラーメッセージ。
     """
-    # 1. 100パターン超のリストからターゲットとヘッダーを取得
-    target, headers = get_action_config(credentials)
-    
-    # 2. リポストは重要アクションなので慎重に待機
-    time.sleep(random.uniform(2.0, 5.0))
+    access_token = credentials['bearer_token']
 
-    user_id, result, contents = get_user_id(credentials, credentials['login_id'])
-    if result == False: return False, contents
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
+    if result == False:
+        return False , contents        
 
+    # エンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/retweets"
-    data = {"tweet_id": str(tweet_id)}
 
-    # 3. プロキシ設定の確実な記述（http/httpsの両方を指定）
-    proxies = None
-    if credentials.get('proxy_enable') and credentials.get('proxy_url'):
-        p_url = credentials['proxy_url']
+    # 投稿するデータ（リツイート対象のツイートIDを指定）
+    data = {
+        "tweet_id": tweet_id
+    }
+
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    # POSTリクエストを送信
+    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
         proxies = {
-            "http": p_url,
-            "https": p_url
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
         }
+        response = requests.post(url, headers=headers, json=data, proxies=proxies, impersonate=get_impersonate_target(credentials))
+    else:
+        response = requests.post(url, headers=headers, json=data, impersonate=get_impersonate_target(credentials))
 
-    # 4. curl_cffi で擬装して送信
-    try:
-        response = requests.post(
-            url, 
-            headers=headers, 
-            json=data, 
-            proxies=proxies, 
-            impersonate=target,
-            timeout=15
-        )
-        # 成功時は 200 または 201 が返ります
-        return response.status_code in (200, 201), json.dumps(response.json())
-    except Exception as e:
-        outputLog(f"Repost Error: {str(e)}")
-        return False, str(e)
-    
+#    # レスポンスを確認
+#    if response.status_code in (200, 201):
+#        outputLog("リポストが成功しました:")
+#        outputLog(response.json())  # 投稿成功時のレスポンス
+#    else:
+#        outputLog(f"エラー: {response.status_code}")
+#        outputLog(response.json())  # エラー時のレスポンス
+
+    response_str = json.dumps(response.json())  # json.dumps を使用
+
+    return response.status_code in (200, 201), response_str
+
 def get_replies_to_user(search_account, reply_account, user_id, max_results=10):
 
     outputLog(f"user_id={user_id}")
@@ -915,9 +950,7 @@ def get_replies_to_user(search_account, reply_account, user_id, max_results=10):
     outputLog("datetime")
     outputLog(dt)
 
-    # ターゲットのみ取得（ヘッダーは別途構築済みのため）
-    target, _ = get_action_config(search_account)
-    response = requests.get(url, headers=headers, params=params, impersonate=target)
+    response = requests.get(url, headers=headers, params=params, impersonate=get_impersonate_target(search_account))
 
     if response.status_code == 200:
         data = response.json()
@@ -1016,8 +1049,7 @@ def get_username_from_tweet_id_v2(credentials,tweet_id):
     url = f"https://api.twitter.com/2/tweets/{tweet_id}?expansions=author_id&user.fields=username"
     headers = {"Authorization": f"Bearer {credentials['bearer_token']}"}
 
-    target, _ = get_action_config(credentials)
-    response = requests.get(url, headers=headers, impersonate=target)
+    response = requests.get(url, headers=headers, impersonate=get_impersonate_target(credentials))
 
     if response.status_code == 200:
         data = response.json()
@@ -1047,64 +1079,52 @@ def monitor_replies(credentials, user_id, interval=60):
 def proc_following_v2(credentials, target_user):
     """
     指定されたユーザーをフォローする関数。
-    （curl_cffi 0.14.0 + 100パターン擬装 + プロキシ修正版）
+
     """
-    # 1. 100パターンのリストからターゲットとヘッダーを取得 (共通関数へ外出し)
-    target_fingerprint, headers = get_action_config(credentials)
-    
-    # 2. 人間らしいランダム待機
-    time.sleep(random.uniform(1.0, 2.5))
-
-    # 自分のユーザーIDを取得
-    user_id, result, contents = get_user_id(credentials, credentials['login_id'])
+    access_token = credentials['bearer_token']
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
     if result == False:
-        return False, contents
-
-    # フォロー対象のユーザーIDを取得
-    target_user_id, result, contents = get_user_id(credentials, target_user)
-    if result == False:
-        return False, contents
-
-    # ログ出力（デバッグ用）
-    outputLog(f"FOLLOW実行: from_user_id={user_id} -> to_user={target_user}({target_user_id})")
-    outputLog(f"使用デバイス指紋: {target_fingerprint}")
+        return False , contents    
+    target_user_id , result , contents = get_user_id(credentials , target_user)
 
     # フォローエンドポイントURL
     url = f"https://api.twitter.com/2/users/{user_id}/following"
 
     # 投稿するデータ（対象USER IDを指定）
     data = {
-        "target_user_id": str(target_user_id) # IDは文字列化
+        "target_user_id": target_user_id
     }
 
-    # 3. プロキシ設定の確実な記述（http/httpsの両方を指定）
-    proxies = None
-    if credentials.get('proxy_enable') == True and credentials.get('proxy_url') is not None:
-        p_url = credentials['proxy_url']
-        outputLog(f"使用プロキシ: {p_url}")
+    # ヘッダー
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    outputLog(f"client_id={credentials['client_id']}")
+    outputLog(f"access_token={access_token}")
+    outputLog(f"user_id={user_id}")
+    outputLog(f"target_user_id={target_user_id}")
+
+    # POSTリクエストを送信
+    if False:
+#    if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
         proxies = {
-            "http": p_url,
-            "https": p_url
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
         }
 
-    # 4. curl_cffi によるPOST送信
-    try:
-        response = requests.post(
-            url, 
-            headers=headers, 
-            json=data, 
-            proxies=proxies, 
-            impersonate=target_fingerprint,
-            timeout=30
-        )
-        
-        # 成功時は 200 OK で {"data": {"following": true, ...}} が返る
-        response_str = json.dumps(response.json())
-        return response.status_code == 200, response_str
+#        response = requests.post(url, headers=headers, json=data, proxies=proxies)
+        response = requests.delete(url, headers=headers, json=data, proxies=proxies, impersonate=get_impersonate_target(credentials))
 
-    except Exception as e:
-        outputLog(f"proc_following_v2 通信エラー: {str(e)}")
-        return False, str(e)
+    else:
+        response = requests.post(url, headers=headers, json=data, impersonate=get_impersonate_target(credentials))
+#        response = requests.delete(url, headers=headers, json=data)
+
+    response_str = json.dumps(response.json())  # json.dumps を使用
+
+    return response.status_code == 200, response_str
 
 def proc_following_v1(credentials, target_user):
     """
@@ -1138,87 +1158,38 @@ def proc_following_v1(credentials, target_user):
 
 def proc_unfollowing_v2(credentials, target_user):
     """
-    指定されたユーザーをアンフォロー（フォロー解除）する関数。
-    （curl_cffi 0.14.0 + 100パターン擬装 + プロキシ修正版）
+    指定されたユーザーをアンフォローする関数。
     """
-    # 1. 最新の指紋(target)とヘッダー(UA)をセットで取得
-    target_fingerprint, headers = get_action_config(credentials)
-    
-    # 2. 人間らしいランダム待機（解除は少し慎重に）
-    time.sleep(random.uniform(1.0, 3.0))
 
-    # 自分のユーザーIDを取得
-    user_id, result, contents = get_user_id(credentials, credentials['login_id'])
+    access_token = credentials['bearer_token']
+    user_id , result , contents = get_user_id(credentials ,  credentials['login_id'])
     if result == False:
-        return False, contents
+        return False , contents
 
-    # 解除対象のユーザーIDを取得
-    target_user_id, result, contents = get_user_id(credentials, target_user)
+    target_user_id , result , contents = get_user_id(credentials , target_user)
     if result == False:
-        return False, contents
+        return False , contents        
 
-    outputLog(f"UNFOLLOW実行: from={user_id} -> target={target_user}({target_user_id})")
-    outputLog(f"client_id={credentials['client_id']}")
 
-    # フォロー解除エンドポイントURL（API v2仕様）
+    # フォロー解除エンドポイント
     url = f"https://api.twitter.com/2/users/{user_id}/following/{target_user_id}"
 
-    # 3. プロキシ設定の確実な記述
-    proxies = None
-    if credentials.get('proxy_enable') == True and credentials.get('proxy_url') is not None:
-        p_url = credentials['proxy_url']
-        outputLog(f"proxy_url={p_url}")
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    outputLog(f"client_id={credentials['client_id']}")
+
+    # プロキシ設定あり
+    if credentials['proxy_enable'] and credentials['proxy_url']:
+        outputLog(f"proxy_url={credentials['proxy_url']}")
         proxies = {
-            "http": p_url,
-            "https": p_url
+            "http": credentials['proxy_url'],
+            "https": credentials['proxy_url']
         }
+        response = requests.delete(url, headers=headers, proxies=proxies, impersonate=get_impersonate_target(credentials))
+    else:
+        response = requests.delete(url, headers=headers, impersonate=get_impersonate_target(credentials))
 
-    # 4. curl_cffi による DELETE 送信 (impersonateを適用)
-    try:
-        response = requests.delete(
-            url, 
-            headers=headers, 
-            proxies=proxies, 
-            impersonate=target_fingerprint,
-            timeout=15
-        )
-        
-        # 成功時は 200 OK で {"data": {"following": false}} が返る
-        response_str = json.dumps(response.json())
-        return response.status_code == 200, response_str
-
-    except Exception as e:
-        outputLog(f"proc_unfollowing_v2 通信エラー: {str(e)}")
-        return False, str(e)
-
-def proc_refresh_queue():
-    from mysql import get_refresh_queue, update_refresh_queue_status, get_account_master, delete_account_error_log
-    
-    outputLog("proc_refresh_queue start")
-    queue_list = get_refresh_queue()
-    
-    if not queue_list:
-        outputLog("キューなし")
-        return
-    
-    for queue in queue_list:
-        queue_id = queue['id']
-        account_id = queue['account_id']
-        
-        # 処理中に更新
-        update_refresh_queue_status(queue_id, 'processing')
-        
-        credentials = get_account_master(account_id)
-        if not credentials:
-            update_refresh_queue_status(queue_id, 'error')
-            continue
-        
-        result, access_token, refresh_token = refresh_access_token(credentials)
-        
-        if result:
-            from mysql import get_account_error_log_type
-            error_type = get_account_error_log_type(account_id)
-            if error_type in ('unauthorized', 'lock'):  # ← lockも追加
-                delete_account_error_log(account_id)
-            update_refresh_queue_status(queue_id, 'done')
-            outputLog(f"ID:{account_id} トークン更新成功")
+    response_str = json.dumps(response.json())
+    return response.status_code == 200, response_str

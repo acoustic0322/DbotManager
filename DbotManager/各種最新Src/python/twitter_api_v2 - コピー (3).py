@@ -716,11 +716,7 @@ def proc_like_v2(credentials, tweet_id):
 
     # ユーザーIDの取得
     user_id, result, contents = get_user_id(credentials, credentials['login_id'])
-    
     if result == False:
-        # ID取得に失敗（凍結・401エラーなど）した場合も、ここで履歴を保存する！
-        # これを入れないと PHP管理画面にエラーが飛びません
-        save_tweet_history(credentials['id'], '', 'like', str(tweet_id), False, contents)
         return False, contents
 
     outputLog(f"user_id={user_id} (target={target})")
@@ -755,13 +751,7 @@ def proc_like_v2(credentials, tweet_id):
         
         # 成功判定とJSON文字列の返却
         response_str = json.dumps(response.json())
-        result = response.status_code == 200
-        # エラーログ保存
-        save_tweet_history(credentials['id'], '', 'like', '', result, response_str)
-        
         return response.status_code == 200, response_str
-
-        
         
     except Exception as e:
         outputLog(f"proc_like_v2 通信エラー: {str(e)}")
@@ -1216,9 +1206,9 @@ def proc_refresh_queue():
         result, access_token, refresh_token = refresh_access_token(credentials)
         
         if result:
-            from mysql import get_account_error_log_type
-            error_type = get_account_error_log_type(account_id)
-            if error_type in ('unauthorized', 'lock'):  # ← lockも追加
-                delete_account_error_log(account_id)
+            delete_account_error_log(account_id)
             update_refresh_queue_status(queue_id, 'done')
             outputLog(f"ID:{account_id} トークン更新成功")
+        else:
+            update_refresh_queue_status(queue_id, 'error')
+            outputLog(f"ID:{account_id} トークン更新失敗")

@@ -234,79 +234,99 @@ def proc_update_refresh_token():
     outputLog("proc_update_refresh_token")
     credentials_list = get_account_master_for_update_refresh()
     outputLog(f"credentials_list={credentials_list}")
-    
     for credentials in credentials_list:
-        # 新しいトークンを取得
-        result, access_token, refresh_token = refresh_access_token(credentials)
+#        outputLog(f"target={credentials['id']}")
+        result , access_token , refresh_token = refresh_access_token(credentials)
 
-        # 【重要】取得に成功した場合は、メモリ上の credentials も最新にする
-        # これをしないと、この後のループ処理で古いトークンを使ってエラーになります
-        if result:
-            credentials['bearer_token'] = access_token
-            credentials['refresh_token'] = refresh_token
-            outputLog(f"ID:{credentials['id']} のトークンをメモリ上でも更新しました。")
-
-        # 最新のトークン情報で履歴を保存
-        save_tweet_history(
-            credentials['id'], 
-            '', 
-            'check_refresh', 
-            '', 
-            result, 
-            f"refresh:{refresh_token} access:{access_token}"
-        )
+        save_tweet_history(credentials['id'], '' , 'check_refresh' , '' , result , f"refresh:{refresh_token} access:{access_token}")
 
 
 def refresh_access_token(credentials):
     try:
         client_id = credentials['client_id']
-        client_secret = credentials.get('client_secret')
+        client_secret = credentials['client_secret']
         refresh_token = credentials['refresh_token']
 
-        outputLog(f"id={credentials['id']} リフレッシュ開始")
+        outputLog(f"id={credentials['id']}")
+        outputLog(f"client_id={client_id}")
+        outputLog(f"client_secret={client_secret}")
+        outputLog(f"refresh_token={refresh_token}")
+
         url = "https://api.twitter.com/2/oauth2/token"
+
+        # Base64エンコードされたAuthorizationヘッダーを作成
+        client_credentials = f"{client_id}:{client_secret}"
+        encoded_credentials = base64.b64encode(client_credentials.encode()).decode()
 
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": f"Basic {encoded_credentials}"  # Authorizationヘッダーを追加
         }
 
-        # 送信データの基本セット
         data = {
             "refresh_token": refresh_token,
-            "grant_type": "refresh_token",
+            "grant_type": "refresh_token"
         }
 
-        # 【修正の肝】
-        # client_secretがある場合：Authorizationヘッダーのみを使い、ボディにはIDを入れない
-        # client_secretがない場合：ヘッダーは使わず、ボディにclient_idを入れる
-        if client_secret and client_secret.strip():
-            client_credentials = f"{client_id}:{client_secret}"
-            encoded_credentials = base64.b64encode(client_credentials.encode()).decode()
-            headers["Authorization"] = f"Basic {encoded_credentials}"
-        else:
-            data["client_id"] = client_id
+        # POSTリクエストを送信
+#        if credentials['proxy_enable'] == True and credentials['proxy_url'] is not None:
+#            outputLog(f"proxy_url={credentials['proxy_url']}")
+#            proxies = {
+#                "http": credentials['proxy_url'],
+#                "https": credentials['proxy_url']
+#            }
+#            response = requests.post(url, headers=headers, json=data, proxies=proxies)
+#        else:
+#            response = requests.post(url, headers=headers, json=data)
 
-        # 送信（指紋はデスクトップに固定）
-        response = requests.post(url, headers=headers, data=data, impersonate="chrome110")
+        # 1. まず新しいやり方で「指紋(target)」を取得する
+        target, _ = get_action_config(credentials)
 
-        outputLog(f"ID:{credentials['id']} response={response.status_code}")
+        # 2. その target を使ってリクエストを送る
+        response = requests.post(url, headers=headers, data=data, impersonate=target)
 
+        outputLog(f"response={response}")
+
+
+        # HTTPエラーの場合の処理
         if response.status_code == 200:
-            response_data = response.json()
-            access_token = response_data.get("access_token")
-            refresh_token = response_data.get("refresh_token")
+            response_data = response.json()  # JSONデータを取得
+#            outputLog(f"response.json()={response_data}")
 
-            update_refresh_token(credentials['id'], access_token, refresh_token)
+            # access_token を抜き出す
+            access_token = response_data.get("access_token")
+#            outputLog(f"access_token={access_token}")
+
+            refresh_token = response_data.get("refresh_token")
+#            outputLog(f"refresh_token={refresh_token}")
+
+            # スコープを確認する
+            scope = response_data.get("scope")
+            if scope:
+                outputLog(f"付与されたスコープ={scope}")
+            else:
+                outputLog("スコープ情報が返されていません")
+
             credentials['refresh_token'] = refresh_token
             credentials['bearer_token'] = access_token
 
+            update_refresh_token(credentials['id'], access_token, refresh_token)
+
             return True, access_token, refresh_token
         else:
-            outputLog(f"リフレッシュ失敗: {response.status_code}, {response.text}")
+            outputLog(f"refresh_access_tokenエラー:ID {credentials['id']} {response.status_code}, {response.text}")
             return False, None, None
 
+    except requests.exceptions.RequestException as req_err:
+        outputLog(f"リクエストエラーが発生しました: {req_err}")
+        return False, None, None
+
+    except KeyError as key_err:
+        outputLog(f"キーエラーが発生しました: 必要なキーが見つかりません: {key_err}")
+        return False, None, None
+
     except Exception as e:
-        outputLog(f"エラー: {e}")
+        outputLog(f"予期しないエラーが発生しました: {e}")
         return False, None, None
 
 
@@ -716,11 +736,7 @@ def proc_like_v2(credentials, tweet_id):
 
     # ユーザーIDの取得
     user_id, result, contents = get_user_id(credentials, credentials['login_id'])
-    
     if result == False:
-        # ID取得に失敗（凍結・401エラーなど）した場合も、ここで履歴を保存する！
-        # これを入れないと PHP管理画面にエラーが飛びません
-        save_tweet_history(credentials['id'], '', 'like', str(tweet_id), False, contents)
         return False, contents
 
     outputLog(f"user_id={user_id} (target={target})")
@@ -755,13 +771,7 @@ def proc_like_v2(credentials, tweet_id):
         
         # 成功判定とJSON文字列の返却
         response_str = json.dumps(response.json())
-        result = response.status_code == 200
-        # エラーログ保存
-        save_tweet_history(credentials['id'], '', 'like', '', result, response_str)
-        
         return response.status_code == 200, response_str
-
-        
         
     except Exception as e:
         outputLog(f"proc_like_v2 通信エラー: {str(e)}")
@@ -1095,7 +1105,7 @@ def proc_following_v2(credentials, target_user):
             json=data, 
             proxies=proxies, 
             impersonate=target_fingerprint,
-            timeout=30
+            timeout=15
         )
         
         # 成功時は 200 OK で {"data": {"following": true, ...}} が返る
@@ -1190,35 +1200,3 @@ def proc_unfollowing_v2(credentials, target_user):
     except Exception as e:
         outputLog(f"proc_unfollowing_v2 通信エラー: {str(e)}")
         return False, str(e)
-
-def proc_refresh_queue():
-    from mysql import get_refresh_queue, update_refresh_queue_status, get_account_master, delete_account_error_log
-    
-    outputLog("proc_refresh_queue start")
-    queue_list = get_refresh_queue()
-    
-    if not queue_list:
-        outputLog("キューなし")
-        return
-    
-    for queue in queue_list:
-        queue_id = queue['id']
-        account_id = queue['account_id']
-        
-        # 処理中に更新
-        update_refresh_queue_status(queue_id, 'processing')
-        
-        credentials = get_account_master(account_id)
-        if not credentials:
-            update_refresh_queue_status(queue_id, 'error')
-            continue
-        
-        result, access_token, refresh_token = refresh_access_token(credentials)
-        
-        if result:
-            from mysql import get_account_error_log_type
-            error_type = get_account_error_log_type(account_id)
-            if error_type in ('unauthorized', 'lock'):  # ← lockも追加
-                delete_account_error_log(account_id)
-            update_refresh_queue_status(queue_id, 'done')
-            outputLog(f"ID:{account_id} トークン更新成功")

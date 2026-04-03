@@ -1,1 +1,1 @@
-python tweet.py mode=check_refresh
+python tweet.py mode=check_refresh debug=true

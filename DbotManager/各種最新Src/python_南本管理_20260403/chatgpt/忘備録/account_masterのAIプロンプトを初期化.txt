@@ -1,0 +1,34 @@
+
+UPDATE account_master a SET a.ai_uraaka_prompt = (
+    SELECT s.value
+    FROM system_master s
+    WHERE s.key = 'ai_uraaka_prompt'
+);
+
+UPDATE account_master a SET a.ai_uraaka_past_tweet
+ = (
+    SELECT s.value
+    FROM system_master s
+    WHERE s.key = 'ai_uraaka_past_tweet'
+);
+
+UPDATE account_master a SET a.ai_trend_prompt_yahoo
+ = (
+    SELECT s.value
+    FROM system_master s
+    WHERE s.key = 'ai_trend_prompt_yahoo'
+);
+
+UPDATE account_master a SET a.ai_trend_prompt_x
+ = (
+    SELECT s.value
+    FROM system_master s
+    WHERE s.key = 'ai_trend_prompt_x'
+);
+
+UPDATE account_master a SET a.ai_btc_prompt
+ = (
+    SELECT s.value
+    FROM system_master s
+    WHERE s.key = 'ai_btc_prompt'
+);

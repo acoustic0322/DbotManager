@@ -223,25 +223,6 @@ if credentials:
     outputLog(f"result2={result2}")
     outputLog(f"contents2={contents2}")
 
-    # --- 仕上げ：ここから追加 ---
-    # contents1（APIレスポンス）に 401 が含まれているかチェック
-    is_unauthorized = False
-    if isinstance(contents1, str) and ('"status": 401' in contents1 or "Could not authenticate you" in contents1):
-        is_unauthorized = True
-
-    # トークン切れを検知した場合、その場でリフレッシュを試みる
-    if is_unauthorized:
-        outputLog(f"ID:{account_id} トークン切れを自動検知。リフレッシュを開始します...")
-        res_ref, acc_tok, ref_tok = refresh_access_token(credentials)
-        if res_ref:
-            outputLog("自動リフレッシュ成功。エラーログを削除しました。")
-            delete_account_error_log(account_id)
-            # 履歴保存用のステータスを更新（任意）
-            result2 = True 
-            contents2 = "Auto Refreshed"
-        else:
-            outputLog("自動リフレッシュ失敗。手動連携が必要です。")
-
     print(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
     save_tweet_history(account_id, comment_id , mode , tweet_id , result1 , contents1 , result2 , contents2)
     sys.exit(0)

@@ -65,101 +65,102 @@ from prompt import TREND_PROMPT
 
 # --- iOS Safari (iPhone/iPad) 統合リスト ---
 IOS_SAFARI_UAS = [
-    # iOS 18系 (最新)
+    # 最新〜直近のバージョン（優先度高）
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2.1 Mobile/15E148 Safari/604.1",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0.1 Mobile/15E148 Safari/604.1",
+    
+    # iPad系（少し割合を入れると自然）
+    "Mozilla/5.0 (iPad; CPU OS 18_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1",
     "Mozilla/5.0 (iPad; CPU OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
-    # iOS 17系 (主力)
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_7_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.7 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
-    # iOS 16/15系 (iPhone 8/X/11)
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_7_10 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.7.10 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_8_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.8.3 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_7_9 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.7.9 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1",
-    # iOS 14系以下 (超古い・iPhone 7/6s)
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_8_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.8 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.7 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.5.7 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 14_8 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.8 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 12_5_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.5.5 Mobile/15E148 Safari/604.1"
+    
+    # 17系は最小限（古いので検知リスク高め）
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_7_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.7.2 Mobile/15E148 Safari/604.1",
+    # 16系以下はほぼ使わない方が安全（コメントアウト推奨）
+    # "Mozilla/5.0 (iPhone; CPU iPhone OS 16_7_10 like Mac OS X) ...",
 ]
 
 # --- Android Chrome 統合リスト ---
 ANDROID_CHROME_UAS = [
-    # Android 15/14 (Pixel 9, Galaxy S24)
-    "Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.204 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 15; Pixel 8a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.204 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 14; SH-51E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 14; SO-51E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-    # Android 13/12 (Xperia, Galaxy S21, AQUOS sense7)
-    "Mozilla/5.0 (Linux; Android 13; SO-52D) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 12; SO-53C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 12; SCG13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-    # Android 11/10 (Galaxy S10, Xperia 5, AQUOS sense3)
-    "Mozilla/5.0 (Linux; Android 11; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 11; SH-41A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 10; SO-01M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 10; SH-02M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36",
-    # Android 9/8以下 (超古い名機 Galaxy S9, S8)
-    "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 8.1.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 10; L-01L) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Mobile Safari/537.36",
-    # 格安スマホ・中華系 (OPPO, Xiaomi)
-    "Mozilla/5.0 (Linux; Android 14; CPH2523) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 14; 23127PN0CC) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
+    # 最新系統を最優先（Pixel, Galaxy, Xiaomiなど人気機種）
+    "Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.6834.159 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.6834.159 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 15; Pixel 8a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.6834.159 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 15; SM-S931B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36",  # Galaxy S25系想定
+    "Mozilla/5.0 (Linux; Android 15; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.204 Mobile Safari/537.36",
+    
+    # 131系もまだ使えるが割合を減らす
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.204 Mobile Safari/537.36",
+    
+    # 130以下は極力減らす（コメントアウト推奨）
+    # "Mozilla/5.0 (Linux; Android 14; CPH2523) AppleWebKit/537.36 ... Chrome/130.0.0.0 ...",
 ]
 
 # --- Desktop リスト ---
 DESKTOP_UAS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0"
+    # Windows Chrome（最も自然で安定しやすい）
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.6834.159 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.265 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.204 Safari/537.36",
+    
+    # Mac系（割合は少なめでもOK）
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15",
+    
+    # Firefoxは割合を極端に減らす（検知されやすい傾向）
+    # "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
 ]
 
 def get_action_config(credentials):
-    """指紋(target)とUAを完全に一致させ、アカウントごとに固定する"""
-    import random
     account_id = int(credentials.get('id', 0))
     mod = account_id % 5
-    
-    # 1. 指紋の決定
-    if mod in [0, 4]: target = "safari_ios"
-    elif mod == 1:    target = "chrome_android"
-    elif mod == 2:    target = "safari"
-    else:             target = "chrome"
-    
-    # 2. UAの決定 (アカウントごとに固定)
-    random.seed(account_id)
-    if "safari_ios" in target:
-        ua = random.choice(IOS_SAFARI_UAS)
-    elif "chrome_android" in target:
-        ua = random.choice(ANDROID_CHROME_UAS)
+
+    # モバイルプロキシ環境なので、デスクトップ系はほぼ使わない
+    if mod in [0, 2, 4]:
+        # iOS Safari（一番自然で検知されにくい）
+        impersonate_target = random.choice([
+            "safari_ios_18_2",
+            "safari_ios_18_3",
+            "safari_ios_18_4"
+        ])
+        ua_pool = IOS_SAFARI_UAS
+        platform = "iOS"
+
     else:
-        ua = random.choice(DESKTOP_UAS)
-    random.seed() 
-    
+        # Android Chrome（割合は少なめでOK）
+        impersonate_target = random.choice([
+            "chrome_android_131",
+            "chrome_android_132"
+        ])
+        ua_pool = ANDROID_CHROME_UAS
+        platform = "Android"
+
+    random.seed(account_id)
+    ua = random.choice(ua_pool)
+    random.seed()
+
+    is_mobile = True  # ここは常にTrueになる
+
     headers = {
         "Authorization": f"Bearer {credentials['bearer_token']}",
         "Content-Type": "application/json",
         "User-Agent": ua,
+        "Accept": "application/json, text/plain, */*",
         "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
-        "DNT": "1"
+        "Origin": "https://x.com",
+        "Referer": random.choice(["https://x.com/home", "https://x.com/explore"]),
+        "Sec-Ch-Ua": '"Chromium";v="132", "Not_A Brand";v="24", "Google Chrome";v="132"' if "Chrome" in ua else '"Apple WebKit";v="605.1.15"',
+        "Sec-Ch-Ua-Mobile": "?1",          # 常にモバイル
+        "Sec-Ch-Ua-Platform": f'"{platform}"',
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
     }
-    return target, headers
+
+    return impersonate_target, headers
 
 def createClient(credentials):
     try:
@@ -287,7 +288,7 @@ def refresh_access_token(credentials):
             data["client_id"] = client_id
 
         # 送信（指紋はデスクトップに固定）
-        response = requests.post(url, headers=headers, data=data, impersonate="chrome110")
+        response = requests.post(url, headers=headers, data=data, impersonate="chrome")
 
         outputLog(f"ID:{credentials['id']} response={response.status_code}")
 
@@ -310,7 +311,7 @@ def refresh_access_token(credentials):
         return False, None, None
 
 
-def check_access_token_validity(access_token, impersonate_target="chrome110"):
+def check_access_token_validity(access_token, impersonate_target="chrome132"):
     url = "https://api.twitter.com/2/users/me"  # ユーザー情報を取得
     headers = {
         "Authorization": f"Bearer {access_token}"
@@ -712,15 +713,11 @@ def proc_like_v2(credentials, tweet_id):
     target, headers = get_action_config(credentials)
     
     # 2. 人間らしいランダム遅延
-    time.sleep(random.uniform(0.5, 1.5))
+    time.sleep(random.uniform(3, 5))
 
     # ユーザーIDの取得
     user_id, result, contents = get_user_id(credentials, credentials['login_id'])
-    
     if result == False:
-        # ID取得に失敗（凍結・401エラーなど）した場合も、ここで履歴を保存する！
-        # これを入れないと PHP管理画面にエラーが飛びません
-        save_tweet_history(credentials['id'], '', 'like', str(tweet_id), False, contents)
         return False, contents
 
     outputLog(f"user_id={user_id} (target={target})")
@@ -755,13 +752,7 @@ def proc_like_v2(credentials, tweet_id):
         
         # 成功判定とJSON文字列の返却
         response_str = json.dumps(response.json())
-        result = response.status_code == 200
-        # エラーログ保存
-        save_tweet_history(credentials['id'], '', 'like', '', result, response_str)
-        
         return response.status_code == 200, response_str
-
-        
         
     except Exception as e:
         outputLog(f"proc_like_v2 通信エラー: {str(e)}")
@@ -812,7 +803,7 @@ def proc_bookmark_v2(credentials, tweet_id):
     指定されたツイートをブックマークする関数。
     """
     target, headers = get_action_config(credentials)
-    time.sleep(random.uniform(0.5, 1.5))
+    time.sleep(random.uniform(2, 5))
 
     user_id, result, contents = get_user_id(credentials, credentials['login_id'])
     if result == False:
@@ -844,7 +835,7 @@ def proc_repost_v2(credentials, tweet_id):
     target, headers = get_action_config(credentials)
     
     # 2. リポストは重要アクションなので慎重に待機
-    time.sleep(random.uniform(2.0, 5.0))
+    time.sleep(random.uniform(10, 20))
 
     user_id, result, contents = get_user_id(credentials, credentials['login_id'])
     if result == False: return False, contents
@@ -1095,7 +1086,7 @@ def proc_following_v2(credentials, target_user):
             json=data, 
             proxies=proxies, 
             impersonate=target_fingerprint,
-            timeout=30
+            timeout=15
         )
         
         # 成功時は 200 OK で {"data": {"following": true, ...}} が返る
@@ -1190,35 +1181,3 @@ def proc_unfollowing_v2(credentials, target_user):
     except Exception as e:
         outputLog(f"proc_unfollowing_v2 通信エラー: {str(e)}")
         return False, str(e)
-
-def proc_refresh_queue():
-    from mysql import get_refresh_queue, update_refresh_queue_status, get_account_master, delete_account_error_log
-    
-    outputLog("proc_refresh_queue start")
-    queue_list = get_refresh_queue()
-    
-    if not queue_list:
-        outputLog("キューなし")
-        return
-    
-    for queue in queue_list:
-        queue_id = queue['id']
-        account_id = queue['account_id']
-        
-        # 処理中に更新
-        update_refresh_queue_status(queue_id, 'processing')
-        
-        credentials = get_account_master(account_id)
-        if not credentials:
-            update_refresh_queue_status(queue_id, 'error')
-            continue
-        
-        result, access_token, refresh_token = refresh_access_token(credentials)
-        
-        if result:
-            from mysql import get_account_error_log_type
-            error_type = get_account_error_log_type(account_id)
-            if error_type in ('unauthorized', 'lock'):  # ← lockも追加
-                delete_account_error_log(account_id)
-            update_refresh_queue_status(queue_id, 'done')
-            outputLog(f"ID:{account_id} トークン更新成功")

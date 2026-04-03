@@ -357,30 +357,27 @@ def get_check_account_list(id):
 
 # ツイート履歴をデータベースに保存する関数
 def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , error_log , result2 = None , error_log2 = None):
-    connection = None
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
     try:
-        connection = pymysql.connect(
-            host=config.db_host,
-            user='root',
-            password='abcd1234',
-            database='d_bot',
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor         
-        )
-        
-        # --- 修正ポイント1：安全に文字列化して判定 ---
         error_type = ""
-        log_text = str(error_log) if error_log else ""
 
-        if "Your account is temporarily locked" in log_text:
+        if error_log and "Your account is temporarily locked" in error_log:
             error_type = "lock"
-        elif "The user used for authentication is suspended" in log_text:
+        elif error_log and "The user used for authentication is suspended" in error_log:
             error_type = "suspention"
-        elif '"status": 401' in log_text or "Could not authenticate you" in log_text:
+        elif error_log and '"status": 401' in error_log:
             error_type = "unauthorized"
+        else:
+            error_type = ""       
 
         with connection.cursor() as cursor:
-            # 1. 履歴の保存
             sql = """
                 INSERT INTO tweet_history (account_id, comment_id, mode, target_tweet_id, updatetime , result , error_log , result2 , error_log2 , error_type)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -388,9 +385,8 @@ def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , 
             cursor.execute(sql, (account_id, comment_id, mode, target_tweet_id, datetime.now(), result , error_log , result2 , error_log2 , error_type ))
             connection.commit()
 
-            # --- 修正ポイント2：INSERT ... ON DUPLICATE KEY UPDATE を使用 ---
             if error_type in ('lock', 'suspention', 'unauthorized'):
-                error_sql = """
+                cursor.execute("""
                     INSERT INTO account_error_log (account_id, user_id, error_type, error_log, updatetime)
                     SELECT %s, am.user_id, %s, %s, NOW()
                     FROM account_master am WHERE am.id = %s
@@ -399,16 +395,11 @@ def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , 
                         error_type = VALUES(error_type), 
                         error_log = VALUES(error_log), 
                         updatetime = NOW()
-                """
-                cursor.execute(error_sql, (account_id, error_type, error_log, account_id))
+                """, (account_id, error_type, error_log, account_id))
                 connection.commit()
 
-    except Exception as ex:
-        # DB周りでエラーが起きてもプログラム全体を落とさない
-        outputLog(f"save_tweet_history DB Error: {str(ex)}")
     finally:
-        if connection:
-            connection.close()
+        connection.close()
 
 def update_check_account_list(id, since_id, datetime):
     outputLog("update_check_account_list")

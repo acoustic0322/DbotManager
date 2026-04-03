@@ -357,58 +357,34 @@ def get_check_account_list(id):
 
 # ツイート履歴をデータベースに保存する関数
 def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , error_log , result2 = None , error_log2 = None):
-    connection = None
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
     try:
-        connection = pymysql.connect(
-            host=config.db_host,
-            user='root',
-            password='abcd1234',
-            database='d_bot',
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor         
-        )
-        
-        # --- 修正ポイント1：安全に文字列化して判定 ---
-        error_type = ""
-        log_text = str(error_log) if error_log else ""
 
-        if "Your account is temporarily locked" in log_text:
+        error_type = ""
+
+        if "Your account is temporarily locked" in error_log:
             error_type = "lock"
-        elif "The user used for authentication is suspended" in log_text:
+        elif "The user used for authentication is suspended" in error_log:
             error_type = "suspention"
-        elif '"status": 401' in log_text or "Could not authenticate you" in log_text:
-            error_type = "unauthorized"
+        else:
+            error_type = ""        
 
         with connection.cursor() as cursor:
-            # 1. 履歴の保存
             sql = """
                 INSERT INTO tweet_history (account_id, comment_id, mode, target_tweet_id, updatetime , result , error_log , result2 , error_log2 , error_type)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (account_id, comment_id, mode, target_tweet_id, datetime.now(), result , error_log , result2 , error_log2 , error_type ))
             connection.commit()
-
-            # --- 修正ポイント2：INSERT ... ON DUPLICATE KEY UPDATE を使用 ---
-            if error_type in ('lock', 'suspention', 'unauthorized'):
-                error_sql = """
-                    INSERT INTO account_error_log (account_id, user_id, error_type, error_log, updatetime)
-                    SELECT %s, am.user_id, %s, %s, NOW()
-                    FROM account_master am WHERE am.id = %s
-                    ON DUPLICATE KEY UPDATE 
-                        user_id = VALUES(user_id),
-                        error_type = VALUES(error_type), 
-                        error_log = VALUES(error_log), 
-                        updatetime = NOW()
-                """
-                cursor.execute(error_sql, (account_id, error_type, error_log, account_id))
-                connection.commit()
-
-    except Exception as ex:
-        # DB周りでエラーが起きてもプログラム全体を落とさない
-        outputLog(f"save_tweet_history DB Error: {str(ex)}")
     finally:
-        if connection:
-            connection.close()
+        connection.close() 
 
 def update_check_account_list(id, since_id, datetime):
     outputLog("update_check_account_list")
@@ -834,6 +810,12 @@ def insert_search_history(search_row , tweet_data , mode):
                 contents
             ))
             connection.commit()
+
+    except Exception as ex:
+        outputLog("予期しないエラーが発生しました:")
+        outputLog(str(ex)) 
+
+
 
     except Exception as ex:
         outputLog("予期しないエラーが発生しました:")
@@ -1553,71 +1535,3 @@ def save_token_usage(proc_name, model_name, prompt_tokens, completion_tokens, to
             conn.commit()
     finally:
         conn.close()
-
-def delete_account_error_log(account_id):
-    connection = pymysql.connect(
-        host=config.db_host,
-        user='root',
-        password='abcd1234',
-        database='d_bot',
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    try:
-        with connection.cursor() as cursor:
-            sql = "DELETE FROM account_error_log WHERE account_id = %s"
-            cursor.execute(sql, (account_id,))
-            connection.commit()
-    finally:
-        connection.close()
-
-def get_refresh_queue():
-    connection = pymysql.connect(
-        host=config.db_host,
-        user='root',
-        password='abcd1234',
-        database='d_bot',
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    try:
-        with connection.cursor() as cursor:
-            sql = "SELECT id, account_id FROM refresh_queue WHERE status = 'pending'"
-            cursor.execute(sql)
-            return cursor.fetchall()
-    finally:
-        connection.close()
-
-def update_refresh_queue_status(queue_id, status):
-    connection = pymysql.connect(
-        host=config.db_host,
-        user='root',
-        password='abcd1234',
-        database='d_bot',
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    try:
-        with connection.cursor() as cursor:
-            sql = "UPDATE refresh_queue SET status = %s, updated_at = NOW() WHERE id = %s"
-            cursor.execute(sql, (status, queue_id))
-            connection.commit()
-    finally:
-        connection.close()        
-
-def get_account_error_log_type(account_id):
-    connection = pymysql.connect(
-        host=config.db_host,
-        user='root',
-        password='abcd1234',
-        database='d_bot',
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT error_type FROM account_error_log WHERE account_id = %s", (account_id,))
-            row = cursor.fetchone()
-            return row['error_type'] if row else None
-    finally:
-        connection.close()
