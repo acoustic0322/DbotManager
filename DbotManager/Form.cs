@@ -558,7 +558,7 @@ namespace DbotManager
 
             _tweetTask.UserId = userId;
 
-            _tweetTask.Init一括処理list(ユーザー権限無視);
+            _tweetTask.Init一括処理list(ユーザー権限無視 , (_tweetTask.ReplyEnable || _tweetTask.ReplyToRep ));
 
             var userList = dataAccess.GetUserMaster();
             var commentList = dataAccess.GetCommentMaster();

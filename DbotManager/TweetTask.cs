@@ -173,15 +173,21 @@ namespace DbotManager
 
         #region 一括処理
 
-        public void Init一括処理list(bool ユーザー権限無視)
+        public void Init一括処理list(bool ユーザー権限無視 , bool commentRequire)
         {
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
 
             // accountMasterListからskipAccountIdListに含まれないアカウントを抽出
             List<TweetHistory> tweetHistoryList = dataAccess.GetTweetHistoryView(1).Where(x => x.Result && x.Mode != TweetProcTypes.ｱｸｾｽﾄｰｸﾝ取得 && x.Mode != TweetProcTypes.ﾘﾌﾚｯｼｭﾄｰｸﾝ更新).ToList();
-            List<CommentMaster> commenttMasterList = dataAccess.GetCommentMaster();
-            List<MediaMaster> mediaMasterList = dataAccess.GetMediaMaster();
+            List<CommentMaster> commenttMasterList = new List<CommentMaster>();
+            List<MediaMaster> mediaMasterList = new List<MediaMaster>();
+
+            if(commentRequire)
+            {
+                commenttMasterList = dataAccess.GetCommentMaster();
+                mediaMasterList = dataAccess.GetMediaMaster();
+            }
 
             List<UserMaster> userMasterList, userMasterList_リプ;
             List<AccountMaster> accountMasterList;
