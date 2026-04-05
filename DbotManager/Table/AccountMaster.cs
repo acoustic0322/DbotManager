@@ -83,5 +83,8 @@ namespace DbotManager.Table
         public bool UseAdminApi { get; set; }
         public int ApiMasterId { get; set; }
 
+        public bool IsLocked { get; set; }
+        public bool IsSuspended { get; set; }
+        public bool IsUnauthorized { get; set; }
     }
 }

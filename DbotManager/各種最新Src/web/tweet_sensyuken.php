@@ -123,91 +123,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>選手権</title>
+    <meta name="format-detection" content="telephone=no">
     <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
 <body class="tweet-sensyuken-page">
 <div class="layout">
     <?php require PARTS_DIR.'/sidebar.php'; ?>
   <div class="main">
-    <!-- コンテンツエリア -->
     <div class="content" id="content">
-        <h2>選手権</h2>
-<!--        <label>本日の残り回数： <?php //echo ($exe_enable_count); ?> </label><br><br>-->
-        <form method="POST" action="?">
+        <h2>選手権<br></h2>
+<form method="POST" action="?">
 
-            <!-- JS用にPHP変数を埋め込み -->
             <script>
                 const maxLikeCount = <?php echo max(0, $exe_enable_like_count); ?>;
                 const maxBookmarkCount = <?php echo max(0, $exe_enable_bookmark_count); ?>;
             </script> 
 
-        <div class="input-group" checkbox-group">
-            <label>
-                <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートID" required size="80" maxlength="100" require>
-                <br><br>
-                <label><input type="checkbox" name="like_enable">いいね（残り <?php echo max(0, $exe_enable_like_count); ?> 回）</label>
-                <input type="number" id="like_count" name="like_count" min="0" class="short">                
-                <br><br>
-                <label><input type="checkbox" name="bookmark_enable">ブックマーク（残り <?php echo max(0, $exe_enable_bookmark_count); ?> 回）</label>
-                <input type="number" id="bookmark_count" name="bookmark_count" min="0" class="short">                
+        <div class="input-group" style="text-align: left; padding: 10px 0;">
+            <label style="display: block; margin-bottom: 20px;">
+                <input type="text" name="tweet_id" id="tweet_id" placeholder="対象ツイートURL" required style="width: 100%; max-width: 500px; font-size: 20px; padding: 12px; box-sizing: border-box;">
+            </label>
 
+            <div style="font-size: 20px; line-height: 2.2;">
+                <label style="display: block; margin-bottom: 15px;">
+                    <input type="checkbox" name="like_enable" style="transform: scale(1.6); margin-right: 10px;" checked>
+                    いいね（残り <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: bold;"><?php echo max(0, $exe_enable_like_count);?></span> 回）
+                </label>
+                <input type="number" id="like_count" name="like_count" min="0" style="font-size: 20px; width: 100px; padding: 5px;">                
+                
+                <br>
 
-            </label><br><br>
+                <label style="display: block; margin-bottom: 15px;">
+                    <input type="checkbox" name="bookmark_enable" style="transform: scale(1.6); margin-right: 10px;" checked>
+                    ブックマーク（残り <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: bold;"><?php echo max(0, $exe_enable_bookmark_count); ?></span> 回）
+                </label>
+                <input type="number" id="bookmark_count" name="bookmark_count" min="0" style="font-size: 20px; width: 100px; padding: 5px;">                
+            </div>
         </div>
 
-            <button type="submit">実行</button>
+        <button type="submit" style="margin-top: 15px; padding: 5px 20px; font-size: 20px; font-weight: bold; cursor: pointer;">実行</button>
 
-                <!-- バリデーションスクリプト -->
-                <script>
-                document.querySelector("form").addEventListener("submit", function(event) {
-                    const likeEnable = document.querySelector("input[name='like_enable']").checked;
-                    const likeCount = parseInt(document.querySelector("input[name='like_count']").value || "0", 10);
-                    const bookmarkEnable = document.querySelector("input[name='bookmark_enable']").checked;
-                    const bookmarkCount = parseInt(document.querySelector("input[name='bookmark_count']").value || "0", 10);
-
-                    if (likeEnable && likeCount > maxLikeCount) {
-                        alert("指定したいいね数が本日の残り回数を超えています（残り " + maxLikeCount + " 回）");
-                        event.preventDefault();
-                        return;
-                    }
-
-                    if (bookmarkEnable && bookmarkCount > maxBookmarkCount) {
-                        alert("指定したブックマーク数が本日の残り回数を超えています（残り " + maxBookmarkCount + " 回）");
-                        event.preventDefault();
-                        return;
-                    }
-                });
-                </script>
-
-
-         <!-- 実行履歴 -->
         <section
          id="execution-history"
          style="
-         margin: 40px auto;
-         max-width: 800px;
-         font-size: 14px;
-         line-height: 0.1;
-         padding-top: 0.5px;
+         margin: 60px 0;
+         width: 100%;
+         font-size: 20px;
+         line-height: 1.8;
+         text-align: left;
          "
->
-        <section id="execution-history">
-          <h4>実行履歴</h4>
-          <ul id="history-list">
+        >
+          <h4 style="border-bottom: 2px solid #666; padding-bottom: 12px; margin-bottom: 30px; font-size: 24px;">実行履歴</h4>
+          <ul id="history-list" style="list-style: none; padding: 0; margin: 0;">
 
           <?php
-          // 履歴取得（ソフトデリート対応）
-          $conn = new mysqli(
-            $config['servername'],
-            $config['username'],
-            $config['password'],
-            $config['dbname']
-          );
+          $conn = new mysqli($config['servername'], $config['username'], $config['password'], $config['dbname']);
           $stmt = $conn->prepare(
               "SELECT id, tweet_id, like_count, bookmark_count, repost_count, updatetime
              FROM tweet_process_list
              WHERE user_id = ? and (japanese_mode != 1 or japanese_mode is null) AND hidden_flag = 0 
-             ORDER BY updatetime DESC LIMIT 30"
+             ORDER BY updatetime DESC LIMIT 10"
           );
 
           $stmt->bind_param('i', $current_userid);
@@ -215,8 +190,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           $res = $stmt->get_result();
           while ($row = $res->fetch_assoc()) {
                 $time = date('Y/m/d H:i', strtotime($row['updatetime']));
-
-                // tweet_idを抽出（数字だけ抽出、URL対応）
                 $tweet_id_raw = $row['tweet_id'];
                 if (preg_match('/status\/(\d{10,})/', $tweet_id_raw, $match)) {
                     $tweet_id_only = $match[1];
@@ -224,23 +197,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $tweet_id_only = htmlspecialchars($tweet_id_raw);
                 } 
 
-          //    echo "<li>{$time} - <a href='https://twitter.com/i/web/status/{$row['tweet_id']}' target='_blank'>ID:{$row['tweet_id']}</a> , 数量:{$row['total_count']}";
-//              echo "<li>{$time} - <a href='https://twitter.com/i/web/status/{$row['tweet_id']}' target='_blank'>TweetID:{$row['tweet_id']}</a> ID:{$row['id']} ";
-               echo "<li><button class='hidden_tweet_process_list' data-id='{$row['id']}'>削除</button>";
-               echo "{$time} - <a href='https://twitter.com/i/web/status/{$tweet_id_only}' target='_blank'>TweetID:{$tweet_id_only}</a> ID:{$row['id']}";
+               echo "<li style='margin-bottom: 35px; border-bottom: 1px solid #444; padding-bottom: 20px;'>";
+               
+               // 日付とボタンを左右に分ける設定
+               echo "<div style='display: flex; justify-content: space-between; align-items: center;'>";
+               
+               // 左側：日付とアイコン
+               echo "<div>";
+               echo "<strong style='color: #fff; font-size: 22px;'>{$time}</strong>";
+               if ($row['like_count']) echo " <span style='color: #fff; margin-left:15px;'>👍{$row['like_count']}</span>";
+               if ($row['bookmark_count']) echo " <span style='color: #fff; margin-left:15px;'>📌{$row['bookmark_count']}</span>";
+               if ($row['repost_count']) echo " <span style='color: #fff; margin-left:15px;'>🔁{$row['repost_count']}</span>";
+               echo "</div>";
 
-              if ($row['like_count']) echo " , 👍:{$row['like_count']}";
-              if ($row['bookmark_count']) echo " , 📌:{$row['bookmark_count']}";
-              if ($row['repost_count']) echo " , 🔁:{$row['repost_count']}";
-              echo "</li>";
+               // 右側：削除ボタン
+               echo "<button class='hidden_tweet_process_list' data-id='{$row['id']}' style='padding: 10px 16px; font-size: 16px; cursor: pointer;'>削除</button>";
+               
+               echo "</div>"; 
+
+               // 2行目：リンク
+               echo "<div style='margin-top: 12px; font-size: 18px; opacity: 0.9;'>";
+               echo "<a href='https://twitter.com/i/web/status/{$tweet_id_only}' target='_blank' style='color: #1DA1F2; text-decoration: underline;'>Tweet:{$tweet_id_only}</a>";
+               echo "<span style='font-size: 14px; margin-left: 15px; color: #888;'>(ID:{$row['id']})</span>";
+               echo "</div>";
+               
+               echo "</li>";
             }
           $stmt->close();
           $conn->close();
           ?>
           </ul>
         </section>
-
-
+        
         </form>
 
     </div>
@@ -316,9 +304,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 </script>
-
-
-
 
 </body>
 </html>

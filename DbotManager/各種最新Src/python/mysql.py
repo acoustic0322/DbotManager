@@ -403,6 +403,23 @@ def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , 
                 cursor.execute(error_sql, (account_id, error_type, error_log, account_id))
                 connection.commit()
 
+	    # 2026.04.04 Start account_masterのフラグ更新
+            if error_type in ('lock'):
+                error_sql = """ UPDATE account_master SET is_locked = 1 WHERE id = %s """
+                cursor.execute(error_sql, (account_id,))
+                connection.commit()
+
+            if error_type in ('suspention'):
+                error_sql = """ UPDATE account_master SET is_suspeded = 1 WHERE id = %s """
+                cursor.execute(error_sql, (account_id,))
+                connection.commit()
+
+            if error_type in ('unauthorized'):
+                error_sql = """ UPDATE account_master SET is_unauthorized = 1 WHERE id = %s """
+                cursor.execute(error_sql, (account_id,))
+                connection.commit()
+	    # 2026.04.04 End account_masterのフラグ更新
+
     except Exception as ex:
         # DB周りでエラーが起きてもプログラム全体を落とさない
         outputLog(f"save_tweet_history DB Error: {str(ex)}")
@@ -1568,6 +1585,25 @@ def delete_account_error_log(account_id):
             sql = "DELETE FROM account_error_log WHERE account_id = %s"
             cursor.execute(sql, (account_id,))
             connection.commit()
+    finally:
+        connection.close()
+
+def unlock_unauthorized(account_id):
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    try:
+        with connection.cursor() as cursor:
+
+            sql = "UPDATE account_master set is_unauthorized = 0 WHERE account_id = %s"
+            cursor.execute(sql, (account_id,))
+            connection.commit()
+
     finally:
         connection.close()
 

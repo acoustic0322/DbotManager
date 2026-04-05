@@ -408,6 +408,10 @@ public class MySqlDataAccess
                                     AiPhotoEnable = reader["ai_photo_enable"].ToString() == "1",
                                     AiMovieEnable = reader["ai_movie_enable"].ToString() == "1",
                                     AiMediaSelectionRate = int.Parse(reader["ai_media_selection_rate"].ToString()),
+
+                                    IsLocked = reader["is_locked"].ToString() == "1",
+                                    IsSuspended = reader["is_suspended"].ToString() == "1",
+                                    IsUnauthorized = reader["is_unauthorized"].ToString() == "1",
                                 };
 
                                 accountMasterList.Add(accountItem);

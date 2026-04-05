@@ -12,20 +12,125 @@ header('Content-Type: application/json');
 $data = json_decode(file_get_contents('php://input'), true);
 
 // 必須データを検証
-if (!isset($data['command'], $data['action1'], $data['action2'], $data['selected_ids'], $data['form_account_id'])) {
+if (!isset($data['command'])) {
     echo json_encode(['message' => '必要なデータがありません。']);
     exit;
 }
 
 $command = $data['command'];
-$action1 = $data['action1'];
-$action2 = $data['action2'];
-$selectedIds = $data['selected_ids'];
-$form_account_id = $data['form_account_id'];
+$action1 = $data['action1'] ?? '';
+$action2 = $data['action2'] ?? '';
+$selectedIds = $data['selected_ids'] ?? [];
+$form_account_id = $data['form_account_id'] ?? '';
 
 //error_log("test");
 //echo $command;
 //alert($action1);
+
+if ($command == 'refresh') {
+    foreach ($selectedIds as $id) {
+        $stmt = $conn->prepare("
+            INSERT INTO refresh_queue (account_id, status, created_at, updated_at)
+            VALUES (?, 'pending', NOW(), NOW())
+        ");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+    }
+    echo json_encode(['message' => 'トークン更新をキューに追加しました。']);
+    exit;
+}
+
+if ($command == 'delete_frozen') {
+    $stmt = $conn->prepare("
+        DELETE am FROM account_master am
+        INNER JOIN account_error_log ael ON ael.account_id = am.id
+        WHERE ael.error_type = 'suspention'
+        AND am.user_id = ?
+    ");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $count = $stmt->affected_rows;
+    $stmt->close();
+    echo json_encode(['message' => $count . '件の凍結アカウントを削除しました。']);
+    exit;
+}
+
+if ($command == 'refresh_locked') {
+    $stmt = $conn->prepare("
+        INSERT INTO refresh_queue (account_id, status, created_at, updated_at)
+        SELECT am.id, 'pending', NOW(), NOW()
+        FROM account_master am
+        INNER JOIN account_error_log ael ON ael.account_id = am.id
+        WHERE ael.error_type IN ('lock', 'unauthorized', 'suspention')
+        AND am.user_id = ?
+    ");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $count = $stmt->affected_rows;
+    $stmt->close();
+    echo json_encode(['message' => $count . '件のロック・再連携・凍結アカウントをキューに追加しました。']);
+    exit;
+}
+
+if ($command == 'refresh_all_locked') {
+    $stmt = $conn->prepare("
+        INSERT INTO refresh_queue (account_id, status, created_at, updated_at)
+        SELECT am.id, 'pending', NOW(), NOW()
+        FROM account_master am
+        INNER JOIN account_error_log ael ON ael.account_id = am.id
+        WHERE ael.error_type IN ('lock', 'unauthorized', 'suspention')
+    ");
+    $stmt->execute();
+    $count = $stmt->affected_rows;
+    $stmt->close();
+    echo json_encode(['message' => $count . '件をキューに追加しました。']);
+    exit;
+}
+
+if ($command == 'get_user_summary') {
+    $stmt = $conn->prepare("
+    SELECT 
+        um.username,
+        COUNT(*) as total,
+        SUM(CASE WHEN ael.error_type = 'lock' THEN 1 ELSE 0 END) as lock_count,
+        SUM(CASE WHEN ael.error_type = 'suspention' THEN 1 ELSE 0 END) as suspention_count,
+        SUM(CASE WHEN ael.error_type = 'unauthorized' THEN 1 ELSE 0 END) as unauthorized_count,
+        SUM(CASE WHEN ael.error_type IS NULL THEN 1 ELSE 0 END) as normal_count
+    FROM account_master am
+    LEFT JOIN account_error_log ael ON ael.account_id = am.id
+    JOIN user_master um ON um.id = am.user_id
+    WHERE um.username NOT IN ('marumaru', 'next', 'r', 'rrr7', 'g')
+    GROUP BY um.id, um.username
+    ORDER BY um.username
+");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $rows = [];
+    $grand_total = 0;
+    $grand_normal = 0;
+    $grand_lock = 0;
+    $grand_suspention = 0;
+    $grand_unauthorized = 0;
+    while ($row = $result->fetch_assoc()) {
+        $rows[] = $row;
+        $grand_total += $row['total'];
+        $grand_normal += $row['normal_count'];
+        $grand_lock += $row['lock_count'];
+        $grand_suspention += $row['suspention_count'];
+        $grand_unauthorized += $row['unauthorized_count'];
+    }
+    $stmt->close();
+    echo json_encode([
+        'rows' => $rows,
+        'grand_total' => $grand_total,
+        'grand_normal' => $grand_normal,
+        'grand_lock' => $grand_lock,
+        'grand_suspention' => $grand_suspention,
+        'grand_unauthorized' => $grand_unauthorized
+    ]);
+    exit;
+}
 
 if ($command == 'post' || $command == 'reply'|| $command == 'replytoreply')
 {

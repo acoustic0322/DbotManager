@@ -200,6 +200,11 @@ namespace DbotManager
                 accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == UserId).ToList();
             }
 
+            // 2026.04.04 ロック解除&凍結解除&再連携済みのアカウントに絞る
+            {
+                accountMasterList = accountMasterList.Where(x => !x.IsLocked && !x.IsSuspended && !x.IsUnauthorized).ToList();
+            }
+
             // 「いいね」リスト抽出
             {
                 List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.いいね, ユーザー権限無視);

@@ -27,6 +27,7 @@ $api_master_id = isset($_SESSION['api_master_id']) ? $_SESSION['api_master_id'] 
 
 // アカウントコンボボックスのレコード取得
 $search = trim($_GET['search'] ?? '');
+$status_filter = trim($_GET['status'] ?? '');
 $searchParam = '%' . $search . '%';
 
 if ($search !== '') {
@@ -109,44 +110,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-
-if ($search !== '') {
+if ($search !== '' || $status_filter !== '') {
     $stmt = $conn->prepare("
-    SELECT 
-      am.name as name,
-      am.id as id,
-      am.login_id as login_id,
-      am.bearer_token as bearer_token,
-      am.refresh_token as refresh_token,
-      am.access_token as access_token,
-      am.search_enable as search_enable,
-      am.use_admin_api as use_admin_api,
-      am.ai_mode as ai_mode
+    SELECT am.name,am.id,am.login_id,am.bearer_token,am.refresh_token,am.access_token,am.search_enable,am.use_admin_api,am.ai_mode,
+           am.is_locked,am.is_suspended,am.is_unauthorized
     FROM account_master am
-    WHERE am.user_id = ? AND am.name LIKE ?
+    WHERE am.user_id=? AND am.name LIKE ?
     ");
-    $stmt->bind_param("ss", $current_userid, $searchParam);
+    $stmt->bind_param("ss", $current_userid,$searchParam);
 } else {
     $stmt = $conn->prepare("
-    SELECT 
-      am.name as name,
-      am.id as id,
-      am.login_id as login_id,
-      am.bearer_token as bearer_token,
-      am.refresh_token as refresh_token,
-      am.access_token as access_token,
-      am.search_enable as search_enable,
-      am.use_admin_api as use_admin_api,
-      am.ai_mode as ai_mode
+    SELECT am.name,am.id,am.login_id,am.bearer_token,am.refresh_token,am.access_token,am.search_enable,am.use_admin_api,am.ai_mode,
+           am.is_locked,am.is_suspended,am.is_unauthorized
     FROM account_master am
-    WHERE am.user_id = ?
+    WHERE am.user_id=?
     ");
     $stmt->bind_param("s", $current_userid);
 }
 $stmt->execute();
 $result = $stmt->get_result();
+// 集計取得
+$stmt2 = $conn->prepare("
+    SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN am.is_locked = 1       THEN 1 ELSE 0 END) as lock_count,
+        SUM(CASE WHEN am.is_suspended = 1    THEN 1 ELSE 0 END) as suspention_count,
+        SUM(CASE WHEN am.is_unauthorized = 1 THEN 1 ELSE 0 END) as unauthorized_count,
+        SUM(CASE WHEN (am.is_locked = 0 and am.is_suspended = 0 and am.is_unauthorized = 0 ) THEN 1 ELSE 0 END) as normal_count
+    FROM account_master am
+    WHERE am.user_id = ?
+");
+$stmt2->bind_param("s", $current_userid);
+$stmt2->execute();
+$summary = $stmt2->get_result()->fetch_assoc();
+$stmt2->close();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="ja">
@@ -166,10 +164,35 @@ $result = $stmt->get_result();
    <div class="content" id="content">
 
     <h2>Xアカウント一覧</h2>
-    <form method="GET" style="margin-bottom: 20px;">
-        <input type="text" name="search" placeholder="ユーザー名で絞り込み" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-        <button type="submit">検索</button>
+    <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px; flex-wrap:wrap;">
+    <form method="GET" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <input type="text" name="search" placeholder="ユーザー名で絞り込み" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+      <input type="hidden" name="status" id="status_filter" value="<?php echo htmlspecialchars($_GET['status'] ?? ''); ?>">
+      <button type="submit">検索</button>
+      <button type="button" onclick="setStatus('')" style="background:<?= ($_GET['status']??'')=='' ? '#fff' : '#555' ?>; color:#000; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">全て</button>
+      <button type="button" onclick="setStatus('suspention')" style="background:<?= ($_GET['status']??'')=='suspention' ? '#ef4444' : '#555' ?>; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">🚫 凍結のみ</button>
+      <button type="button" onclick="setStatus('lock')" style="background:<?= ($_GET['status']??'')=='lock' ? '#f97316' : '#555' ?>; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">🔒 ロックのみ</button>
+      <button type="button" onclick="setStatus('unauthorized')" style="background:<?= ($_GET['status']??'')=='unauthorized' ? '#6366f1' : '#555' ?>; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">🔑 再連携のみ</button>
     </form>
+<script>
+function setStatus(val) {
+    document.getElementById('status_filter').value = val;
+    document.getElementById('status_filter').closest('form').submit();
+}
+</script>
+    <div style="display:flex; gap:20px; font-size:20px; align-items:center;">
+      <span style="color:#aaa;">合計: <strong style="color:#fff; font-size:28px;"><?= $summary['total'] ?></strong></span>
+      <span style="color:#4ade80;">正常: <strong style="font-size:28px;"><?= $summary['normal_count'] ?></strong></span>
+      <span style="color:#facc15;">🔒 ロック: <strong style="font-size:28px;"><?= $summary['lock_count'] ?></strong></span>
+      <span style="color:#6366f1;">🔑 再連携: <strong style="font-size:28px;"><?= $summary['unauthorized_count'] ?></strong></span>
+      <span style="color:#ef4444;">🚫 凍結: <strong style="font-size:28px;"><?= $summary['suspention_count'] ?></strong></span>
+      <button onclick="refreshLockedAccounts()" style="background:#f97316; color:#000; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:14px;">🔒 全エラーチェック</button>
+      <button onclick="deleteFrozenAccounts()" style="background:#d4af37; color:#000; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:14px;">🚫 凍結一括削除</button>
+<?php if (isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>
+<button onclick="showUserSummary()" style="background:#4ade80; color:#000; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:14px;">📊 ユーザー別集計</button>
+<?php endif; ?>
+    </div>
+</div>
 
 <div style="margin-bottom: 20px;">
   <div>
@@ -445,9 +468,18 @@ function toggleMenu(menuEl) {
     <td class="name-col">
       <div>
         <div>
-          <?php echo htmlspecialchars($row['name']); ?> 
-          <span style="color: #888; font-size: 12px;">[ID=<?php echo htmlspecialchars($row['id']); ?>]</span>
-        </div>
+  <?php echo htmlspecialchars($row['name']); ?> 
+<span style="color: #888; font-size: 12px;">[ID=<?php echo htmlspecialchars($row['id']); ?>]</span>
+<div style="margin-top: 4px;">
+<?php if (($row['latest_status'] ?? '') === '凍結'): ?>
+  <span style="background:#ef4444; color:white; font-size:11px; padding:2px 6px; border-radius:4px;">🚫 凍結</span>
+<?php elseif (($row['latest_status'] ?? '') === 'ロック'): ?>
+  <span style="background:#f97316; color:white; font-size:11px; padding:2px 6px; border-radius:4px;">🔒 ロック</span>
+<?php elseif (($row['latest_status'] ?? '') === '再連携'): ?>
+  <span style="background:#6366f1; color:white; font-size:11px; padding:2px 6px; border-radius:4px;">🔑 再連携</span>
+<?php endif; ?>
+</div>
+</div>
         <div style="font-size: 12px; font-style: italic;">
           <a href="https://x.com/<?php echo urlencode($row['login_id']); ?>"
              target="_blank"
@@ -487,6 +519,7 @@ function toggleMenu(menuEl) {
     <a href="#" onclick="editAccountMaster(<?= $row['id'] ?>)">編集</a>
     <a href="#" onclick="editComment(<?= $row['id'] ?>)">ｺﾒﾝﾄ一覧</a>
     <a href="#" onclick="registComment(<?= $row['id'] ?>)">ｺﾒﾝﾄ登録</a>
+    <a href="#" onclick="refreshToken(<?= $row['id'] ?>)">アカウント更新🔄 </a>
     <?php if (!empty($_SESSION['check_enable'])): ?>
       <a href="#" onclick="editCheckAccount(<?= $row['id'] ?>)">自動ﾘﾌﾟ,ﾓﾉﾏﾈ編集</a>
     <?php endif; ?>
@@ -553,6 +586,118 @@ function toggleMenu(menuEl) {
         function editCheckAccount(id) {
             window.location.href = './search_list.php?account_id='+id;
         }
+
+        function refreshToken(id) {
+    if (!confirm('ID:' + id + ' のトークンを更新しますか？')) return;
+    
+    fetch('account_process.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            command: 'refresh',
+            selected_ids: [String(id)]
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('エラー:', error);
+    });
+}
+
+function deleteFrozenAccounts() {
+            if (!confirm('凍結アカウントを全て削除しますか？')) return;
+            fetch('account_process.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command: 'delete_frozen' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                window.location.reload();
+            })
+            .catch(error => { console.error('エラー:', error); });
+        }
+
+    function refreshLockedAccounts() {
+    if (!confirm('ロック・再連携・凍結アカウントを全て一括更新しますか？')) return;
+    fetch('account_process.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'refresh_locked' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        window.location.reload();
+    })
+    .catch(error => { console.error('エラー:', error); });
+}
+
+        function showUserSummary() {
+    fetch('account_process.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'get_user_summary' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        let html = '<input type="text" id="user_filter" placeholder="ユーザー名で絞り込み" oninput="filterSummary()" style="margin-bottom:10px; padding:6px; width:100%; box-sizing:border-box; background:#333; color:#fff; border:1px solid #555; border-radius:4px;">';
+        html += '<table id="summary_table" style="width:100%; border-collapse:collapse; color:#fff;">';
+        html += '<tr style="background:#333;"><th style="padding:8px;">ユーザー</th><th style="padding:8px;">合計</th><th style="padding:8px; color:#4ade80;">正常</th><th style="padding:8px; color:#facc15;">ロック</th><th style="padding:8px; color:#ef4444;">凍結</th><th style="padding:8px; color:#6366f1;">再連携</th></tr>';
+        data.rows.forEach(row => {
+            html += `<tr class="summary_row" style="border-bottom:1px solid #444;">
+                <td style="padding:8px;">${row.username}</td>
+                <td style="padding:8px; text-align:center;">${row.total}</td>
+                <td style="padding:8px; text-align:center; color:#4ade80;">${row.normal_count}</td>
+                <td style="padding:8px; text-align:center; color:#facc15;">${row.lock_count}</td>
+                <td style="padding:8px; text-align:center; color:#ef4444;">${row.suspention_count}</td>
+                <td style="padding:8px; text-align:center; color:#6366f1;">${row.unauthorized_count}</td>
+            </tr>`;
+        });
+        html += `<tr style="background:#444; font-weight:bold;">
+            <td style="padding:8px;">合計</td>
+            <td style="padding:8px; text-align:center;">${data.grand_total}</td>
+            <td style="padding:8px; text-align:center; color:#4ade80;">${data.grand_normal}</td>
+            <td style="padding:8px; text-align:center; color:#facc15;">${data.grand_lock}</td>
+            <td style="padding:8px; text-align:center; color:#ef4444;">${data.grand_suspention}</td>
+            <td style="padding:8px; text-align:center; color:#6366f1;">${data.grand_unauthorized}</td>
+        </tr>`;
+        html += '</table>';
+        html += `<div style="margin-top:15px; text-align:right;">
+        <button onclick="refreshAllLockedAccounts()" style="background:#f97316; color:#000; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:14px;">🔒 全ユーザー一括更新</button>
+        </div>`;
+        document.getElementById('summary_modal_body').innerHTML = html;
+        document.getElementById('summary_modal').style.display = 'flex';
+    });
+}
+
+function filterSummary() {
+    const filter = document.getElementById('user_filter').value.toLowerCase();
+    document.querySelectorAll('.summary_row').forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        row.style.display = name.includes(filter) ? '' : 'none';
+    });
+}
+
+function refreshAllLockedAccounts() {
+    if (!confirm('全ユーザーのロック・再連携・凍結アカウントを一括更新しますか？')) return;
+    fetch('account_process.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'refresh_all_locked' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        window.location.reload();
+    })
+    .catch(error => { console.error('エラー:', error); });
+}
     </script>
 
 
@@ -574,5 +719,14 @@ function toggleMenu(menuEl) {
         });
     </script>
   </div>
+  <div id="summary_modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#222; padding:20px; border-radius:8px; min-width:500px; max-height:80vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="color:#fff; margin:0;">ユーザー別集計</h3>
+            <button onclick="document.getElementById('summary_modal').style.display='none'" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">✕</button>
+        </div>
+        <div id="summary_modal_body"></div>
+    </div>
+</div>
 </body>
 </html>

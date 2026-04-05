@@ -10,6 +10,7 @@ import json
 from requests_oauthlib import OAuth1Session
 from datetime import datetime, timezone, timedelta
 from mysql import delete_account_error_log
+from mysql import unlock_unauthorized
 from twitter_api_v2 import proc_refresh_queue
 
 from twitter_api_v2 import proc_like_v2
@@ -195,6 +196,7 @@ if credentials:
         result1 , contents1 , contents2= refresh_access_token(credentials)
         if result1 == True:
             delete_account_error_log(account_id)
+            unlock_unauthorized(account_id)
 
     elif mode == "checkairep":
         result1 , contents1 = check_replies(credentials , get_account_master(account_id2))
@@ -223,6 +225,10 @@ if credentials:
     outputLog(f"result2={result2}")
     outputLog(f"contents2={contents2}")
 
+    #save_tweet_historyの後に自動リフレッシュしないと、is_unauthorizedがずっとTrueになってしまう
+    print(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
+    save_tweet_history(account_id, comment_id , mode , tweet_id , result1 , contents1 , result2 , contents2)
+
     # --- 仕上げ：ここから追加 ---
     # contents1（APIレスポンス）に 401 が含まれているかチェック
     is_unauthorized = False
@@ -236,14 +242,13 @@ if credentials:
         if res_ref:
             outputLog("自動リフレッシュ成功。エラーログを削除しました。")
             delete_account_error_log(account_id)
+            unlock_unauthorized(account_id)
             # 履歴保存用のステータスを更新（任意）
             result2 = True 
             contents2 = "Auto Refreshed"
         else:
             outputLog("自動リフレッシュ失敗。手動連携が必要です。")
 
-    print(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
-    save_tweet_history(account_id, comment_id , mode , tweet_id , result1 , contents1 , result2 , contents2)
     sys.exit(0)
 #        sys.exit(1)    #false時?
 
