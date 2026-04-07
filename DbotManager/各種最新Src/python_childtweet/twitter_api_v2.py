@@ -41,20 +41,20 @@ from datetime import datetime, timezone
 #chatgpt フォルダを Python のパスに追加
 sys.path.append(os.path.abspath("chatgpt"))
 
-from chatgpt_reply import generate_reply
+#from chatgpt_reply import generate_reply
 #from chatgpt_tweet import generate_tweet,refine_tweet,generate_trend_tweet_by_keyword
-from chatgpt_tweet import generate_tweet
-from chatgpt_tweet import generate_trend_tweet
+#from chatgpt_tweet import generate_tweet
+#from chatgpt_tweet import generate_trend_tweet
 
-from search_chat import get_tweet_text_from_yahoo_trend
-from search_chat import get_tweet_text_from_yahoo_btc
-from search_chat import get_tweet_text_from_yahoo_pair  # レート取得できないため、未対応
-from search_chat import get_tweet_text_from_yahoo_gold  # レート取得できないため、未対応
+#from search_chat import get_tweet_text_from_yahoo_trend
+#from search_chat import get_tweet_text_from_yahoo_btc
+#from search_chat import get_tweet_text_from_yahoo_pair  # レート取得できないため、未対応
+#from search_chat import get_tweet_text_from_yahoo_gold  # レート取得できないため、未対応
 
 # 2025.10.15 追加
-from prompt import PROMPT1
-from prompt import past_tweets_1
-from prompt import TREND_PROMPT
+#from prompt import PROMPT1
+#from prompt import past_tweets_1
+#from prompt import TREND_PROMPT
 
 
 
@@ -1131,7 +1131,7 @@ def proc_following_v1(credentials, target_user):
         api.create_friendship(user_id=target_user_id) #フォロー
     except Exception as e:
         # すでに「いいね」、フォロー済みだとこれが出力。
-        print('　【失敗】' + str(e))
+        outputLog('　【失敗】' + str(e))
 
 #    response_str = json.dumps(response.json())  # json.dumps を使用
 #    return response.status_code == 200, response_str

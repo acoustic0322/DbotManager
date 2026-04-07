@@ -23,15 +23,15 @@ from twitter_api_v1 import proc_post_v10a
 from twitter_api_v2 import check_replies
 from twitter_api_v2 import get_username_from_tweet_id_v2
 from twitter_api_v2 import proc_search_v2
-from twitter_api_v1 import proc_monomane_v1
-from other import proc_profile_image
-from other import update_profile_image
+#from twitter_api_v1 import proc_monomane_v1
+#from other import proc_profile_image
+#from other import update_profile_image
 
-from jap_api import proc_like_jap
-from jap_api import proc_bookmark_jap
-from jap_api import proc_repost_jap
-from jap_api import proc_profile_jap
-from jap_api import proc_detail_jap
+#from jap_api import proc_like_jap
+#from jap_api import proc_bookmark_jap
+#from jap_api import proc_repost_jap
+#from jap_api import proc_profile_jap
+#from jap_api import proc_detail_jap
 
 from twitter_api_v2 import proc_following_v2
 from twitter_api_v2 import proc_unfollowing_v2
@@ -48,14 +48,14 @@ from mysql import getOwnTweetId
 from mysql import get_search_history
 from mysql import init_check_tweet_account_master_by_search_list
 
-from tweet_copy_dmm import tweet_copy_dmm
+#from tweet_copy_dmm import tweet_copy_dmm
 
 import config
 from config import outputLog
 
 #from tweet_watch import fetch_latest_tweet
 
-from get_tweet_firefox_to_graphql import proc_get_tweet
+#from get_tweet_firefox_to_graphql import proc_get_tweet
 
 # コマンドライン引数の解析関数
 def parse_arguments(args):
@@ -226,7 +226,7 @@ if credentials:
     outputLog(f"contents2={contents2}")
 
     #save_tweet_historyの後に自動リフレッシュしないと、is_unauthorizedがずっとTrueになってしまう
-    outputLog(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
+    print(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
     save_tweet_history(account_id, comment_id , mode , tweet_id , result1 , contents1 , result2 , contents2)
 
     # --- 仕上げ：ここから追加 ---

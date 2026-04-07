@@ -1,0 +1,1 @@
+python tweet.py mode=post account_id=1 ai_mode=0 ai_enable=True debug=True 
