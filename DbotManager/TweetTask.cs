@@ -205,7 +205,8 @@ namespace DbotManager
             {
                 userMasterList = dataAccess.GetUserMaster();
                 userMasterList_リプ = dataAccess.GetUserMaster();
-                accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == UserId).ToList();
+//                accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == UserId).ToList();
+                accountMasterList = dataAccess.GetAccountMaster().ToList();
             }
 
             // 2026.04.04 ロック解除&凍結解除&再連携済みのアカウントに絞る

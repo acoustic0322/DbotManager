@@ -139,6 +139,8 @@ namespace ChildTweet
                 TweetProcTypes.リプライ => orderReplyList.Count,
             };
 
+            if (max_count == 0) return;
+
             List<int> commmentIdList = type switch
             {
                 TweetProcTypes.リプライ => orderReplyList.Select(x => x.CommentId).ToList(),
@@ -161,6 +163,8 @@ namespace ChildTweet
 
                 for (int i = 0; i < accountIdList.Count; i++)
                 {
+
+
                     int accountId = accountIdList[i];
 
                     int commentId = 0;
@@ -182,16 +186,24 @@ namespace ChildTweet
                         CommentId = commentId
                     });
 
-                    // 
-                    if(result.result1 == true)
+                    if(result is not null)
                     {
-                        _log($"　┗【成功】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
-                        resultCount++;
+                        // 
+                        if (result.result1 == true)
+                        {
+                            _log($"　┗【成功】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                            resultCount++;
+                        }
+                        else
+                        {
+                            _log($"　┗【エラー】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                        }
                     }
                     else
                     {
-                        _log($"　┗【エラー】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                        int a = 1;
                     }
+
 
                     if (resultCount >= max_count)
                     {
