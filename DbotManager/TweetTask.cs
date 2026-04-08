@@ -338,10 +338,10 @@ namespace DbotManager
             }
             else
             {
-                likeAccountGpList = SplitByCount(LikeAccountList, 1);
-                bookmarkAccountGpList = SplitByCount(LikeAccountList, 1);
-                likeCountList = SplitCounts(いいね件数, 1);
-                bookMarkCountList = SplitCounts(ブックマーク件数, 1);
+                likeAccountGpList = SplitByCount(LikeAccountList, vpsMasterList.Count());
+                bookmarkAccountGpList = SplitByCount(LikeAccountList, vpsMasterList.Count());
+                likeCountList = SplitCounts(いいね件数, vpsMasterList.Count());
+                bookMarkCountList = SplitCounts(ブックマーク件数, vpsMasterList.Count());
             }
 
             int gpNo = 0;
