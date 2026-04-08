@@ -207,8 +207,21 @@ def get_user_id(credentials, username):
     proxies = {"http": credentials['proxy_url'], "https": credentials['proxy_url']} if credentials.get('proxy_enable') else None
 
     # impersonateを適用してGETリクエスト
-    response = requests.get(url, headers=headers, proxies=proxies, impersonate=target)
-
+#    response = requests.get(url, headers=headers, proxies=proxies, impersonate=target)
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            proxies=proxies,
+            impersonate=target,
+            timeout=(5, 10)
+        )
+    except requests.exceptions.Timeout:
+        outputLog("get_user_id:timeout")
+        return None, False, "timeout"
+    except requests.exceptions.RequestException as e:
+        outputLog("get_user_id:exception")
+        return None, False, str(e)
     if response.status_code == 200:
         user_data = response.json()
         if "data" not in user_data:
@@ -1131,7 +1144,7 @@ def proc_following_v1(credentials, target_user):
         api.create_friendship(user_id=target_user_id) #フォロー
     except Exception as e:
         # すでに「いいね」、フォロー済みだとこれが出力。
-        print('　【失敗】' + str(e))
+        outputLog('　【失敗】' + str(e))
 
 #    response_str = json.dumps(response.json())  # json.dumps を使用
 #    return response.status_code == 200, response_str

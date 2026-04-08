@@ -254,6 +254,13 @@ if credentials:
 
 else:
     outputLog(f"エラーが発生しました: ID {credentials} の認証情報が見つかりませんでした。")
+
+    print(json.dumps({
+        "result1": False,
+        "contents1": f"エラーが発生しました: ID {credentials} の認証情報が見つかりませんでした。",
+        "result2": False,
+        "contents2": None
+    }))
     sys.exit(1)
 
 
