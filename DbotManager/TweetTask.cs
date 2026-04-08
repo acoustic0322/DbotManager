@@ -93,7 +93,9 @@ namespace DbotManager
         public int VpsId { get; set; }
         public string VpsPort { get; set; }
         public string TweetId { get; set; }
+        public int LikeCount { get; set; }
         public List<int> LikeList { get; set; }
+        public int BookmarkCount { get; set; }
         public List<int> BookmarkList { get; set; }
         public List<int> RepostList { get; set; }
         public List<ReplyEntry> ReplyList { get; set; }
@@ -211,6 +213,8 @@ namespace DbotManager
                 accountMasterList = accountMasterList.Where(x => !x.IsLocked && !x.IsSuspended && !x.IsUnauthorized).ToList();
             }
 
+
+#if false 
             // 「いいね」リスト抽出
             {
                 List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.いいね, ユーザー権限無視);
@@ -246,6 +250,13 @@ namespace DbotManager
                 BookmarkAccountList.AddRange(bookmarkList1);
                 BookmarkAccountList.AddRange(bookmarkList2);
             }
+#else     // リトライ処理対応の為、上限を絞る処理は割愛
+            List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.いいね, ユーザー権限無視);
+            LikeAccountList = likeList.OrderBy(_ => Guid.NewGuid()).ToList();
+
+            List<AccountMaster> bookmarkList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.ブックマーク, ユーザー権限無視);
+            BookmarkAccountList = bookmarkList.OrderBy(_ => Guid.NewGuid()).ToList();
+#endif
 
             List<AccountMaster> replyList = FilterAccountList(userMasterList_リプ, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.リプライ, ユーザー権限無視, ReplyToRep);
             List<AccountMaster> repostList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.リポスト, ユーザー権限無視);
@@ -270,6 +281,33 @@ namespace DbotManager
                 });
         }
 
+        public static List<List<T>> SplitByCount<T>(List<T> list, int groupCount)
+        {
+            int size = (int)Math.Ceiling((double)list.Count / groupCount);
+
+            return list
+                .Select((x, i) => new { Index = i, Value = x })
+                .GroupBy(x => x.Index / size)
+                .Select(g => g.Select(x => x.Value).ToList())
+                .ToList();
+        }
+
+        public static List<int> SplitCounts(int totalCount, int groupCount)
+        {
+            var result = new List<int>();
+
+            int baseCount = totalCount / groupCount;   // 基本配分
+            int remainder = totalCount % groupCount;   // 余り
+
+            for (int i = 0; i < groupCount; i++)
+            {
+                // 余りは先頭から1ずつ配る
+                result.Add(baseCount + (i < remainder ? 1 : 0));
+            }
+
+            return result;
+        }
+
         public void Exe_一括処理()
         {
             if (LikeAccountList == null) return;
@@ -279,33 +317,44 @@ namespace DbotManager
 
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
-            List<VpsMaster> vpsMasterList = dataAccess.GetVpsMaster();
+            List<VpsMaster> vpsMasterList = dataAccess.GetVpsMaster().Where(x => x.ChildEnable).ToList();
 
-            /*
-            foreach(var row in LikeAccountList)
+            List<List<AccountMaster>> likeAccountGpList = new List<List<AccountMaster>>();
+            List<List<AccountMaster>> bookmarkAccountGpList = new List<List<AccountMaster>>();
+            List<int> likeCountList = new List<int>();
+            List<int> bookMarkCountList = new List<int>();
+
+            // ユーザー指定されている場合
+            if (UserId != 0)
             {
-                row.VpsId = 0;
+                vpsMasterList = vpsMasterList.Where(x => x.UserId == UserId).ToList();
+                // VPSグルーピング数で分割
+                likeAccountGpList = SplitByCount(LikeAccountList, vpsMasterList.Count());
+                bookmarkAccountGpList = SplitByCount(LikeAccountList, vpsMasterList.Count());
+
+                likeCountList = SplitCounts(いいね件数 , vpsMasterList.Count());
+                bookMarkCountList = SplitCounts(ブックマーク件数, vpsMasterList.Count());
             }
-            foreach (var row in ReplyAccountList)
+            else
             {
-                row.VpsId = 0;
+                likeAccountGpList = SplitByCount(LikeAccountList, 1);
+                bookmarkAccountGpList = SplitByCount(LikeAccountList, 1);
+                likeCountList = SplitCounts(いいね件数, 1);
+                bookMarkCountList = SplitCounts(ブックマーク件数, 1);
             }
-            foreach (var row in BookmarkAccountList)
-            {
-                row.VpsId = 0;
-            }
-            foreach (var row in RepostAccountList)
-            {
-                row.VpsId = 0;
-            }
-            */
+
+            int gpNo = 0;
 
             foreach (var vps in vpsMasterList)
             {
                 if (vps.Id == 0) continue;
 
-                var likeList = LikeAccountList.Where(x => x.VpsId == vps.Id).ToList();
-                var bookmarkList = BookmarkAccountList.Where(x => x.VpsId == vps.Id).ToList();
+//                var likeList = LikeAccountList.Where(x => x.VpsId == vps.Id).ToList();
+//                var bookmarkList = BookmarkAccountList.Where(x => x.VpsId == vps.Id).ToList();
+                var likeList = likeAccountGpList[gpNo];
+                var bookmarkList = bookmarkAccountGpList[gpNo];
+
+
                 var repostList = RepostAccountList.Where(x => x.VpsId == vps.Id).ToList();
                 var replyList = ReplyAccountList.Where(x => x.VpsId == vps.Id).ToList();
 
@@ -316,8 +365,12 @@ namespace DbotManager
                     VpsIp = vps.IpAddress,
                     VpsId = vps.Id,
                     VpsPort = vps.Port,
+
                     LikeList = likeList.Select(x => x.Id).ToList(),
+                    LikeCount = likeCountList[gpNo],
                     BookmarkList = bookmarkList.Select(x => x.Id).ToList(),
+                    BookmarkCount = bookMarkCountList[gpNo],
+
                     RepostList = repostList.Select(x => x.Id).ToList(),
                     ReplyList = replyList.Select(x => new ReplyEntry
                     {
@@ -329,6 +382,8 @@ namespace DbotManager
                 };
 
                 TweetVpsProc(tweetVpsCommand);
+
+                gpNo++;
 
             }
 
@@ -665,7 +720,7 @@ namespace DbotManager
         }
 
 
-        #endregion
+#endregion
 
         #region 監視処理
 
@@ -1389,7 +1444,9 @@ namespace DbotManager
             var requestData = new
             {
                 tweet_id = tweetVpsCommand.TweetId,
+                like_count = tweetVpsCommand.LikeCount,
                 like_list = tweetVpsCommand.LikeList,
+                bookmark_count = tweetVpsCommand.BookmarkCount,
                 bookmark_list = tweetVpsCommand.BookmarkList,
                 repost_list = tweetVpsCommand.RepostList,
                 reply_list = tweetVpsCommand.ReplyList,  // ここはそのままリストで渡す

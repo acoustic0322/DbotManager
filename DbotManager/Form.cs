@@ -561,8 +561,6 @@ namespace DbotManager
             _tweetTask.Init一括処理list(ユーザー権限無視 , (_tweetTask.ReplyEnable || _tweetTask.ReplyToRep ));
 
             var userList = dataAccess.GetUserMaster();
-            var commentList = dataAccess.GetCommentMaster();
-            var mediaList = dataAccess.GetMediaMaster();
 
             {
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
@@ -593,7 +591,11 @@ namespace DbotManager
                 }
             }
 
+            if(_tweetTask.ReplyAccountList.Count > 0)
             {
+                var commentList = dataAccess.GetCommentMaster();
+                var mediaList = dataAccess.GetMediaMaster();
+
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.ReplyAccountList)
                 {

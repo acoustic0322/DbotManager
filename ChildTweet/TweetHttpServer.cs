@@ -122,7 +122,9 @@ namespace ChildTweet
     {
         public int id { get; set; }          // ★追加
         public string tweet_id { get; set; }
+        public int like_count { get; set; }
         public List<int> like_list { get; set; }
+        public int bookmark_count { get; set; }
         public List<int> bookmark_list { get; set; }
         public List<int> repost_list { get; set; }
         public List<ReplyItem> reply_list { get; set; }

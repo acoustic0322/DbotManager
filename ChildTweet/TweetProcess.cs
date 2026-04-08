@@ -131,16 +131,34 @@ namespace ChildTweet
                 _ => orderReplyList.OrderBy(_ => _rand.Value.Next()).ToList().Select(x => x.AccountId).ToList()
             };
 
+            int max_count = type switch
+            {
+                TweetProcTypes.いいね => req.like_count,
+                TweetProcTypes.ブックマーク => req.bookmark_count,
+                TweetProcTypes.リポスト => orderRepostList.Count,
+                TweetProcTypes.リプライ => orderReplyList.Count,
+            };
+
             List<int> commmentIdList = type switch
             {
                 TweetProcTypes.リプライ => orderReplyList.Select(x => x.CommentId).ToList(),
                 _ => null
             };
 
+            bool retryFlag = type switch
+            {
+                TweetProcTypes.いいね => true,
+                TweetProcTypes.ブックマーク => true,
+                TweetProcTypes.リポスト => false,
+                TweetProcTypes.リプライ => false,
+            };
+
             _log($"全{accountIdList.Count}件 {symbol}{name}");
 
             try
             {
+                int resultCount = 0;
+
                 for (int i = 0; i < accountIdList.Count; i++)
                 {
                     int accountId = accountIdList[i];
@@ -156,13 +174,30 @@ namespace ChildTweet
                     _log($"┗{symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
                     await Task.Delay(delay);
 
-                    await TweetProc(new TweetCommand
+                    var result = await TweetProc(new TweetCommand
                     {
                         AccountId = accountId,
                         TweetId = req.tweet_id,
                         TweetProcType = type,
                         CommentId = commentId
                     });
+
+                    // 
+                    if(result.result1 == true)
+                    {
+                        _log($"　┗【成功】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                        resultCount++;
+                    }
+                    else
+                    {
+                        _log($"　┗【エラー】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                    }
+
+                    if (resultCount >= max_count)
+                    {
+                        _log($"{symbol}件数が上限 ({resultCount}件)に達したため、処理を終了します");
+                        break;
+                    }
                 }
 
             }

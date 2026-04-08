@@ -16,5 +16,7 @@ namespace DbotManager.Table
         public string Pass { get; set; }
         public string Memo { get; set; }
 
+        public int UserId { get; set; }
+        public bool ChildEnable { get; set; }
     }
 }

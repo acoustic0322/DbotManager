@@ -2198,7 +2198,9 @@ public class MySqlDataAccess
                     name,
                     username,
                     pass,
-                    memo
+                    memo,
+                    user_id,
+                    child_enable
                 FROM vps_master";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -2216,6 +2218,8 @@ public class MySqlDataAccess
                                 Username = reader["username"].ToString(),
                                 Pass = reader["pass"].ToString(),
                                 Memo = reader["memo"].ToString(),
+                                UserId = reader["user_id"] != DBNull.Value ? Convert.ToInt32(reader["user_id"]) : 0,
+                                ChildEnable = reader["child_enable"].ToString() == "1",
                             };
 
                             vpsList.Add(searchItem);
