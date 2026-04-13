@@ -20,6 +20,7 @@ namespace DbotManager.Entity
         public int ReplyCount { get; set; }
         public int RepostCount { get; set; }
         public bool Duplicate { get; set; }
+        public int SensyukenMode { get; set; }
 
     }
 }

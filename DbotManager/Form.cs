@@ -150,6 +150,11 @@ namespace DbotManager
                 {
                     ret.Duplicate = duplicate;
                 }
+
+                if (parameters.TryGetValue("SensyukenMode", out string sensyukenMode))
+                {
+                    ret.SensyukenMode = int.Parse(sensyukenMode);
+                }
             }
 
             return ret;
@@ -314,7 +319,8 @@ namespace DbotManager
                     checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
                     checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
                     checkBoxDuplicate.Checked ,
-                    GetTweetId(textBoxUrlTweetID.Text)        
+                    GetTweetId(textBoxUrlTweetID.Text),
+                    _webCommand.SensyukenMode
                 );
 
                 Exe一括処理();
@@ -413,6 +419,11 @@ namespace DbotManager
 
         private void buttonMakeList_Click(object sender, EventArgs e)
         {
+            if(!checkBoxSensyukenMode.Checked && !checkBoxUserID.Checked)
+            {
+                MessageBox.Show("選手権モードはOFF(自いいねモード)時はユーザー設定必須です");
+                return;
+            }
 
             MakeList_一括処理(
                 checkBoxいいね.Checked, checkBoxいいね.Checked ? int.Parse(textBoxいいね件数.Text) : 0,
@@ -424,6 +435,7 @@ namespace DbotManager
                 checkBoxUserID.Checked ? int.Parse(comboBoxUserMaster.SelectedValue.ToString()) : 0,
                 checkBoxDuplicate.Checked,
                 GetTweetId(textBoxUrlTweetID.Text),
+                checkBoxSensyukenMode.Checked ? 1 : 0,
                 true,
                 checkBox一括処理禁止権限無視.Checked
             );
@@ -529,15 +541,22 @@ namespace DbotManager
         #region TweetTask関連
 
         private void MakeList_一括処理(
-            bool likeChecked, int likeCount,
-            bool replyChecked, int replyCount,
-            bool repToRep,
-            bool bookmarkChecked, int bookmarkCount,
-            bool repostChecked, int repostCount,
-            bool excludeFreeAccount, int userId,
-            bool duplicateChecked, string tweetId,
-            bool fillControl = true,
-            bool ユーザー権限無視 = false
+            bool likeChecked
+            , int likeCount
+            , bool replyChecked
+            , int replyCount
+            , bool repToRep
+            , bool bookmarkChecked
+            , int bookmarkCount
+            , bool repostChecked
+            , int repostCount
+            , bool excludeFreeAccount
+            , int userId
+            , bool duplicateChecked
+            , string tweetId
+            , int sensyuken_mode
+            , bool fillControl = true
+            , bool ユーザー権限無視 = false
             
             )
         {
@@ -557,11 +576,13 @@ namespace DbotManager
             _tweetTask.DuplicateEnable = duplicateChecked;
 
             _tweetTask.UserId = userId;
+            _tweetTask.SensyukenMode = sensyuken_mode == 1;
 
             _tweetTask.Init一括処理list(ユーザー権限無視 , (_tweetTask.ReplyEnable || _tweetTask.ReplyToRep ));
 
             var userList = dataAccess.GetUserMaster();
 
+            if(likeChecked)
             {
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.LikeAccountList)
@@ -590,55 +611,69 @@ namespace DbotManager
                     labelいいね件数.Text = $"({list.Count}件)";
                 }
             }
-
-            if(_tweetTask.ReplyAccountList.Count > 0)
+            else
             {
-                var commentList = dataAccess.GetCommentMaster();
-                var mediaList = dataAccess.GetMediaMaster();
-
-                List<処理アカウントInfo> list = new List<処理アカウントInfo>();
-                foreach (var item in _tweetTask.ReplyAccountList)
-                {
-                    var photoName = string.Empty;
-                    if(item.PhotoId != 0)
-                    {
-                        photoName = mediaList.Where(x => x.MediaId == item.PhotoId).FirstOrDefault().Name + "(P)";
-                    }
-                    var movieName = string.Empty;
-                    if (item.MovieId != 0)
-                    {
-                        movieName = mediaList.Where(x => x.MediaId == item.MovieId).FirstOrDefault().Name + "(M)";
-                    }
-
-                    var userRow = userList.Where(x => x.Id == item.UserId);
-                    var commentRow = commentList.Where(x => x.Id == item.CommentId);
-
-                    if(userRow.Count() > 0 && commentRow.Count() > 0)
-                    {
-                        list.Add(new 処理アカウントInfo()
-                        {
-                            ID = item.Id,
-                            UserID = item.UserId,
-                            AccountName = item.Name,
-                            UserName = userRow.FirstOrDefault().Name,
-                            Comment = commentRow.FirstOrDefault().Comment,
-                            Media = photoName + movieName
-                        });
-                    }
-                    else
-                    {
-                        int a = 1;
-                    }
-
-                }
-
-                if(fillControl)
-                {
-                    dataGridViewリプライ.DataSource = list.OrderBy(x => x.ID).ToList();
-                    labelリプライ.Text = $"({list.Count}件)";
-                }
+                dataGridViewいいね.DataSource = null;
+                labelいいね件数.Text = $"(0件)";
             }
 
+            if(replyChecked)
+            {
+                if (_tweetTask.ReplyAccountList.Count > 0)
+                {
+                    var commentList = dataAccess.GetCommentMaster();
+                    var mediaList = dataAccess.GetMediaMaster();
+
+                    List<処理アカウントInfo> list = new List<処理アカウントInfo>();
+                    foreach (var item in _tweetTask.ReplyAccountList)
+                    {
+                        var photoName = string.Empty;
+                        if (item.PhotoId != 0)
+                        {
+                            photoName = mediaList.Where(x => x.MediaId == item.PhotoId).FirstOrDefault().Name + "(P)";
+                        }
+                        var movieName = string.Empty;
+                        if (item.MovieId != 0)
+                        {
+                            movieName = mediaList.Where(x => x.MediaId == item.MovieId).FirstOrDefault().Name + "(M)";
+                        }
+
+                        var userRow = userList.Where(x => x.Id == item.UserId);
+                        var commentRow = commentList.Where(x => x.Id == item.CommentId);
+
+                        if (userRow.Count() > 0 && commentRow.Count() > 0)
+                        {
+                            list.Add(new 処理アカウントInfo()
+                            {
+                                ID = item.Id,
+                                UserID = item.UserId,
+                                AccountName = item.Name,
+                                UserName = userRow.FirstOrDefault().Name,
+                                Comment = commentRow.FirstOrDefault().Comment,
+                                Media = photoName + movieName
+                            });
+                        }
+                        else
+                        {
+                            int a = 1;
+                        }
+
+                    }
+
+                    if (fillControl)
+                    {
+                        dataGridViewリプライ.DataSource = list.OrderBy(x => x.ID).ToList();
+                        labelリプライ.Text = $"({list.Count}件)";
+                    }
+                }
+
+            }
+            else
+            {
+                dataGridViewリプライ.DataSource = null;
+            }
+
+            if (bookmarkChecked)
             {
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.BookmarkAccountList)
@@ -668,7 +703,13 @@ namespace DbotManager
 
                 }
             }
+            else
+            {
+                dataGridViewブックマーク.DataSource = null;
+                labelブックマーク件数.Text = $"(0件)";
+            }
 
+            if(repostChecked)
             {
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.RepostAccountList)
@@ -697,6 +738,10 @@ namespace DbotManager
                     labelリポスト件数.Text = $"({list.Count}件)";
 
                 }
+            }
+            else
+            {
+                dataGridViewリポスト.DataSource = null;
             }
         }
 
@@ -953,10 +998,11 @@ namespace DbotManager
                         item.RepostEnable,
                         item.RepostCount,
                         checkBox_15分以内に履歴のある無料アカウントを除外する.Checked,
-                        item.SensyukenMode == 0 ? item.UserId : 0,    // 選手権モード時はUSERIDを指定しない(全ユーザーでいいね・ブクマ処理)
+                        item.UserId,
                         item.Dumplicate,
                         ExtractNumber(item.TweetId),
-                        false
+                        item.SensyukenMode
+                        ,false
 
                         );
 

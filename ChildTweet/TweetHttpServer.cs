@@ -126,7 +126,9 @@ namespace ChildTweet
         public List<int> like_list { get; set; }
         public int bookmark_count { get; set; }
         public List<int> bookmark_list { get; set; }
+        public int repost_count { get; set; }
         public List<int> repost_list { get; set; }
+        public int reply_count { get; set; }
         public List<ReplyItem> reply_list { get; set; }
         public bool rep_to_rep { get; set; }
     }

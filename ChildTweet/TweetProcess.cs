@@ -118,11 +118,12 @@ namespace ChildTweet
                 _ => "reply"
             };
 
-            var orderLikeList = req.like_list.OrderBy(_ => _rand.Value.Next()).ToList();
-            var orderBookmarkList = req.bookmark_list.OrderBy(_ => _rand.Value.Next()).ToList();
-            var orderRepostList = req.repost_list.OrderBy(_ => _rand.Value.Next()).ToList();
-            var orderReplyList = req.reply_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            var orderLikeList = req.like_list == null ? null : req.like_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            var orderBookmarkList = req.bookmark_list == null ? null : req.bookmark_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            var orderRepostList = req.repost_list == null ? null : req.repost_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            var orderReplyList = req.reply_list == null ? null : req.reply_list.OrderBy(_ => _rand.Value.Next()).ToList();
 
+            /*
             List<int> accountIdList = type switch
             {
                 TweetProcTypes.いいね => orderLikeList,
@@ -130,20 +131,29 @@ namespace ChildTweet
                 TweetProcTypes.リポスト => orderRepostList,
                 _ => orderReplyList.OrderBy(_ => _rand.Value.Next()).ToList().Select(x => x.AccountId).ToList()
             };
+            */
+
+            List<int> accountIdList = type switch
+            {
+                TweetProcTypes.いいね => orderLikeList ?? new List<int>(),
+                TweetProcTypes.ブックマーク => orderBookmarkList ?? new List<int>(),
+                TweetProcTypes.リポスト => orderRepostList ?? new List<int>(),
+                _ => orderReplyList == null ? new List<int>() : orderReplyList.OrderBy(_ => _rand.Value.Next()).ToList().Select(x => x.AccountId).ToList()
+            };
 
             int max_count = type switch
             {
                 TweetProcTypes.いいね => req.like_count,
                 TweetProcTypes.ブックマーク => req.bookmark_count,
-                TweetProcTypes.リポスト => orderRepostList.Count,
-                TweetProcTypes.リプライ => orderReplyList.Count,
+                TweetProcTypes.リポスト => req.repost_count,
+                TweetProcTypes.リプライ => req.reply_count,
             };
 
             if (max_count == 0) return;
 
             List<int> commmentIdList = type switch
             {
-                TweetProcTypes.リプライ => orderReplyList.Select(x => x.CommentId).ToList(),
+                TweetProcTypes.リプライ => orderReplyList == null ? null : orderReplyList.Select(x => x.CommentId).ToList(),
                 _ => null
             };
 
@@ -168,9 +178,12 @@ namespace ChildTweet
                     int accountId = accountIdList[i];
 
                     int commentId = 0;
-                    if(req.reply_list.Where(x => x.AccountId == accountIdList[i]).Count() > 0)
+                    if(req.reply_list != null)
                     {
-                        commentId = req.reply_list.Where(x => x.AccountId == accountIdList[i]).FirstOrDefault().CommentId;
+                        if (req.reply_list.Where(x => x.AccountId == accountIdList[i]).Count() > 0)
+                        {
+                            commentId = req.reply_list.Where(x => x.AccountId == accountIdList[i]).FirstOrDefault().CommentId;
+                        }
                     }
 
                     int delay = _rand.Value.Next(waitMin, waitMax);

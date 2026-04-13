@@ -130,6 +130,7 @@
             this.buttonクリアlog = new System.Windows.Forms.Button();
             this.buttonアカウント設定 = new System.Windows.Forms.Button();
             this.button履歴 = new System.Windows.Forms.Button();
+            this.checkBoxSensyukenMode = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabPage一括処理.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -550,6 +551,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.checkBoxSensyukenMode);
             this.groupBox3.Controls.Add(this.checkBoxUnFollow);
             this.groupBox3.Controls.Add(this.textBox対象アカウント名);
             this.groupBox3.Controls.Add(this.checkBoxFollow);
@@ -720,14 +722,14 @@
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.Text = "利用制限時間内の無料アカウントを除外する(いいね１日、ﾌﾞｯｸﾏｰｸ・ﾘﾎﾟｽﾄ15分)";
             this.checkBox_15分以内に履歴のある無料アカウントを除外する.UseVisualStyleBackColor = true;
             // 
-            // tabPage監視モノマネ
+            // tabPage自動リプライ
             // 
             this.tabPage自動リプライ.Controls.Add(this.groupBox基本設定_監視);
             this.tabPage自動リプライ.Controls.Add(this.groupBox監視);
             this.tabPage自動リプライ.Controls.Add(this.button監視End);
             this.tabPage自動リプライ.Controls.Add(this.button監視Start);
             this.tabPage自動リプライ.Location = new System.Drawing.Point(4, 28);
-            this.tabPage自動リプライ.Name = "tabPage監視モノマネ";
+            this.tabPage自動リプライ.Name = "tabPage自動リプライ";
             this.tabPage自動リプライ.Size = new System.Drawing.Size(781, 642);
             this.tabPage自動リプライ.TabIndex = 5;
             this.tabPage自動リプライ.Text = "自動リプライ";
@@ -1171,6 +1173,18 @@
             this.button履歴.UseVisualStyleBackColor = true;
             this.button履歴.Click += new System.EventHandler(this.button履歴_Click);
             // 
+            // checkBoxSensyukenMode
+            // 
+            this.checkBoxSensyukenMode.AutoSize = true;
+            this.checkBoxSensyukenMode.Checked = true;
+            this.checkBoxSensyukenMode.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxSensyukenMode.Location = new System.Drawing.Point(534, 119);
+            this.checkBoxSensyukenMode.Name = "checkBoxSensyukenMode";
+            this.checkBoxSensyukenMode.Size = new System.Drawing.Size(107, 23);
+            this.checkBoxSensyukenMode.TabIndex = 17;
+            this.checkBoxSensyukenMode.Text = "選手権モード";
+            this.checkBoxSensyukenMode.UseVisualStyleBackColor = true;
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -1325,6 +1339,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn UserID;
         private System.Windows.Forms.DataGridViewTextBoxColumn LikeID;
         private System.Windows.Forms.DataGridViewTextBoxColumn LikeAccount;
+        private System.Windows.Forms.CheckBox checkBoxSensyukenMode;
     }
 }
 
