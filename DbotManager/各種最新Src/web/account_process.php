@@ -41,6 +41,30 @@ if ($command == 'refresh') {
     exit;
 }
 
+if ($command == 'refresh_unlock') {
+    foreach ($selectedIds as $id) {
+        $stmt = $conn->prepare("
+            INSERT INTO refresh_queue (account_id, status, created_at, updated_at)
+            VALUES (?, 'pending', NOW(), NOW())
+        ");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+
+        // ② ロック解除
+        $stmt2 = $conn->prepare("
+            UPDATE account_master 
+            SET is_locked = 0 
+            WHERE id = ?
+        ");
+        $stmt2->bind_param("i", $id);
+        $stmt2->execute();
+        $stmt2->close();        
+    }
+    echo json_encode(['message' => 'トークン更新をキューに追加しました。']);
+    exit;
+}
+
 if ($command == 'delete_frozen') {
     $stmt = $conn->prepare("
         DELETE am FROM account_master am
@@ -100,7 +124,7 @@ if ($command == 'get_user_summary') {
     FROM account_master am
     LEFT JOIN account_error_log ael ON ael.account_id = am.id
     JOIN user_master um ON um.id = am.user_id
-    WHERE um.username NOT IN ('marumaru', 'next', 'r', 'rrr7', 'g')
+    WHERE um.username NOT IN ('marumaru', 'next', 'r', 'rrr7', 'g','web')
     GROUP BY um.id, um.username
     ORDER BY um.username
 ");

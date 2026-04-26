@@ -448,20 +448,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="text" name="login_password" value="<?= htmlspecialchars($edit_account['login_password'] ?? '') ?>">
           -->
 
-          <label>Client ID</label>
-          <input type="text" name="client_id" value="<?= htmlspecialchars($edit_account['client_id'] ?? '') ?>">
+          <?php
+            $hide = !empty($edit_account['id'])
+                && isset($_SESSION['hide_sensitive_fields'])
+                && (int)$_SESSION['hide_sensitive_fields'] === 1;
 
-          <label>Client Secret</label>
-          <input type="text" name="client_secret" value="<?= htmlspecialchars($edit_account['client_secret'] ?? '') ?>">
+            $sensitive_labels = [
+                'client_id'      => 'Client ID',
+                'client_secret'  => 'Client Secret',
+                'api_key'        => 'API Key',
+                'api_key_secret' => 'API Key Secret',
+            ];
+            foreach ($sensitive_labels as $field => $label): ?>
+            <?php if (!$hide): ?>
+                <label><?= $label ?></label>
+                <input type="text" name="<?= $field ?>"
+                    value="<?= htmlspecialchars($edit_account[$field] ?? '') ?>">
+            <?php else: ?>
+                <input type="hidden" name="<?= $field ?>"
+                    value="<?= htmlspecialchars($edit_account[$field] ?? '') ?>">
+            <?php endif; ?>
+            <?php endforeach; ?>
 
           <label>DMM ID</label>
           <input type="text" name="dmm_id" value="<?= htmlspecialchars($edit_account['dmm_id'] ?? '') ?>">
-
-          <label>API Key</label>
-          <input type="text" name="api_key" value="<?= htmlspecialchars($edit_account['api_key'] ?? '') ?>">
-
-          <label>API Key Secret</label>
-          <input type="text" name="api_key_secret" value="<?= htmlspecialchars($edit_account['api_key_secret'] ?? '') ?>">
 
           <div class="checkbox-group">
             <label><input type="checkbox" name="enable" value="1" <?= !empty($edit_account['enable']) ? 'checked' : '' ?>>有効</label>
@@ -476,9 +486,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label>監視周期（分）</label>
           <input type="number" class="short"  name="check_interval" value="<?= htmlspecialchars($edit_account['check_interval'] ?? '') ?>">
 
+          <?php if (!$hide): ?>
           <label>プロキシ使用 <input type="checkbox" name="proxy_enable" value="1" <?= !empty($edit_account['proxy_enable']) ? 'checked' : '' ?>></label>
           <label>プロキシURL</label>
           <input type="text" name="proxy_url" value="<?= htmlspecialchars($edit_account['proxy_url'] ?? '') ?>">
+          <?php else: ?>
+          <input type="hidden" name="proxy_enable" value="<?= !empty($edit_account['proxy_enable']) ? 1 : 0 ?>">
+          <input type="hidden" name="proxy_url" value="<?= htmlspecialchars($edit_account['proxy_url'] ?? '') ?>">
+          <?php endif; ?>
 
           <label>有料アカウント <input type="checkbox" name="paid" value="1" <?= !empty($edit_account['paid']) ? 'checked' : '' ?>></label>
           <label>有料API（いいね） <input type="checkbox" name="paid_like" value="1" <?= !empty($edit_account['paid_like']) ? 'checked' : '' ?>></label>

@@ -42,20 +42,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
   // データベースからユーザー情報を取得
-  $stmt = $conn->prepare("SELECT password,id FROM user_master WHERE username = ?");
-  $stmt->bind_param("s", $username);
-  $stmt->execute();
-  $stmt->store_result();
-  $stmt->bind_result($stored_hashed_password, $user_id);
-  $stmt->fetch();
+  // 変更後
+$stmt = $conn->prepare("SELECT password,id,hide_sensitive_fields FROM user_master WHERE username = ?");
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$stmt->store_result();
+$stmt->bind_result($stored_hashed_password, $user_id, $hide_sensitive_fields);
+$stmt->fetch();
 
-  if ($stmt->num_rows > 0) {
+if ($stmt->num_rows > 0) {
     if ($password == $stored_hashed_password) {
-      // 認証成功: セッションにユーザー名を保存し、ユーザー設定画面へリダイレクト
-      $_SESSION['user_id'] = $user_id;
-      header("Location: menu.php"); // user_settings.php 画面に遷移
-      exit;
-    } else {
+        $_SESSION['user_id'] = $user_id;
+        $_SESSION['hide_sensitive_fields'] = (int)$hide_sensitive_fields;
+        header("Location: menu.php");
+        exit;
+    }else {
       // パスワードが一致しない場合
       $error = "パスワードが間違っています。";
     }

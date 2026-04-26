@@ -110,20 +110,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-if ($search !== '' || $status_filter !== '') {
+$status_sql = '';
+if ($status_filter === 'suspention') {
+    $status_sql = " AND am.is_suspended = 1";
+} elseif ($status_filter === 'lock') {
+    $status_sql = " AND am.is_locked = 1";
+} elseif ($status_filter === 'unauthorized') {
+    $status_sql = " AND am.is_unauthorized = 1";
+}
+
+if ($search !== '') {
     $stmt = $conn->prepare("
     SELECT am.name,am.id,am.login_id,am.bearer_token,am.refresh_token,am.access_token,am.search_enable,am.use_admin_api,am.ai_mode,
            am.is_locked,am.is_suspended,am.is_unauthorized
     FROM account_master am
-    WHERE am.user_id=? AND am.name LIKE ?
+    WHERE am.user_id=? AND am.name LIKE ? $status_sql
     ");
-    $stmt->bind_param("ss", $current_userid,$searchParam);
+    $stmt->bind_param("ss", $current_userid, $searchParam);
 } else {
     $stmt = $conn->prepare("
     SELECT am.name,am.id,am.login_id,am.bearer_token,am.refresh_token,am.access_token,am.search_enable,am.use_admin_api,am.ai_mode,
            am.is_locked,am.is_suspended,am.is_unauthorized
     FROM account_master am
-    WHERE am.user_id=?
+    WHERE am.user_id=? $status_sql
     ");
     $stmt->bind_param("s", $current_userid);
 }
@@ -471,11 +480,11 @@ function toggleMenu(menuEl) {
   <?php echo htmlspecialchars($row['name']); ?> 
 <span style="color: #888; font-size: 12px;">[ID=<?php echo htmlspecialchars($row['id']); ?>]</span>
 <div style="margin-top: 4px;">
-<?php if (($row['latest_status'] ?? '') === '凍結'): ?>
+<?php if ((int)$row['is_suspended'] === 1): ?>
   <span style="background:#ef4444; color:white; font-size:11px; padding:2px 6px; border-radius:4px;">🚫 凍結</span>
-<?php elseif (($row['latest_status'] ?? '') === 'ロック'): ?>
+<?php elseif ((int)$row['is_locked'] === 1): ?>
   <span style="background:#f97316; color:white; font-size:11px; padding:2px 6px; border-radius:4px;">🔒 ロック</span>
-<?php elseif (($row['latest_status'] ?? '') === '再連携'): ?>
+<?php elseif ((int)$row['is_unauthorized'] === 1): ?>
   <span style="background:#6366f1; color:white; font-size:11px; padding:2px 6px; border-radius:4px;">🔑 再連携</span>
 <?php endif; ?>
 </div>
@@ -519,7 +528,7 @@ function toggleMenu(menuEl) {
     <a href="#" onclick="editAccountMaster(<?= $row['id'] ?>)">編集</a>
     <a href="#" onclick="editComment(<?= $row['id'] ?>)">ｺﾒﾝﾄ一覧</a>
     <a href="#" onclick="registComment(<?= $row['id'] ?>)">ｺﾒﾝﾄ登録</a>
-    <a href="#" onclick="refreshToken(<?= $row['id'] ?>)">アカウント更新🔄 </a>
+    <a href="#" onclick="refreshToken(<?= $row['id'] ?>)">ｱｶｳﾝﾄ更新&ﾛｯｸ解除🔄</a>
     <?php if (!empty($_SESSION['check_enable'])): ?>
       <a href="#" onclick="editCheckAccount(<?= $row['id'] ?>)">自動ﾘﾌﾟ,ﾓﾉﾏﾈ編集</a>
     <?php endif; ?>
@@ -588,24 +597,25 @@ function toggleMenu(menuEl) {
         }
 
         function refreshToken(id) {
-    if (!confirm('ID:' + id + ' のトークンを更新しますか？')) return;
+            if (!confirm('ID:' + id + ' のトークンを更新しますか？')) return;
     
-    fetch('account_process.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            command: 'refresh',
-            selected_ids: [String(id)]
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        window.location.reload();
-    })
-    .catch(error => {
-        console.error('エラー:', error);
-    });
+            fetch('account_process.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    command: 'refresh_unlock',
+                    selected_ids: [String(id)]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('エラー:', error);
+            }
+        );
 }
 
 function deleteFrozenAccounts() {
