@@ -209,6 +209,25 @@ namespace DbotManager
                 userMasterList = dataAccess.GetUserMaster().Where(x => x.SensyukenExec).ToList();
                 userMasterList_リプ = dataAccess.GetUserMaster().Where(x => x.SensyukenExecReply).ToList();
                 accountMasterList = dataAccess.GetAccountMaster();
+
+                // ユーザーグループで
+                {
+                    var userRowWk = dataAccess.GetUserMaster().Where(x => x.Id == UserId).FirstOrDefault();
+
+                    if (userRowWk.Admin)
+                    {
+                        // 2026.04.28 管理者権限のあるユーザーは、全Xアカウントで一括処理
+                        userMasterList = userMasterList;
+                    }
+                    else
+                    {
+                        var userGroupRow = dataAccess.GetUserGroupMaster().Where(x => x.Id == userRowWk.GroupId).FirstOrDefault();
+                        // 2026.04.28 管理者権限のないユーザーは、自グループのXアカウントで一括処理
+                        userMasterList = userMasterList.Where(x => x.GroupId == userRowWk.GroupId).ToList();
+                        userMasterList_リプ = userMasterList_リプ.Where(x => x.GroupId == userRowWk.GroupId).ToList();
+                    }
+                }
+
             }
             // 自いいねモード時は、自アカウントのみ対象
             else
@@ -217,6 +236,7 @@ namespace DbotManager
                 userMasterList_リプ = dataAccess.GetUserMaster();
                 accountMasterList = dataAccess.GetAccountMaster().Where(x => x.UserId == UserId).ToList();
             }
+
 
             // 2026.04.04 ロック解除&凍結解除&再連携済みのアカウントに絞る
             {

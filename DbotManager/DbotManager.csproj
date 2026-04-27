@@ -160,6 +160,7 @@
     <Compile Include="Table\ReserveMaster.cs" />
     <Compile Include="Table\TweetProcessList.cs" />
     <Compile Include="Table\TweetHistory.cs" />
+    <Compile Include="Table\UserGroupMaster.cs" />
     <Compile Include="Table\VpsMaster.cs" />
     <Compile Include="Table\UserMaster.cs" />
     <Compile Include="TweetTask.cs" />

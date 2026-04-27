@@ -582,7 +582,24 @@ namespace DbotManager
 
             var userList = dataAccess.GetUserMaster();
 
-            if(likeChecked)
+            var userRowWk = userList.Where(x => x.Id == userId).FirstOrDefault();
+
+            if(_tweetTask.SensyukenMode)
+            {
+                if (userRowWk.Admin)
+                {
+                    // 2026.04.28 管理者権限のあるユーザーは、全Xアカウントで一括処理
+                    userList = userList;
+                }
+                else
+                {
+                    var userGroupRow = dataAccess.GetUserGroupMaster().Where(x => x.Id == userRowWk.GroupId).FirstOrDefault();
+                    // 2026.04.28 管理者権限のないユーザーは、自グループのXアカウントで一括処理
+                    userList = userList.Where(x => x.GroupId == userRowWk.GroupId).ToList();
+                }
+            }
+
+            if (likeChecked)
             {
                 List<処理アカウントInfo> list = new List<処理アカウントInfo>();
                 foreach (var item in _tweetTask.LikeAccountList)

@@ -1610,7 +1610,7 @@ public class MySqlDataAccess
 
                 string query = "SELECT id, username , password , admin , enable ,memo , " +
                     "like_enable,bookmark_enable,reply_enable,repost_enable,sensyuken_mode,post_enable,reserve_enable,media_enable,check_enable,searchrep_enable,jap_api_key" +
-                    " , sensyuken_exec , sensyuken_exec_reply " +
+                    " , sensyuken_exec , sensyuken_exec_reply , group_id" +
                     " FROM user_master;";
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -1621,6 +1621,7 @@ public class MySqlDataAccess
                             UserMaster user = new UserMaster
                             {
                                 Id = Convert.ToInt32(reader["id"]),
+                                GroupId = Convert.ToInt32(reader["group_id"]),
                                 Name = reader["username"].ToString(),
                                 Password = reader["password"].ToString(),
                                 Admin = reader["admin"].ToString() == "1",
@@ -1653,6 +1654,46 @@ public class MySqlDataAccess
         }
 
         return userList;
+    }
+
+    public List<UserGroupMaster> GetUserGroupMaster()
+    {
+        List<UserGroupMaster> userGroupList = new List<UserGroupMaster>();
+
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            try
+            {
+                connection.Open();
+
+                string query = "SELECT id, name , memo , enable ,memo " +
+                    " FROM user_group_master;";
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            UserGroupMaster user = new UserGroupMaster
+                            {
+                                Id = Convert.ToInt32(reader["id"]),
+                                Name = reader["name"].ToString(),
+                                Enable = reader["enable"].ToString() == "1",
+                                Memo = reader["memo"].ToString(),
+                            };
+
+                            userGroupList.Add(user);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("エラーが発生しました: " + ex.Message);
+            }
+        }
+
+        return userGroupList;
     }
 
     #region ReserveMaster
