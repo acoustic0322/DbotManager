@@ -51,9 +51,13 @@ if (!$code_verifier) {
     exit('No code_verifier in session');
 }
 
-$client_id = $edit_account['client_id'];
-$client_secret = $edit_account['client_secret'];
+//$client_id = $edit_account['client_id'];
+//$client_secret = $edit_account['client_secret'];
 
+$config = $_SESSION['oauth_config'];
+
+$client_id = $config['client_id'];
+$client_secret = $config['client_secret'];
 
 // トークンリクエスト用パラメータ
 $post_fields = [
@@ -115,7 +119,13 @@ if (!$bearer_token || !$refresh_token) {
 
 // データベース更新クエリ
 //$stmt = $conn->prepare('UPDATE account_master SET access_token = ?, refresh_token = ? ,bearer_token = ?, access_token_secret = ? WHERE id = ?');
-$stmt = $conn->prepare('UPDATE account_master SET bearer_token = ?, refresh_token = ? , refresh_updatetime = NOW() WHERE id = ?');
+if (($config['type'] ?? '') === 'react')
+{
+    $stmt = $conn->prepare('UPDATE account_master SET bearer_token_1 = ?, refresh_token_1 = ? , refresh_updatetime_1 = NOW() WHERE id = ?');
+}
+else{
+    $stmt = $conn->prepare('UPDATE account_master SET bearer_token = ?, refresh_token = ? , refresh_updatetime = NOW() WHERE id = ?');
+}
 if (!$stmt) {
     exit('Failed to prepare statement: ' . $conn->error);
 }
@@ -127,6 +137,12 @@ if ($stmt->execute()) {
     $stmt->close();
     $conn->close();
     
+
+    if (($config['type'] ?? '') === 'react') {
+        header('Location: account_regist_react.php');
+        exit;
+    }    
+
     // トークン更新成功時にリダイレクト
     header('Location: account_list.php');
     exit;

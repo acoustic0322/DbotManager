@@ -264,7 +264,7 @@ def update_account_master_by_update_profile_datetime(id ):
     finally:
         connection.close()                  
 
-def get_account_master_for_update_refresh():
+def get_account_master_for_update_refresh(num):
     # MySQLデータベースに接続
     connection = pymysql.connect(
         host=config.db_host,      # ホスト名
@@ -277,23 +277,129 @@ def get_account_master_for_update_refresh():
     try:
         with connection.cursor() as cursor:
             # 30分以上経過したデータを取得
-            sql = """
-            SELECT 
-            am.id, 
-            case am.api_master_id when '0' then am.client_id 
-            else api.client_id end as client_id,
-            case am.api_master_id when '0' then am.client_secret 
-            else api.client_secret end as client_secret, 
-            am.refresh_token , 
-            am.proxy_enable , 
-            am.proxy_url
-            FROM account_master am
-            left join api_master api on api.id = am.api_master_id            
-            WHERE 
-                am.refresh_token IS NOT NULL 
-                AND am.refresh_updatetime IS NOT NULL
-                AND TIMESTAMPDIFF(MINUTE, am.refresh_updatetime, NOW()) > 60
-            """
+            if num == 0:
+
+                sql = """
+                SELECT 
+                    am.id, 
+                    CASE am.api_master_id
+                        WHEN '0' THEN am.client_id 
+                        ELSE api.client_id
+                    END AS client_id,
+
+                    CASE am.api_master_id
+                        WHEN '0' THEN am.client_secret 
+                        ELSE api.client_secret
+                    END AS client_secret,
+
+                    am.refresh_token,
+                    am.proxy_enable,
+                    am.proxy_url
+
+                FROM account_master am
+
+                LEFT JOIN api_master api
+                    ON api.id = am.api_master_id
+
+                WHERE
+                    am.refresh_token IS NOT NULL
+                    AND am.refresh_updatetime IS NOT NULL
+                    AND TIMESTAMPDIFF(
+                        MINUTE,
+                        am.refresh_updatetime,
+                        NOW()
+                    ) > 60
+                """
+
+            elif num == 1:
+
+                sql = """
+                SELECT 
+                    am.id,
+
+                    ugm.client_id_1 AS client_id,
+                    ugm.client_secret_1 AS client_secret,
+
+                    am.refresh_token_1 AS refresh_token,
+
+                    am.proxy_enable,
+                    am.proxy_url
+
+                FROM account_master am
+
+                LEFT JOIN user_group_master ugm
+                    ON ugm.id = am.user_id
+
+                WHERE
+                    am.refresh_token_1 IS NOT NULL
+                    AND am.refresh_updatetime_1 IS NOT NULL
+                    AND TIMESTAMPDIFF(
+                        MINUTE,
+                        am.refresh_updatetime_1,
+                        NOW()
+                    ) > 60
+                """
+
+            elif num == 2:
+
+                sql = """
+                SELECT 
+                    am.id,
+
+                    ugm.client_id_2 AS client_id,
+                    ugm.client_secret_2 AS client_secret,
+
+                    am.refresh_token_2 AS refresh_token,
+
+                    am.proxy_enable,
+                    am.proxy_url
+
+                FROM account_master am
+
+                LEFT JOIN user_group_master ugm
+                    ON ugm.id = am.user_id
+
+                WHERE
+                    am.refresh_token_2 IS NOT NULL
+                    AND am.refresh_updatetime_2 IS NOT NULL
+                    AND TIMESTAMPDIFF(
+                        MINUTE,
+                        am.refresh_updatetime_2,
+                        NOW()
+                    ) > 60
+                """
+
+            elif num == 3:
+
+                sql = """
+                SELECT 
+                    am.id,
+
+                    ugm.client_id_3 AS client_id,
+                    ugm.client_secret_3 AS client_secret,
+
+                    am.refresh_token_3 AS refresh_token,
+
+                    am.proxy_enable,
+                    am.proxy_url
+
+                FROM account_master am
+
+                LEFT JOIN user_group_master ugm
+                    ON ugm.id = am.user_id
+
+                WHERE
+                    am.refresh_token_3 IS NOT NULL
+                    AND am.refresh_updatetime_3 IS NOT NULL
+                    AND TIMESTAMPDIFF(
+                        MINUTE,
+                        am.refresh_updatetime_3,
+                        NOW()
+                    ) > 60
+                """
+            else:
+                return []    
+
             cursor.execute(sql)
             result = cursor.fetchall()
 
@@ -313,7 +419,6 @@ def get_account_master_for_update_refresh():
             return credentials_list
     finally:
         connection.close()
-
 
 def get_search_list(id):
     # MySQLデータベースに接続
@@ -498,7 +603,7 @@ def update_search_list(id, tweet_id, datetime, mode):
         connection.close()   
 
 
-def update_refresh_token(account_id, bearer_token, refresh_token):
+def update_refresh_token(account_id, bearer_token, refresh_token, num):
     connection = pymysql.connect(
         host=config.db_host,
         user='root',
@@ -509,9 +614,22 @@ def update_refresh_token(account_id, bearer_token, refresh_token):
     )
     try:
         with connection.cursor() as cursor:
-            sql = """
-                UPDATE account_master set bearer_token = %s , refresh_token = %s , refresh_updatetime = NOW() where id = %s
-            """
+            if num == 0:
+                sql = """
+                    UPDATE account_master set bearer_token = %s , refresh_token = %s , refresh_updatetime = NOW() where id = %s
+                """
+            elif num == 1:
+                sql = """
+                    UPDATE account_master set bearer_token_1 = %s , refresh_token_1 = %s , refresh_updatetime_1 = NOW() where id = %s
+                """
+            elif num == 2:
+                sql = """
+                    UPDATE account_master set bearer_token_2 = %s , refresh_token_2 = %s , refresh_updatetime_2 = NOW() where id = %s
+                """
+            elif num == 3:
+                sql = """
+                    UPDATE account_master set bearer_token_3 = %s , refresh_token_3 = %s , refresh_updatetime_3 = NOW() where id = %s
+                """
             cursor.execute(sql, (bearer_token , refresh_token , account_id))
             connection.commit()
     finally:

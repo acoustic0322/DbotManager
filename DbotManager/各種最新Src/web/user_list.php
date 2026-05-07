@@ -43,14 +43,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 登録後にリダイレクト
         header("Location: user_list.php");
         exit;        
-    }else{
+    }
+    else if ($type == 'group_update') {
+        $client_id_1 = $_POST['client_id_1'];
+        $client_secret_1 = $_POST['client_secret_1'];
+
+        $stmt = $conn->prepare("
+            UPDATE user_group_master 
+            SET client_id_1 = ?, client_secret_1 = ?
+            WHERE id = ?
+        ");
+        $stmt->bind_param("ssi", $client_id_1, $client_secret_1, $_SESSION['group_id']);
+        $stmt->execute();
+        $stmt->close();
+
+        header("Location: user_list.php");
+        exit;
+    }    
+    else{
         $new_username = $_POST['new_username'];
         $new_password = $_POST['new_password'];
         $is_admin = isset($_POST['is_admin']) ? 1 : 0;
 
         // 既存のユーザー名を確認
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM user_master WHERE username = ?");
-        $stmt->bind_param("s", $new_username);
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM user_master WHERE username = ? and group_id = ?");
+        $stmt->bind_param("ss", $new_username , $_SESSION['group_id']);
         $stmt->execute();
         $stmt->bind_result($count);
         $stmt->fetch();
@@ -61,8 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "<script>alert('このユーザー名は既に存在します。別のユーザー名を使用してください。');</script>";
         } else {
             // ユーザーをデータベースに登録
-            $stmt = $conn->prepare("INSERT INTO user_master (username, password, admin) VALUES (?, ?, ?)");
-            $stmt->bind_param("ssi", $new_username, $new_password, $is_admin);
+            $stmt = $conn->prepare("INSERT INTO user_master (username, password, admin, group_id) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssi", $new_username, $new_password, $is_admin, $_SESSION['group_id']);
             $stmt->execute();
             $stmt->close();
             $conn->close();
@@ -80,9 +97,16 @@ $current_userid = $_SESSION['user_id'];
 
 //$stmt = $conn->prepare("SELECT * FROM user_master WHERE id != ?");
 //$stmt->bind_param("s", $current_userid);
-$stmt = $conn->prepare("SELECT * FROM user_master");
+$stmt = $conn->prepare("SELECT * FROM user_master where group_id = ?");
+$stmt->bind_param("s", $_SESSION['group_id']);
 $stmt->execute();
 $result = $stmt->get_result();
+
+$stmt = $conn->prepare("SELECT * FROM user_group_master where id = ?");
+$stmt->bind_param("s", $_SESSION['group_id']);
+$stmt->execute();
+$result_gp = $stmt->get_result();
+$row_gp = $result_gp->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -130,6 +154,58 @@ $result = $stmt->get_result();
 
     <!-- コンテンツエリア -->
     <div class="content" id="content">
+
+   <h2>API設定</h2>
+<!--    <form method="POST" action="?" class="registration-form">  -->
+    <form method="POST" action="?">
+        <input type="hidden" name="type" value="group_update">
+        <div>
+        ClientID1
+        </div>
+        <div>
+        <input type="text" id="client_id_1" name="client_id_1" placeholder="client_id_1" value="<?php echo htmlspecialchars($row_gp['client_id_1'] ?? '') ?>" style="width:600px;">
+        </div>
+
+        <div>
+        ClientSecret1
+        </div>
+        <div>
+        <input type="text" id="client_secret_1" name="client_secret_1" placeholder="client_secret_1" value="<?php echo htmlspecialchars($row_gp['client_secret_1'] ?? '') ?>" style="width:600px;">
+        </div>
+
+        <!--
+        <div>
+        ClientID2
+        </div>
+        <div>
+        <input type="text" id="client_id_2" name="client_id_2" placeholder="client_id_2" value="<?php echo htmlspecialchars($row_gp['client_id_2'] ?? '') ?>" style="width:600px;">
+        </div>
+
+        <div>
+        ClientSecret2
+        </div>
+        <div>
+        <input type="text" id="client_secret_2" name="client_secret_2" placeholder="client_secret_2" value="<?php echo htmlspecialchars($row_gp['client_secret_2'] ?? '') ?>" style="width:600px;">
+        </div>
+
+        <div>
+        ClientID3
+        </div>
+        <div>
+        <input type="text" id="client_id_3" name="client_id_3" placeholder="client_id_3" value="<?php echo htmlspecialchars($row_gp['client_id_3'] ?? '') ?>" style="width:600px;">
+        </div>
+
+        <div>
+        ClientSecret3
+        </div>
+        <div>
+        <input type="text" id="client_secret_3" name="client_secret_3" placeholder="client_secret_3" value="<?php echo htmlspecialchars($row_gp['client_secret_3'] ?? '') ?>" style="width:600px;">
+        </div>
+-->
+
+    <button type="submit">更新</button>
+    </form>
+
    <h2>新規ユーザー登録</h2>
     <form method="POST" action="?" class="registration-form">
         <input type="text" name="new_username" value="<?php echo htmlspecialchars($_POST['new_username']??'') ?>" placeholder="ユーザー名" required>
