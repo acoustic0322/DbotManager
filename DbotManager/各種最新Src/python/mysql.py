@@ -309,6 +309,9 @@ def get_account_master_for_update_refresh(num):
                         am.refresh_updatetime,
                         NOW()
                     ) > 60
+                    AND am.is_locked = 0
+                    AND am.is_suspended = 0
+                    AND am.is_unauthorized = 0
                 """
 
             elif num == 1:
@@ -338,6 +341,9 @@ def get_account_master_for_update_refresh(num):
                         am.refresh_updatetime_1,
                         NOW()
                     ) > 60
+                    AND am.is_locked = 0
+                    AND am.is_suspended = 0
+                    AND am.is_unauthorized = 0
                 """
 
             elif num == 2:
@@ -367,6 +373,9 @@ def get_account_master_for_update_refresh(num):
                         am.refresh_updatetime_2,
                         NOW()
                     ) > 60
+                    AND am.is_locked = 0
+                    AND am.is_suspended = 0
+                    AND am.is_unauthorized = 0
                 """
 
             elif num == 3:
@@ -396,6 +405,9 @@ def get_account_master_for_update_refresh(num):
                         am.refresh_updatetime_3,
                         NOW()
                     ) > 60
+                    AND am.is_locked = 0
+                    AND am.is_suspended = 0
+                    AND am.is_unauthorized = 0
                 """
             else:
                 return []    
