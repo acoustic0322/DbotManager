@@ -33,12 +33,14 @@
     <a href="account_list.php">Xアカウント設定</a>
     -->
 
-    <a href="account_list.php">Xアカウント一覧</a>
+    <a href="account_list.php">Xアカウント一覧(通常)</a>
+    <a href="account_regist.php">通常登録</a>
 
-    <a href="account_regist.php">Xアカウント登録</a>
+    <a href="account_list_react.php">Xアカウント一覧(クイック)</a>
+    <a href="account_regist_react.php">クイック登録</a>
 
     <?php if (isset($_SESSION['api_master_id']) && $_SESSION['api_master_id'] != 0): ?>
-    <a href="account_regist2.php">Xアカウント登録<BR>(貸出API専用)</a>
+    <a href="account_regist2.php">通常登録(貸出API専用)</a>
     <?php endif; ?>
 
 <!--    <a href="comment_list.php">コメント設定</a>  -->

@@ -38,4 +38,17 @@ if ($type == '2') {
     require __DIR__.'/_lib/auth/redirect_2.php';
     exit;
 }
+if ($type == '2_react') {
+    $client_id_api = $edit_account['client_id_api1'];
+    if (!empty($client_id_api)) {    
+        require __DIR__.'/_lib/auth/redirect_2_react.php';
+    }
+    /*
+    $client_id_api = $edit_account['client_id_api2'];
+    if (!empty($client_id_api)) {    
+        require __DIR__.'/_lib/auth/redirect_2_react.php';
+    }
+        */
+    exit;
+}
 require __DIR__.'/_lib/auth/redirect_1.php';

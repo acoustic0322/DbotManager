@@ -320,9 +320,20 @@ function get_account($conn, $id)
         ,am.ai_photo_enable
         ,am.ai_movie_enable
         ,am.ai_media_selection_rate
-    FROM account_master am
-    LEFT JOIN api_master api ON api.id = am.api_master_id
-    WHERE am.id = ?;
+
+        ,ugm.client_id_1 as client_id_api1
+        ,ugm.client_id_2 as client_id_api2
+        ,ugm.client_id_3 as client_id_api3
+        ,ugm.client_secret_1 as client_secret_api1
+        ,ugm.client_secret_2 as client_secret_api2
+        ,ugm.client_secret_3 as client_secret_api3
+
+        FROM account_master am
+
+        LEFT JOIN api_master api ON api.id = am.api_master_id
+        LEFT JOIN user_group_master ugm ON ugm.id = am.user_id
+
+        WHERE am.id = ?;
     ";
 
     $stmt = $conn->prepare($query);
@@ -404,6 +415,12 @@ function get_account($conn, $id)
             ,$ai_photo_enable
             ,$ai_movie_enable
             ,$ai_media_selection_rate
+            ,$client_id_api1
+            ,$client_id_api2
+            ,$client_id_api3
+            ,$client_secret_api1
+            ,$client_secret_api2
+            ,$client_secret_api3
         );
 
         if ($stmt->fetch()) {
@@ -482,6 +499,13 @@ function get_account($conn, $id)
                 ,'ai_photo_enable' => $ai_photo_enable
                 ,'ai_movie_enable' => $ai_photo_enable
                 ,'ai_media_selection_rate' => $ai_media_selection_rate
+                ,'client_id_api1' => $client_id_api1
+                ,'client_id_api2' => $client_id_api2
+                ,'client_id_api3' => $client_id_api3
+                ,'client_secret_api1' => $client_secret_api1
+                ,'client_secret_api2' => $client_secret_api2
+                ,'client_secret_api3' => $client_secret_api3
+
             ];
         }
     }

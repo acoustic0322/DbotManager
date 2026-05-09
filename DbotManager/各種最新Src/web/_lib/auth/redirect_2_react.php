@@ -1,8 +1,21 @@
 <?php 
 
 $local_user_id = (string)$edit_account['id'];
-$client_id = $edit_account['client_id'];
-$client_secret = $edit_account['client_secret'];
+
+//$client_id = $edit_account['client_id'];
+//$client_id = "RHhia084WGNtbmplMFlNeVRuUTM6MTpjaQ";
+//
+//$client_id = $client_id_api;
+$client_id = $edit_account['client_id_api1'];
+$client_secret = $edit_account['client_secret_api1'];
+
+// 空チェック
+if (empty($client_id)) {
+    // ここで止める
+    // 必要に応じてメッセージ出す or ログ出す
+    echo 'client_id が未設定です';
+    exit;
+}
 
 //echo $client_id;
 //exit;
@@ -15,6 +28,7 @@ $client_secret = $edit_account['client_secret'];
 
 //$authorization_endpoint = 'https://twitter.com/i/oauth2/authorize';
 $authorization_endpoint = 'https://x.com/i/oauth2/authorize';
+
 
 $scope = 'list.read list.write users.read offline.access tweet.read tweet.write like.read like.write tweet.moderate.write follows.read follows.write bookmark.read bookmark.write'; // 
 // ランダムなCSRF用トークン生成
@@ -41,9 +55,8 @@ $_SESSION['hmac_secret_key'] = $hmac_secret_key;
 $_SESSION['oauth_config'] = [
     'client_id' => $client_id,
     'client_secret' => $client_secret,
-    'type' => 'normal',
+    'type' => 'react',
 ];
-
 
 // 認可エンドポイントへリダイレクト
 $params = [

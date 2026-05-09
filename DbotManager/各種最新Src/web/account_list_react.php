@@ -43,7 +43,7 @@ if ($search !== '') {
       am.use_admin_api as use_admin_api,
       am.ai_mode as ai_mode
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id = ? AND am.name LIKE ?
+    WHERE am.regist_type = 'react' and am.user_id = ? AND am.name LIKE ?
     ");
     $stmt->bind_param("ss", $current_userid, $searchParam);
 } else {
@@ -59,7 +59,7 @@ if ($search !== '') {
       am.use_admin_api as use_admin_api,
       am.ai_mode as ai_mode
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id = ?
+    WHERE am.regist_type = 'react' and am.user_id = ?
     ");
     $stmt->bind_param("s", $current_userid);
 }
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($id)) {
             echo "<script>alert('IDが指定されていません');</script>";
-            header("Location: account_list.php");
+            header("Location: account_list_react.php");
             exit;
         }else if ((string)$id === (string)$_SESSION['user_id']) {
             echo '現在のユーザーは削除できません';
@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->close();
 
         // 登録後にリダイレクト
-        header("Location: account_list.php");
+        header("Location: account_list_react.php");
         exit;        
     }
 }
@@ -124,7 +124,7 @@ if ($search !== '') {
     SELECT am.name,am.id,am.login_id,am.bearer_token,am.refresh_token,am.access_token,am.search_enable,am.use_admin_api,am.ai_mode,
            am.is_locked,am.is_suspended,am.is_unauthorized
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id=? AND am.name LIKE ? $status_sql
+    WHERE am.regist_type = 'react' and am.user_id=? AND am.name LIKE ? $status_sql
     ");
     $stmt->bind_param("ss", $current_userid, $searchParam);
 } else {
@@ -132,7 +132,7 @@ if ($search !== '') {
     SELECT am.name,am.id,am.login_id,am.bearer_token,am.refresh_token,am.access_token,am.search_enable,am.use_admin_api,am.ai_mode,
            am.is_locked,am.is_suspended,am.is_unauthorized
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id=? $status_sql
+    WHERE am.regist_type = 'react' and am.user_id=? $status_sql
     ");
     $stmt->bind_param("s", $current_userid);
 }
@@ -147,7 +147,7 @@ $stmt2 = $conn->prepare("
         SUM(CASE WHEN am.is_unauthorized = 1 THEN 1 ELSE 0 END) as unauthorized_count,
         SUM(CASE WHEN (am.is_locked = 0 and am.is_suspended = 0 and am.is_unauthorized = 0 ) THEN 1 ELSE 0 END) as normal_count
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id = ?
+    WHERE am.regist_type = 'react' and am.user_id = ?
 ");
 $stmt2->bind_param("s", $current_userid);
 $stmt2->execute();
@@ -160,7 +160,7 @@ $stmt2->close();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xアカウント一覧(通常登録)</title>
+  <title>Xアカウント一覧(クイック登録)</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
@@ -172,7 +172,7 @@ $stmt2->close();
    <!-- コンテンツエリア -->
    <div class="content" id="content">
 
-    <h2>Xアカウント一覧(通常登録)</h2>
+    <h2>Xアカウント一覧(クイック登録)</h2>
     <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px; flex-wrap:wrap;">
     <form method="GET" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
       <input type="text" name="search" placeholder="ユーザー名で絞り込み" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
@@ -452,7 +452,7 @@ function toggleMenu(menuEl) {
 
 <div style="margin-top: 20px; font-size: 14px; color: #fff;">
   <strong>アイコン凡例：</strong>
-  ✅=通常認証 / 🎞️=メディア認証 / 🔍=監視 / 🏷️=API貸出 / 👩=AI（裏垢） / 🔥=AI(Xトレンド) / 💬=AI（yahooトレンド） / ₿=AI(BTC為替)
+  ✅=通常認証 
 </div>
     <table>
 <thead>
@@ -504,36 +504,13 @@ function toggleMenu(menuEl) {
   <?php if (!empty($row['bearer_token']) && !empty($row['refresh_token'])): ?>
     <span title="通常認証済み">✅</span>
   <?php endif; ?>
-  <?php if (!empty($row['access_token'])): ?>
-    <span title="メディア認証済み">🎞️</span>
-  <?php endif; ?>
-  <?php if (!empty($row['search_enable'])): ?>
-    <span title="監視実施">🔍</span>
-  <?php endif; ?>
-  <?php if (isset($row['use_admin_api']) && $row['use_admin_api'] == 1): ?>
-    <span title="貸出アカウント">🏷️</span>
-  <?php endif; ?>
-  <?php
-    switch ($row['ai_mode'] ?? 0) {
-      case 1: echo '<span title="AIモード：裏垢女子">👩</span>'; break;
-      case 2: echo '<span title="AIモード：yahooトレンド">💬</span>'; break;
-      case 6: echo '<span title="AIモード：Xトレンド">🔥</span>'; break;
-      case 3: echo '<span title="AIモード：BTC為替">₿</span>'; break;
-    }
-  ?>
 </td>    <td>
 <div class="dropdown" style="position: relative;">
   <button class="dropdown-button" onclick="toggleMenu(this.nextElementSibling)">操作 ▾</button>
   <div class="dropdown-menu">
     <a href="#" onclick="editAccountMaster(<?= $row['id'] ?>)">編集</a>
-    <a href="#" onclick="editComment(<?= $row['id'] ?>)">ｺﾒﾝﾄ一覧</a>
-    <a href="#" onclick="registComment(<?= $row['id'] ?>)">ｺﾒﾝﾄ登録</a>
     <a href="#" onclick="refreshToken(<?= $row['id'] ?>)">ｱｶｳﾝﾄ更新&ﾛｯｸ解除🔄</a>
-    <?php if (!empty($_SESSION['check_enable'])): ?>
-      <a href="#" onclick="editCheckAccount(<?= $row['id'] ?>)">自動ﾘﾌﾟ,ﾓﾉﾏﾈ編集</a>
-    <?php endif; ?>
     <a href="#" onclick="editXLogin2(<?= $row['id'] ?>)">通常認証</a>
-    <a href="#" onclick="editXLogin1(<?= $row['id'] ?>)">ﾒﾃﾞｨｱ認証</a>
     <form class="button_form" method="POST" action="?">
       <input type="hidden" name="type" value="account_del">
       <input type="hidden" name="id" value="<?= htmlspecialchars($row['id']) ?>">
@@ -566,7 +543,7 @@ function toggleMenu(menuEl) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function editAccountMaster(id) {
-            window.location.href = './account_edit.php?id='+id;
+            window.location.href = './account_edit_react.php?id='+id;
         }
 
         function editXLogin1(id) {
