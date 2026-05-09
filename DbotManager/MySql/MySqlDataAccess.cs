@@ -360,6 +360,16 @@ public class MySqlDataAccess
                                     IsLocked = reader["is_locked"].ToString() == "1",
                                     IsSuspended = reader["is_suspended"].ToString() == "1",
                                     IsUnauthorized = reader["is_unauthorized"].ToString() == "1",
+
+                                    BearerToken_1 = reader["bearer_token_1"].ToString(),
+                                    RefreshToken_1 = reader["refresh_token_1"].ToString(),
+                                    BearerToken_2 = reader["bearer_token_2"].ToString(),
+                                    RefreshToken_2 = reader["refresh_token_2"].ToString(),
+                                    BearerToken_3 = reader["bearer_token_3"].ToString(),
+                                    RefreshToken_3 = reader["refresh_token_3"].ToString(),
+
+                                    RegistType = (reader["regist_type"].ToString() == "react") ? RegistTypes.React : RegistTypes.Normal ,
+
                                 };
 
                                 accountMasterList.Add(accountItem);

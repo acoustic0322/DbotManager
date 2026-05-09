@@ -111,8 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //        $new_login_pass = $_POST['new_login_pass'];
         $new_client_id = isset($_POST['new_client_id']) ? $_POST['new_client_id'] : "";//$_POST['new_client_id'];
         $new_client_secret = isset($_POST['new_client_secret']) ? $_POST['new_client_secret'] : "";//$_POST['new_client_secret'];
-        $new_api_key = "dummy";//$_POST['new_api_key'];
-        $new_api_key_secret = "dummy";//$_POST['new_api_key_secret'];
+        $new_api_key = "";//$_POST['new_api_key'];
+        $new_api_key_secret = "";//$_POST['new_api_key_secret'];
 
         $new_access_token = '';
         $new_access_token_secret = '';

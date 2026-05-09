@@ -135,12 +135,29 @@ def get_account_master(id):
             am.api_key_secret, 
             am.access_token, 
             am.access_token_secret , 
-            am.bearer_token , 
-            case am.api_master_id when '0' then am.client_id 
-            else api.client_id end as client_id,
-            case am.api_master_id when '0' then am.client_secret 
-            else api.client_secret end as client_secret,           
-            am.refresh_token , 
+
+            CASE 
+                WHEN am.regist_type = 'react' THEN ugm.client_id_1
+                WHEN am.api_master_id = '0' THEN am.client_id 
+                ELSE api.client_id 
+            END as client_id,
+
+            CASE 
+                WHEN am.regist_type = 'react' THEN ugm.client_secret_1
+                WHEN am.api_master_id = '0' THEN am.client_secret 
+                ELSE api.client_secret 
+            END as client_secret,
+
+            CASE 
+                WHEN am.regist_type = 'react' THEN am.bearer_token_1
+                ELSE am.bearer_token
+            END as bearer_token,            
+
+            CASE 
+                WHEN am.regist_type = 'react' THEN am.refresh_token_1
+                ELSE am.refresh_token
+            END as refresh_token,
+
             am.login_id , 
             am.id ,
             am.dmm_id , 
@@ -180,6 +197,7 @@ def get_account_master(id):
             account_master am
             left join api_master api on api.id = am.api_master_id
             left join user_master um on um.id = am.user_id
+            LEFT JOIN user_group_master ugm ON ugm.id = am.user_id
             WHERE am.id = %s"""
 
 #            sql = "SELECT id , api_key, api_key_secret, access_token, access_token_secret , bearer_token , client_id , client_secret , refresh_token , login_id FROM account_master WHERE id = %s"

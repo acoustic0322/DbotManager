@@ -160,7 +160,7 @@ $stmt2->close();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xアカウント一覧</title>
+  <title>Xアカウント一覧(通常登録)</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/admin-dashboard.css" />
 </head>
@@ -172,7 +172,7 @@ $stmt2->close();
    <!-- コンテンツエリア -->
    <div class="content" id="content">
 
-    <h2>Xアカウント一覧</h2>
+    <h2>Xアカウント一覧(通常登録)</h2>
     <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px; flex-wrap:wrap;">
     <form method="GET" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
       <input type="text" name="search" placeholder="ユーザー名で絞り込み" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">

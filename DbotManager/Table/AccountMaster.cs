@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace DbotManager.Table
 {
+    public enum RegistTypes
+    {
+        Normal,
+        React
+    }
+
     public class AccountMaster
     {
         public int Id { get; set; }
@@ -86,5 +92,14 @@ namespace DbotManager.Table
         public bool IsLocked { get; set; }
         public bool IsSuspended { get; set; }
         public bool IsUnauthorized { get; set; }
+
+        public string BearerToken_1 { get; set; }
+        public string RefreshToken_1 { get; set; }
+        public string BearerToken_2 { get; set; }
+        public string RefreshToken_2 { get; set; }
+        public string BearerToken_3 { get; set; }
+        public string RefreshToken_3 { get; set; }
+        public RegistTypes RegistType { get; set; }
+
     }
 }
