@@ -43,7 +43,7 @@ if ($search !== '') {
       am.use_admin_api as use_admin_api,
       am.ai_mode as ai_mode
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id = ? AND am.name LIKE ?
+    WHERE am.regist_type = 'react' and am.user_id = ? AND am.name LIKE ?
     ");
     $stmt->bind_param("ss", $current_userid, $searchParam);
 } else {
@@ -59,7 +59,7 @@ if ($search !== '') {
       am.use_admin_api as use_admin_api,
       am.ai_mode as ai_mode
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id = ?
+    WHERE am.regist_type = 'react' and am.user_id = ?
     ");
     $stmt->bind_param("s", $current_userid);
 }
@@ -124,7 +124,7 @@ if ($search !== '') {
     SELECT am.name,am.id,am.login_id,am.bearer_token,am.refresh_token,am.access_token,am.search_enable,am.use_admin_api,am.ai_mode,
            am.is_locked,am.is_suspended,am.is_unauthorized
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id=? AND am.name LIKE ? $status_sql
+    WHERE am.regist_type = 'react' and am.user_id=? AND am.name LIKE ? $status_sql
     ");
     $stmt->bind_param("ss", $current_userid, $searchParam);
 } else {
@@ -132,7 +132,7 @@ if ($search !== '') {
     SELECT am.name,am.id,am.login_id,am.bearer_token,am.refresh_token,am.access_token,am.search_enable,am.use_admin_api,am.ai_mode,
            am.is_locked,am.is_suspended,am.is_unauthorized
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id=? $status_sql
+    WHERE am.regist_type = 'react' and am.user_id=? $status_sql
     ");
     $stmt->bind_param("s", $current_userid);
 }
@@ -147,7 +147,7 @@ $stmt2 = $conn->prepare("
         SUM(CASE WHEN am.is_unauthorized = 1 THEN 1 ELSE 0 END) as unauthorized_count,
         SUM(CASE WHEN (am.is_locked = 0 and am.is_suspended = 0 and am.is_unauthorized = 0 ) THEN 1 ELSE 0 END) as normal_count
     FROM account_master am
-    WHERE  (am.regist_type = '' OR am.regist_type IS NULL) and am.user_id = ?
+    WHERE am.regist_type = 'react' and am.user_id = ?
 ");
 $stmt2->bind_param("s", $current_userid);
 $stmt2->execute();
