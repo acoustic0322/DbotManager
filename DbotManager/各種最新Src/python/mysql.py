@@ -137,24 +137,48 @@ def get_account_master(id):
             am.access_token_secret , 
 
             CASE 
-                WHEN am.regist_type = 'react' THEN ugm.client_id_1
+                WHEN am.regist_type = 'react' THEN
+                    CASE am.react_api_id
+                        WHEN 1 THEN ugm.client_id_1
+                        WHEN 2 THEN ugm.client_id_2
+                        WHEN 3 THEN ugm.client_id_3
+                        ELSE ugm.client_id_1
+                    END
                 WHEN am.api_master_id = '0' THEN am.client_id 
                 ELSE api.client_id 
-            END as client_id,
+            END as client_id,            
 
             CASE 
-                WHEN am.regist_type = 'react' THEN ugm.client_secret_1
+                WHEN am.regist_type = 'react' THEN
+                    CASE am.react_api_id
+                        WHEN 1 THEN ugm.client_secret_1
+                        WHEN 2 THEN ugm.client_secret_2
+                        WHEN 3 THEN ugm.client_secret_3
+                        ELSE ugm.client_secret_1
+                    END
                 WHEN am.api_master_id = '0' THEN am.client_secret 
                 ELSE api.client_secret 
             END as client_secret,
 
             CASE 
-                WHEN am.regist_type = 'react' THEN am.bearer_token_1
+                WHEN am.regist_type = 'react' THEN
+                    CASE am.react_api_id
+                        WHEN 1 THEN am.bearer_token_1
+                        WHEN 2 THEN am.bearer_token_2
+                        WHEN 3 THEN am.bearer_token_3
+                        ELSE am.bearer_token_1
+                    END
                 ELSE am.bearer_token
-            END as bearer_token,            
+            END as bearer_token,
 
             CASE 
-                WHEN am.regist_type = 'react' THEN am.refresh_token_1
+                WHEN am.regist_type = 'react' THEN
+                    CASE am.react_api_id
+                        WHEN 1 THEN am.refresh_token_1
+                        WHEN 2 THEN am.refresh_token_2
+                        WHEN 3 THEN am.refresh_token_3
+                        ELSE am.refresh_token_1
+                    END
                 ELSE am.refresh_token
             END as refresh_token,
 
@@ -233,6 +257,29 @@ def update_account_master_by_twitter_user_id(id , twitter_user_id ):
             connection.commit()
     finally:
         connection.close()         
+
+def rotate_react_api_id(account_id):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+    try:
+        with connection.cursor() as cursor:
+
+            # プロシージャ実行
+            cursor.callproc('rotate_react_api_id', [account_id])
+
+            connection.commit()
+
+    finally:
+        connection.close()
 
 def update_account_master_by_check_rep_datetime(id ):
     # MySQLデータベースに接続

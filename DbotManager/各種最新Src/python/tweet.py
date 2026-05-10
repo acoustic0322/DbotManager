@@ -47,6 +47,7 @@ from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
 from mysql import get_search_history
 from mysql import init_check_tweet_account_master_by_search_list
+from mysql import rotate_react_api_id
 
 from tweet_copy_dmm import tweet_copy_dmm
 
@@ -166,10 +167,14 @@ if credentials:
 
 #        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id )               
 #        result1 , contents1 = True , "" #未実装
+        rotate_react_api_id(account_id)
+
     elif mode == "repost":
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)
+        rotate_react_api_id(account_id)
     elif mode == "like":
         result1 , contents1 = proc_like_v2(credentials, tweet_id)
+        rotate_react_api_id(account_id)
     elif mode == "jap_like":
         if not tweet_name:  # None または空文字列のときにTrue
             tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
@@ -186,6 +191,7 @@ if credentials:
         result1 , contents1 = proc_search_v2(credentials)
     elif mode == "bookmark":
         result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
+        rotate_react_api_id(account_id)
     elif mode == "follow":
 #        result1 , contents1 = proc_following_v1(credentials, tweet_name)
         result1 , contents1 = proc_following_v2(credentials, tweet_name)

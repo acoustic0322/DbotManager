@@ -173,7 +173,6 @@ $row_gp = $result_gp->fetch_assoc();
         <input type="text" id="client_secret_1" name="client_secret_1" placeholder="client_secret_1" value="<?php echo htmlspecialchars($row_gp['client_secret_1'] ?? '') ?>" style="width:600px;">
         </div>
 
-        <!--
         <div>
         ClientID2
         </div>
@@ -201,7 +200,6 @@ $row_gp = $result_gp->fetch_assoc();
         <div>
         <input type="text" id="client_secret_3" name="client_secret_3" placeholder="client_secret_3" value="<?php echo htmlspecialchars($row_gp['client_secret_3'] ?? '') ?>" style="width:600px;">
         </div>
--->
 
     <button type="submit">更新</button>
     </form>
