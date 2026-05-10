@@ -193,7 +193,7 @@ if credentials:
         result1 , contents1 = proc_unfollowing_v2(credentials, tweet_name)
 
     elif mode == "refresh":
-        result1 , contents1 , contents2= refresh_access_token(credentials)
+        result1 , contents1 , contents2= refresh_access_token(credentials,0)
         if result1 == True:
             delete_account_error_log(account_id)
             unlock_unauthorized(account_id)
@@ -238,7 +238,7 @@ if credentials:
     # トークン切れを検知した場合、その場でリフレッシュを試みる
     if is_unauthorized:
         outputLog(f"ID:{account_id} トークン切れを自動検知。リフレッシュを開始します...")
-        res_ref, acc_tok, ref_tok = refresh_access_token(credentials)
+        res_ref, acc_tok, ref_tok = refresh_access_token(credentials,0)
         if res_ref:
             outputLog("自動リフレッシュ成功。エラーログを削除しました。")
             delete_account_error_log(account_id)

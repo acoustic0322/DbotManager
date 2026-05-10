@@ -41,20 +41,20 @@ from datetime import datetime, timezone
 #chatgpt フォルダを Python のパスに追加
 sys.path.append(os.path.abspath("chatgpt"))
 
-from chatgpt_reply import generate_reply
+#from chatgpt_reply import generate_reply
 #from chatgpt_tweet import generate_tweet,refine_tweet,generate_trend_tweet_by_keyword
-from chatgpt_tweet import generate_tweet
-from chatgpt_tweet import generate_trend_tweet
+#from chatgpt_tweet import generate_tweet
+#from chatgpt_tweet import generate_trend_tweet
 
-from search_chat import get_tweet_text_from_yahoo_trend
-from search_chat import get_tweet_text_from_yahoo_btc
-from search_chat import get_tweet_text_from_yahoo_pair  # レート取得できないため、未対応
-from search_chat import get_tweet_text_from_yahoo_gold  # レート取得できないため、未対応
+#from search_chat import get_tweet_text_from_yahoo_trend
+#from search_chat import get_tweet_text_from_yahoo_btc
+#from search_chat import get_tweet_text_from_yahoo_pair  # レート取得できないため、未対応
+#from search_chat import get_tweet_text_from_yahoo_gold  # レート取得できないため、未対応
 
 # 2025.10.15 追加
-from prompt import PROMPT1
-from prompt import past_tweets_1
-from prompt import TREND_PROMPT
+#from prompt import PROMPT1
+#from prompt import past_tweets_1
+#from prompt import TREND_PROMPT
 
 
 
@@ -207,8 +207,21 @@ def get_user_id(credentials, username):
     proxies = {"http": credentials['proxy_url'], "https": credentials['proxy_url']} if credentials.get('proxy_enable') else None
 
     # impersonateを適用してGETリクエスト
-    response = requests.get(url, headers=headers, proxies=proxies, impersonate=target)
-
+#    response = requests.get(url, headers=headers, proxies=proxies, impersonate=target)
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            proxies=proxies,
+            impersonate=target,
+            timeout=(5, 10)
+        )
+    except requests.exceptions.Timeout:
+        outputLog("get_user_id:timeout")
+        return None, False, "timeout"
+    except requests.exceptions.RequestException as e:
+        outputLog("get_user_id:exception")
+        return None, False, str(e)
     if response.status_code == 200:
         user_data = response.json()
         if "data" not in user_data:
@@ -716,7 +729,11 @@ def proc_like_v2(credentials, tweet_id):
 
     # ユーザーIDの取得
     user_id, result, contents = get_user_id(credentials, credentials['login_id'])
+    
     if result == False:
+        # ID取得に失敗（凍結・401エラーなど）した場合も、ここで履歴を保存する！
+        # これを入れないと PHP管理画面にエラーが飛びません
+        save_tweet_history(credentials['id'], '', 'like', str(tweet_id), False, contents)
         return False, contents
 
     outputLog(f"user_id={user_id} (target={target})")
@@ -798,7 +815,7 @@ def proc_search_v2(credentials):
             outputLog(f"検索結果：{tweet['text']}")
         return True , tweets
     else:
-        print(f"Error: {response.status_code}, {response.text}")    
+        outputLog(f"Error: {response.status_code}, {response.text}")    
 
     return response.status_code == 200, response_str
 
@@ -1127,7 +1144,7 @@ def proc_following_v1(credentials, target_user):
         api.create_friendship(user_id=target_user_id) #フォロー
     except Exception as e:
         # すでに「いいね」、フォロー済みだとこれが出力。
-        print('　【失敗】' + str(e))
+        outputLog('　【失敗】' + str(e))
 
 #    response_str = json.dumps(response.json())  # json.dumps を使用
 #    return response.status_code == 200, response_str
