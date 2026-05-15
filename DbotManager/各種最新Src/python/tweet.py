@@ -11,6 +11,7 @@ from requests_oauthlib import OAuth1Session
 from datetime import datetime, timezone, timedelta
 from mysql import delete_account_error_log
 from mysql import unlock_unauthorized
+from twitter_api_v2 import get_my_username
 from twitter_api_v2 import proc_refresh_queue
 
 from twitter_api_v2 import proc_like_v2
@@ -42,6 +43,7 @@ from mysql import get_check_account_list
 from mysql import save_tweet_history
 from mysql import get_search_list
 from twitter_api_v2 import proc_update_refresh_token
+from twitter_api_v2 import proc_update_check_full_status
 #from twitter_api_v2 import proc_check_latest_tweet
 from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
@@ -57,6 +59,8 @@ from config import outputLog
 #from tweet_watch import fetch_latest_tweet
 
 from get_tweet_firefox_to_graphql import proc_get_tweet
+
+from check_full_status .check_full_status import check_full_status
 
 # コマンドライン引数の解析関数
 def parse_arguments(args):
@@ -130,6 +134,11 @@ if mode == "check_refresh":
     proc_update_refresh_token()
     proc_refresh_queue()
     sys.exit(0)
+
+if mode == "check_full_status_collective":
+    outputLog("check_full_status_collective")
+    proc_update_check_full_status()
+    sys.exit(0)    
 
 if mode ==  "update_profiles":
     outputLog("update_profiles")
@@ -219,7 +228,26 @@ if credentials:
     elif mode == "jap_detail":
         if not tweet_name:  # None または空文字列のときにTrue
             tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_detail_jap(tweet_name, tweet_id , jap_api_key , quantity)        
+        result1 , contents1 = proc_detail_jap(tweet_name, tweet_id , jap_api_key , quantity)
+    elif mode == "get_username":
+        username, user_id, result1, contents1 = get_my_username(credentials)
+    elif mode == "check_full_status":
+
+        # アカウント名未取得の場合は取得してからフォロワー取得
+        account_name = credentials.get('account_name')
+
+        if not account_name:
+            account_name, user_id, success, error = get_my_username(credentials)
+
+            if not success or not account_name:
+                outputLog(f"アカウント名取得失敗: {error}")
+                sys.exit(1)
+
+        check_full_status(
+            credentials.get('id'),
+            account_name
+                )        
+
     else:
         # エラーメッセージを標準エラーに出力
         outputLog(f"サポートされていないmode: {mode}")

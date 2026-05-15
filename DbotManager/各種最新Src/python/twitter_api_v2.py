@@ -13,6 +13,7 @@ import random
 
 from mysql import get_comment_by_id
 from mysql import get_account_master_for_update_refresh
+from mysql import get_account_master_for_check_full_status
 from mysql import update_refresh_token
 from mysql import save_tweet_history
 from mysql import get_user_id_from_db
@@ -22,12 +23,11 @@ from mysql import update_last_tweet_id_from_check_account_list
 from mysql import update_search_list
 from mysql import insert_tweet_history_monomane
 from mysql import insert_search_history
+from mysql import update_account_master_by_account_name
 from mysql import update_account_master_by_twitter_user_id
 from mysql import update_account_master_by_check_rep_datetime
 from mysql import get_trend_list_keyword
 from mysql import get_check_tweet_account_list_by_tweet_id
-
-
 
 
 import config
@@ -56,6 +56,7 @@ from prompt import PROMPT1
 from prompt import past_tweets_1
 from prompt import TREND_PROMPT
 
+from check_full_status .check_full_status import check_full_status
 
 
 # --- 2026年最新UAリスト (curl_cffi 0.14.0の指紋に合わせる) ---
@@ -278,6 +279,30 @@ def proc_update_refresh_token():
                 f"refresh:{refresh_token} access:{access_token}",
                 i
             )
+
+def proc_update_check_full_status():
+    outputLog("proc_update_check_full_status")
+
+    credentials_list = get_account_master_for_check_full_status()
+#    outputLog(f"credentials_list={credentials_list}")
+    
+    for credentials in credentials_list:
+        outputLog(f"id:{credentials.get('id')}")
+
+        # アカウント名未取得の場合は取得してからフォロワー取得
+        account_name = credentials.get('account_name')
+
+        if not account_name:
+            account_name, user_id, success, error = get_my_username(credentials)
+
+            if not success or not account_name:
+                outputLog(f"アカウント名取得失敗: {error}")
+                continue
+
+        check_full_status(
+            credentials.get('id'),
+            account_name
+                )         
 
 
 def refresh_access_token(credentials,num):
@@ -1246,3 +1271,57 @@ def proc_refresh_queue():
                 delete_account_error_log(account_id)
             update_refresh_queue_status(queue_id, 'done')
             outputLog(f"ID:{account_id} トークン更新成功")
+
+def get_my_username(credentials):
+
+    if credentials.get('account_name'):
+        outputLog(f"アカウント名取得済み:{credentials.get('account_name')}")
+        return credentials.get('account_name'), credentials.get('twitter_user_id'), True, None
+
+    """
+    BearerTokenから、自分自身のusernameを取得
+    """
+    url = "https://api.twitter.com/2/users/me?user.fields=username"
+
+
+    outputLog(f"credentials={credentials}")
+    target, headers = get_action_config(credentials)
+
+    proxies = None
+    if credentials.get('proxy_enable') and credentials.get('proxy_url'):
+        p_url = credentials['proxy_url']
+        proxies = {
+            "http": p_url,
+            "https": p_url
+        }
+
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            proxies=proxies,
+            impersonate=target,
+            timeout=15
+        )
+
+        outputLog(f"get_my_username status={response.status_code}")
+
+        if response.status_code == 200:
+            data = response.json()
+
+            username = data.get("data", {}).get("username")
+            user_id = data.get("data", {}).get("id")
+
+            outputLog(f"username={username}")
+            outputLog(f"user_id={user_id}")
+
+            update_account_master_by_account_name(credentials.get('id'),username)
+            update_account_master_by_twitter_user_id(credentials.get('id'),user_id)
+
+            return username, user_id, True, None
+
+        return None, None, False, response.text
+
+    except Exception as e:
+        outputLog(f"get_my_username error:{e}")
+        return None, None, False, str(e)

@@ -9,6 +9,16 @@ import sys
 import io
 from concurrent.futures import ThreadPoolExecutor
 
+# 親フォルダを追加
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import config
+from config import convert_tweet_datetime
+from config import convert_tweet_datetime2
+from config import outputLog
+
+from mysql import update_account_master_by_check_full_status
+
 # --- 設定 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CREDENTIALS_FILE = os.path.join(BASE_DIR, "credentials.json")
@@ -22,8 +32,18 @@ class XRotatingScannerV410:
         self.impersonate = "chrome"
         self.bearer = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
         self.query_id = "IGgvgiOx4QZndDHuD3x9TQ"
+
         self.accounts = self._load_cookies()
+#        self.accounts = [
+#            {
+#                "auth_token": "7bff203088ea82e787873b0e3ba1d716a85d075e",
+#                "ct0": "8125b12baccca9b0e3f1698ce234f1de725977123bb0b4703951c8861a7beaddb5255106d9b0da2adac35930e8769974a7eed057fc05166188eeac61dd71ff7ca07f9fa328a9425aa83be38204e39618",
+#                "twid": "u=123456789"
+#            }
+#        ]
         self.current_idx = 0
+
+
 
     def _load_cookies(self):
         with open(COOKIES_FILE, "r") as f:
@@ -68,10 +88,10 @@ class XRotatingScannerV410:
                 if retry < len(self.accounts):
                     time.sleep(2)
                     return self.check_user(username, retry + 1)
-                return ["-", "制限中", "-", "待機中", "0", "0", "0", "WAIT"]
+                return ["-", "制限中", "-", "待機中", "0", "0", "0", "WAIT",True]
             
             if r.status_code != 200:
-                return [username, "Error", r.status_code, "Auth Error", "0", "0", "0", "ERR"]
+                return [username, "Error", r.status_code, "Auth Error", "0", "0", "0", "ERR",False]
             
             data = r.json()
             # GraphQLのエラーメッセージを確認 (凍結検知の強化)
@@ -79,9 +99,9 @@ class XRotatingScannerV410:
             for err in errors:
                 msg = err.get("message", "").lower()
                 if "suspended" in msg:
-                    return [username, "凍結", "-", "凍結済", "0", "0", "0", "OK"]
+                    return [username, "凍結", "-", "凍結済", "0", "0", "0", "OK", True]
                 if "not found" in msg or "could not find" in msg:
-                    return [username, "不在", "-", "不在", "0", "0", "0", "OK"]
+                    return [username, "不在", "-", "不在", "0", "0", "0", "OK", True]
 
             user_res = data.get("data", {}).get("user", {}).get("result", {})
             typename = user_res.get("__typename")
@@ -90,12 +110,12 @@ class XRotatingScannerV410:
             if typename == "UserUnavailable" or not user_res:
                 reason = user_res.get("unavailable_reason", "") if user_res else ""
                 if reason == "Suspended" or "suspended" in str(user_res).lower():
-                    return [username, "凍結", "-", "凍結済", "0", "0", "0", "OK"]
-                return [username, "不在", "-", "不在", "0", "0", "0", "OK"]
+                    return [username, "凍結", "-", "凍結済", "0", "0", "0", "OK", True]
+                return [username, "不在", "-", "不在", "0", "0", "0", "OK", True]
 
             legacy = user_res.get("legacy", {})
             if legacy.get("suspended"):
-                return [username, "凍結", "-", "凍結済", "0", "0", "0", "OK"]
+                return [username, "凍結", "-", "凍結済", "0", "0", "0", "OK", True]
 
             hga = user_res.get("has_graduated_access", user_res.get("is_graduated_access", True))
             it = legacy.get("profile_interstitial_type", "")
@@ -117,9 +137,9 @@ class XRotatingScannerV410:
                 name_match = re.search(r'"name"\s*:\s*"([^"]+)"', r.text)
                 name = name_match.group(1) if name_match else "不明"
 
-            return [name, overall, reach, "生存", str(legacy.get("statuses_count", 0)), str(legacy.get("friends_count", 0)), str(legacy.get("followers_count", 0)), "OK"]
+            return [name, overall, reach, "生存", str(legacy.get("statuses_count", 0)), str(legacy.get("friends_count", 0)), str(legacy.get("followers_count", 0)), "OK" , True]
         except Exception as e:
-            return [username, "例外エラー", "-", str(e)[:15], "0", "0", "0", "ERR"]
+            return [username, "例外エラー", "-", str(e)[:15], "0", "0", "0", "ERR", True]
 
 def run_test():
     scanner = XRotatingScannerV410()
@@ -171,6 +191,30 @@ def run_all():
         
         time.sleep(1.2)
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
 #    run_all()
-    run_test()
+#    run_test()
+
+def check_full_status(id,username):
+    scanner = XRotatingScannerV410()
+
+#    result = scanner.check_user("OnSounds")
+    name, overall, reach, status, follow_count, friends_count, followers_count, ok_status , check_full_status_enable  = scanner.check_user(username)
+
+    follow_count = int(follow_count)
+    followers_count = int(followers_count)
+
+    outputLog(f"reach={reach}")    
+    outputLog(f"follow_count={follow_count}")    
+    outputLog(f"followers_count={followers_count}")    
+    outputLog(f"check_full_status_enable={check_full_status_enable}")    
+
+    update_account_master_by_check_full_status(id,follow_count,followers_count,reach,check_full_status_enable)
+
+#if __name__ == "__main__":
+#    scanner = XRotatingScannerV410()
+
+#    result = scanner.check_user("OnSounds")
+#    result = scanner.check_user("Ginevrasmiles")
+
+#    print(result)
