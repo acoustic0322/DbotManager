@@ -17,7 +17,6 @@ from config import convert_tweet_datetime
 from config import convert_tweet_datetime2
 from config import outputLog
 
-from mysql import update_account_master_by_check_full_status
 
 # --- 設定 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -209,7 +208,8 @@ def check_full_status(id,username):
     outputLog(f"followers_count={followers_count}")    
     outputLog(f"check_full_status_enable={check_full_status_enable}")    
 
-    update_account_master_by_check_full_status(id,follow_count,followers_count,reach,check_full_status_enable)
+    return reach , follow_count , followers_count , check_full_status_enable
+
 
 #if __name__ == "__main__":
 #    scanner = XRotatingScannerV410()

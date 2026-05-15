@@ -28,6 +28,7 @@ from mysql import update_account_master_by_twitter_user_id
 from mysql import update_account_master_by_check_rep_datetime
 from mysql import get_trend_list_keyword
 from mysql import get_check_tweet_account_list_by_tweet_id
+from mysql import update_account_master_by_check_full_status
 
 
 import config
@@ -297,12 +298,16 @@ def proc_update_check_full_status():
 
             if not success or not account_name:
                 outputLog(f"アカウント名取得失敗: {error}")
+                update_account_master_by_check_full_status(credentials.get('id'),0,0,'',False)
                 continue
 
-        check_full_status(
+        reach , follow_count , followers_count , check_full_status_enable = check_full_status(
             credentials.get('id'),
             account_name
                 )         
+
+        update_account_master_by_check_full_status(credentials.get('id'),follow_count,followers_count,reach,check_full_status_enable)
+
 
 
 def refresh_access_token(credentials,num):
@@ -1284,7 +1289,7 @@ def get_my_username(credentials):
     url = "https://api.twitter.com/2/users/me?user.fields=username"
 
 
-    outputLog(f"credentials={credentials}")
+#    outputLog(f"credentials={credentials}")
     target, headers = get_action_config(credentials)
 
     proxies = None

@@ -590,7 +590,7 @@ def get_account_master_for_check_full_status():
     credentials_list = get_account_master()
 
     # 60分前
-    limit_datetime = datetime.now() - timedelta(minutes=60)
+    limit_datetime = datetime.now() - timedelta(minutes=300)
 
 #    outputLog(credentials_list[0])
 
