@@ -229,7 +229,15 @@ def get_account_master(id=None):
                 am.follow_count,
                 am.followers_count,
                 am.reach_status,
-                am.check_full_status_enable
+                am.check_full_status_enable,
+
+                am.auth_token,
+                am.cookies,
+                am.user_agent,
+                am.sec_ch_ua,
+                am.inpersonate
+
+
             FROM account_master am
 
             LEFT JOIN api_master api

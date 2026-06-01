@@ -1,1 +1,3 @@
-python tweet.py mode=like tweet_id=1872503755306147840 account_id=236
+python tweet.py mode=like tweet_id=1874731307370225888 account_id=9094 debug=True
+
+pause

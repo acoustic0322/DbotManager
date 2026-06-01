@@ -67,6 +67,8 @@ def get_ip_address():
 
 #def outputLog(message, log_dir=None):
 def outputLog(message):
+
+    message = str(message)
 #    print("log_dir")
 
 #    print(log_dir)

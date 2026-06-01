@@ -62,6 +62,10 @@ from get_tweet_firefox_to_graphql import proc_get_tweet
 
 from check_full_status .check_full_status import check_full_status
 
+from get_cookie.get_cookie import get_cookie
+from twitter_api.proc import proc_like
+import asyncio
+
 # コマンドライン引数の解析関数
 def parse_arguments(args):
     params = {}
@@ -182,7 +186,9 @@ if credentials:
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)
         rotate_react_api_id(account_id)
     elif mode == "like":
-        result1 , contents1 = proc_like_v2(credentials, tweet_id)
+#        result1 , contents1 = proc_like_v2(credentials, tweet_id)
+#        result1 , contents1 = proc_like(credentials, tweet_id)
+        result1 , contents1 = asyncio.run(proc_like(credentials, True ,False, tweet_id))
         rotate_react_api_id(account_id)
     elif mode == "jap_like":
         if not tweet_name:  # None または空文字列のときにTrue
@@ -199,7 +205,8 @@ if credentials:
     elif mode == "search":
         result1 , contents1 = proc_search_v2(credentials)
     elif mode == "bookmark":
-        result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
+#        result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
+        result1 , contents1 = asyncio.run(proc_like(credentials, False ,True, tweet_id))
         rotate_react_api_id(account_id)
     elif mode == "follow":
 #        result1 , contents1 = proc_following_v1(credentials, tweet_name)
@@ -247,6 +254,9 @@ if credentials:
             credentials.get('id'),
             account_name
                 )        
+
+    elif mode == "get_cookie":
+        result1, contents1 = get_cookie(credentials)
 
     else:
         # エラーメッセージを標準エラーに出力

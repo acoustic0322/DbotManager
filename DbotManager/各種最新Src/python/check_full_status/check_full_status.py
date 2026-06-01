@@ -3,8 +3,6 @@ import json
 import re
 import time
 import os
-import gspread
-from google.oauth2.service_account import Credentials
 import sys
 import io
 from concurrent.futures import ThreadPoolExecutor
@@ -20,11 +18,7 @@ from config import outputLog
 
 # --- 設定 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CREDENTIALS_FILE = os.path.join(BASE_DIR, "credentials.json")
 COOKIES_FILE = os.path.join(BASE_DIR, "cookies.json")
-SPREADSHEET_ID = "1ikjVkNydwonlG2cvKAu4BKRfzu4ZEuJLXnHBAE6efbw"
-TARGET_SHEET = "総チェック"
-BATCH_SIZE = 15  # Googleシートの制限を回避するため、15件ずつまとめて更新
 
 class XRotatingScannerV410:
     def __init__(self):
@@ -140,60 +134,6 @@ class XRotatingScannerV410:
         except Exception as e:
             return [username, "例外エラー", "-", str(e)[:15], "0", "0", "0", "ERR", True]
 
-def run_test():
-    scanner = XRotatingScannerV410()
-    scanner.check_user("OnSounds")
-
-def run_all():
-    scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=scopes)
-    gc = gspread.authorize(creds)
-    sh = gc.open_by_key(SPREADSHEET_ID)
-    ws = sh.worksheet(TARGET_SHEET)
-    
-    print("--- Sheet Loading... ---", flush=True)
-    all_rows = ws.get_all_values()
-    if len(all_rows) <= 1: 
-        print("No accounts found in sheet.", flush=True)
-        return
-
-    scanner = XRotatingScannerV410()
-    # 未完了の行のみを抽出
-    to_process = [(i, row[0].strip()) for i, row in enumerate(all_rows) if i > 0 and row[0].strip() and (row[8] != "OK" if len(row) > 8 else True)]
-
-    print(f"--- Starting Fast Batch Rotating Scan ({len(to_process)} accounts remaining) ---", flush=True)
-    
-    for i in range(0, len(to_process), BATCH_SIZE):
-        batch_slice = to_process[i:i+BATCH_SIZE]
-        
-        # 2並列で実行
-        print(f"Checking batch with 2 threads...", flush=True)
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            # check_userはクラスメソッドなのでlambdaでラップ
-            batch_results = list(executor.map(lambda x: (x[0], scanner.check_user(x[1])), batch_slice))
-        
-        # 結果を整理して表示
-        results = []
-        update_data = []
-        for row_idx, result in batch_results:
-            results.append(result)
-            print(f"[{row_idx}] {result[1]} / {result[2]}", flush=True)
-            
-            update_data.append({
-                'range': f'B{row_idx + 1}:I{row_idx + 1}',
-                'values': [result]
-            })
-        
-        if update_data:
-            ws.batch_update(update_data)
-            print(f"Batch updated: {len(update_data)} rows.", flush=True)
-        
-        time.sleep(1.2)
-
-#if __name__ == "__main__":
-#    run_all()
-#    run_test()
-
 def check_full_status(id,username):
     scanner = XRotatingScannerV410()
 
@@ -209,12 +149,3 @@ def check_full_status(id,username):
     outputLog(f"check_full_status_enable={check_full_status_enable}")    
 
     return reach , follow_count , followers_count , check_full_status_enable
-
-
-#if __name__ == "__main__":
-#    scanner = XRotatingScannerV410()
-
-#    result = scanner.check_user("OnSounds")
-#    result = scanner.check_user("Ginevrasmiles")
-
-#    print(result)
