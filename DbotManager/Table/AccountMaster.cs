@@ -101,5 +101,15 @@ namespace DbotManager.Table
         public string RefreshToken_3 { get; set; }
         public RegistTypes RegistType { get; set; }
 
+        public string AuthToken { get; set; }
+        public string Cookies { get; set; }
+        public string UserAgent { get; set; }
+        public string SecChUa { get; set; }
+        public string Inpersonate { get; set; }
+        public string GroupId { get; set; }
+        public string GroupName { get; set; }
+        public string Category { get; set; }
+
+
     }
 }

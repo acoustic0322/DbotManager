@@ -241,6 +241,11 @@ public class MySqlDataAccess
         }
     }
 
+    /// <summary>
+    /// 2026.06.11 cookiesが入力されているアカウントを取得対象にする
+    /// </summary>
+    /// <param name="userEnable"></param>
+    /// <returns></returns>
     public List<AccountMaster> GetAccountMaster(bool userEnable = false)
     {
         List<AccountMaster> accountMasterList = new List<AccountMaster>();
@@ -273,11 +278,11 @@ public class MySqlDataAccess
 
                 if (userEnable)
                 {
-                    query += "where um.enable = '1';";
+                    query += "where um.enable = '1' and cookies is not null ;";
                 }
                 else
                 {
-                    query += ";";
+                    query += "where cookies is not null ;";
                 }
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -369,6 +374,15 @@ public class MySqlDataAccess
                                     RefreshToken_3 = reader["refresh_token_3"].ToString(),
 
                                     RegistType = (reader["regist_type"].ToString() == "react") ? RegistTypes.React : RegistTypes.Normal ,
+
+                                    AuthToken = reader["auth_token"].ToString(),
+                                    Cookies = reader["cookies"].ToString(),
+                                    UserAgent = reader["user_agent"].ToString(),
+                                    SecChUa = reader["sec_ch_ua"].ToString(),
+                                    Inpersonate = reader["inpersonate"].ToString(),
+                                    GroupId = reader["group_id"].ToString(),
+                                    GroupName = reader["group_name"].ToString(),
+                                    Category = reader["category"].ToString(),
 
                                 };
 
