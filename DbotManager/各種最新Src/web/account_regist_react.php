@@ -215,6 +215,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $regist_type = "react";
 
+        $cookies = $_POST['cookies'];
+        $user_agent = $_POST['user_agent'];
+        $sec_ch_ua = $_POST['sec_ch_ua'];
+        $inpersonate = $_POST['inpersonate'];
+
+
         // 既存のユーザー名を確認
         $stmt = $conn->prepare("SELECT COUNT(*) FROM account_master WHERE user_id = ? and login_id = ?");
         $stmt->bind_param("ss", $current_userid, $new_login_id);
@@ -295,10 +301,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ,ai_movie_enable
                 ,ai_media_selection_rate
                 ,regist_type
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                ,cookies
+                ,user_agent
+                ,sec_ch_ua
+                ,inpersonate
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             $stmt->bind_param(
-                "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssisssssssssssssss",
+                "sssssssiiiiiiiiiiiiiiiiiiiiiiiiiiiiisiisiiiiissssisssssssssssssssssss",
                 $current_userid,    //s
                 $new_name,          //s
                 $new_login_id,      //s
@@ -365,6 +375,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ,$ai_movie_enable
                 ,$ai_media_selection_rate
                 ,$regist_type
+                ,$cookies
+                ,$user_agent
+                ,$sec_ch_ua
+                ,$inpersonate
             );
 
             $stmt->execute();
@@ -379,7 +393,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //            header("Location: account_list.php");
 
             // 修正：リダイレクト先変更
-            header("Location: ./redirect.php?id=".$insert_id."&type=2_react");
+//            header("Location: ./redirect.php?id=".$insert_id."&type=2_react");
+            header("Location: account_regist_react.php");
 
             exit;        
         }
@@ -430,6 +445,14 @@ $result = $stmt->get_result();
             <input type="checkbox" name="new_proxy_enable" value="0">プロキシ
         </label><br>
         <input type="text" name="new_proxy_url" placeholder="プロキシURL">
+        <br>
+        <input type="text" name="cookies" placeholder="クッキー">
+        <br>
+        <input type="text" name="user_agent" placeholder="user_agent">
+        <br>
+        <input type="text" name="sec_ch_ua" placeholder="sec_ch_ua">
+        <br>
+        <input type="text" name="inpersonate" placeholder="inpersonate">
         <br>
     </div>
 

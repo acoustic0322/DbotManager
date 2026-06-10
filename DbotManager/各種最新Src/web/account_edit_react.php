@@ -51,6 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $enable = isset($_POST['enable']) ? 1 : 0;
     $proxy_enable = isset($_POST['proxy_enable']) ? 1 : 0;
     $proxy_url = $_POST['proxy_url'];
+    $cookies = $_POST['cookies'];
+    $user_agent = $_POST['user_agent'];
+    $sec_ch_ua = $_POST['sec_ch_ua'];
+    $inpersonate = $_POST['inpersonate'];
 
     // 入力値のバリデーション
 //    if (empty($name) || empty($login_id) || empty($login_password)) {
@@ -67,15 +71,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             login_id = ?, 
             proxy_enable = ? ,
             proxy_url = ? ,
+            cookies = ? ,
+            user_agent = ? ,
+            sec_ch_ua = ? ,
+            inpersonate = ? 
         WHERE id = ?
     ");
 
     $stmt->bind_param(
-        "sssss", // 型指定
+        "sssssssss", // 型指定
         $name, 
         $login_id, 
         $proxy_enable ,
         $proxy_url ,
+        $cookies  ,
+        $user_agent  ,
+        $sec_ch_ua  ,
+        $inpersonate ,
         $id
     );
     
@@ -84,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 
     // 登録後にリダイレクト
-    header("Location: account_list.php");
+    header("Location: account_list_react.php");
     exit; 
 }
 
@@ -149,6 +161,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="hidden" name="proxy_enable" value="<?= !empty($edit_account['proxy_enable']) ? 1 : 0 ?>">
           <input type="hidden" name="proxy_url" value="<?= htmlspecialchars($edit_account['proxy_url'] ?? '') ?>">
           <?php endif; ?>
+
+          <label>クッキー</label>
+          <input type="text" name="cookies" value="<?= htmlspecialchars($edit_account['cookies'] ?? '') ?>">
+
+          <label>user_agent</label>
+          <input type="text" name="user_agent" value="<?= htmlspecialchars($edit_account['user_agent'] ?? '') ?>">
+
+          <label>sec_ch_ua</label>
+          <input type="text" name="sec_ch_ua" value="<?= htmlspecialchars($edit_account['sec_ch_ua'] ?? '') ?>">
+
+          <label>inpersonate</label>
+          <input type="text" name="inpersonate" value="<?= htmlspecialchars($edit_account['inpersonate'] ?? '') ?>">
 
           <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
           <button class="btn" type="submit">更新</button>

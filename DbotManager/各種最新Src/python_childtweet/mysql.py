@@ -116,95 +116,156 @@ def get_all_account_master():
     finally:
         connection.close()
 
+def get_account_master(id=None):
 
-def get_account_master(id):
     # MySQLデータベースに接続
     connection = pymysql.connect(
-        host=config.db_host,      # ホスト名
-        user='root',           # ユーザー名
-        password='abcd1234',   # パスワード
-        database='d_bot',      # データベース名
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
         charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor        
+        cursorclass=pymysql.cursors.DictCursor
     )
+
     try:
         with connection.cursor() as cursor:
-            # 認証情報を格納しているテーブルからデータを取得
-            sql = """SELECT 
-            am.api_key, 
-            am.api_key_secret, 
-            am.access_token, 
-            am.access_token_secret , 
 
-            CASE 
-                WHEN am.regist_type = 'react' THEN ugm.client_id_1
-                WHEN am.api_master_id = '0' THEN am.client_id 
-                ELSE api.client_id 
-            END as client_id,
+            sql = """
+            SELECT 
+                am.api_key, 
+                am.api_key_secret, 
+                am.access_token, 
+                am.access_token_secret , 
 
-            CASE 
-                WHEN am.regist_type = 'react' THEN ugm.client_secret_1
-                WHEN am.api_master_id = '0' THEN am.client_secret 
-                ELSE api.client_secret 
-            END as client_secret,
+                CASE 
+                    WHEN am.regist_type = 'react' THEN
+                        CASE am.react_api_id
+                            WHEN 1 THEN ugm.client_id_1
+                            WHEN 2 THEN ugm.client_id_2
+                            WHEN 3 THEN ugm.client_id_3
+                            ELSE ugm.client_id_1
+                        END
+                    WHEN am.api_master_id = '0' THEN am.client_id 
+                    ELSE api.client_id 
+                END as client_id,
 
-            CASE 
-                WHEN am.regist_type = 'react' THEN am.bearer_token_1
-                ELSE am.bearer_token
-            END as bearer_token,            
+                CASE 
+                    WHEN am.regist_type = 'react' THEN
+                        CASE am.react_api_id
+                            WHEN 1 THEN ugm.client_secret_1
+                            WHEN 2 THEN ugm.client_secret_2
+                            WHEN 3 THEN ugm.client_secret_3
+                            ELSE ugm.client_secret_1
+                        END
+                    WHEN am.api_master_id = '0' THEN am.client_secret 
+                    ELSE api.client_secret 
+                END as client_secret,
 
-            CASE 
-                WHEN am.regist_type = 'react' THEN am.refresh_token_1
-                ELSE am.refresh_token
-            END as refresh_token,
+                CASE 
+                    WHEN am.regist_type = 'react' THEN
+                        CASE am.react_api_id
+                            WHEN 1 THEN am.bearer_token_1
+                            WHEN 2 THEN am.bearer_token_2
+                            WHEN 3 THEN am.bearer_token_3
+                            ELSE am.bearer_token_1
+                        END
+                    ELSE am.bearer_token
+                END as bearer_token,
 
-            am.login_id , 
-            am.id ,
-            am.dmm_id , 
-            am.search_enable , 
-            am.proxy_enable , 
-            am.proxy_url ,
-            am.api_master_id,
-            am.twitter_user_id,
-            am.check_rep_datetime,
-            am.user_id,
-            um.GROQ_API_KEY,
-            um.OPENAI_API_KEY,
-            am.ai_mode,
-            am.ai_post_enable,
-            am.ai_reply_enable,
-            am.ai_post_prompt,
-            am.ai_reply_prompt,
-            am.ai_trend_prompt,
-            am.reserve1_ai,
-            am.reserve2_ai,
-            am.reserve3_ai,
-            am.reserve4_ai,
-            am.ai_post_example,
-            am.ai_reply_example,
-            um.jap_api_key
-            ,am.ai_uraaka_prompt
-            ,am.ai_uraaka_prompt_rep
-            ,am.ai_uraaka_past_tweet
-            ,am.ai_uraaka_past_rep
-            ,am.ai_trend_prompt_yahoo
-            ,am.ai_trend_prompt_x
-            ,am.ai_btc_prompt
-            ,am.ai_free_prompt
-            ,am.ai_free_prompt_rep
-            ,am.ai_free_past_rep
-            FROM 
-            account_master am
-            left join api_master api on api.id = am.api_master_id
-            left join user_master um on um.id = am.user_id
-            LEFT JOIN user_group_master ugm ON ugm.id = am.user_id
-            WHERE am.id = %s"""
+                CASE 
+                    WHEN am.regist_type = 'react' THEN
+                        CASE am.react_api_id
+                            WHEN 1 THEN am.refresh_token_1
+                            WHEN 2 THEN am.refresh_token_2
+                            WHEN 3 THEN am.refresh_token_3
+                            ELSE am.refresh_token_1
+                        END
+                    ELSE am.refresh_token
+                END as refresh_token,
 
-#            sql = "SELECT id , api_key, api_key_secret, access_token, access_token_secret , bearer_token , client_id , client_secret , refresh_token , login_id FROM account_master WHERE id = %s"
-            cursor.execute(sql, (id,))
-            credentials = cursor.fetchone()
-#            credentials['id'] = id
-            return credentials
+                am.login_id,
+                am.id,
+                am.dmm_id,
+                am.search_enable,
+                am.proxy_enable,
+                am.proxy_url,
+                am.api_master_id,
+                am.twitter_user_id,
+                am.check_rep_datetime,
+                am.user_id,
+                um.GROQ_API_KEY,
+                um.OPENAI_API_KEY,
+                am.ai_mode,
+                am.ai_post_enable,
+                am.ai_reply_enable,
+                am.ai_post_prompt,
+                am.ai_reply_prompt,
+                am.ai_trend_prompt,
+                am.reserve1_ai,
+                am.reserve2_ai,
+                am.reserve3_ai,
+                am.reserve4_ai,
+                am.ai_post_example,
+                am.ai_reply_example,
+                um.jap_api_key,
+                am.ai_uraaka_prompt,
+                am.ai_uraaka_prompt_rep,
+                am.ai_uraaka_past_tweet,
+                am.ai_uraaka_past_rep,
+                am.ai_trend_prompt_yahoo,
+                am.ai_trend_prompt_x,
+                am.ai_btc_prompt,
+                am.ai_free_prompt,
+                am.ai_free_prompt_rep,
+                am.ai_free_past_rep,
+                am.account_name,
+
+                am.is_locked,
+                am.is_suspended,
+                am.is_unauthorized,
+
+                am.check_full_status_updatetime,
+                am.follow_count,
+                am.followers_count,
+                am.reach_status,
+                am.check_full_status_enable,
+
+                am.auth_token,
+                am.cookies,
+                am.user_agent,
+                am.sec_ch_ua,
+                am.inpersonate
+
+
+            FROM account_master am
+
+            LEFT JOIN api_master api
+                ON api.id = am.api_master_id
+
+            LEFT JOIN user_master um
+                ON um.id = am.user_id
+
+            LEFT JOIN user_group_master ugm
+                ON ugm.id = am.user_id
+            """
+
+            params = ()
+
+            # id指定時のみWHERE追加
+            if id is not None:
+                sql += " WHERE am.id = %s"
+                params = (id,)
+
+            cursor.execute(sql, params)
+
+            # id指定時
+            if id is not None:
+                return cursor.fetchone()
+
+            # 全件取得
+            return cursor.fetchall()
+
     finally:
         connection.close()
 
@@ -233,6 +294,87 @@ def update_account_master_by_twitter_user_id(id , twitter_user_id ):
             connection.commit()
     finally:
         connection.close()         
+
+def update_account_master_by_account_name(id , account_name ):
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+    try:
+        with connection.cursor() as cursor:
+
+            sql = """
+                UPDATE account_master set account_name = %s where id = %s
+            """
+
+            cursor.execute(sql, (account_name , id ))
+            connection.commit()
+    finally:
+        connection.close()         
+
+def update_account_master_by_check_full_status(id , follow_count , followers_count , reach_status , check_full_status_enable):
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+    try:
+        with connection.cursor() as cursor:
+
+            sql = """
+                UPDATE account_master 
+                set follow_count = %s,
+                followers_count = %s,
+                reach_status = %s ,
+                check_full_status_enable = %s ,
+                check_full_status_updatetime = NOW()
+                where id = %s
+            """
+
+            cursor.execute(sql, 
+            (
+                follow_count ,
+                followers_count,
+                reach_status ,
+                1 if check_full_status_enable else 0,
+                id 
+                )
+                )
+            connection.commit()
+    finally:
+        connection.close()          
+
+def rotate_react_api_id(account_id):
+
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+    try:
+        with connection.cursor() as cursor:
+
+            # プロシージャ実行
+            cursor.callproc('rotate_react_api_id', [account_id])
+
+            connection.commit()
+
+    finally:
+        connection.close()
 
 def update_account_master_by_check_rep_datetime(id ):
     # MySQLデータベースに接続
@@ -442,6 +584,128 @@ def get_account_master_for_update_refresh(num):
                     'refresh_token': row['refresh_token'],
                     'proxy_enable': row['proxy_enable'],
                     'proxy_url': row['proxy_url']
+                }
+                for row in result
+            ]
+
+            return credentials_list
+    finally:
+        connection.close()
+
+def get_account_master_for_check_full_status():
+    from datetime import datetime, timedelta
+    # 全件取得
+    credentials_list = get_account_master()
+
+    # 60分前
+    limit_datetime = datetime.now() - timedelta(minutes=300)
+
+#    outputLog(credentials_list[0])
+
+
+    # 絞り込み
+    credentials_list = [
+        x for x in credentials_list
+        if
+            x.get('refresh_token') is not None
+
+            and (
+                x.get('check_full_status_updatetime') is None
+                or x.get('check_full_status_updatetime') < limit_datetime
+            )
+
+            and x.get('is_locked') == 0
+            and x.get('is_suspended') == 0
+            and x.get('is_unauthorized') == 0
+            and x.get('check_full_status_enable') == 1
+    ]
+
+#    outputLog(credentials_list)
+
+    return credentials_list
+
+def get_account_master_for_check_full_status_bk():
+    # MySQLデータベースに接続
+    connection = pymysql.connect(
+        host=config.db_host,      # ホスト名
+        user='root',           # ユーザー名
+        password='abcd1234',   # パスワード
+        database='d_bot',      # データベース名
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor        
+    )
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+            SELECT 
+                am.id, 
+                CASE am.api_master_id
+                    WHEN '0' THEN am.client_id 
+                    ELSE api.client_id
+                END AS client_id,
+
+                CASE am.api_master_id
+                    WHEN '0' THEN am.client_secret 
+                    ELSE api.client_secret
+                END AS client_secret,
+
+                am.refresh_token,
+                am.bearer_token,
+                am.proxy_enable,
+                am.proxy_url,
+                am.account_name,
+                am.check_full_status_updatetime,
+                am.check_full_status_enable,
+                am.follow_count,
+                am.followers_count,
+                am.reach_status,
+
+                am.access_token,
+                am.access_token_secret,
+                am.api_key,
+                am.api_key_secret
+
+            FROM account_master am
+
+            LEFT JOIN api_master api
+                ON api.id = am.api_master_id
+
+            WHERE
+                am.refresh_token IS NOT NULL
+                AND ((TIMESTAMPDIFF(
+                    MINUTE,
+                    am.check_full_status_updatetime,
+                    NOW()
+                ) > 60) or (am.check_full_status_updatetime is NULL))
+                AND am.is_locked = 0
+                AND am.is_suspended = 0
+                AND am.is_unauthorized = 0
+                AND am.check_full_status_enable = 1
+            """
+
+            cursor.execute(sql)
+            result = cursor.fetchall()
+
+            # credentialsのリストを作成
+            credentials_list = [
+                {
+                    'id': row['id'],
+                    'client_id': row['client_id'],
+                    'client_secret': row['client_secret'],
+                    'refresh_token': row['refresh_token'],
+                    'bearer_token': row['refresh_token'],
+                    'proxy_enable': row['proxy_enable'],
+                    'proxy_url': row['proxy_url'],
+                    'check_full_status_updatetime': row['check_full_status_updatetime'],
+                    'check_full_status_enable': row['check_full_status_enable'],
+                    'follow_count': row['follow_count'],
+                    'followers_count': row['followers_count'],
+                    'reach_status': row['reach_status'],
+                    'account_name': row['account_name'],
+                    'access_token': row['access_token'],
+                    'access_token_secret': row['access_token_secret'],
+                    'api_key': row['api_key'],
+                    'api_key_secret': row['api_key_secret'],
                 }
                 for row in result
             ]
@@ -1810,5 +2074,24 @@ def get_account_error_log_type(account_id):
             cursor.execute("SELECT error_type FROM account_error_log WHERE account_id = %s", (account_id,))
             row = cursor.fetchone()
             return row['error_type'] if row else None
+    finally:
+        connection.close()
+
+def update_cookies(account_id , cookie):
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    try:
+        with connection.cursor() as cursor:
+
+            sql = "UPDATE account_master set cookies = %s WHERE account_id = %s"
+            cursor.execute(sql, (cookie , account_id,))
+            connection.commit()
+
     finally:
         connection.close()

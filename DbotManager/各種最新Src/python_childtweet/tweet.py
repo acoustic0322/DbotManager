@@ -11,6 +11,7 @@ from requests_oauthlib import OAuth1Session
 from datetime import datetime, timezone, timedelta
 from mysql import delete_account_error_log
 from mysql import unlock_unauthorized
+from twitter_api_v2 import get_my_username
 from twitter_api_v2 import proc_refresh_queue
 
 from twitter_api_v2 import proc_like_v2
@@ -42,11 +43,13 @@ from mysql import get_check_account_list
 from mysql import save_tweet_history
 from mysql import get_search_list
 from twitter_api_v2 import proc_update_refresh_token
+from twitter_api_v2 import proc_update_check_full_status
 #from twitter_api_v2 import proc_check_latest_tweet
 from mysql import insert_tweet_history_monomane
 from mysql import getOwnTweetId
 from mysql import get_search_history
 from mysql import init_check_tweet_account_master_by_search_list
+from mysql import rotate_react_api_id
 
 #from tweet_copy_dmm import tweet_copy_dmm
 
@@ -56,6 +59,12 @@ from config import outputLog
 #from tweet_watch import fetch_latest_tweet
 
 #from get_tweet_firefox_to_graphql import proc_get_tweet
+from check_full_status .check_full_status import check_full_status
+
+from get_cookie.get_cookie import get_cookie
+from twitter_api.proc import proc_like
+from twitter_api.proc import proc_post
+import asyncio
 
 # コマンドライン引数の解析関数
 def parse_arguments(args):
@@ -130,6 +139,11 @@ if mode == "check_refresh":
     proc_refresh_queue()
     sys.exit(0)
 
+if mode == "check_full_status_collective":
+    outputLog("check_full_status_collective")
+    proc_update_check_full_status()
+    sys.exit(0)    
+
 if mode ==  "update_profiles":
     outputLog("update_profiles")
     update_profile_image()
@@ -149,14 +163,16 @@ credentials = get_account_master(account_id)
 if credentials:
     if mode == "post":
 
-        result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
+        result1 , contents1 = asyncio.run(proc_post(credentials))
 
-        if result1 == True:
-            if media_type != '':
-                result1 , contents1 = proc_post_v10a(credentials , comment , media_type , media_id , tweet_id , ai_enable)               
-            else:
-                result1 , contents1 = proc_post_v2(credentials , comment , "")
-                #result1 , contents1 = proc_post_v2(credentials , comment , "" , ai_enable)     
+#        result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
+
+#        if result1 == True:
+#            if media_type != '':
+#                result1 , contents1 = proc_post_v10a(credentials , comment , media_type , media_id , tweet_id , ai_enable)               
+#            else:
+#                result1 , contents1 = proc_post_v2(credentials , comment , "")
+#                #result1 , contents1 = proc_post_v2(credentials , comment , "" , ai_enable)     
                           
     elif mode == "monomane":
         result1 , contents1 = proc_monomane_v1(credentials , tweet_id)
@@ -166,10 +182,16 @@ if credentials:
 
 #        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id )               
 #        result1 , contents1 = True , "" #未実装
+        rotate_react_api_id(account_id)
+
     elif mode == "repost":
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)
+        rotate_react_api_id(account_id)
     elif mode == "like":
-        result1 , contents1 = proc_like_v2(credentials, tweet_id)
+#        result1 , contents1 = proc_like_v2(credentials, tweet_id)
+#        result1 , contents1 = proc_like(credentials, tweet_id)
+        result1 , contents1 = asyncio.run(proc_like(credentials, True ,False, tweet_id))
+        rotate_react_api_id(account_id)
     elif mode == "jap_like":
         if not tweet_name:  # None または空文字列のときにTrue
             tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
@@ -185,7 +207,9 @@ if credentials:
     elif mode == "search":
         result1 , contents1 = proc_search_v2(credentials)
     elif mode == "bookmark":
-        result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
+#        result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
+        result1 , contents1 = asyncio.run(proc_like(credentials, False ,True, tweet_id))
+        rotate_react_api_id(account_id)
     elif mode == "follow":
 #        result1 , contents1 = proc_following_v1(credentials, tweet_name)
         result1 , contents1 = proc_following_v2(credentials, tweet_name)
@@ -213,7 +237,29 @@ if credentials:
     elif mode == "jap_detail":
         if not tweet_name:  # None または空文字列のときにTrue
             tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_detail_jap(tweet_name, tweet_id , jap_api_key , quantity)        
+        result1 , contents1 = proc_detail_jap(tweet_name, tweet_id , jap_api_key , quantity)
+    elif mode == "get_username":
+        username, user_id, result1, contents1 = get_my_username(credentials)
+    elif mode == "check_full_status":
+
+        # アカウント名未取得の場合は取得してからフォロワー取得
+        account_name = credentials.get('account_name')
+
+        if not account_name:
+            account_name, user_id, success, error = get_my_username(credentials)
+
+            if not success or not account_name:
+                outputLog(f"アカウント名取得失敗: {error}")
+                sys.exit(1)
+
+        check_full_status(
+            credentials.get('id'),
+            account_name
+                )        
+
+    elif mode == "get_cookie":
+        result1, contents1 = get_cookie(credentials)
+
     else:
         # エラーメッセージを標準エラーに出力
         outputLog(f"サポートされていないmode: {mode}")

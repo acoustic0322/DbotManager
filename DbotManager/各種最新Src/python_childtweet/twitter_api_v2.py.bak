@@ -239,39 +239,50 @@ def check_access_token(credentials):
     status_code , contents = check_access_token_validity(credentials['bearer_token'], target)
 
     if status_code == 401:
-        bearer_token , refresh_token = refresh_access_token(credentials)
+        bearer_token , refresh_token = refresh_access_token(credentials,0)
 
     return bearer_token , refresh_token
 
 def proc_update_refresh_token():
     outputLog("proc_update_refresh_token")
-    credentials_list = get_account_master_for_update_refresh()
-    outputLog(f"credentials_list={credentials_list}")
+
+    # 通常,react1~3をループ
+    for i in range(4):
+
+#        if i == 0:
+#            continue
+
+        outputLog(f"proc_update_refresh_token:i={i}")
+
+        credentials_list = get_account_master_for_update_refresh(i)
+        outputLog(f"credentials_list={credentials_list}")
     
-    for credentials in credentials_list:
-        # 新しいトークンを取得
-        result, access_token, refresh_token = refresh_access_token(credentials)
+        for credentials in credentials_list:
+            # 新しいトークンを取得
+            result, access_token, refresh_token = refresh_access_token(credentials,i)
 
-        # 【重要】取得に成功した場合は、メモリ上の credentials も最新にする
-        # これをしないと、この後のループ処理で古いトークンを使ってエラーになります
-        if result:
-            credentials['bearer_token'] = access_token
-            credentials['refresh_token'] = refresh_token
-            outputLog(f"ID:{credentials['id']} のトークンをメモリ上でも更新しました。")
+            # 【重要】取得に成功した場合は、メモリ上の credentials も最新にする
+            # これをしないと、この後のループ処理で古いトークンを使ってエラーになります
+            if result:
+                credentials['bearer_token'] = access_token
+                credentials['refresh_token'] = refresh_token
+                outputLog(f"ID:{credentials['id']} のトークンをメモリ上でも更新しました。")
 
-        # 最新のトークン情報で履歴を保存
-        save_tweet_history(
-            credentials['id'], 
-            '', 
-            'check_refresh', 
-            '', 
-            result, 
-            f"refresh:{refresh_token} access:{access_token}"
-        )
+            # 最新のトークン情報で履歴を保存
+            save_tweet_history(
+                credentials['id'], 
+                '', 
+                'check_refresh', 
+                '', 
+                result, 
+                f"refresh:{refresh_token} access:{access_token}",
+                i
+            )
 
 
-def refresh_access_token(credentials):
+def refresh_access_token(credentials,num):
     try:
+
         client_id = credentials['client_id']
         client_secret = credentials.get('client_secret')
         refresh_token = credentials['refresh_token']
@@ -309,7 +320,7 @@ def refresh_access_token(credentials):
             access_token = response_data.get("access_token")
             refresh_token = response_data.get("refresh_token")
 
-            update_refresh_token(credentials['id'], access_token, refresh_token)
+            update_refresh_token(credentials['id'], access_token, refresh_token, num)
             credentials['refresh_token'] = refresh_token
             credentials['bearer_token'] = access_token
 

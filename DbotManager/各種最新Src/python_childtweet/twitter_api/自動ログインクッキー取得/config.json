@@ -1,0 +1,69 @@
+{
+    "HF_API_TOKENS": [
+        "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",
+        "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"
+    ],
+    "TOGETHER_API_KEYS": [
+        "tgp_v1_MI6mUQTXRZTPzIodtylGsxHcMjS-2yUg00vRgiue_uU",
+        "tgp_v1_CE5sSw-4C_l_42eHTKdcuQ5vUG7k_cXzcZgZihin57M"
+    ],
+    "KUKU_RECIEVE_URL": "https://m.kuku.lu/recv.php",
+    "KUKU_PROFILE_DIR": {
+        "DESKTOP-NKDHK45": "C:\\Users\\boxin\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\91d9uoes.メアド1",
+        "DEFAULT": "C:\\Users\\boxin\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\91d9uoes.メアド1"
+    },
+    "FIREFOX_BINARY": {
+        "DESKTOP-NKDHK45": "",
+        "DEFAULT": ""
+    },
+    "ADB_PATH": {
+        "DESKTOP-NKDHK45": "H:\\マイドライブ\\ixBrowser自動\\androidIP自動変更\\abc\\adb.exe",
+        "DEFAULT": "H:\\マイドライブ\\ixBrowser自動\\androidIP自動変更\\abc\\adb.exe"
+    },
+    "MAX_WORKERS": 3,
+    "DBOT_USER": "j",
+    "DBOT_PASS": "j",
+    "PROFILE_THEME_MODE": "RANDOM",
+    "GEMINI_API_KEYS": [
+        "AIzaSyC0-C63dUDo107qwg4MhqrbAYzDRN2WEgE",
+        "AIzaSyA1VR_LbcTVPaNSGBkYcjU8oJ9Dawc0bdA",
+        "AIzaSyAQGqJ8zXoBt35mtaBKjhcx3rzthFRtmHs",
+        "AIzaSyBfXu-sQ4SM3YHvpnoU8Q_H5Xyom35IglU",
+        "AIzaSyBkyFmkDlARVp9Zd7IFQg418xR4FDUsUZA",
+        "AIzaSyCxCe2oBsWNuDQfcJEjXTS2zYI4JaZIZX4",
+        "AIzaSyDG7NNcu1djMWxO7Xs--kTsqOS-iK8s1TI",
+        "AIzaSyAhSZJDYf4L329KG6SzC3KLt1B1V8e9O2k",
+        "AIzaSyAeDFhrOqBctZBykTA8qYVjfSbgivXK81g",
+        "AIzaSyBqNHyWEHX3hNiek73BA2TedfLzjatj7WM",
+        "AIzaSyC3bfgimVBOBzgrJyK4lLgvuw3ww92xtEs",
+        "AIzaSyCninRG2MllvQ6xuoM7Gv_jAjOGiwDqoJ4",
+        "AIzaSyB-B6oQYQVJbHAfmJ6lmQiMjbZNkERhBfU",
+        "AIzaSyA9_McAeWgh_XXMCmbcqBBEsdujdO2usm0",
+        "AIzaSyBO2JsjiFAMr3MHCFjusQVdxQdYkb6I7Ho",
+        "AIzaSyCfxL-c8iwQ-3lKvDO8EU6uHxgCS3EMDqk",
+        "AIzaSyClFPecNs2bXEUd3ttv6j6bze1AvIo0ee0",
+        "AIzaSyAbEo0-P7bth83151eMe7aaAydG5pyhjhM",
+        "AIzaSyDRW_Z6Q1-ra8P0cgYiDn3yU5LTWOPxmAo",
+        "AIzaSyCTvi947YuHbODSgSUJWoq5WcFYV3_NI5c",
+        "AIzaSyAzXTtmoiOWHCI-X46S52YoOvuLQToo39g",
+        "AIzaSyDgSVBteRt4rMNrgvGqIW-uozTRaLQk2_Q",
+        "AIzaSyB5Z8Y70SDjtdAl7kWZj1c8u7YIdqA8w0o",
+        "AIzaSyCkphjUvadk8pRdff0WcXuPhCYQscSC0Sk",
+        "AIzaSyAUBgR_wlxVUFtj6XdXQOk3SuX53kD_LmA",
+        "AIzaSyDO7b8YG_J716m6XDQBjH9GD_60oUe4TGI",
+        "AIzaSyD1UBsR1jNypn9D1p-ZDGCp8pv90XIzC8M",
+        "AIzaSyBpxhuwfICnxDv1bFogekL7Kc2lpW7mdpA",
+        "AIzaSyCEVMkA5ANfiWsfiWfWhcYtmFspbvSmtj0"
+    ],
+    "SUSPENDED_GEMINI_API_KEYS": [],
+    "PROFILE_IMAGE_DIR": "プロフィール画像",
+    "TWEET_TEXT_DIR": "ツイート文",
+    "POST_IMAGE_DIR": "投稿画像",
+    "FOLLOW_COUNT_MIN": 5,
+    "FOLLOW_COUNT_MAX": 10,
+    "FOLLOW_THRESHOLD": 12,
+    "SHEET_ID": "1ikjVkNydwonlG2cvKAu4BKRfzu4ZEuJLXnHBAE6efbw",
+    "WORKSHEET_NAME": "ixBrowser2",
+    "FEMALE_RATIO": 0.5,
+    "KERNEL_VERSION": "145"
+}

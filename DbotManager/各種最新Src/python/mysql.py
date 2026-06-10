@@ -2076,3 +2076,22 @@ def get_account_error_log_type(account_id):
             return row['error_type'] if row else None
     finally:
         connection.close()
+
+def update_cookies(account_id , cookie):
+    connection = pymysql.connect(
+        host=config.db_host,
+        user='root',
+        password='abcd1234',
+        database='d_bot',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    try:
+        with connection.cursor() as cursor:
+
+            sql = "UPDATE account_master set cookies = %s WHERE account_id = %s"
+            cursor.execute(sql, (cookie , account_id,))
+            connection.commit()
+
+    finally:
+        connection.close()

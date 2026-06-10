@@ -328,10 +328,16 @@ function get_account($conn, $id)
         ,ugm.client_secret_2 as client_secret_api2
         ,ugm.client_secret_3 as client_secret_api3
 
+        ,am.cookies
+        ,am.user_agent
+        ,am.sec_ch_ua
+        ,am.inpersonate
+
         FROM account_master am
 
         LEFT JOIN api_master api ON api.id = am.api_master_id
-        LEFT JOIN user_group_master ugm ON ugm.id = am.user_id
+        LEFT JOIN user_master um ON um.id = am.user_id
+        LEFT JOIN user_group_master ugm ON ugm.id = um.group_id        
 
         WHERE am.id = ?;
     ";
@@ -421,6 +427,10 @@ function get_account($conn, $id)
             ,$client_secret_api1
             ,$client_secret_api2
             ,$client_secret_api3
+            ,$cookies
+            ,$user_agent
+            ,$sec_ch_ua
+            ,$inpersonate
         );
 
         if ($stmt->fetch()) {
@@ -506,6 +516,10 @@ function get_account($conn, $id)
                 ,'client_secret_api2' => $client_secret_api2
                 ,'client_secret_api3' => $client_secret_api3
 
+                ,'cookies' => $cookies
+                ,'user_agent' => $user_agent
+                ,'sec_ch_ua' => $sec_ch_ua
+                ,'inpersonate' => $inpersonate
             ];
         }
     }

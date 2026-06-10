@@ -64,6 +64,7 @@ from check_full_status .check_full_status import check_full_status
 
 from get_cookie.get_cookie import get_cookie
 from twitter_api.proc import proc_like
+from twitter_api.proc import proc_post
 import asyncio
 
 # コマンドライン引数の解析関数
@@ -163,14 +164,16 @@ credentials = get_account_master(account_id)
 if credentials:
     if mode == "post":
 
-        result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
+        result1 , contents1 = asyncio.run(proc_post(credentials))
 
-        if result1 == True:
-            if media_type != '':
-                result1 , contents1 = proc_post_v10a(credentials , comment , media_type , media_id , tweet_id , ai_enable)               
-            else:
-                result1 , contents1 = proc_post_v2(credentials , comment , "")
-                #result1 , contents1 = proc_post_v2(credentials , comment , "" , ai_enable)     
+#        result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
+
+#        if result1 == True:
+#            if media_type != '':
+#                result1 , contents1 = proc_post_v10a(credentials , comment , media_type , media_id , tweet_id , ai_enable)               
+#            else:
+#                result1 , contents1 = proc_post_v2(credentials , comment , "")
+#                #result1 , contents1 = proc_post_v2(credentials , comment , "" , ai_enable)     
                           
     elif mode == "monomane":
         result1 , contents1 = proc_monomane_v1(credentials , tweet_id)
