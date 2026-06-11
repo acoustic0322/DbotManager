@@ -126,8 +126,17 @@ namespace DbotManager
             }
         }
 
+        public static string ToSafeString(object value)
+        {
+            return value == null || value == DBNull.Value
+                ? string.Empty
+                : value.ToString();
+        }
 
-
+        public static bool ParseBool(object value)
+        {
+            return value?.ToString() == "1";
+        }
 
         #endregion
     }
