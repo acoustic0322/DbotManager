@@ -276,6 +276,7 @@ public class MySqlDataAccess
                 //    left join user_master um on um.id = am.user_id
                 //    ";
 
+                /*
                 if (userEnable)
                 {
                     query += "where um.enable = '1' and cookies is not null ;";
@@ -284,6 +285,8 @@ public class MySqlDataAccess
                 {
                     query += "where cookies is not null ;";
                 }
+                */
+                query += "where cookies is not null ;";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -295,94 +298,106 @@ public class MySqlDataAccess
                             {
                                 AccountMaster accountItem = new AccountMaster()
                                 {
-                                    Id = int.Parse(reader["id"].ToString()),
-                                    UserId = int.Parse(reader["user_id"].ToString()),
-                                    Name = reader["name"].ToString(),
-                                    LoginId = reader["login_id"].ToString(),
-                                    LoginPass = reader["login_password"].ToString(),
-                                    ApiKey = reader["api_key"].ToString(),
-                                    ApiKeySecret = reader["api_key_secret"].ToString(),
-                                    ClientId = reader["client_id"].ToString(),
-                                    ClientSecret = reader["client_secret"].ToString(),
-                                    AccessToken = reader["access_token"].ToString(),
-                                    AccessTokenSecret = reader["access_token_secret"].ToString(),
-                                    BearerToken = reader["bearer_token"].ToString(),
-                                    RefreshToken = reader["refresh_token"].ToString(),
-                                    Enable = reader["enable"].ToString() == "1",
-                                    LikeEnable = reader["like_enable"].ToString() == "1",
-                                    ReplyEnable = reader["reply_enable"].ToString() == "1",
-                                    BookMarkEnable = reader["bookmark_enable"].ToString() == "1",
-                                    RepostEnable = reader["repost_enable"].ToString() == "1",
-                                    PostEnable = reader["post_enable"].ToString() == "1",
+                                    Id = SupportUtil.ParseOrDefault(reader["id"], 0),
+                                    UserId = SupportUtil.ParseOrDefault(reader["user_id"], 0),
 
-                                    Reserve1Count = SupportUtil.ParseOrDefault(reader["reserve1_count"],0),
+                                    Name = reader["name"]?.ToString(),
+                                    LoginId = reader["login_id"]?.ToString(),
+                                    LoginPass = reader["login_password"]?.ToString(),
+                                    ApiKey = reader["api_key"]?.ToString(),
+                                    ApiKeySecret = reader["api_key_secret"]?.ToString(),
+                                    ClientId = reader["client_id"]?.ToString(),
+                                    ClientSecret = reader["client_secret"]?.ToString(),
+                                    AccessToken = reader["access_token"]?.ToString(),
+                                    AccessTokenSecret = reader["access_token_secret"]?.ToString(),
+                                    BearerToken = reader["bearer_token"]?.ToString(),
+                                    RefreshToken = reader["refresh_token"]?.ToString(),
+
+                                    Enable = SupportUtil.ParseOrDefault(reader["enable"], 0) == 1,
+                                    LikeEnable = SupportUtil.ParseOrDefault(reader["like_enable"], 0) == 1,
+                                    ReplyEnable = SupportUtil.ParseOrDefault(reader["reply_enable"], 0) == 1,
+                                    BookMarkEnable = SupportUtil.ParseOrDefault(reader["bookmark_enable"], 0) == 1,
+                                    RepostEnable = SupportUtil.ParseOrDefault(reader["repost_enable"], 0) == 1,
+                                    PostEnable = SupportUtil.ParseOrDefault(reader["post_enable"], 0) == 1,
+
+                                    Reserve1Count = SupportUtil.ParseOrDefault(reader["reserve1_count"], 0),
                                     Reserve2Count = SupportUtil.ParseOrDefault(reader["reserve2_count"], 0),
                                     Reserve3Count = SupportUtil.ParseOrDefault(reader["reserve3_count"], 0),
                                     Reserve4Count = SupportUtil.ParseOrDefault(reader["reserve4_count"], 0),
+
                                     Reserve1StartHour = SupportUtil.ParseOrDefault(reader["reserve1_start_hour"], 0),
                                     Reserve2StartHour = SupportUtil.ParseOrDefault(reader["reserve2_start_hour"], 0),
                                     Reserve3StartHour = SupportUtil.ParseOrDefault(reader["reserve3_start_hour"], 0),
                                     Reserve4StartHour = SupportUtil.ParseOrDefault(reader["reserve4_start_hour"], 0),
+
                                     Reserve1EndHour = SupportUtil.ParseOrDefault(reader["reserve1_end_hour"], 0),
                                     Reserve2EndHour = SupportUtil.ParseOrDefault(reader["reserve2_end_hour"], 0),
                                     Reserve3EndHour = SupportUtil.ParseOrDefault(reader["reserve3_end_hour"], 0),
                                     Reserve4EndHour = SupportUtil.ParseOrDefault(reader["reserve4_end_hour"], 0),
-                                    Reserve1Enable = reader["reserve1_enable"].ToString() == "1",
-                                    Reserve2Enable = reader["reserve2_enable"].ToString() == "1",
-                                    Reserve3Enable = reader["reserve3_enable"].ToString() == "1",
-                                    Reserve4Enable = reader["reserve4_enable"].ToString() == "1",
-                                    Paid = reader["paid"].ToString() == "1",
-                                    PaidLike = reader["paid_like"].ToString() == "1",
-                                    PaidBookmark = reader["paid_bookmark"].ToString() == "1",
 
+                                    Reserve1Enable = SupportUtil.ParseOrDefault(reader["reserve1_enable"], 0) == 1,
+                                    Reserve2Enable = SupportUtil.ParseOrDefault(reader["reserve2_enable"], 0) == 1,
+                                    Reserve3Enable = SupportUtil.ParseOrDefault(reader["reserve3_enable"], 0) == 1,
+                                    Reserve4Enable = SupportUtil.ParseOrDefault(reader["reserve4_enable"], 0) == 1,
+
+                                    Paid = SupportUtil.ParseOrDefault(reader["paid"], 0) == 1,
+                                    PaidLike = SupportUtil.ParseOrDefault(reader["paid_like"], 0) == 1,
+                                    PaidBookmark = SupportUtil.ParseOrDefault(reader["paid_bookmark"], 0) == 1,
 
                                     CheckInterval = SupportUtil.ParseOrDefault(reader["check_interval"], 60),
+                                    CheckRepInterval = SupportUtil.ParseOrDefault(reader["checkrep_interval"], 60),
+                                    MonomaneInterval = SupportUtil.ParseOrDefault(reader["monomane_interval"], 60),
 
-                                    SearchEnable = reader["search_enable"].ToString() == "1",
+                                    SearchEnable = SupportUtil.ParseOrDefault(reader["search_enable"], 0) == 1,
+
                                     VpsId = SupportUtil.ParseOrDefault(reader["vps_id_wk"], 0),
 
-                                     GROQ_API_KEY = reader["GROQ_API_KEY"].ToString(),
-                                    OPENAI_API_KEY = reader["GROQ_API_KEY"].ToString(),
+                                    GROQ_API_KEY = reader["GROQ_API_KEY"]?.ToString(),
+                                    OPENAI_API_KEY = reader["OPENAI_API_KEY"]?.ToString(),
 
-                                    AiPostPrompt = reader["ai_post_prompt"].ToString(),
-                                    AiReplyPrompt = reader["ai_reply_prompt"].ToString(),
-                                    AiMode = SupportUtil.ParseOrDefault(reader["ai_mode"],0),
-                                    AiPostEnable = reader["ai_post_enable"].ToString() == "1",
-                                    AiReplyEnable = reader["ai_reply_enable"].ToString() == "1",
+                                    AiMode = SupportUtil.ParseOrDefault(reader["ai_mode"], 0),
+                                    AiPostEnable = SupportUtil.ParseOrDefault(reader["ai_post_enable"], 0) == 1,
+                                    AiReplyEnable = SupportUtil.ParseOrDefault(reader["ai_reply_enable"], 0) == 1,
 
-                                    Reserve1Ai = reader["reserve1_ai"].ToString() == "1",
-                                    Reserve2Ai = reader["reserve2_ai"].ToString() == "1",
-                                    Reserve3Ai = reader["reserve3_ai"].ToString() == "1",
-                                    Reserve4Ai = reader["reserve4_ai"].ToString() == "1",
+                                    AiPostPrompt = reader["ai_post_prompt"]?.ToString(),
+                                    AiReplyPrompt = reader["ai_reply_prompt"]?.ToString(),
 
-                                    UseAdminApi = reader["use_admin_api"].ToString() == "1",
+                                    Reserve1Ai = SupportUtil.ParseOrDefault(reader["reserve1_ai"], 0) == 1,
+                                    Reserve2Ai = SupportUtil.ParseOrDefault(reader["reserve2_ai"], 0) == 1,
+                                    Reserve3Ai = SupportUtil.ParseOrDefault(reader["reserve3_ai"], 0) == 1,
+                                    Reserve4Ai = SupportUtil.ParseOrDefault(reader["reserve4_ai"], 0) == 1,
+
+                                    UseAdminApi = SupportUtil.ParseOrDefault(reader["use_admin_api"], 0) == 1,
                                     ApiMasterId = SupportUtil.ParseOrDefault(reader["api_master_id"], 0),
 
-                                    AiPhotoEnable = reader["ai_photo_enable"].ToString() == "1",
-                                    AiMovieEnable = reader["ai_movie_enable"].ToString() == "1",
-                                    AiMediaSelectionRate = int.Parse(reader["ai_media_selection_rate"].ToString()),
+                                    AiPhotoEnable = SupportUtil.ParseOrDefault(reader["ai_photo_enable"], 0) == 1,
+                                    AiMovieEnable = SupportUtil.ParseOrDefault(reader["ai_movie_enable"], 0) == 1,
+                                    AiMediaSelectionRate = SupportUtil.ParseOrDefault(reader["ai_media_selection_rate"], 0),
 
-                                    IsLocked = reader["is_locked"].ToString() == "1",
-                                    IsSuspended = reader["is_suspended"].ToString() == "1",
-                                    IsUnauthorized = reader["is_unauthorized"].ToString() == "1",
+                                    IsLocked = SupportUtil.ParseOrDefault(reader["is_locked"], 0) == 1,
+                                    IsSuspended = SupportUtil.ParseOrDefault(reader["is_suspended"], 0) == 1,
+                                    IsUnauthorized = SupportUtil.ParseOrDefault(reader["is_unauthorized"], 0) == 1,
 
-                                    BearerToken_1 = reader["bearer_token_1"].ToString(),
-                                    RefreshToken_1 = reader["refresh_token_1"].ToString(),
-                                    BearerToken_2 = reader["bearer_token_2"].ToString(),
-                                    RefreshToken_2 = reader["refresh_token_2"].ToString(),
-                                    BearerToken_3 = reader["bearer_token_3"].ToString(),
-                                    RefreshToken_3 = reader["refresh_token_3"].ToString(),
+                                    BearerToken_1 = reader["bearer_token_1"]?.ToString(),
+                                    RefreshToken_1 = reader["refresh_token_1"]?.ToString(),
+                                    BearerToken_2 = reader["bearer_token_2"]?.ToString(),
+                                    RefreshToken_2 = reader["refresh_token_2"]?.ToString(),
+                                    BearerToken_3 = reader["bearer_token_3"]?.ToString(),
+                                    RefreshToken_3 = reader["refresh_token_3"]?.ToString(),
 
-                                    RegistType = (reader["regist_type"].ToString() == "react") ? RegistTypes.React : RegistTypes.Normal ,
+                                    RegistType =
+        reader["regist_type"]?.ToString() == "react"
+            ? RegistTypes.React
+            : RegistTypes.Normal,
 
-                                    AuthToken = reader["auth_token"].ToString(),
-                                    Cookies = reader["cookies"].ToString(),
-                                    UserAgent = reader["user_agent"].ToString(),
-                                    SecChUa = reader["sec_ch_ua"].ToString(),
-                                    Inpersonate = reader["inpersonate"].ToString(),
-                                    GroupId = reader["group_id"].ToString(),
-                                    GroupName = reader["group_name"].ToString(),
-                                    Category = reader["category"].ToString(),
+                                    AuthToken = reader["auth_token"]?.ToString(),
+                                    Cookies = reader["cookies"]?.ToString(),
+                                    UserAgent = reader["user_agent"]?.ToString(),
+                                    SecChUa = reader["sec_ch_ua"]?.ToString(),
+                                    Inpersonate = reader["inpersonate"]?.ToString(),
+                                    GroupId = reader["group_id"]?.ToString(),
+                                    GroupName = reader["group_name"]?.ToString(),
+                                    Category = reader["category"]?.ToString()
 
                                 };
 
