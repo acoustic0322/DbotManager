@@ -243,6 +243,10 @@ namespace DbotManager
                 accountMasterList = accountMasterList.Where(x => !x.IsLocked && !x.IsSuspended && !x.IsUnauthorized).ToList();
             }
 
+            // 2026.06.15 126か127(テスト用ユーザー)で絞込
+            {
+                accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
+            }
 
 #if false 
             // 「いいね」リスト抽出
@@ -281,7 +285,7 @@ namespace DbotManager
                 BookmarkAccountList.AddRange(bookmarkList2);
             }
 #else     // リトライ処理対応の為、上限を絞る処理は割愛
-            if(LikeEnable)
+            if (LikeEnable)
             {
                 List<AccountMaster> likeList = FilterAccountList(userMasterList, accountMasterList, tweetHistoryList, commenttMasterList, mediaMasterList, TweetProcTypes.いいね, ユーザー権限無視);
                 LikeAccountList = likeList.OrderBy(_ => Guid.NewGuid()).ToList();
