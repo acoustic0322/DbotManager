@@ -14,7 +14,7 @@ from config import outputLog
 from .user_agents import get_ua_for_account, get_sec_ch_ua
 
 from mysql import update_cookies
-
+import re
 
 # ===== 認証情報 (DBが空の場合のフォールバック用) =====
 AUTH_TOKEN = "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
@@ -25,20 +25,24 @@ COOKIES = 'guest_id_marketing=v1%3A176706367671646141; guest_id_ads=v1%3A1767063
 # ===== デフォルトツイートID（URLまたはIDを入力しない場合に使用） =====
 DEFAULT_TWEET_ID = "2008834917497803068"
 
-async def proc_like(credentials, exe_like , exe_bookmark, tweet_id: str = None):
-
-    print((credentials))
+async def proc_like(credentials, exe_like, exe_bookmark, tweet_id: str = None):
 
     # Cookie
     session_cookies = credentials.get('cookies', {})
 
+    # 壊れたJSON補正 + dict化
+    if isinstance(session_cookies, str):
+        session_cookies = fix_broken_cookie_json(session_cookies)
+
     outputLog(type(session_cookies))
     outputLog(len(session_cookies))
-    outputLog(session_cookies[:200])
-    outputLog(session_cookies[-200:])
+    outputLog(session_cookies)
 
-    if isinstance(session_cookies, str):
-        session_cookies = json.loads(session_cookies)
+    # 念のため保険
+    if not isinstance(session_cookies, dict):
+        raise Exception(
+            f"session_cookies is invalid. type={type(session_cookies)}"
+        )
 
     outputLog(type(session_cookies))
     outputLog(len(session_cookies))
@@ -50,7 +54,6 @@ async def proc_like(credentials, exe_like , exe_bookmark, tweet_id: str = None):
         credentials.get('user_agent')
         or CURRENT_USER_AGENT
     )
-
     detected_browser = (
         credentials.get('impersonate')
         or detect_impersonate_target(detected_user_agent)
@@ -98,6 +101,37 @@ async def proc_like(credentials, exe_like , exe_bookmark, tweet_id: str = None):
         return results['like'], ""
 
     return results['bookmark'], ""
+
+def fix_broken_cookie_json(cookie_text):
+
+    # ""abc"" → "abc"
+    cookie_text = re.sub(
+        r':\s*""([^"]*)""',
+        r': "\1"',
+        cookie_text
+    )
+
+    # g_state の中身をエスケープ
+    m = re.search(
+        r'"g_state"\s*:\s*"(\{.*?\})"',
+        cookie_text
+    )
+
+    if m:
+        g_state = m.group(1)
+
+        escaped = (
+            g_state
+            .replace('\\', '\\\\')
+            .replace('"', '\\"')
+        )
+
+        cookie_text = cookie_text.replace(
+            f'"g_state": "{g_state}"',
+            f'"g_state": "{escaped}"'
+        )
+
+    return json.loads(cookie_text)
 
 # ===== ブラウザ環境設定 (Cookie取得元のブラウザに合わせて変更してください) =====
 # 自動検出ロジックに使用されます

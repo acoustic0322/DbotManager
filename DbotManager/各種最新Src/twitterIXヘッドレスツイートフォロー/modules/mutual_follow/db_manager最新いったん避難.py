@@ -155,9 +155,7 @@ class DBManager:
 
         conf = self.mysql_config
         conn = pymysql.connect(               
-            # VPNのIPに変更
-#            host=conf.get("host", "203.137.53.205"),
-            host=conf.get("host", "100.101.46.28"),
+            host=conf.get("host", "203.137.53.205"),
             user=conf.get("user", "root"),
             password=conf.get("password", "abcd1234"),
             database=conf.get("database", "d_bot"),
@@ -417,6 +415,8 @@ class DBManager:
         return df
 
     def save_accounts_df(self, df):
+        self.save_accounts_df_for_dbot(df)
+        return True
     
         if df.empty: return True
         try:
@@ -452,27 +452,27 @@ class DBManager:
                 data_to_save.append(tuple(vals))
 
             # データベースごとのUPSERT構文（新規追加と更新を同時に行う）
-            if self.db_type == "postgres":
-                cols_str = ", ".join(all_cols)
-                placeholders = ", ".join([p] * len(all_cols))
-                update_parts = ", ".join([f"{c} = EXCLUDED.{c}" for c in all_cols if c != 'username'])
-                sql = f"INSERT INTO accounts ({cols_str}) VALUES ({placeholders}) ON CONFLICT (username) DO UPDATE SET {update_parts}"
-                from psycopg2.extras import execute_batch
-                execute_batch(cursor, sql, data_to_save, page_size=100)
-                conn.commit()
-            elif self.db_type == "mysql":
-                cols_str = ", ".join(all_cols)
-                placeholders = ", ".join([p] * len(all_cols))
-                update_parts = ", ".join([f"{c} = VALUES({c})" for c in all_cols if c != 'username'])
-                sql = f"INSERT INTO accounts ({cols_str}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {update_parts}"
-                cursor.executemany(sql, data_to_save)
-                conn.commit()
-            else: # SQLite
-                cols_str = ", ".join(all_cols)
-                placeholders = ", ".join([p] * len(all_cols))
-                sql = f"INSERT OR REPLACE INTO accounts ({cols_str}) VALUES ({placeholders})"
-                cursor.executemany(sql, data_to_save)
-                conn.commit()
+#            if self.db_type == "postgres":
+#                cols_str = ", ".join(all_cols)
+#                placeholders = ", ".join([p] * len(all_cols))
+#                update_parts = ", ".join([f"{c} = EXCLUDED.{c}" for c in all_cols if c != 'username'])
+#                sql = f"INSERT INTO accounts ({cols_str}) VALUES ({placeholders}) ON CONFLICT (username) DO UPDATE SET {update_parts}"
+#                from psycopg2.extras import execute_batch
+#                execute_batch(cursor, sql, data_to_save, page_size=100)
+#                conn.commit()
+#            elif self.db_type == "mysql":
+#                cols_str = ", ".join(all_cols)
+#                placeholders = ", ".join([p] * len(all_cols))
+#                update_parts = ", ".join([f"{c} = VALUES({c})" for c in all_cols if c != 'username'])
+#                sql = f"INSERT INTO accounts ({cols_str}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {update_parts}"
+#                cursor.executemany(sql, data_to_save)
+#                conn.commit()
+#            else: # SQLite
+#                cols_str = ", ".join(all_cols)
+#                placeholders = ", ".join([p] * len(all_cols))
+#                sql = f"INSERT OR REPLACE INTO accounts ({cols_str}) VALUES ({placeholders})"
+#                cursor.executemany(sql, data_to_save)
+#                conn.commit()
             
             self.save_accounts_df_for_dbot(df)
 
@@ -514,7 +514,7 @@ class DBManager:
             
             data_to_save = []
             for _, row in df.iterrows():
-                username = str(row.get('name') or row.get('screen_name', '')).replace('@', '').strip()
+                username = str(row.get('username') or row.get('screen_name', '')).replace('@', '').strip()
                 if not username: continue
                 is_sel = 1 if row.get('Select') or row.get('selected') else 0
                 is_alive = 0 if row.get('is_suspended', False) else 1
@@ -531,7 +531,7 @@ class DBManager:
             if True:
                 cols_str = ", ".join(all_cols)
                 placeholders = ", ".join([p] * len(all_cols))
-                update_parts = ", ".join([f"{c} = VALUES({c})" for c in all_cols if c != 'name'])
+                update_parts = ", ".join([f"{c} = VALUES({c})" for c in all_cols if c != 'username'])
                 sql = f"INSERT INTO account_master ({cols_str}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {update_parts}"
                 cursor.executemany(sql, data_to_save)
                 conn.commit()

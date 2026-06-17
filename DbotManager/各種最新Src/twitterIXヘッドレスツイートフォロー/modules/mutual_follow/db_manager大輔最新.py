@@ -140,37 +140,6 @@ class DBManager:
             
         return DBManager._thread_local.conn
 
-    def get_connection_dbot(self):
-        conn = getattr(DBManager._thread_local, "conn", None)
-        if conn:
-            try:
-                conn.ping(reconnect=False)
-            except Exception:
-                logger.warning("DB connection is dead. Reconnecting...")
-                DBManager._thread_local.conn = None
-                conn = None
-
-        if conn:
-            return conn
-
-        conf = self.mysql_config
-        conn = pymysql.connect(               
-            # VPNのIPに変更
-#            host=conf.get("host", "203.137.53.205"),
-            host=conf.get("host", "100.101.46.28"),
-            user=conf.get("user", "root"),
-            password=conf.get("password", "abcd1234"),
-            database=conf.get("database", "d_bot"),
-            port=conf.get("port", 3306),
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor,
-            autocommit=True                
-        )
-
-        DBManager._thread_local.conn = conn
-            
-        return conn
-        
     def init_db(self):
         try:
             conn = self.get_connection()
@@ -417,7 +386,6 @@ class DBManager:
         return df
 
     def save_accounts_df(self, df):
-    
         if df.empty: return True
         try:
             conn = self.get_connection()
@@ -474,73 +442,10 @@ class DBManager:
                 cursor.executemany(sql, data_to_save)
                 conn.commit()
             
-            self.save_accounts_df_for_dbot(df)
-
             return True
         except Exception as e:
             logger.error(f"Save DF Error (UPSERT): {e}")
             return False
-
-    def save_accounts_df_for_dbot(self, df):
-        if df.empty: return True
-        try:
-            conn = self.get_connection_dbot()
-
-            logger.info(f"dbot conn={conn}")
-
-            if conn is None:
-                raise Exception("get_connection_dbot() returned None")
-
-
-            cursor = conn.cursor()
-            p = self._placeholder()
-            
-            # 保存対象のカラム定義
-#            core_cols = [
-#                'auth_token', 'ct0', 'cookies', 'user_agent', 'sec_ch_ua', 'impersonate',
-#                'password', 'email', 'totp_secret', 'profile_id', 'group_id', 'group_name',
-#                'category', 'display_name', 'assigned_pc'
-#            ]
-            core_cols = [
-                'auth_token', 'ct0', 'cookies', 'user_agent', 'sec_ch_ua', 'inpersonate',
-                'login_password', 'email', 'totp_secret', 'twitter_user_id', 'group_id', 'group_name',
-                'category', 'display_name', 'assigned_pc'
-            ]
-            existing_core_cols = [c for c in core_cols if c in df.columns]
-            
-            # 全カラムリスト（UPSERT用）
-#            all_cols = ['username', 'selected', 'is_alive'] + existing_core_cols
-            all_cols = ['name', 'selected', 'is_alive'] + existing_core_cols
-            
-            data_to_save = []
-            for _, row in df.iterrows():
-                username = str(row.get('name') or row.get('screen_name', '')).replace('@', '').strip()
-                if not username: continue
-                is_sel = 1 if row.get('Select') or row.get('selected') else 0
-                is_alive = 0 if row.get('is_suspended', False) else 1
-                
-                vals = [username, is_sel, is_alive]
-                for col in existing_core_cols:
-                    val = row.get(col, "")
-                    # NaN または NULL の場合は空文字にする
-                    if pd.isna(val) or str(val).lower() == 'nan':
-                        val = ""
-                    vals.append(str(val))
-                data_to_save.append(tuple(vals))
-
-            if True:
-                cols_str = ", ".join(all_cols)
-                placeholders = ", ".join([p] * len(all_cols))
-                update_parts = ", ".join([f"{c} = VALUES({c})" for c in all_cols if c != 'name'])
-                sql = f"INSERT INTO account_master ({cols_str}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {update_parts}"
-                cursor.executemany(sql, data_to_save)
-                conn.commit()
-            
-            return True
-        except Exception as e:
-            logger.error(f"Save DF Error (UPSERT): {e}")
-            return False
-
 
     def get_daily_stats(self):
         today = datetime.now().strftime('%Y-%m-%d')
@@ -830,7 +735,7 @@ class DBManager:
             cursor = conn.cursor()
             p = self._placeholder()
             cursor.execute(f"UPDATE accounts SET profile_id={p} WHERE username={p}", (str(profile_id), username))
-            if self.db_type == "postgres": conn.commit()          
+            if self.db_type == "postgres": conn.commit()
         except Exception as e:
             logger.error(f"Error update_profile_id: {e}")
 
@@ -861,38 +766,6 @@ class DBManager:
             params = tuple(update_values.values()) + (username,)
             cursor.execute(f"UPDATE accounts SET {assignments} WHERE username={p}", params)
             if self.db_type != "mysql": conn.commit()
-            
-            self.update_cookies_dbot(username, auth_token, ct0, cookies, user_agent, sec_ch_ua, impersonate)
-
-        except Exception as e:
-            logger.error(f"Error update_cookies: {e}")
-
-    def update_cookies_dbot(self, username, auth_token, ct0, cookies=None, user_agent=None, sec_ch_ua=None, impersonate=None):
-        try:
-            conn = self.get_connection_dbot()
-            cursor = conn.cursor()
-            p = self._placeholder()
-
-            update_values = {
-                "auth_token": auth_token,
-                "ct0": ct0,
-            }
-            optional_values = {
-                "cookies": cookies,
-                "user_agent": user_agent,
-                "sec_ch_ua": sec_ch_ua,
-                "inpersonate": impersonate,
-            }
-            for col, val in optional_values.items():
-                if val is None:
-                    continue
-                if col == "cookies" and not isinstance(val, str):
-                    val = json.dumps(val, ensure_ascii=False)
-                update_values[col] = val
-
-            assignments = ", ".join([f"{col}={p}" for col in update_values])
-            params = tuple(update_values.values()) + (username,)
-            cursor.execute(f"UPDATE account_master SET {assignments} WHERE username={p}", params)
         except Exception as e:
             logger.error(f"Error update_cookies: {e}")
 

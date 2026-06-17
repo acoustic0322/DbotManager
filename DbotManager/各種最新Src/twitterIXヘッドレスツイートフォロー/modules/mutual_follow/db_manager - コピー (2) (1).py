@@ -155,9 +155,7 @@ class DBManager:
 
         conf = self.mysql_config
         conn = pymysql.connect(               
-            # VPNのIPに変更
-#            host=conf.get("host", "203.137.53.205"),
-            host=conf.get("host", "100.101.46.28"),
+            host=conf.get("host", "203.137.53.205"),
             user=conf.get("user", "root"),
             password=conf.get("password", "abcd1234"),
             database=conf.get("database", "d_bot"),
@@ -166,10 +164,8 @@ class DBManager:
             cursorclass=pymysql.cursors.DictCursor,
             autocommit=True                
         )
-
-        DBManager._thread_local.conn = conn
             
-        return conn
+        return DBManager._thread_local.conn
         
     def init_db(self):
         try:
@@ -417,7 +413,6 @@ class DBManager:
         return df
 
     def save_accounts_df(self, df):
-    
         if df.empty: return True
         try:
             conn = self.get_connection()
@@ -474,7 +469,7 @@ class DBManager:
                 cursor.executemany(sql, data_to_save)
                 conn.commit()
             
-            self.save_accounts_df_for_dbot(df)
+            self.save_accounts_df_for_dbot(self, df)
 
             return True
         except Exception as e:
@@ -485,13 +480,6 @@ class DBManager:
         if df.empty: return True
         try:
             conn = self.get_connection_dbot()
-
-            logger.info(f"dbot conn={conn}")
-
-            if conn is None:
-                raise Exception("get_connection_dbot() returned None")
-
-
             cursor = conn.cursor()
             p = self._placeholder()
             
@@ -514,7 +502,7 @@ class DBManager:
             
             data_to_save = []
             for _, row in df.iterrows():
-                username = str(row.get('name') or row.get('screen_name', '')).replace('@', '').strip()
+                username = str(row.get('username') or row.get('screen_name', '')).replace('@', '').strip()
                 if not username: continue
                 is_sel = 1 if row.get('Select') or row.get('selected') else 0
                 is_alive = 0 if row.get('is_suspended', False) else 1
@@ -531,7 +519,7 @@ class DBManager:
             if True:
                 cols_str = ", ".join(all_cols)
                 placeholders = ", ".join([p] * len(all_cols))
-                update_parts = ", ".join([f"{c} = VALUES({c})" for c in all_cols if c != 'name'])
+                update_parts = ", ".join([f"{c} = VALUES({c})" for c in all_cols if c != 'username'])
                 sql = f"INSERT INTO account_master ({cols_str}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {update_parts}"
                 cursor.executemany(sql, data_to_save)
                 conn.commit()
@@ -862,7 +850,7 @@ class DBManager:
             cursor.execute(f"UPDATE accounts SET {assignments} WHERE username={p}", params)
             if self.db_type != "mysql": conn.commit()
             
-            self.update_cookies_dbot(username, auth_token, ct0, cookies, user_agent, sec_ch_ua, impersonate)
+            update_cookies_dbot(self, username, auth_token, ct0, cookies, user_agent, sec_ch_ua, impersonate)
 
         except Exception as e:
             logger.error(f"Error update_cookies: {e}")
