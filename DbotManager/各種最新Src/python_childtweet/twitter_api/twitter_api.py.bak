@@ -1,24 +1,24 @@
 import asyncio
 import random
 from datetime import datetime, timedelta
-from typing import Optional, Dict, List
 import json
 import base64
 import os
 import subprocess
 import platform
-import shutil
 import urllib.request
 import urllib.parse
 import time
-import threading
 from curl_cffi.requests import AsyncSession
+from typing import Optional, Dict, List, Tuple
+
+import config
+from config import outputLog
+
+import shutil
 
 class TwitterAPI:
     """X (Twitter) の非公式API操作クラス"""
-    _tid_server_lock = threading.Lock()
-    _tid_server_ready = False
-    _local_url_opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     
     def __init__(self, auth_token: str, csrf_token: str, cookies: str, proxy: Optional[str] = None, user_agent: str = None, sec_ch_ua: str = None):
         """
@@ -60,8 +60,10 @@ class TwitterAPI:
                     outputLog(f"[WARN] Cookie parse error in init: {e}")
                     parsed_cookies = {}
 
-        # すべてのクッキーを保持（手動ブラウザセッションと完全に一致させるため、フィルタリングを廃止）
-        self.cookies = parsed_cookies
+        # フィルタリング実行 (ホワイトリスト方式でゴミCookieを排除)
+        for k, v in parsed_cookies.items():
+            if k in ALLOWED_COOKIES or k.startswith('guest_id'):
+                self.cookies[k] = v
         
         # 必須Cookieのログ確認（デバッグ用）
         # if 'auth_token' not in self.cookies:
@@ -96,12 +98,11 @@ class TwitterAPI:
         
         # レート制限検知
         self.rate_limit_count = 0
-        self.last_error_summary = None
         
         # Node.jsサーバー管理
         self._ensure_tid_server_running()
 
-    def _generate_sec_ch_ua(self, user_agent: str) -> Optional[str]:
+    def _generate_sec_ch_ua(self, user_agent: str) -> str:
         """User-Agent文字列から適切なsec-ch-uaヘッダーを生成する"""
         try:
             import re
@@ -109,114 +110,83 @@ class TwitterAPI:
             if "chrome" in ua:
                 match = re.search(r'chrome/(\d+)', ua)
                 ver = match.group(1) if match else "124"
-                return f'"Not:A-Brand";v="99", "Google Chrome";v="{ver}", "Chromium";v="{ver}"'
+                return f'"Chromium";v="{ver}", "Google Chrome";v="{ver}", "Not-A.Brand";v="99"'
             elif "edge" in ua:
                 match = re.search(r'edge/(\d+)', ua)
                 ver = match.group(1) if match else "124"
                 return f'"Chromium";v="{ver}", "Microsoft Edge";v="{ver}", "Not-A.Brand";v="99"'
             else:
-                 # Safari や iOS 等、Chrome/Edge以外は sec-ch-ua を送らないようにする
-                 return None
+                 # Fallback
+                 return '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"'
         except:
-            return None
+            return '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"'
 
 
     def _ensure_tid_server_running(self):
         """Node.js TIDサーバーが起動しているか確認し、なければ起動する"""
-        def is_server_ready(timeout=2.0):
-            try:
-                with TwitterAPI._local_url_opener.open("http://127.0.0.1:3000/status", timeout=timeout) as response:
-                    return response.status == 200
-            except Exception:
-                return False
-
-        with TwitterAPI._tid_server_lock:
-            if is_server_ready(timeout=0.5):
-                TwitterAPI._tid_server_ready = True
-                return
-
-            TwitterAPI._tid_server_ready = False
-                
-            outputLog("[System] Starting Node.js TID Server...")
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            script_path = os.path.join(current_dir, 'tid_node', 'server.js')
-            node_path = shutil.which('node')
-            if not node_path:
-                bundled_node = os.path.join(current_dir, 'tools', 'node-v24.16.0-win-x64', 'node.exe')
-                if os.path.exists(bundled_node):
-                    node_path = bundled_node
-            if not node_path:
-                raise RuntimeError("Node.js executable not found. Install Node.js or add node.exe to PATH.")
+        try:
+            # サーバー生存確認 (timeout時間を短く)
+            with urllib.request.urlopen("http://localhost:3000/status", timeout=0.5) as response:
+                if response.status == 200:
+                    return # 起動済み
+        except:
+            pass # 起動していない、またはエラー
             
-            # 独立したプロセスとして起動
-            creationflags = 0
-            if platform.system() == 'Windows':
-                creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+        outputLog("[System] Starting Node.js TID Server...")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        script_path = os.path.join(current_dir, 'tid_node', 'server.js')
 
-            # サーバー起動 (デバッグ用にログをファイルに出力)
-            log_path = os.path.join(current_dir, 'tid_node', 'server.log')
-            try:
-                log_file = open(log_path, 'a', encoding='utf-8')
-            except Exception:
-                log_file = subprocess.DEVNULL
+        node_path = os.path.join(
+           current_dir,
+            'tid_node',
+            'nodejs',
+            'node.exe'
+        )
 
-            self.server_process = subprocess.Popen(
-                [node_path, script_path],
-                stdout=log_file,
-                stderr=log_file,
-                creationflags=creationflags,
-                env={**os.environ, "NODE_TLS_REJECT_UNAUTHORIZED": "0"}
-            )
-            
-            # 起動待機
-            for _ in range(20):
-                if self.server_process.poll() is not None:
-                    raise RuntimeError(f"Node.js TID Server exited early with code {self.server_process.returncode}. See tid_node/server.log")
-                if is_server_ready(timeout=0.5):
-                    TwitterAPI._tid_server_ready = True
-                    outputLog("[System] Node.js TID Server started.")
-                    return
-                time.sleep(0.5)
-            raise RuntimeError("Node.js TID Server did not become ready. See tid_node/server.log")
-    def _get_language_headers(self) -> Dict[str, str]:
-        """Cookieのlangパラメータに基づいて適切な言語ヘッダーを取得する"""
-        lang = self.cookies.get('lang', 'ja') if isinstance(self.cookies, dict) else 'ja'
-        lang_short = lang.split('-')[0].lower() if lang else 'ja'
+        outputLog(f"current_dir={current_dir}")
+        outputLog(f"script_path={script_path}")
+        outputLog(f"script_exists={os.path.exists(script_path)}")
+        outputLog(f"node_path={node_path}")
+        outputLog(f"node_exists={os.path.exists(node_path)}")
+
+        # 独立したプロセスとして起動
+        creationflags = 0
+        if platform.system() == 'Windows':
+            creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+
+        # サーバー起動 (デバッグ用にログをファイルに出力)
+        log_path = os.path.join(current_dir, 'tid_node', 'server.log')
+        try:
+            log_file = open(log_path, 'a', encoding='utf-8')
+        except Exception:
+            log_file = subprocess.DEVNULL
+
+        self.server_process = subprocess.Popen(
+            [node_path, script_path],
+            stdout=log_file,
+            stderr=log_file,
+            creationflags=creationflags
+        )        
         
-        # 主要言語のマッピング
-        mappings = {
-            'ja': ('ja-JP,ja;q=0.9', 'ja'),
-            'en': ('en-US,en;q=0.9', 'en'),
-            'es': ('es-ES,es;q=0.9', 'es'),
-            'pt': ('pt-BR,pt;q=0.9', 'pt'),
-            'zh': ('zh-CN,zh;q=0.9', 'zh'),
-            'ko': ('ko-KR,ko;q=0.9', 'ko'),
-            'fr': ('fr-FR,fr;q=0.9', 'fr'),
-            'de': ('de-DE,de;q=0.9', 'de'),
-            'it': ('it-IT,it;q=0.9', 'it'),
-            'ru': ('ru-RU,ru;q=0.9', 'ru'),
-        }
-        
-        accept_lang, client_lang = mappings.get(lang_short, (f"{lang_short}-{lang_short.upper()},{lang_short};q=0.9", lang_short))
-        return {
-            'accept-language': accept_lang,
-            'x-twitter-client-language': client_lang
-        }
+        # 起動待機
+        time.sleep(2)
+        outputLog("[System] Node.js TID Server started.")
 
+        
     def _get_headers(self, extra_headers: Dict = None) -> Dict:
         """リクエストヘッダーを生成"""
-        lang_headers = self._get_language_headers()
         headers = {
             'authorization': self.auth_token,
             'x-csrf-token': self.csrf_token,
+            # 'cookie': self.cookies,  # CookieはAsyncSession(cookie_jar)に任せるため削除
             'content-type': 'application/json',
             'accept': '*/*',
             'accept-encoding': 'gzip, deflate, br, zstd',
-            'accept-language': lang_headers['accept-language'],
+            'accept-language': 'ja-JP,ja;q=0.9',
             # 'user-agent': self.user_agent, 
             'x-twitter-active-user': 'yes',
             'x-twitter-auth-type': 'OAuth2Session',
-            'x-twitter-client-language': lang_headers['x-twitter-client-language'],
+            'x-twitter-client-language': 'ja',
             'origin': 'https://x.com',
             'referer': 'https://x.com/',
             'priority': 'u=1, i',
@@ -244,70 +214,6 @@ class TwitterAPI:
     def get_cookie_dict(self) -> Dict[str, str]:
         """Cookie辞書を返す"""
         return self.cookies
-
-    def _format_cookie_header(self) -> str:
-        """Cookie dict/stringをHTTPヘッダー用の文字列へ正規化する"""
-        if not self.cookies:
-            return ""
-        if isinstance(self.cookies, dict):
-            return "; ".join(f"{k}={v}" for k, v in self.cookies.items() if v is not None)
-        return str(self.cookies)
-
-    def _normalized_proxy(self) -> Optional[str]:
-        """curl_cffiで扱いやすいproxy URLへ正規化する"""
-        if not self.proxy:
-            return None
-        if self.proxy.upper().startswith('SOCKS5://'):
-            return self.proxy.replace('SOCKS5://', 'socks5h://', 1)
-        return self.proxy
-
-    def _response_preview(self, response, limit: int = 500) -> str:
-        """HTTP失敗時に見やすい本文プレビューを返す"""
-        try:
-            text = response.text
-        except Exception:
-            text = ""
-        if not text:
-            return ""
-        text = text.replace("\r", "\\r").replace("\n", "\\n")
-        return text[:limit]
-
-    def _log_http_failure(self, label: str, url: str, response) -> None:
-        """HTTP失敗をURL・status・本文つきで表示する"""
-        preview = self._response_preview(response)
-        outputLog(f"[WARN] {label} failed: status={response.status_code} url={url}")
-        header_keys = [
-            'content-type',
-            'x-transaction-id',
-            'x-response-time',
-            'x-rate-limit-remaining',
-            'x-rate-limit-reset'
-        ]
-        header_parts = []
-        for key in header_keys:
-            value = response.headers.get(key)
-            if value:
-                header_parts.append(f"{key}={value}")
-        if header_parts:
-            outputLog(f"[WARN] {label} headers: {', '.join(header_parts)}")
-        if preview:
-            outputLog(f"[WARN] {label} response: {preview}")
-
-    def _sec_ch_ua_mobile(self) -> Optional[str]:
-        ua_lower = (self.user_agent or "").lower()
-        if not self.sec_ch_ua:
-            return None
-        return "?1" if ("android" in ua_lower or "mobile" in ua_lower) else "?0"
-
-    def _sec_ch_ua_platform(self) -> Optional[str]:
-        ua_lower = (self.user_agent or "").lower()
-        if not self.sec_ch_ua:
-            return None
-        if "android" in ua_lower:
-            return '"Android"'
-        if "macintosh" in ua_lower:
-            return '"macOS"'
-        return '"Windows"'
     
     def is_paused(self) -> bool:
         """アカウントが一時停止中かチェック"""
@@ -329,7 +235,13 @@ class TwitterAPI:
             wait_time *= 2.0
         await asyncio.sleep(wait_time)
     
-    async def view_tweet(self, tweet_id: str, session: AsyncSession) -> tuple[Optional[str], dict]:
+#    async def view_tweet(self, tweet_id: str, session: AsyncSession) -> tuple[Optional[str], dict]:
+    async def view_tweet(
+        self,
+        tweet_id: str,
+        session: AsyncSession
+    ) -> Tuple[Optional[str], Dict]:
+
         """ツイートを閲覧し、スクリーンネームとメディア情報を返す"""
         try:
             url = f"https://x.com/i/api/graphql/sMoYQ8oNKf7pyC3ILopasw/TweetDetail"
@@ -474,126 +386,66 @@ class TwitterAPI:
         except:
             return False
 
-    async def _execute_via_native_curl(self, url: str, payload: str, referer: str, success_keyword: str = '"Done"', transaction_id: str = None, session: AsyncSession = None) -> Dict[str, any]:
+    async def _execute_via_native_curl(self, url: str, payload: str, referer: str, success_keyword: str = '"Done"', transaction_id: str = None) -> Dict[str, any]:
         """Native Curl実行 (非同期/別スレッド)"""
         try:
-            if not transaction_id:
-                self.last_error_summary = "TID取得失敗: 生のx-client-transaction-idがないため送信を中止"
-                outputLog(f"[WARN] {self.last_error_summary}")
-                return {
-                    'success': False,
-                    'cookies': {},
-                    'error_type': 'TID Error',
-                    'error_message': self.last_error_summary,
-                    'response_body': ''
-                }
-
             # コンストラクタで渡された(または自動生成された)UA/CHを使用
             user_agent = self.user_agent
             sec_ch_ua = self.sec_ch_ua
             
-            # Cookieに基づき動的に言語を設定
-            lang_headers = self._get_language_headers()
-            accept_lang_val = lang_headers['accept-language']
-            client_lang_val = lang_headers['x-twitter-client-language']
-            
-            # ▼▼▼ 修正箇所：分岐をなくし、すべてのリクエストで動的ヘッダーを生成する ▼▼▼
             headers = [
                 'accept: */*',
-                f'accept-language: {accept_lang_val}',
+                'accept-language: ja-JP,ja;q=0.9',
                 f'authorization: {self.auth_token}',
                 'content-type: application/json',
                 'origin: https://x.com',
                 'priority: u=1, i',
                 f'referer: {referer}',
+                f'sec-ch-ua: {sec_ch_ua}',
+                'sec-ch-ua-mobile: ?0',
+                'sec-ch-ua-platform: "Windows"',
                 'sec-fetch-dest: empty',
                 'sec-fetch-mode: cors',
                 'sec-fetch-site: same-origin',
                 f'user-agent: {user_agent}',
-                f'x-client-transaction-id: {transaction_id}', 
+                f'x-client-transaction-id: {transaction_id if transaction_id else self._generate_session_transaction_id()}', 
                 f'x-csrf-token: {self.csrf_token}',
                 'x-twitter-active-user: yes',
                 'x-twitter-auth-type: OAuth2Session',
-                f'x-twitter-client-language: {client_lang_val}'
+                'x-twitter-client-language: ja'
             ]
-
-            if sec_ch_ua:
-                headers.append(f'sec-ch-ua: {sec_ch_ua}')
-                ua_lower = user_agent.lower()
-                if "android" in ua_lower:
-                    headers.append('sec-ch-ua-mobile: ?1')
-                    headers.append('sec-ch-ua-platform: "Android"')
-                elif "iphone" in ua_lower or "ipad" in ua_lower:
-                    headers.append('sec-ch-ua-mobile: ?1')
-                    headers.append('sec-ch-ua-platform: "iOS"')
-                else:
-                    headers.append('sec-ch-ua-mobile: ?0')
-                    if "macintosh" in ua_lower:
-                        headers.append('sec-ch-ua-platform: "macOS"')
-                    else:
-                        headers.append('sec-ch-ua-platform: "Windows"')
             
-            # Reconstruct curl command string for debug log if needed
-            cmd_debug = ['curl', url, '-i']
+            cmd = ['curl', url, '-i'] # -i for headers
             if self.proxy:
-                cmd_debug.extend(['-x', self.proxy])
+                cmd.extend(['-x', self.proxy])
             for h in headers:
-                cmd_debug.extend(['-H', h])
+                cmd.extend(['-H', h])
             if self.cookies:
-                cookie_str = self._format_cookie_header()
-                cmd_debug.extend(['-b', cookie_str])
-            cmd_debug.extend(['--data-raw', payload])
-            curl_command = ' '.join(cmd_debug)
+                cookie_str = "; ".join([f"{k}={v}" for k, v in self.cookies.items()])
+                cmd.extend(['-b', cookie_str])
+            cmd.extend(['--data-raw', payload])
             
-            # TLS指紋の不整合を防ぐため、native curlではなく curl_cffi でリクエストを実行
-            from curl_cffi.requests import AsyncSession
-            from user_agents import get_impersonate_for_ua
+            # curlコマンドを保存（失敗時のデバッグ用）
+            curl_command = ' '.join(cmd)
             
-            impersonate_target = get_impersonate_for_ua(user_agent)
-            
-            headers_dict = {}
-            for h in headers:
-                if ':' in h:
-                    k, v = h.split(':', 1)
-                    headers_dict[k.strip().lower()] = v.strip()
-            cookie_header = self._format_cookie_header()
-            if cookie_header:
-                headers_dict['cookie'] = cookie_header
-            
-            try:
-                if session:
-                    # test.pyで作成された正しいセッション（指紋・プロキシ維持）をそのまま使う
-                    r = await session.post(url, headers=headers_dict, data=payload, proxy=self._normalized_proxy(), timeout=30)
-                else:
-                    # セッションが渡されなかった場合のフォールバック
-                    from curl_cffi.requests import AsyncSession
-                    from user_agents import get_impersonate_for_ua
-                    impersonate_target = get_impersonate_for_ua(user_agent)
-                    normalized_proxy = self._normalized_proxy()
-                    proxies = {"http": normalized_proxy, "https": normalized_proxy} if normalized_proxy else None
-                    async with AsyncSession(impersonate=impersonate_target) as s:
-                        r = await s.post(url, headers=headers_dict, data=payload, cookies=self.cookies, proxies=proxies, timeout=30)
-                
-                # 互換性のためにcurl風の出力をエミュレート
-                header_lines = [f"HTTP/2 {r.status_code}"]
-                for k, v in r.headers.items():
-                    if k.lower() == "set-cookie" and hasattr(r.headers, "getlist"):
-                        for cookie_val in r.headers.getlist("set-cookie"):
-                            header_lines.append(f"Set-Cookie: {cookie_val}")
-                    else:
-                        header_lines.append(f"{k}: {v}")
-                
-                stdout_text = "\r\n".join(header_lines) + "\r\n\r\n" + r.text
-                stderr_text = ""
-                returncode = 0
+            # Windows SelectorEventLoop対策: 別スレッドでsubprocess.run
+            def run_curl_sync():
+                creationflags = 0
+                if platform.system() == 'Windows':
+                    creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+                return subprocess.run(cmd, capture_output=True, creationflags=creationflags)
 
-            except Exception as e:
-                stdout_text = ""
-                stderr_text = f"curl_cffi execution exception: {str(e)}"
-                returncode = -1
-                self.last_error_summary = f"通信例外エラー: {str(e)}"
+#            proc_result = await asyncio.to_thread(run_curl_sync)
+            loop = asyncio.get_event_loop()
+            proc_result = await loop.run_in_executor(
+                None,
+                run_curl_sync
+            )            
             
-            if returncode == 0:
+            stdout_text = proc_result.stdout.decode('utf-8', errors='replace')
+            stderr_text = proc_result.stderr.decode('utf-8', errors='replace')
+            
+            if proc_result.returncode == 0:
                 # 成功判定ロジック（厳格化版）
                 # 1. success_keywordが必須
                 # 2. エラーレスポンスは必ず失敗とする
@@ -627,7 +479,6 @@ class TwitterAPI:
                                 pass
                     if new_cookies:
                         self.cookies.update(new_cookies)
-                    self.last_error_summary = None
                     return {'success': True, 'cookies': new_cookies}
                 else:
                     # 失敗時は詳細ログを出力（デバッグ用curlコマンド含む）
@@ -663,49 +514,7 @@ class TwitterAPI:
                                 error_message = json_data['errors'][0].get('message', 'Unknown error')
                         except:
                             pass
-                    is_empty_create_tweet = False
-                    if is_200_ok and 'CreateTweet' in url and '"create_tweet"' in response_body:
-                        try:
-                            import json
-                            json_data = json.loads(response_body)
-                            tweet_results = (
-                                json_data.get('data', {})
-                                .get('create_tweet', {})
-                                .get('tweet_results')
-                            )
-                            is_empty_create_tweet = tweet_results == {}
-                        except:
-                            is_empty_create_tweet = '"tweet_results":{}' in response_body
                     
-                    # エラーメッセージを元に一目でわかる要約を作成
-                    error_summary = "不明なエラー"
-                    if is_401 or '"code":32' in response_body:
-                        error_summary = "ログイン切れ・Cookie無効 (コード: 32 / 401)"
-                    elif is_403 or '"code":64' in response_body:
-                        if "suspended" in response_body.lower():
-                            error_summary = "アカウント凍結 (コード: 64)"
-                        else:
-                            error_summary = "アクセス拒否/権限なし (コード: 403 / 64)"
-                    elif '"code":326' in response_body:
-                        error_summary = "アカウント一時ロック/認証要求 (コード: 326)"
-                    elif '"code":344' in response_body:
-                        error_summary = "Cookie劣化またはbot判定による投稿制限 (コード: 344)"
-                    elif '"code":226' in response_body:
-                        error_summary = "スパム/自動化判定 (コード: 226)"
-                    elif is_429:
-                        error_summary = "レート制限到達 (コード: 429)"
-                    elif is_empty_create_tweet:
-                        error_summary = "CreateTweetは200応答ですがtweet_resultsが空です。投稿IDが返っていないため未投稿扱いです。重複文・アカウント状態・投稿API仕様変更の可能性があります"
-                    else:
-                        if error_message and error_message != "No error message":
-                            error_summary = f"{error_message}"
-                    
-                    if error_summary == "荳肴・縺ｪ繧ｨ繝ｩ繝ｼ":
-                        preview = " ".join(response_body[:300].split())
-                        error_summary = f"Unknown API error | {error_type} | preview={preview}"
-
-                    self.last_error_summary = error_summary
-
                     outputLog(f"Error Message: {error_message}")
                     outputLog(f"Keyword Expected: {success_keyword}")
                     outputLog(f"Keyword Found: {is_success_keyword}")
@@ -733,10 +542,9 @@ class TwitterAPI:
                 outputLog("\n" + "="*70)
                 outputLog("[ERROR] Curl Process Failed - Debug Information")
                 outputLog("="*70)
-                error_msg = f"Curl process error (exit code {returncode})"
+                error_msg = f"Curl process error (exit code {proc_result.returncode})"
                 outputLog(f"Error: {error_msg}")
                 outputLog(f"Stderr: {stderr_text}")
-                self.last_error_summary = f"Curl実行エラー (終了コード: {returncode})"
                 
                 outputLog("\n[DEBUG] Curl Command (auth tokens masked):")
                 safe_command = curl_command.replace(self.auth_token, "Bearer XXXXX").replace(self.csrf_token, "XXXXX")
@@ -752,7 +560,6 @@ class TwitterAPI:
                 }
         except Exception as e:
             error_msg = f"Exception in curl execution: {str(e)}"
-            self.last_error_summary = f"実行例外エラー: {str(e)}"
             outputLog(f"[WARN] Native Curl Error: {error_msg}")
             import traceback
             outputLog(f"  - Traceback: {traceback.format_exc()[:500]}")
@@ -764,73 +571,44 @@ class TwitterAPI:
                 'response_body': ''
             }
 
-    async def _generate_dynamic_transaction_id(self, path: str, method: str = 'POST', purpose: str = 'api') -> Optional[str]:
-        """Node.jsサーバーから用途別にTID取得"""
+    async def _generate_dynamic_transaction_id(self, path: str, method: str = 'POST') -> str:
+        """Node.jsサーバーからTID取得"""
         try:
-            await asyncio.to_thread(self._ensure_tid_server_running)
-            params = urllib.parse.urlencode({
-                'path': path,
-                'method': method,
-                'ua': self.user_agent or '',
-                'ch': self.sec_ch_ua or '',
-                'mobile': self._sec_ch_ua_mobile() or '',
-                'platform': self._sec_ch_ua_platform() or ''
-            })
-            url = f"http://127.0.0.1:3000/tid?{params}"
+            params = urllib.parse.urlencode({'path': path, 'method': method})
+            url = f"http://localhost:3000/tid?{params}"
             
             def fetch_tid_sync():
                 try:
-                    with TwitterAPI._local_url_opener.open(url, timeout=5) as response:
+                    with urllib.request.urlopen(url, timeout=5) as response:
                         if response.status == 200:
                             return response.read().decode('utf-8').strip()
                 except Exception as e:
                     outputLog(f"[WARN] TID Server Query Error: {e}")
                     return None
             
-            tid = await asyncio.to_thread(fetch_tid_sync)
+#            tid = await asyncio.to_thread(fetch_tid_sync)
+            loop = asyncio.get_running_loop()
+
+            tid = await loop.run_in_executor(
+                None,
+                fetch_tid_sync
+            )
+
             if tid:
                 return tid
-            TwitterAPI._tid_server_ready = False
-            await asyncio.to_thread(self._ensure_tid_server_running)
-            tid = await asyncio.to_thread(fetch_tid_sync)
-            if tid:
-                return tid
-            self.last_error_summary = f"{purpose} TID取得失敗: Node.js TID server returned no transaction id for {method} {path}"
-            outputLog(f"[WARN] {self.last_error_summary}")
-            return None
+            return self._generate_session_transaction_id()
         except Exception as e:
             outputLog(f"[WARN] Node.js TID Error: {e}")
-            self.last_error_summary = f"{purpose} TID取得失敗: {type(e).__name__}: {e}"
-            return None
-
-    async def _generate_tweet_transaction_id(self, path: str, method: str = 'POST') -> Optional[str]:
-        """投稿系API用のTID取得。いいね/ブクマ系とはログと失敗扱いを分ける。"""
-        return await self._generate_dynamic_transaction_id(path, method, purpose='TWEET')
-
-    async def _generate_engagement_transaction_id(self, path: str, method: str = 'POST') -> Optional[str]:
-        """いいね/ブクマ系API用のTID取得。疑似TIDへフォールバックしない。"""
-        return await self._generate_dynamic_transaction_id(path, method, purpose='ENGAGEMENT')
-
-    async def _generate_media_transaction_id(self, path: str, method: str = 'POST') -> Optional[str]:
-        """メディアアップロード用のTID取得。"""
-        return await self._generate_dynamic_transaction_id(path, method, purpose='MEDIA')
-
-    async def _generate_client_event_transaction_id(self, path: str, method: str = 'POST') -> Optional[str]:
-        """jot/client_event用のTID取得。"""
-        return await self._generate_dynamic_transaction_id(path, method, purpose='CLIENT_EVENT')
+            return self._generate_session_transaction_id()
 
     async def bookmark_tweet(self, tweet_id: str, session: AsyncSession, referer: str = "https://x.com/home") -> bool:
         if self.is_paused(): return False
+        if "status" not in referer: referer = f"https://x.com/i/status/{tweet_id}"
         url = "https://x.com/i/api/graphql/aoDbu3RHznuiSkQ9aNM67Q/CreateBookmark"
-        payload = json.dumps({
-            "variables": {"tweet_id": tweet_id},
-            "queryId": "aoDbu3RHznuiSkQ9aNM67Q"
-        }, separators=(',', ':'))
+        payload = f'{{"variables":{{"tweet_id":"{tweet_id}"}},"queryId":"aoDbu3RHznuiSkQ9aNM67Q"}}'
         outputLog("[Processing] Generating TID via Node.js...")
-        tid = await self._generate_engagement_transaction_id('/i/api/graphql/aoDbu3RHznuiSkQ9aNM67Q/CreateBookmark', 'POST')
-        if not tid:
-            return False
-        result = await self._execute_via_native_curl(url, payload, referer, '"tweet_bookmark_put":"Done"', tid, session)
+        tid = await self._generate_dynamic_transaction_id('/i/api/graphql/aoDbu3RHznuiSkQ9aNM67Q/CreateBookmark', 'POST')
+        result = await self._execute_via_native_curl(url, payload, referer, '"tweet_bookmark_put":"Done"', tid)
         if result['cookies']:
             for k, v in result['cookies'].items():
                 session.cookies.set(k, v, domain=".x.com")
@@ -840,16 +618,10 @@ class TwitterAPI:
         if self.is_paused(): return False
         if "status" not in referer: referer = f"https://x.com/i/status/{tweet_id}"
         url = "https://x.com/i/api/graphql/lI07N6Otwv1PhnEgXILM7A/FavoriteTweet"
-        payload = (
-            f'{{"variables":{{"tweet_id":"{tweet_id}"}},'
-            f'"features":{{"profile_label_improvements_pcf_label_in_post_enabled":true,"rweb_tipjar_consumption_enabled":true,"tweet_awards_web_tipping_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"premium_content_api_read_enabled":false,"communities_web_enable_tweet_community_results_fetch":true,"c9s_tweet_anatomy_moderator_badge_enabled":true,"responsive_web_grok_analyze_button_fetch_trends_enabled":false,"responsive_web_grok_analyze_post_followups_enabled":true,"responsive_web_jetfuel_frame":false,"responsive_web_grok_share_attachment_enabled":true,"articles_preview_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"responsive_web_twitter_article_tweet_consumption_enabled":true,"responsive_web_grok_show_grok_translated_post":false,"responsive_web_grok_analysis_button_from_backend":true,"creator_subscriptions_quote_tweet_preview_enabled":false,"freedom_of_speech_not_reach_fetch_enabled":true,"standardized_nudges_misinfo":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"rweb_video_timestamps_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_grok_image_annotation_enabled":true,"responsive_web_grok_imagine_annotation_enabled":true,"responsive_web_grok_community_note_auto_translation_is_enabled":false,"responsive_web_enhance_cards_enabled":false}},'
-            f'"queryId":"lI07N6Otwv1PhnEgXILM7A"}}'
-        )
+        payload = f'{{"variables":{{"tweet_id":"{tweet_id}"}},"queryId":"lI07N6Otwv1PhnEgXILM7A"}}'
         outputLog("[Processing] Generating TID via Node.js...")
-        tid = await self._generate_engagement_transaction_id('/i/api/graphql/lI07N6Otwv1PhnEgXILM7A/FavoriteTweet', 'POST')
-        if not tid:
-            return False
-        result = await self._execute_via_native_curl(url, payload, referer, '"favorite_tweet":"Done"', tid, session)
+        tid = await self._generate_dynamic_transaction_id('/i/api/graphql/lI07N6Otwv1PhnEgXILM7A/FavoriteTweet', 'POST')
+        result = await self._execute_via_native_curl(url, payload, referer, '"favorite_tweet":"Done"', tid)
         if result['cookies']:
             for k, v in result['cookies'].items():
                 session.cookies.set(k, v, domain=".x.com")
@@ -871,9 +643,7 @@ class TwitterAPI:
             
         # 1. INIT
         url_init = "https://upload.twitter.com/i/media/upload.json"
-        tid = await self._generate_media_transaction_id('/i/media/upload.json', 'POST')
-        if not tid:
-            return None
+        tid = await self._generate_dynamic_transaction_id('/i/media/upload.json', 'POST')
         
         headers_base = [
             'accept: */*',
@@ -881,6 +651,7 @@ class TwitterAPI:
             f'authorization: {self.auth_token}',
             'origin: https://x.com',
             'referer: https://x.com/',
+            f'sec-ch-ua: {self.sec_ch_ua}',
             'sec-fetch-dest: empty',
             'sec-fetch-mode: cors',
             'sec-fetch-site: same-origin',
@@ -891,21 +662,6 @@ class TwitterAPI:
             'x-twitter-auth-type: OAuth2Session',
             'x-twitter-client-language: ja'
         ]
-        if self.sec_ch_ua:
-            headers_base.append(f'sec-ch-ua: {self.sec_ch_ua}')
-            ua_lower = self.user_agent.lower()
-            if "android" in ua_lower:
-                headers_base.append('sec-ch-ua-mobile: ?1')
-                headers_base.append('sec-ch-ua-platform: "Android"')
-            elif "iphone" in ua_lower or "ipad" in ua_lower:
-                headers_base.append('sec-ch-ua-mobile: ?1')
-                headers_base.append('sec-ch-ua-platform: "iOS"')
-            else:
-                headers_base.append('sec-ch-ua-mobile: ?0')
-                if "macintosh" in ua_lower:
-                    headers_base.append('sec-ch-ua-platform: "macOS"')
-                else:
-                    headers_base.append('sec-ch-ua-platform: "Windows"')
         
         init_payload = f"command=INIT&total_bytes={total_bytes}&media_type={urllib.parse.quote(media_type)}&media_category=tweet_image"
         
@@ -929,7 +685,15 @@ class TwitterAPI:
             return subprocess.run(cmd, capture_output=True, creationflags=creationflags)
             
         outputLog("[UPLOAD] Initializing image upload (INIT)...")
-        res = await asyncio.to_thread(run_cmd, cmd_init)
+
+#        res = await asyncio.to_thread(run_cmd, cmd_init)
+        loop = asyncio.get_running_loop()
+
+        res = await loop.run_in_executor(
+            None,
+            lambda: run_cmd(cmd_init)
+        )
+
         stdout = res.stdout.decode('utf-8', errors='replace')
         
         media_id = None
@@ -946,9 +710,7 @@ class TwitterAPI:
             return None
             
         # 2. APPEND
-        tid = await self._generate_media_transaction_id('/i/media/upload.json', 'POST')
-        if not tid:
-            return None
+        tid = await self._generate_dynamic_transaction_id('/i/media/upload.json', 'POST')
         headers_append = [h for h in headers_base if not h.startswith('x-client-transaction-id:')]
         headers_append.append(f'x-client-transaction-id: {tid}')
         
@@ -968,7 +730,15 @@ class TwitterAPI:
         ])
         
         outputLog("[UPLOAD] Uploading image chunk (APPEND)...")
-        res = await asyncio.to_thread(run_cmd, cmd_append)
+
+#        res = await asyncio.to_thread(run_cmd, cmd_append)
+        loop = asyncio.get_running_loop()
+
+        res = await loop.run_in_executor(
+            None,
+            lambda: run_cmd(cmd_append)
+        )
+
         stdout = res.stdout.decode('utf-8', errors='replace')
         
         if "204" not in stdout and "200" not in stdout:
@@ -976,9 +746,7 @@ class TwitterAPI:
             return None
             
         # 3. FINALIZE
-        tid = await self._generate_media_transaction_id('/i/media/upload.json', 'POST')
-        if not tid:
-            return None
+        tid = await self._generate_dynamic_transaction_id('/i/media/upload.json', 'POST')
         headers_finalize = [h for h in headers_base if not h.startswith('x-client-transaction-id:')]
         headers_finalize.append(f'x-client-transaction-id: {tid}')
         
@@ -995,7 +763,14 @@ class TwitterAPI:
         cmd_finalize.extend(['--data-raw', finalize_payload])
         
         outputLog("[UPLOAD] Completing image upload (FINALIZE)...")
-        res = await asyncio.to_thread(run_cmd, cmd_finalize)
+
+#        res = await asyncio.to_thread(run_cmd, cmd_finalize)
+        loop = asyncio.get_running_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: run_cmd(cmd_finalize)
+        )
+
         stdout = res.stdout.decode('utf-8', errors='replace')
         
         try:
@@ -1042,139 +817,119 @@ class TwitterAPI:
 
     async def send_client_event_log(self, tweet_id: str, session: AsyncSession, referer: str = "https://x.com/home") -> bool:
         """インプレッションログをjot/client_eventに送信する"""
-        if self.is_paused():
-            return False
-
-        now_ms = int(time.time() * 1000)
-        start_ms = now_ms - random.randint(1000, 1800)
-        client_name = "m5" if ("mobile" in self.user_agent.lower() or "iphone" in self.user_agent.lower() or "ipad" in self.user_agent.lower() or "android" in self.user_agent.lower()) else "web"
-        base_item = {
-            "item_type": 0,
-            "id": tweet_id,
-            "author_id": "0",
-            "is_viewer_follows_tweet_author": False,
-            "is_tweet_author_follows_viewer": False,
-            "is_viewer_super_following_tweet_author": False,
-            "is_viewer_super_followed_by_tweet_author": False,
-            "is_tweet_author_super_followable": False,
-            "engagement_metrics": {
-                "reply_count": 0,
-                "retweet_count": 0,
-                "favorite_count": 0,
-                "quote_count": 0
-            }
-        }
+        if self.is_paused(): return False
+        
+        url = "https://x.com/i/api/1.1/jot/client_event.json"
+        
+        # ログ構造の構築 (Web版仕様)
         log_data = [
             {
-                "_category_": "client_event",
-                "format_version": 2,
-                "triggered_on": now_ms,
-                "tweet_id": tweet_id,
-                "items": [base_item],
-                "event_namespace": {
-                    "page": "tweet",
-                    "action": "bottom",
-                    "client": client_name
-                },
-                "client_event_sequence_start_timestamp": start_ms,
-                "client_event_sequence_number": 10,
-                "client_app_id": "3033300"
-            },
-            {
-                "_category_": "client_event",
-                "format_version": 2,
-                "triggered_on": now_ms + random.randint(50, 250),
-                "items": [{**base_item, "position": 0, "sort_index": "1", "percent_screen_height_100k": 31346}],
-                "event_namespace": {
-                    "page": "tweet",
-                    "component": "stream",
-                    "action": "results",
-                    "client": client_name
-                },
-                "client_event_sequence_start_timestamp": start_ms,
-                "client_event_sequence_number": 11,
-                "client_app_id": "3033300"
+                "integration_id": 12,
+                "log": {
+                    "client_event": {
+                        "client_app_id": "1",
+                        "event_namespace": {
+                            "page": "tweet",
+                            "section": "permalink",
+                            "component": "tweet",
+                            "element": "",
+                            "action": "impression"
+                        },
+                        "item_details": [
+                            {
+                                "tweet_details": {
+                                    "tweet_id": tweet_id,
+                                    "is_ads": False
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ]
-        payload = {
-            "debug": "true",
-            "log": json.dumps(log_data, separators=(",", ":"))
-        }
-
-        lang_headers = self._get_language_headers()
-        headers_dict = {
-            'accept': '*/*',
-            'accept-language': lang_headers['accept-language'],
-            'authorization': self.auth_token,
-            'content-type': 'application/x-www-form-urlencoded',
-            'origin': 'https://x.com',
-            'priority': 'u=1, i',
-            'referer': referer,
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'user-agent': self.user_agent,
-            'x-csrf-token': self.csrf_token,
-            'x-twitter-active-user': 'yes',
-            'x-twitter-auth-type': 'OAuth2Session',
-            'x-twitter-client-language': lang_headers['x-twitter-client-language']
-        }
-
-        if self.sec_ch_ua:
-            headers_dict['sec-ch-ua'] = self.sec_ch_ua
-            mobile = self._sec_ch_ua_mobile()
-            platform_name = self._sec_ch_ua_platform()
-            if mobile:
-                headers_dict['sec-ch-ua-mobile'] = mobile
-            if platform_name:
-                headers_dict['sec-ch-ua-platform'] = platform_name
-
-        candidates = [
-            ("https://x.com/i/api/1.1/jot/client_event.json?keepalive=true", "/i/api/1.1/jot/client_event.json"),
-            ("https://api.twitter.com/1.1/jot/client_event.json?keepalive=true", "/1.1/jot/client_event.json"),
+        
+        # フォームデータ形式 (URLエンコード)
+        payload = f"log={urllib.parse.quote(json.dumps(log_data))}"
+        
+        headers = [
+            'accept: */*',
+            'accept-language: ja-JP,ja;q=0.9',
+            f'authorization: {self.auth_token}',
+            'content-type: application/x-www-form-urlencoded',
+            'origin: https://x.com',
+            'priority: u=1, i',
+            f'referer: {referer}',
+            f'sec-ch-ua: {self.sec_ch_ua}',
+            'sec-ch-ua-mobile: ?0',
+            'sec-ch-ua-platform: "Windows"',
+            'sec-fetch-dest: empty',
+            'sec-fetch-mode: cors',
+            'sec-fetch-site: same-origin',
+            f'user-agent: {self.user_agent}',
+            f'x-csrf-token: {self.csrf_token}',
+            'x-twitter-active-user: yes',
+            'x-twitter-auth-type: OAuth2Session',
+            'x-twitter-client-language: ja'
         ]
+        
+        cmd = ['curl', url, '-i']
+        if self.proxy:
+            cmd.extend(['-x', self.proxy])
+        for h in headers:
+            cmd.extend(['-H', h])
+        
+        cookie_str = ""
+        if self.cookies:
+            cookie_str = "; ".join([f"{k}={v}" for k, v in self.cookies.items()])
+            cmd.extend(['-b', cookie_str])
+        cmd.extend(['--data-raw', payload])
+        
+        def run_curl_sync():
+            creationflags = 0
+            if platform.system() == 'Windows':
+                creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+            return subprocess.run(cmd, capture_output=True, creationflags=creationflags)
 
         outputLog(f"[IMPRESSION] Sending jot/client_event log for tweet_id: {tweet_id}")
-        for url, path in candidates:
-            try:
-                tid = await self._generate_client_event_transaction_id(path, 'POST')
-                if not tid:
-                    self.last_error_summary = self.last_error_summary or f"IMPRESSION TID取得失敗: {path}"
-                    outputLog(f"[WARN] IMPRESSION skipped: {self.last_error_summary}")
-                    continue
-                response = await session.post(
-                    url,
-                    headers={**headers_dict, 'x-client-transaction-id': tid},
-                    data=payload,
-                    proxy=self._normalized_proxy(),
-                    timeout=30
-                )
-                if response.status_code in [200, 204]:
-                    outputLog(f"[IMPRESSION] OK status={response.status_code} url={url}")
-                    self.last_error_summary = None
-                    return True
 
-                self._log_http_failure("IMPRESSION", url, response)
-                try:
-                    preview = " ".join((response.text or "")[:300].split())
-                except Exception:
-                    preview = ""
-                self.last_error_summary = f"IMPRESSION HTTP {response.status_code}: {preview}"
-            except Exception as e:
-                outputLog(f"[WARN] IMPRESSION exception: url={url} error={type(e).__name__}: {e}")
-                self.last_error_summary = f"IMPRESSION exception: {type(e).__name__}: {e}"
+#        proc_result = await asyncio.to_thread(run_curl_sync)
+        loop = asyncio.get_event_loop()
+        proc_result = await loop.run_in_executor(
+            None,
+            run_curl_sync
+        )            
+            
 
-        outputLog("[WARN] IMPRESSION failed: all endpoints rejected the request")
-        if not self.last_error_summary:
-            self.last_error_summary = "IMPRESSION failed: all endpoints rejected the request"
-        return False
+        stdout_text = proc_result.stdout.decode('utf-8', errors='replace')
+        
+        is_success = "HTTP/1.1 200" in stdout_text or "HTTP/2 200" in stdout_text or "HTTP/1.1 204" in stdout_text or "HTTP/2 204" in stdout_text
+        if is_success:
+            new_cookies = {}
+            for line in stdout_text.splitlines():
+                if line.lower().strip().startswith('set-cookie:'):
+                    try:
+                        parts = line.split(':', 1)[1].strip()
+                        cookie_part = parts.split(';', 1)[0].strip()
+                        if '=' in cookie_part:
+                            k, v = cookie_part.split('=', 1)
+                            new_cookies[k.strip()] = v.strip()
+                    except:
+                        pass
+            if new_cookies:
+                self.cookies.update(new_cookies)
+                for k, v in new_cookies.items():
+                    session.cookies.set(k, v, domain=".x.com")
+            return True
+        else:
+            outputLog(f"[WARN] Failed to send impression log. Stdout preview:\n{stdout_text[:500]}")
+            return False
 
     async def natural_action(self, tweet_id: str, session: AsyncSession, do_like: bool = True, do_bookmark: bool = False) -> Dict[str, bool]:
-        results = {'impression': False, 'like': False, 'bookmark': False}
+        results = {'like': False, 'bookmark': False}
         hour = datetime.now().hour
-        #if 2 <= hour <= 6 and random.random() < 0.7:
-            #outputLog("[SLEEP] 深夜のため操作をスキップ")
-            #return results
+#        if 2 <= hour <= 6 and random.random() < 0.7:
+#            outputLog("[SLEEP] 深夜のため操作をスキップ")
+#            return results
         
         await self.fetch_home_timeline(session)
         await self._wait_natural(2.0, 5.0)
@@ -1185,9 +940,7 @@ class TwitterAPI:
         # ツイートが表示されてから数秒ディレイを空けてインプレッションログを送信
         await self._wait_natural(2.0, 5.0)
         ref = f"https://x.com/{screen_name}/status/{tweet_id}" if screen_name and screen_name != "Unknown" else f"https://x.com/i/status/{tweet_id}"
-        results['impression'] = await self.send_client_event_log(tweet_id, session, referer=ref)
-        if not results['impression']:
-            results['impression_reason'] = self.last_error_summary or "IMPRESSION returned False without explicit API error"
+        await self.send_client_event_log(tweet_id, session, referer=ref)
         
         # 【Media View 実装】メディアがある場合は滞在時間を大幅に伸ばす
         if media_info.get('has_video'):
@@ -1213,15 +966,12 @@ class TwitterAPI:
         
         if do_like:
             results['like'] = await self.like_tweet(tweet_id, session, referer=ref)
-            if not results['like']:
-                results['like_reason'] = self.last_error_summary or "like returned False without explicit API error"
             await self._wait_natural(1.5, 3.0)
         
         if do_bookmark:
             results['bookmark'] = await self.bookmark_tweet(tweet_id, session, referer=ref)
-            if not results['bookmark']:
-                results['bookmark_reason'] = self.last_error_summary or "bookmark returned False without explicit API error"
             await self._wait_natural(0.5, 1.5)
         
         await self._wait_natural(2.0, 4.0)
         return results
+

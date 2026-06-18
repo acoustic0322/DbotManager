@@ -57,7 +57,7 @@ class TwitterAPI:
                             key, val = pair.strip().split('=', 1)
                             parsed_cookies[key.strip()] = val.strip()
                 except Exception as e:
-                    outputLog(f"[WARN] Cookie parse error in init: {e}")
+                    print(f"[WARN] Cookie parse error in init: {e}")
                     parsed_cookies = {}
 
         # すべてのクッキーを保持（手動ブラウザセッションと完全に一致させるため、フィルタリングを廃止）
@@ -65,7 +65,7 @@ class TwitterAPI:
         
         # 必須Cookieのログ確認（デバッグ用）
         # if 'auth_token' not in self.cookies:
-        #     outputLog("[WARN] auth_token missing in initialized cookies")
+        #     print("[WARN] auth_token missing in initialized cookies")
 
         # User-Agent設定 (デフォルトはChrome 142に合わせる)
         # ユーザーからUAが渡された場合はそれを優先し、CHもそこから生成する
@@ -137,7 +137,7 @@ class TwitterAPI:
 
             TwitterAPI._tid_server_ready = False
                 
-            outputLog("[System] Starting Node.js TID Server...")
+            print("[System] Starting Node.js TID Server...")
             current_dir = os.path.dirname(os.path.abspath(__file__))
             script_path = os.path.join(current_dir, 'tid_node', 'server.js')
             node_path = shutil.which('node')
@@ -174,7 +174,7 @@ class TwitterAPI:
                     raise RuntimeError(f"Node.js TID Server exited early with code {self.server_process.returncode}. See tid_node/server.log")
                 if is_server_ready(timeout=0.5):
                     TwitterAPI._tid_server_ready = True
-                    outputLog("[System] Node.js TID Server started.")
+                    print("[System] Node.js TID Server started.")
                     return
                 time.sleep(0.5)
             raise RuntimeError("Node.js TID Server did not become ready. See tid_node/server.log")
@@ -275,7 +275,7 @@ class TwitterAPI:
     def _log_http_failure(self, label: str, url: str, response) -> None:
         """HTTP失敗をURL・status・本文つきで表示する"""
         preview = self._response_preview(response)
-        outputLog(f"[WARN] {label} failed: status={response.status_code} url={url}")
+        print(f"[WARN] {label} failed: status={response.status_code} url={url}")
         header_keys = [
             'content-type',
             'x-transaction-id',
@@ -289,9 +289,9 @@ class TwitterAPI:
             if value:
                 header_parts.append(f"{key}={value}")
         if header_parts:
-            outputLog(f"[WARN] {label} headers: {', '.join(header_parts)}")
+            print(f"[WARN] {label} headers: {', '.join(header_parts)}")
         if preview:
-            outputLog(f"[WARN] {label} response: {preview}")
+            print(f"[WARN] {label} response: {preview}")
 
     def _sec_ch_ua_mobile(self) -> Optional[str]:
         ua_lower = (self.user_agent or "").lower()
@@ -319,7 +319,7 @@ class TwitterAPI:
         """アカウントを一時停止"""
         self.status = 'paused'
         self.pause_until = datetime.now() + timedelta(hours=hours)
-        outputLog(f"[PAUSE] アカウント一時停止: {hours}時間")
+        print(f"[PAUSE] アカウント一時停止: {hours}時間")
     
     async def _wait_natural(self, base_min: float = 1.0, base_max: float = 3.0):
         """人間らしい待機時間"""
@@ -429,7 +429,7 @@ class TwitterAPI:
                                             media_info['has_image'] = True
                                             
                                     if screen_name:
-                                        outputLog(f"[DEBUG] screen_name取得成功: @{screen_name}, Media: {media_info}")
+                                        print(f"[DEBUG] screen_name取得成功: @{screen_name}, Media: {media_info}")
                                         return screen_name, media_info
                 except:
                     pass
@@ -479,7 +479,7 @@ class TwitterAPI:
         try:
             if not transaction_id:
                 self.last_error_summary = "TID取得失敗: 生のx-client-transaction-idがないため送信を中止"
-                outputLog(f"[WARN] {self.last_error_summary}")
+                print(f"[WARN] {self.last_error_summary}")
                 return {
                     'success': False,
                     'cookies': {},
@@ -631,9 +631,9 @@ class TwitterAPI:
                     return {'success': True, 'cookies': new_cookies}
                 else:
                     # 失敗時は詳細ログを出力（デバッグ用curlコマンド含む）
-                    outputLog("\n" + "="*70)
-                    outputLog("[ERROR] API Request Failed - Debug Information")
-                    outputLog("="*70)
+                    print("\n" + "="*70)
+                    print("[ERROR] API Request Failed - Debug Information")
+                    print("="*70)
                     
                     # HTTP ステータスコードを判定
                     if is_401:
@@ -647,7 +647,7 @@ class TwitterAPI:
                     else:
                         error_type = "Unknown HTTP Error"
                     
-                    outputLog(f"Error Type: {error_type}")
+                    print(f"Error Type: {error_type}")
                     
                     # JSONレスポンスボディを抽出（ヘッダーと本文を分離）
                     body_start = stdout_text.find('{"')
@@ -706,20 +706,20 @@ class TwitterAPI:
 
                     self.last_error_summary = error_summary
 
-                    outputLog(f"Error Message: {error_message}")
-                    outputLog(f"Keyword Expected: {success_keyword}")
-                    outputLog(f"Keyword Found: {is_success_keyword}")
-                    outputLog(f"Has Errors Field: {has_errors}")
+                    print(f"Error Message: {error_message}")
+                    print(f"Keyword Expected: {success_keyword}")
+                    print(f"Keyword Found: {is_success_keyword}")
+                    print(f"Has Errors Field: {has_errors}")
                     
                     # curlコマンドを出力（認証情報をマスク）
-                    outputLog("\n[DEBUG] Curl Command (auth tokens masked):")
+                    print("\n[DEBUG] Curl Command (auth tokens masked):")
                     safe_command = curl_command.replace(self.auth_token, "Bearer XXXXX").replace(self.csrf_token, "XXXXX")
-                    outputLog(safe_command)
+                    print(safe_command)
                     
                     # レスポンス詳細
-                    outputLog(f"\n[DEBUG] Response Preview (first 1500 chars):")
-                    outputLog(response_body[:1500])
-                    outputLog("="*70 + "\n")
+                    print(f"\n[DEBUG] Response Preview (first 1500 chars):")
+                    print(response_body[:1500])
+                    print("="*70 + "\n")
                     
                     return {
                         'success': False, 
@@ -730,18 +730,18 @@ class TwitterAPI:
                     }
             else:
                 # プロセスエラー時も詳細出力
-                outputLog("\n" + "="*70)
-                outputLog("[ERROR] Curl Process Failed - Debug Information")
-                outputLog("="*70)
+                print("\n" + "="*70)
+                print("[ERROR] Curl Process Failed - Debug Information")
+                print("="*70)
                 error_msg = f"Curl process error (exit code {returncode})"
-                outputLog(f"Error: {error_msg}")
-                outputLog(f"Stderr: {stderr_text}")
+                print(f"Error: {error_msg}")
+                print(f"Stderr: {stderr_text}")
                 self.last_error_summary = f"Curl実行エラー (終了コード: {returncode})"
                 
-                outputLog("\n[DEBUG] Curl Command (auth tokens masked):")
+                print("\n[DEBUG] Curl Command (auth tokens masked):")
                 safe_command = curl_command.replace(self.auth_token, "Bearer XXXXX").replace(self.csrf_token, "XXXXX")
-                outputLog(safe_command)
-                outputLog("="*70 + "\n")
+                print(safe_command)
+                print("="*70 + "\n")
                 
                 return {
                     'success': False, 
@@ -753,9 +753,9 @@ class TwitterAPI:
         except Exception as e:
             error_msg = f"Exception in curl execution: {str(e)}"
             self.last_error_summary = f"実行例外エラー: {str(e)}"
-            outputLog(f"[WARN] Native Curl Error: {error_msg}")
+            print(f"[WARN] Native Curl Error: {error_msg}")
             import traceback
-            outputLog(f"  - Traceback: {traceback.format_exc()[:500]}")
+            print(f"  - Traceback: {traceback.format_exc()[:500]}")
             return {
                 'success': False, 
                 'cookies': {},
@@ -784,7 +784,7 @@ class TwitterAPI:
                         if response.status == 200:
                             return response.read().decode('utf-8').strip()
                 except Exception as e:
-                    outputLog(f"[WARN] TID Server Query Error: {e}")
+                    print(f"[WARN] TID Server Query Error: {e}")
                     return None
             
             tid = await asyncio.to_thread(fetch_tid_sync)
@@ -796,10 +796,10 @@ class TwitterAPI:
             if tid:
                 return tid
             self.last_error_summary = f"{purpose} TID取得失敗: Node.js TID server returned no transaction id for {method} {path}"
-            outputLog(f"[WARN] {self.last_error_summary}")
+            print(f"[WARN] {self.last_error_summary}")
             return None
         except Exception as e:
-            outputLog(f"[WARN] Node.js TID Error: {e}")
+            print(f"[WARN] Node.js TID Error: {e}")
             self.last_error_summary = f"{purpose} TID取得失敗: {type(e).__name__}: {e}"
             return None
 
@@ -826,7 +826,7 @@ class TwitterAPI:
             "variables": {"tweet_id": tweet_id},
             "queryId": "aoDbu3RHznuiSkQ9aNM67Q"
         }, separators=(',', ':'))
-        outputLog("[Processing] Generating TID via Node.js...")
+        print("[Processing] Generating TID via Node.js...")
         tid = await self._generate_engagement_transaction_id('/i/api/graphql/aoDbu3RHznuiSkQ9aNM67Q/CreateBookmark', 'POST')
         if not tid:
             return False
@@ -845,7 +845,7 @@ class TwitterAPI:
             f'"features":{{"profile_label_improvements_pcf_label_in_post_enabled":true,"rweb_tipjar_consumption_enabled":true,"tweet_awards_web_tipping_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"premium_content_api_read_enabled":false,"communities_web_enable_tweet_community_results_fetch":true,"c9s_tweet_anatomy_moderator_badge_enabled":true,"responsive_web_grok_analyze_button_fetch_trends_enabled":false,"responsive_web_grok_analyze_post_followups_enabled":true,"responsive_web_jetfuel_frame":false,"responsive_web_grok_share_attachment_enabled":true,"articles_preview_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"responsive_web_twitter_article_tweet_consumption_enabled":true,"responsive_web_grok_show_grok_translated_post":false,"responsive_web_grok_analysis_button_from_backend":true,"creator_subscriptions_quote_tweet_preview_enabled":false,"freedom_of_speech_not_reach_fetch_enabled":true,"standardized_nudges_misinfo":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"rweb_video_timestamps_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_grok_image_annotation_enabled":true,"responsive_web_grok_imagine_annotation_enabled":true,"responsive_web_grok_community_note_auto_translation_is_enabled":false,"responsive_web_enhance_cards_enabled":false}},'
             f'"queryId":"lI07N6Otwv1PhnEgXILM7A"}}'
         )
-        outputLog("[Processing] Generating TID via Node.js...")
+        print("[Processing] Generating TID via Node.js...")
         tid = await self._generate_engagement_transaction_id('/i/api/graphql/lI07N6Otwv1PhnEgXILM7A/FavoriteTweet', 'POST')
         if not tid:
             return False
@@ -861,7 +861,7 @@ class TwitterAPI:
         import mimetypes
         
         if not os.path.exists(file_path):
-            outputLog(f"[ERROR] Image file not found: {file_path}")
+            print(f"[ERROR] Image file not found: {file_path}")
             return None
             
         total_bytes = os.path.getsize(file_path)
@@ -928,7 +928,7 @@ class TwitterAPI:
                 creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
             return subprocess.run(cmd, capture_output=True, creationflags=creationflags)
             
-        outputLog("[UPLOAD] Initializing image upload (INIT)...")
+        print("[UPLOAD] Initializing image upload (INIT)...")
         res = await asyncio.to_thread(run_cmd, cmd_init)
         stdout = res.stdout.decode('utf-8', errors='replace')
         
@@ -939,10 +939,10 @@ class TwitterAPI:
                 body_json = json.loads(stdout[body_start:])
                 media_id = body_json.get('media_id_string')
         except Exception as e:
-            outputLog(f"[ERROR] Failed to parse INIT response: {e}")
+            print(f"[ERROR] Failed to parse INIT response: {e}")
             
         if not media_id:
-            outputLog(f"[ERROR] INIT step failed. Stdout preview:\n{stdout[:1000]}")
+            print(f"[ERROR] INIT step failed. Stdout preview:\n{stdout[:1000]}")
             return None
             
         # 2. APPEND
@@ -967,12 +967,12 @@ class TwitterAPI:
             '-F', f'media=@{file_path}'
         ])
         
-        outputLog("[UPLOAD] Uploading image chunk (APPEND)...")
+        print("[UPLOAD] Uploading image chunk (APPEND)...")
         res = await asyncio.to_thread(run_cmd, cmd_append)
         stdout = res.stdout.decode('utf-8', errors='replace')
         
         if "204" not in stdout and "200" not in stdout:
-            outputLog(f"[ERROR] APPEND step failed. Stdout preview:\n{stdout[:1000]}")
+            print(f"[ERROR] APPEND step failed. Stdout preview:\n{stdout[:1000]}")
             return None
             
         # 3. FINALIZE
@@ -994,7 +994,7 @@ class TwitterAPI:
             cmd_finalize.extend(['-b', cookie_str])
         cmd_finalize.extend(['--data-raw', finalize_payload])
         
-        outputLog("[UPLOAD] Completing image upload (FINALIZE)...")
+        print("[UPLOAD] Completing image upload (FINALIZE)...")
         res = await asyncio.to_thread(run_cmd, cmd_finalize)
         stdout = res.stdout.decode('utf-8', errors='replace')
         
@@ -1003,12 +1003,12 @@ class TwitterAPI:
             if body_start != -1:
                 body_json = json.loads(stdout[body_start:])
                 if 'media_id_string' in body_json:
-                    outputLog(f"[UPLOAD] Image upload successful. media_id: {media_id}")
+                    print(f"[UPLOAD] Image upload successful. media_id: {media_id}")
                     return media_id
         except Exception as e:
-            outputLog(f"[ERROR] Failed to parse FINALIZE response: {e}")
+            print(f"[ERROR] Failed to parse FINALIZE response: {e}")
             
-        outputLog(f"[ERROR] FINALIZE step failed. Stdout preview:\n{stdout[:1000]}")
+        print(f"[ERROR] FINALIZE step failed. Stdout preview:\n{stdout[:1000]}")
         return None
     
     async def fetch_home_timeline(self, session: AsyncSession) -> bool:
@@ -1033,7 +1033,7 @@ class TwitterAPI:
             params = {'variables': json.dumps(variables), 'features': json.dumps(features)}
             response = await session.get(url, headers=self._get_headers(), params=params, proxy=self.proxy, timeout=30)
             if response.status_code == 200:
-                outputLog("[HOME] ホームタイムライン取得成功 (Warm-up)")
+                print("[HOME] ホームタイムライン取得成功 (Warm-up)")
                 return True
             else:
                 return False
@@ -1134,13 +1134,13 @@ class TwitterAPI:
             ("https://api.twitter.com/1.1/jot/client_event.json?keepalive=true", "/1.1/jot/client_event.json"),
         ]
 
-        outputLog(f"[IMPRESSION] Sending jot/client_event log for tweet_id: {tweet_id}")
+        print(f"[IMPRESSION] Sending jot/client_event log for tweet_id: {tweet_id}")
         for url, path in candidates:
             try:
                 tid = await self._generate_client_event_transaction_id(path, 'POST')
                 if not tid:
                     self.last_error_summary = self.last_error_summary or f"IMPRESSION TID取得失敗: {path}"
-                    outputLog(f"[WARN] IMPRESSION skipped: {self.last_error_summary}")
+                    print(f"[WARN] IMPRESSION skipped: {self.last_error_summary}")
                     continue
                 response = await session.post(
                     url,
@@ -1150,7 +1150,7 @@ class TwitterAPI:
                     timeout=30
                 )
                 if response.status_code in [200, 204]:
-                    outputLog(f"[IMPRESSION] OK status={response.status_code} url={url}")
+                    print(f"[IMPRESSION] OK status={response.status_code} url={url}")
                     self.last_error_summary = None
                     return True
 
@@ -1161,10 +1161,10 @@ class TwitterAPI:
                     preview = ""
                 self.last_error_summary = f"IMPRESSION HTTP {response.status_code}: {preview}"
             except Exception as e:
-                outputLog(f"[WARN] IMPRESSION exception: url={url} error={type(e).__name__}: {e}")
+                print(f"[WARN] IMPRESSION exception: url={url} error={type(e).__name__}: {e}")
                 self.last_error_summary = f"IMPRESSION exception: {type(e).__name__}: {e}"
 
-        outputLog("[WARN] IMPRESSION failed: all endpoints rejected the request")
+        print("[WARN] IMPRESSION failed: all endpoints rejected the request")
         if not self.last_error_summary:
             self.last_error_summary = "IMPRESSION failed: all endpoints rejected the request"
         return False
@@ -1173,13 +1173,13 @@ class TwitterAPI:
         results = {'impression': False, 'like': False, 'bookmark': False}
         hour = datetime.now().hour
         #if 2 <= hour <= 6 and random.random() < 0.7:
-            #outputLog("[SLEEP] 深夜のため操作をスキップ")
+            #print("[SLEEP] 深夜のため操作をスキップ")
             #return results
         
         await self.fetch_home_timeline(session)
         await self._wait_natural(2.0, 5.0)
         
-        outputLog(f"[VIEW] ツイート詳細へ移動: {tweet_id}")
+        print(f"[VIEW] ツイート詳細へ移動: {tweet_id}")
         screen_name, media_info = await self.view_tweet(tweet_id, session)
         
         # ツイートが表示されてから数秒ディレイを空けてインプレッションログを送信
@@ -1192,11 +1192,11 @@ class TwitterAPI:
         # 【Media View 実装】メディアがある場合は滞在時間を大幅に伸ばす
         if media_info.get('has_video'):
             wait_video = random.uniform(15.0, 30.0)
-            outputLog(f"[MEDIA] 動画を再生中... ({wait_video:.1f}s)")
+            print(f"[MEDIA] 動画を再生中... ({wait_video:.1f}s)")
             await asyncio.sleep(wait_video)
         elif media_info.get('has_image'):
             wait_image = random.uniform(8.0, 15.0)
-            outputLog(f"[MEDIA] 画像を閲覧中... ({wait_image:.1f}s)")
+            print(f"[MEDIA] 画像を閲覧中... ({wait_image:.1f}s)")
             await asyncio.sleep(wait_image)
         else:
             # テキストのみの滞在時間
@@ -1205,7 +1205,7 @@ class TwitterAPI:
         # プロフィール閲覧
         if screen_name and screen_name != "Unknown" and random.random() < 0.5:
             await self._wait_natural(1.0, 2.0)
-            outputLog(f"[PROFILE] プロフィール閲覧: @{screen_name}")
+            print(f"[PROFILE] プロフィール閲覧: @{screen_name}")
             await self.fetch_user_profile(screen_name, session)
             await self._wait_natural(2.0, 4.0)
         
