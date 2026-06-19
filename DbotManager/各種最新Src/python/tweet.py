@@ -188,10 +188,15 @@ if credentials:
     elif mode == "repost":
         result1 , contents1 = proc_repost_v2(credentials, tweet_id)
         rotate_react_api_id(account_id)
+
+    elif mode == "likebookmark":
+        result1 , result2, contents1 = asyncio.run(proc_like(credentials, True ,True, tweet_id))
+        rotate_react_api_id(account_id)
+
     elif mode == "like":
 #        result1 , contents1 = proc_like_v2(credentials, tweet_id)
 #        result1 , contents1 = proc_like(credentials, tweet_id)
-        result1 , contents1 = asyncio.run(proc_like(credentials, True ,False, tweet_id))
+        result1 , result2, contents1 = asyncio.run(proc_like(credentials, True ,False, tweet_id))
         rotate_react_api_id(account_id)
     elif mode == "jap_like":
         if not tweet_name:  # None または空文字列のときにTrue
@@ -209,7 +214,7 @@ if credentials:
         result1 , contents1 = proc_search_v2(credentials)
     elif mode == "bookmark":
 #        result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
-        result1 , contents1 = asyncio.run(proc_like(credentials, False ,True, tweet_id))
+        result1 , result2, contents1 = asyncio.run(proc_like(credentials, False ,True, tweet_id))
         rotate_react_api_id(account_id)
     elif mode == "follow":
 #        result1 , contents1 = proc_following_v1(credentials, tweet_name)
@@ -273,8 +278,13 @@ if credentials:
     outputLog(f"contents2={contents2}")
 
     #save_tweet_historyの後に自動リフレッシュしないと、is_unauthorizedがずっとTrueになってしまう
-    outputLog(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
-    save_tweet_history(account_id, comment_id , mode , tweet_id , result1 , contents1 , result2 , contents2)
+    print(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
+
+    if mode == "likebookmark":    
+        save_tweet_history(account_id, comment_id , "like" , tweet_id , result1 , contents1 , False , "")
+        save_tweet_history(account_id, comment_id , "bookmark" , tweet_id , result2 , contents1 , False , "")
+    else:
+        save_tweet_history(account_id, comment_id , mode , tweet_id , result1 , contents1 , result2 , contents2)
 
     # --- 仕上げ：ここから追加 ---
     # contents1（APIレスポンス）に 401 が含まれているかチェック
