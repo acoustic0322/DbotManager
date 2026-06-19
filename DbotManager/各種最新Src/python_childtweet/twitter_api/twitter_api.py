@@ -13,7 +13,8 @@ import urllib.parse
 import time
 import threading
 from curl_cffi.requests import AsyncSession
-
+import config
+from config import outputLog
 class TwitterAPI:
     """X (Twitter) の非公式API操作クラス"""
     _tid_server_lock = threading.Lock()
@@ -547,7 +548,7 @@ class TwitterAPI:
             
             # TLS指紋の不整合を防ぐため、native curlではなく curl_cffi でリクエストを実行
             from curl_cffi.requests import AsyncSession
-            from user_agents import get_impersonate_for_ua
+            from .user_agents import get_impersonate_for_ua
             
             impersonate_target = get_impersonate_for_ua(user_agent)
             
@@ -567,7 +568,7 @@ class TwitterAPI:
                 else:
                     # セッションが渡されなかった場合のフォールバック
                     from curl_cffi.requests import AsyncSession
-                    from user_agents import get_impersonate_for_ua
+                    from .user_agents import get_impersonate_for_ua
                     impersonate_target = get_impersonate_for_ua(user_agent)
                     normalized_proxy = self._normalized_proxy()
                     proxies = {"http": normalized_proxy, "https": normalized_proxy} if normalized_proxy else None

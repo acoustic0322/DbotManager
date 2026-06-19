@@ -41,6 +41,7 @@ namespace ChildTweet
 
     public enum TweetProcTypes
     {
+        いいねブックマーク,
         いいね,
         ブックマーク,
         リポスト,
@@ -89,12 +90,14 @@ namespace ChildTweet
             _log($"▶ tweet_id: {req.tweet_id}");
 
             // 各カテゴリを並行で実行（中身は順次処理）
+            var likebookmarkTask = 順次処理(req, TweetProcTypes.いいねブックマーク);
+
             var likeTask = 順次処理(req, TweetProcTypes.いいね);
             var bookmarkTask = 順次処理(req, TweetProcTypes.ブックマーク);
             var repostTask = 順次処理(req, TweetProcTypes.リポスト);
             var replyTask = 順次処理(req, TweetProcTypes.リプライ);
 
-            await Task.WhenAll(likeTask, bookmarkTask, repostTask, replyTask);
+            await Task.WhenAll(likebookmarkTask, likeTask, bookmarkTask, repostTask, replyTask);
 
             _log("✔ 全ての処理が完了しました。");
         }
@@ -104,6 +107,7 @@ namespace ChildTweet
 
             string symbol = type switch
             {
+                TweetProcTypes.いいねブックマーク => "❤️・🔖",
                 TweetProcTypes.いいね => "❤️",
                 TweetProcTypes.ブックマーク => "🔖",
                 TweetProcTypes.リポスト => "🔁",
@@ -112,6 +116,7 @@ namespace ChildTweet
 
             string name = type switch
             {
+                TweetProcTypes.いいねブックマーク => "likebookmark",
                 TweetProcTypes.いいね => "like",
                 TweetProcTypes.ブックマーク => "bookmark",
                 TweetProcTypes.リポスト => "repost",
@@ -120,6 +125,23 @@ namespace ChildTweet
 
             var orderLikeList = req.like_list == null ? null : req.like_list.OrderBy(_ => _rand.Value.Next()).ToList();
             var orderBookmarkList = req.bookmark_list == null ? null : req.bookmark_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            // いいね、ブックマーク共通リスト
+            var orderLikeBookmarkList =
+                orderLikeList == null || orderBookmarkList == null
+                    ? new List<int>()
+                    : orderLikeList.Intersect(orderBookmarkList).ToList();
+
+            {
+                var likeOriginal = orderLikeList?.ToList();
+                var bookmarkOriginal = orderBookmarkList?.ToList();
+
+                if (likeOriginal != null && bookmarkOriginal != null)
+                {
+                    orderLikeList = likeOriginal.Except(bookmarkOriginal).ToList();
+                    orderBookmarkList = bookmarkOriginal.Except(likeOriginal).ToList();
+                }
+            }
+
             var orderRepostList = req.repost_list == null ? null : req.repost_list.OrderBy(_ => _rand.Value.Next()).ToList();
             var orderReplyList = req.reply_list == null ? null : req.reply_list.OrderBy(_ => _rand.Value.Next()).ToList();
 
@@ -135,6 +157,7 @@ namespace ChildTweet
 
             List<int> accountIdList = type switch
             {
+                TweetProcTypes.いいねブックマーク => orderLikeBookmarkList ?? new List<int>(),
                 TweetProcTypes.いいね => orderLikeList ?? new List<int>(),
                 TweetProcTypes.ブックマーク => orderBookmarkList ?? new List<int>(),
                 TweetProcTypes.リポスト => orderRepostList ?? new List<int>(),
@@ -143,6 +166,7 @@ namespace ChildTweet
 
             int max_count = type switch
             {
+                TweetProcTypes.いいねブックマーク => (req.like_count > req.bookmark_count ? req.bookmark_count : req.like_count),
                 TweetProcTypes.いいね => req.like_count,
                 TweetProcTypes.ブックマーク => req.bookmark_count,
                 TweetProcTypes.リポスト => req.repost_count,
@@ -159,6 +183,7 @@ namespace ChildTweet
 
             bool retryFlag = type switch
             {
+                TweetProcTypes.いいねブックマーク => true,
                 TweetProcTypes.いいね => true,
                 TweetProcTypes.ブックマーク => true,
                 TweetProcTypes.リポスト => false,
@@ -178,7 +203,7 @@ namespace ChildTweet
                     int accountId = accountIdList[i];
 
                     int commentId = 0;
-                    if(req.reply_list != null)
+                    if (req.reply_list != null)
                     {
                         if (req.reply_list.Where(x => x.AccountId == accountIdList[i]).Count() > 0)
                         {
@@ -199,17 +224,31 @@ namespace ChildTweet
                         CommentId = commentId
                     });
 
-                    if(result is not null)
+                    if (result is not null)
                     {
-                        // 
-                        if (result.result1 == true)
+                        if (type == TweetProcTypes.いいねブックマーク)
                         {
-                            _log($"　┗【成功】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
-                            resultCount++;
+                            if (result.result1 == true && result.result2 == true)
+                            {
+                                _log($"　┗【成功】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                                resultCount++;
+                            }
+                            else
+                            {
+                                _log($"　┗【エラー】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
                         }
                         else
                         {
-                            _log($"　┗【エラー】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                            if (result.result1 == true)
+                            {
+                                _log($"　┗【成功】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                                resultCount++;
+                            }
+                            else
+                            {
+                                _log($"　┗【エラー】 {symbol} [{i + 1}/{accountIdList.Count}] AccountId={accountId} 待機={delay}mSec ({name}) [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
                         }
                     }
                     else
@@ -286,6 +325,7 @@ namespace ChildTweet
             string arguments = $"\"{fullScriptPath}\"";
             switch (tweetCommand.TweetProcType)
             {
+                case TweetProcTypes.いいねブックマーク:
                 case TweetProcTypes.いいね:
                 case TweetProcTypes.ブックマーク:
                 case TweetProcTypes.リポスト:
@@ -349,7 +389,7 @@ namespace ChildTweet
                 string stdout = await readOutTask.ConfigureAwait(false);
                 string stderr = await readErrTask.ConfigureAwait(false);
 
-//                TweetResult tweetResult = null;
+                //                TweetResult tweetResult = null;
 
                 // まず stderr をログ（長すぎる場合は先頭／末尾だけ）
                 if (!string.IsNullOrWhiteSpace(stderr))
@@ -371,8 +411,8 @@ namespace ChildTweet
 
 
                 // 出力の取得
-//                string stdout = await readOutTask.ConfigureAwait(false);
-  //              string stderr = await readErrTask.ConfigureAwait(false);
+                //                string stdout = await readOutTask.ConfigureAwait(false);
+                //              string stderr = await readErrTask.ConfigureAwait(false);
 
                 // ... stderr はログへ
 
@@ -400,7 +440,7 @@ namespace ChildTweet
                     //                  _log($"JSON Deserialize Error: {jex.Message}\n[stdout]\n{(stdout.Length > 4000 ? stdout[..2000] +\"\\n...(truncated)...\\n\"+stdout[^2000..]: stdout)}");
                     _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} JSON Deserialize Error: {jex.Message}\n[stdout]\n{outShort}");
                 }
-                
+
                 /*
                 try
                 {
@@ -446,6 +486,9 @@ namespace ChildTweet
         {
             switch (type)
             {
+                case TweetProcTypes.いいねブックマーク:
+                    return "likebookmark";
+                    break;
                 case TweetProcTypes.いいね:
                     return "like";
                     break;

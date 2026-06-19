@@ -97,10 +97,7 @@ async def proc_like(credentials, exe_like, exe_bookmark, tweet_id: str = None):
 
     outputLog(results)
 
-    if exe_like:
-        return results['like'], ""
-
-    return results['bookmark'], ""
+    return results['like'], results['bookmark'], ""
 
 def fix_broken_cookie_json(cookie_text):
 
