@@ -214,7 +214,7 @@ namespace DbotManager
                 {
                     var userRowWk = dataAccess.GetUserMaster().Where(x => x.Id == UserId).FirstOrDefault();
 
-                    if (userRowWk.Admin)
+                    if (userRowWk is null || userRowWk.Admin)
                     {
                         // 2026.04.28 管理者権限のあるユーザーは、全Xアカウントで一括処理
                         userMasterList = userMasterList;
@@ -245,7 +245,7 @@ namespace DbotManager
 
             // 2026.06.15 126か127(テスト用ユーザー)で絞込
             {
-                accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
+//                accountMasterList = accountMasterList.Where(x => x.UserId == UserId).ToList();
             }
 
 #if false 
@@ -351,11 +351,13 @@ namespace DbotManager
 
             int size = (int)Math.Ceiling((double)list.Count / groupCount);
 
-            return list
+            var ret = list
                 .Select((x, i) => new { Index = i, Value = x })
                 .GroupBy(x => x.Index / size)
                 .Select(g => g.Select(x => x.Value).ToList())
                 .ToList();
+
+            return ret.Count == 0 ? null : ret;
         }
 
         public static List<int> SplitCounts(int totalCount, int groupCount)

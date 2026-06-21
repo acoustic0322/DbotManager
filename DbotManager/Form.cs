@@ -58,6 +58,7 @@ namespace DbotManager
 
 
             DbConnection.MachineName = "203.137.53.205";
+//            DbConnection.MachineName = "100.101.46.28";
             DbConnection.User = "d_bot";
             DbConnection.Root = "root";
             DbConnection.Pass = "abcd1234";
@@ -382,7 +383,7 @@ namespace DbotManager
             if (userList != null)
             {
                 comboBoxUserMaster.DataSource = userList;
-                comboBoxUserMaster.DisplayMember = "Name"; // コンボボックスに表示するプロパティ
+                comboBoxUserMaster.DisplayMember = "DisplayText"; // コンボボックスに表示するプロパティ
                 comboBoxUserMaster.ValueMember = "Id";     // 選択されたときに取得するプロパティ
 
                 comboBox監視UserMaster.DataSource = userList;
@@ -586,7 +587,7 @@ namespace DbotManager
 
             if(_tweetTask.SensyukenMode)
             {
-                if (userRowWk.Admin)
+                if (userRowWk is null || userRowWk.Admin)
                 {
                     // 2026.04.28 管理者権限のあるユーザーは、全Xアカウントで一括処理
                     userList = userList;

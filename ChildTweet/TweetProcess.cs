@@ -90,7 +90,7 @@ namespace ChildTweet
             _log($"▶ tweet_id: {req.tweet_id}");
 
             // 各カテゴリを並行で実行（中身は順次処理）
-            var likebookmarkTask = 順次処理(req, TweetProcTypes.いいねブックマーク);
+            var likebookmarkTask = 順次処理2(req, TweetProcTypes.いいねブックマーク);
 
             var likeTask = 順次処理(req, TweetProcTypes.いいね);
             var bookmarkTask = 順次処理(req, TweetProcTypes.ブックマーク);
@@ -262,6 +262,151 @@ namespace ChildTweet
                         _log($"{symbol}件数が上限 ({resultCount}件)に達したため、処理を終了します");
                         break;
                     }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _log(ex.ToString());
+            }
+        }
+
+        private async Task 順次処理2(TweetRequest req, TweetProcTypes type)
+        {
+
+            string symbol = "❤️・🔖";
+
+            string name = "likebookmark";
+
+            var orderLikeList = req.like_list == null ? null : req.like_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            var orderBookmarkList = req.bookmark_list == null ? null : req.bookmark_list.OrderBy(_ => _rand.Value.Next()).ToList();
+            // いいね、ブックマーク共通リスト
+            var orderLikeBookmarkList =
+                orderLikeList == null || orderBookmarkList == null
+                    ? new List<int>()
+                    : orderLikeList.Intersect(orderBookmarkList).ToList();
+
+            List<int> accountIdList = orderLikeBookmarkList;
+
+            int max_count =(req.like_count > req.bookmark_count ? req.bookmark_count : req.like_count);
+
+            if (max_count == 0) return;
+
+
+            bool retryFlag = true;
+
+            _log($"全{accountIdList.Count}件 {symbol}{name}");
+
+            try
+            {
+                int resultCount_like = 0;
+                int resultCount_bookmark = 0;
+
+                for (int i = 0; i < accountIdList.Count; i++)
+                {
+                    int accountId = accountIdList[i];
+
+                    int delay = _rand.Value.Next(waitMin, waitMax);
+
+                    await Task.Delay(delay);
+
+                    // いいね・ブクマ未達
+                    if(resultCount_like < max_count && resultCount_bookmark < max_count)
+                    {
+                        var result = await TweetProc(new TweetCommand
+                        {
+                            AccountId = accountId,
+                            TweetId = req.tweet_id,
+                            TweetProcType = type,
+                        });
+
+                        if (result is not null)
+                        {
+                            if (result.result1 == true)
+                            {
+                                resultCount_like++;
+                                _log($"❤️ 成功({resultCount_like}/{max_count}) AccountId={accountId} 待機={delay}mSec ({name}) 処理カウント={i + 1}/{accountIdList.Count} [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
+                            else
+                            {
+                                _log($"❤️ エラー({resultCount_like}/{max_count}) AccountId={accountId} 待機={delay}mSec ({name}) 処理カウント={i + 1}/{accountIdList.Count} [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
+
+                            if (result.result2 == true)
+                            {
+                                resultCount_bookmark++;
+                                _log($"🔖 成功({resultCount_bookmark}/{max_count}) AccountId={accountId} 待機={delay}mSec ({name}) 処理カウント={i + 1}/{accountIdList.Count} [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
+                            else
+                            {
+                                _log($"🔖 エラー({resultCount_bookmark}/{max_count}) AccountId={accountId} 待機={delay}mSec ({name}) 処理カウント={i + 1}/{accountIdList.Count} [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
+                        }
+                        else
+                        {
+                            int a = 1;
+                        }
+                    }
+                    // いいね到達
+                    else if (resultCount_like >= max_count && resultCount_bookmark < max_count)
+                    {
+                        var result = await TweetProc(new TweetCommand
+                        {
+                            AccountId = accountId,
+                            TweetId = req.tweet_id,
+                            TweetProcType = TweetProcTypes.ブックマーク,
+                        });
+
+                        if (result is not null)
+                        {
+                            if (result.result1 == true)
+                            {
+                                resultCount_bookmark++;
+                                _log($"🔖 成功({resultCount_bookmark}/{max_count}) AccountId={accountId} 待機={delay}mSec ({name}) 処理カウント={i + 1}/{accountIdList.Count} [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
+                            else
+                            {
+                                _log($"🔖 エラー({resultCount_bookmark}/{max_count}) AccountId={accountId} 待機={delay}mSec ({name}) 処理カウント={i + 1}/{accountIdList.Count} [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
+                        }
+                        else
+                        {
+                            int a = 1;
+                        }
+                    }
+                    // ブックマーク到達
+                    else if (resultCount_like < max_count && resultCount_bookmark >= max_count)
+                    {
+                        var result = await TweetProc(new TweetCommand
+                        {
+                            AccountId = accountId,
+                            TweetId = req.tweet_id,
+                            TweetProcType = TweetProcTypes.いいね,
+                        });
+
+                        if (result is not null)
+                        {
+                            if (result.result1 == true)
+                            {
+                                resultCount_like++;
+                                _log($"❤️ 成功({resultCount_like}/{max_count}) AccountId={accountId} 待機={delay}mSec ({name}) 処理カウント={i + 1}/{accountIdList.Count} [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
+                            else
+                            {
+                                _log($"❤️ エラー({resultCount_like}/{max_count}) AccountId={accountId} 待機={delay}mSec ({name}) 処理カウント={i + 1}/{accountIdList.Count} [{DateTime.Now:HH:mm:ss.fff}]");
+                            }
+                        }
+                        else
+                        {
+                            int a = 1;
+                        }
+                    }
+                    else
+                    {
+                        _log($"{symbol}件数が上限 ({max_count}件)に達したため、処理を終了します");
+                        break;
+                    }
+
                 }
 
             }

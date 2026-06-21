@@ -95,7 +95,7 @@ namespace ChildTweet
             // ログファイル名に日付を含める（例：log_2025-07-11.txt）
             Directory.CreateDirectory(logDir); // logs フォルダがなければ作る
 
-            string logFileName = $"log_{DateTime.Now:yyyy-MM-dd}.log";
+            string logFileName = $"log_{PORT}_{DateTime.Now:yyyy-MM-dd}.log";
             string logFilePath = Path.Combine(logDir, logFileName);
 
             try
