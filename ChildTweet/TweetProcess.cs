@@ -92,12 +92,13 @@ namespace ChildTweet
             // 各カテゴリを並行で実行（中身は順次処理）
             var likebookmarkTask = 順次処理2(req, TweetProcTypes.いいねブックマーク);
 
-            var likeTask = 順次処理(req, TweetProcTypes.いいね);
-            var bookmarkTask = 順次処理(req, TweetProcTypes.ブックマーク);
-            var repostTask = 順次処理(req, TweetProcTypes.リポスト);
-            var replyTask = 順次処理(req, TweetProcTypes.リプライ);
-
-            await Task.WhenAll(likebookmarkTask, likeTask, bookmarkTask, repostTask, replyTask);
+            // 2026.06.21 一旦保留
+            //var likeTask = 順次処理(req, TweetProcTypes.いいね);
+            //var bookmarkTask = 順次処理(req, TweetProcTypes.ブックマーク);
+            //var repostTask = 順次処理(req, TweetProcTypes.リポスト);
+            //var replyTask = 順次処理(req, TweetProcTypes.リプライ);
+            //await Task.WhenAll(likebookmarkTask, likeTask, bookmarkTask, repostTask, replyTask);
+            await Task.WhenAll(likebookmarkTask);
 
             _log("✔ 全ての処理が完了しました。");
         }
@@ -295,7 +296,7 @@ namespace ChildTweet
 
             bool retryFlag = true;
 
-            _log($"全{accountIdList.Count}件 {symbol}{name}");
+            _log($"{symbol} 成功アカウント数：{max_count}件  処理対象アカウント数：{accountIdList.Count}件");
 
             try
             {

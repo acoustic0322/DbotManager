@@ -6,7 +6,7 @@ namespace ChildTweet
     {
         private TweetHttpServer server = new TweetHttpServer();
 
-        const double ver = 1.10;
+        const double ver = 1.20;
 
         public int ID { get; set; }
         public int PORT { get; set; }
