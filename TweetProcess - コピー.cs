@@ -278,7 +278,6 @@ namespace ChildTweet
 
         private async Task 順次処理2(TweetRequest req, TweetProcTypes type)
         {
-
             string symbol = "❤️・🔖";
 
             var orderLikeList = req.like_list?
@@ -300,45 +299,263 @@ namespace ChildTweet
             if (max_count == 0 || accountIdList.Count == 0)
                 return;
 
-            var 並列閾値list = new List<int>();
-            int p = PARALLEL_COUNT; // 20
-            while (p > 1)
-            {
-                並列閾値list.Add(p);
-                p /= 2;
-            }
-            並列閾値list.Add(1);
+            // 45件まで並列、残り5件は逐次
+            int parallelTarget = Math.Max(0, max_count - PARALLEL_COUNT);
 
             _log(
                 $"{symbol} 成功目標={max_count}件 " +
-                $"並列数初期値={PARALLEL_COUNT}件 " +
+                $"並列目標={parallelTarget}件 " +
                 $"対象アカウント数={accountIdList.Count}件");
 
             try
             {
+                int resultCountLike = 0;
+                int resultCountBookmark = 0;
+
                 var accountQueue = new ConcurrentQueue<int>(accountIdList);
 
-                var counter = new ProcCounter();
-                int step = 1;
+                // ===========================
+                // 並列フェーズ
+                // ===========================
 
-                foreach (int 並列閾値 in 並列閾値list)
+                var workers = Enumerable.Range(0, PARALLEL_COUNT)
+                    .Select(_ => Task.Run(async () =>
+                    {
+                        while (true)
+                        {
+                            // 両方が並列目標に到達したら終了
+                            if (Volatile.Read(ref resultCountLike) >= parallelTarget &&
+                                Volatile.Read(ref resultCountBookmark) >= parallelTarget)
+                            {
+                                return;
+                            }
+
+                            if (!accountQueue.TryDequeue(out int accountId))
+                            {
+                                return;
+                            }
+
+                            try
+                            {
+                                int delay = _rand.Value.Next(waitMin, waitMax);
+                                await Task.Delay(delay);
+
+                                TweetProcTypes procType;
+
+                                bool likeReached =
+                                    Volatile.Read(ref resultCountLike) >= parallelTarget;
+
+                                bool bookmarkReached =
+                                    Volatile.Read(ref resultCountBookmark) >= parallelTarget;
+
+                                if (likeReached && !bookmarkReached)
+                                {
+                                    procType = TweetProcTypes.ブックマーク;
+                                }
+                                else if (!likeReached && bookmarkReached)
+                                {
+                                    procType = TweetProcTypes.いいね;
+                                }
+                                else
+                                {
+                                    procType = TweetProcTypes.いいねブックマーク;
+                                }
+
+                                var result = await TweetProc(new TweetCommand
+                                {
+                                    AccountId = accountId,
+                                    TweetId = req.tweet_id,
+                                    TweetProcType = procType,
+                                });
+
+                                if (result == null)
+                                    continue;
+
+                                // テスト用
+                                if (_rand.Value.Next(100) >= 80)
+                                {
+                                    result.result1 = false;
+                                    _log($"result1=false ");
+                                }
+
+                                if (_rand.Value.Next(100) >= 80)
+                                {
+                                    result.result2 = false;
+                                    _log($"result2=false ");
+                                }
+
+                                if (procType == TweetProcTypes.いいねブックマーク)
+                                {
+                                    if (result.result1)
+                                    {
+                                        int count = Interlocked.Increment(ref resultCountLike);
+
+                                        if (count <= parallelTarget)
+                                        {
+                                            _log(
+                                                $"❤️ 成功({count}/{max_count}) " +
+                                                $"AccountId={accountId}");
+                                        }
+                                    }
+
+                                    if (result.result2)
+                                    {
+                                        int count = Interlocked.Increment(ref resultCountBookmark);
+
+                                        if (count <= parallelTarget)
+                                        {
+                                            _log(
+                                                $"🔖 成功({count}/{max_count}) " +
+                                                $"AccountId={accountId}");
+                                        }
+                                    }
+                                }
+                                else if (procType == TweetProcTypes.いいね)
+                                {
+                                    if (result.result1)
+                                    {
+                                        int count = Interlocked.Increment(ref resultCountLike);
+
+                                        if (count <= parallelTarget)
+                                        {
+                                            _log(
+                                                $"❤️ 成功({count}/{max_count}) " +
+                                                $"AccountId={accountId}");
+                                        }
+                                    }
+                                }
+                                else if (procType == TweetProcTypes.ブックマーク)
+                                {
+                                    if (result.result1)
+                                    {
+                                        int count = Interlocked.Increment(ref resultCountBookmark);
+
+                                        if (count <= parallelTarget)
+                                        {
+                                            _log(
+                                                $"🔖 成功({count}/{max_count}) " +
+                                                $"AccountId={accountId}");
+                                        }
+                                    }
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+                                _log(
+                                    $"AccountId={accountId} Error={ex.Message}");
+                            }
+                        }
+                    }))
+                    .ToList();
+
+                await Task.WhenAll(workers);
+
+                _log(
+                    $"並列処理終了 " +
+                    $"Like={resultCountLike}/{max_count} " +
+                    $"Bookmark={resultCountBookmark}/{max_count}");
+
+                // ===========================
+                // 逐次フェーズ
+                // ===========================
+
+                while ((resultCountLike < max_count ||
+                        resultCountBookmark < max_count)
+                        &&
+                        accountQueue.TryDequeue(out int accountId))
                 {
-                    int target =
-                        並列閾値 == 1
-                            ? max_count
-                            : Math.Max(0, max_count - 並列閾値);
+                    try
+                    {
+                        int delay = _rand.Value.Next(waitMin, waitMax);
+                        await Task.Delay(delay);
 
-                    _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
+                        TweetProcTypes procType;
 
-                    await ExecuteParallelPhase(
-                        accountQueue,
-                        req,
-                        並列閾値,
-                        target,
-                        target,
-                        counter,
-                        max_count);
+                        bool likeReached = resultCountLike >= max_count;
+                        bool bookmarkReached = resultCountBookmark >= max_count;
+
+                        if (likeReached && !bookmarkReached)
+                        {
+                            procType = TweetProcTypes.ブックマーク;
+                        }
+                        else if (!likeReached && bookmarkReached)
+                        {
+                            procType = TweetProcTypes.いいね;
+                        }
+                        else
+                        {
+                            procType = TweetProcTypes.いいねブックマーク;
+                        }
+
+                        var result = await TweetProc(new TweetCommand
+                        {
+                            AccountId = accountId,
+                            TweetId = req.tweet_id,
+                            TweetProcType = procType,
+                        });
+
+                        if (result == null)
+                            continue;
+
+                        if (procType == TweetProcTypes.いいねブックマーク)
+                        {
+                            if (result.result1 &&
+                            resultCountLike < max_count)
+                            {
+                                resultCountLike++;
+
+                                _log(
+                                    $"❤️ 成功({resultCountLike}/{max_count}) " +
+                                    $"AccountId={accountId}");
+                            }
+
+                            if (result.result2 &&
+                                resultCountBookmark < max_count)
+                            {
+                                resultCountBookmark++;
+
+                                _log(
+                                    $"🔖 成功({resultCountBookmark}/{max_count}) " +
+                                    $"AccountId={accountId}");
+                            }
+                        }
+                        else if (procType == TweetProcTypes.いいね)
+                        {
+                            if (result.result1 &&
+                            resultCountLike < max_count)
+                            {
+                                resultCountLike++;
+
+                                _log(
+                                    $"❤️ 成功({resultCountLike}/{max_count}) " +
+                                    $"AccountId={accountId}");
+                            }
+                        }
+                        else if (procType == TweetProcTypes.ブックマーク)
+                        {
+                            if (result.result1 &&
+                                resultCountBookmark < max_count)
+                            {
+                                resultCountBookmark++;
+
+                                _log(
+                                    $"🔖 成功({resultCountBookmark}/{max_count}) " +
+                                    $"AccountId={accountId}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _log(
+                            $"AccountId={accountId} Error={ex.Message}");
+                    }
                 }
+
+                _log(
+                    $"処理完了 " +
+                    $"❤️：{resultCountLike}/{max_count} " +
+                    $"🔖：{resultCountBookmark}/{max_count}");
             }
             catch (Exception ex)
             {
@@ -346,158 +563,6 @@ namespace ChildTweet
             }
         }
 
-        class ProcCounter
-        {
-            public int Like;
-            public int Bookmark;
-        }
-
-        private async Task ExecuteParallelPhase(
-            ConcurrentQueue<int> accountQueue,
-            TweetRequest req,
-            int parallelCount,
-            int targetLike,
-            int targetBookmark,
-            ProcCounter counter,
-            int max_count)
-        {
-            var workers = Enumerable.Range(0, parallelCount)
-                .Select(_ => Task.Run(async () =>
-                {
-                    while (true)
-                    {
-                        if (Volatile.Read(ref counter.Like) >= targetLike &&
-                            Volatile.Read(ref counter.Bookmark) >= targetBookmark)
-                        {
-                            return;
-                        }
-
-                        if (!accountQueue.TryDequeue(out int accountId))
-                        {
-                            return;
-                        }
-
-                        try
-                        {
-                            int delay = _rand.Value.Next(waitMin, waitMax);
-                            await Task.Delay(delay);
-
-                            TweetProcTypes procType;
-
-                            bool likeReached =
-                                Volatile.Read(ref counter.Like) >= targetLike;
-
-                            bool bookmarkReached =
-                                Volatile.Read(ref counter.Bookmark) >= targetBookmark;
-
-                            if (likeReached && !bookmarkReached)
-                            {
-                                procType = TweetProcTypes.ブックマーク;
-                            }
-                            else if (!likeReached && bookmarkReached)
-                            {
-                                procType = TweetProcTypes.いいね;
-                            }
-                            else
-                            {
-                                procType = TweetProcTypes.いいねブックマーク;
-                            }
-
-                            var result = await TweetProc(new TweetCommand
-                            {
-                                AccountId = accountId,
-                                TweetId = req.tweet_id,
-                                TweetProcType = procType,
-                            });
-
-                            if (result == null)
-                                continue;
-
-                            // テスト用
-                            /*
-                            if (_rand.Value.Next(100) >= 80)
-                            {
-                                result.result1 = false;
-                                _log("result1=false");
-                            }
-
-                            if (_rand.Value.Next(100) >= 80)
-                            {
-                                result.result2 = false;
-                                _log("result2=false");
-                            }
-                            */
-
-                            if (procType == TweetProcTypes.いいねブックマーク)
-                            {
-                                if (result.result1)
-                                {
-                                    int count =
-                                        Interlocked.Increment(ref counter.Like);
-
-                                    if (count <= targetLike)
-                                    {
-                                        _log(
-                                            $"❤️ 成功({count}/{max_count}) " +
-                                            $"AccountId={accountId}");
-                                    }
-                                }
-
-                                if (result.result2)
-                                {
-                                    int count =
-                                        Interlocked.Increment(ref counter.Bookmark);
-
-                                    if (count <= targetBookmark)
-                                    {
-                                        _log(
-                                            $"🔖 成功({count}/{max_count}) " +
-                                            $"AccountId={accountId}");
-                                    }
-                                }
-                            }
-                            else if (procType == TweetProcTypes.いいね)
-                            {
-                                if (result.result1)
-                                {
-                                    int count =
-                                        Interlocked.Increment(ref counter.Like);
-
-                                    if (count <= targetLike)
-                                    {
-                                        _log(
-                                            $"❤️ 成功({count}/{max_count}) " +
-                                            $"AccountId={accountId}");
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (result.result1)
-                                {
-                                    int count =
-                                        Interlocked.Increment(ref counter.Bookmark);
-
-                                    if (count <= targetBookmark)
-                                    {
-                                        _log(
-                                            $"🔖 成功({count}/{max_count}) " +
-                                            $"AccountId={accountId}");
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _log(
-                                $"AccountId={accountId} Error={ex.Message}");
-                        }
-                    }
-                }))
-                .ToList();
-
-            await Task.WhenAll(workers);
-        }
         private void ReadIniファイル()
         {
             string baseDir = @"C:\DBotManager\ChildTweet";
