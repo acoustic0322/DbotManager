@@ -338,6 +338,8 @@ namespace ChildTweet
                         target,
                         counter,
                         max_count);
+
+                    step++;
                 }
             }
             catch (Exception ex)
@@ -428,62 +430,29 @@ namespace ChildTweet
                             }
                             */
 
-                            if (procType == TweetProcTypes.いいねブックマーク)
+                            if (result.result1)
                             {
-                                if (result.result1)
+                                int count =
+                                    Interlocked.Increment(ref counter.Like);
+
+                                if (count <= targetLike)
                                 {
-                                    int count =
-                                        Interlocked.Increment(ref counter.Like);
-
-                                    if (count <= targetLike)
-                                    {
-                                        _log(
-                                            $"❤️ 成功({count}/{max_count}) " +
-                                            $"AccountId={accountId}");
-                                    }
-                                }
-
-                                if (result.result2)
-                                {
-                                    int count =
-                                        Interlocked.Increment(ref counter.Bookmark);
-
-                                    if (count <= targetBookmark)
-                                    {
-                                        _log(
-                                            $"🔖 成功({count}/{max_count}) " +
-                                            $"AccountId={accountId}");
-                                    }
+                                    _log(
+                                        $"❤️ 成功({count}/{max_count}) " +
+                                        $"AccountId={accountId}");
                                 }
                             }
-                            else if (procType == TweetProcTypes.いいね)
-                            {
-                                if (result.result1)
-                                {
-                                    int count =
-                                        Interlocked.Increment(ref counter.Like);
 
-                                    if (count <= targetLike)
-                                    {
-                                        _log(
-                                            $"❤️ 成功({count}/{max_count}) " +
-                                            $"AccountId={accountId}");
-                                    }
-                                }
-                            }
-                            else
+                            if (result.result2)
                             {
-                                if (result.result1)
-                                {
-                                    int count =
-                                        Interlocked.Increment(ref counter.Bookmark);
+                                int count =
+                                    Interlocked.Increment(ref counter.Bookmark);
 
-                                    if (count <= targetBookmark)
-                                    {
-                                        _log(
-                                            $"🔖 成功({count}/{max_count}) " +
-                                            $"AccountId={accountId}");
-                                    }
+                                if (count <= targetBookmark)
+                                {
+                                    _log(
+                                        $"🔖 成功({count}/{max_count}) " +
+                                        $"AccountId={accountId}");
                                 }
                             }
                         }
