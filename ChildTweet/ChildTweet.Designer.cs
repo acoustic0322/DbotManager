@@ -44,6 +44,7 @@
             logListBox.Name = "logListBox";
             logListBox.Size = new Size(920, 574);
             logListBox.TabIndex = 0;
+            logListBox.KeyDown += logListBox_KeyDown;
             // 
             // buttonStop
             // 

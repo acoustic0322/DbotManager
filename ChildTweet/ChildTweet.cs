@@ -1,3 +1,6 @@
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
 namespace ChildTweet
 {
 
@@ -154,5 +157,42 @@ namespace ChildTweet
             }
         }
 
+        private void logListBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                if (logListBox.SelectedItems.Count > 0)
+                {
+                    var text = string.Join(
+                        Environment.NewLine,
+                        logListBox.SelectedItems.Cast<object>());
+//                    MessageBox.Show(text);
+                    CopyToClipboard(text);
+                }
+
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private static void CopyToClipboard(string text)
+        {
+            const int retry = 10;
+
+            for (int i = 0; i < retry; i++)
+            {
+                try
+                {
+                    Clipboard.SetText(text);
+                    MessageBox.Show("クリップボードにコピーしました");
+                    return;
+                }
+                catch (ExternalException)
+                {
+                    Thread.Sleep(50);
+                }
+            }
+
+            MessageBox.Show("クリップボードが使用中です。");
+        }
     }
 }

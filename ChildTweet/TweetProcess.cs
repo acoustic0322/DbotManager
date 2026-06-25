@@ -549,9 +549,11 @@ namespace ChildTweet
 
             var process = new Process { StartInfo = psi, EnableRaisingEvents = false };
 
-            _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} > {arguments}");
+            _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} START account={tweetCommand.AccountId} {arguments}");
 
             TweetResult tweetResult = null;
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
@@ -562,7 +564,7 @@ namespace ChildTweet
                 Task<string> readErrTask = process.StandardError.ReadToEndAsync();
 
                 // タイムアウト（状況に応じて調整：例 60秒）
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
 
                 Task waitTask = Task.Run(async () =>
                 {
@@ -576,7 +578,7 @@ namespace ChildTweet
                 {
                     try
                     {
-                        _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc TIMEOUT -> Kill()");
+                        _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProcタイムアウト account={tweetCommand.AccountId} 経過時間={sw.Elapsed.TotalSeconds:F1}s -> Kill()");
                         if (!process.HasExited) process.Kill(entireProcessTree: true);
                     }
                     catch { /* ignore */ }
@@ -594,7 +596,7 @@ namespace ChildTweet
                     string errShort = stderr.Length > 4000
                         ? stderr[..2000] + "\n...(truncated)...\n" + stderr[^2000..]
                         : stderr;
-                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} [stderr]\n{errShort}");
+                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} account={tweetCommand.AccountId}  [stderr]\n{errShort}");
                 }
 
                 // stdout から JSON を復元（最後の { 以降に限定すると混入対策になる）
@@ -625,7 +627,7 @@ namespace ChildTweet
                     }
                     else
                     {
-                        _log($"Stdout doesn't look like a JSON object. head={jsonText?.Substring(0, Math.Min(80, jsonText.Length))}");
+                        _log($"Stdout doesn't look like a JSON object. account={tweetCommand.AccountId}  head={jsonText?.Substring(0, Math.Min(80, jsonText.Length))}");
                     }
                 }
                 catch (Exception jex)
@@ -660,20 +662,28 @@ namespace ChildTweet
                 }
                 else
                 {
-                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc Python script returned invalid or empty JSON.");
+                    _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc account={tweetCommand.AccountId}  Python script returned invalid or empty JSON.");
                 }
             }
             catch (OperationCanceledException)
             {
-                _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc canceled by timeout.");
+                _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc account={tweetCommand.AccountId} canceled by timeout.");
             }
             catch (Exception ex)
             {
-                _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc Exception: {ex}");
+                _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} TweetProc account={tweetCommand.AccountId} Exception: {ex}");
             }
             finally
             {
-                try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch { }
+                _log($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} FINALLY account={tweetCommand.AccountId} elapsed={sw.Elapsed.TotalSeconds:F1}s");
+
+                try
+                {
+                    if (!process.HasExited)
+                        process.Kill(entireProcessTree: true);
+                }
+                catch { }
+
                 process.Dispose();
             }
 
