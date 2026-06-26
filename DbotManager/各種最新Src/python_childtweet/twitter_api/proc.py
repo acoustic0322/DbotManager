@@ -99,6 +99,105 @@ async def proc_like(credentials, exe_like, exe_bookmark, tweet_id: str = None):
 
     return results['like'], results['bookmark'], ""
 
+async def proc_repost(credentials, tweet_id: str = None):
+
+    # Cookie
+    session_cookies = credentials.get('cookies', {})
+
+    # 壊れたJSON補正 + dict化
+    if isinstance(session_cookies, str):
+        session_cookies = fix_broken_cookie_json(session_cookies)
+
+    outputLog(type(session_cookies))
+    outputLog(len(session_cookies))
+    outputLog(session_cookies)
+
+    # 念のため保険
+    if not isinstance(session_cookies, dict):
+        raise Exception(
+            f"session_cookies is invalid. type={type(session_cookies)}"
+        )
+
+    outputLog(type(session_cookies))
+    outputLog(len(session_cookies))
+
+    # 接続情報
+    target_proxy = credentials.get('proxy_url')
+
+    detected_user_agent = (
+        credentials.get('user_agent')
+        or CURRENT_USER_AGENT
+    )
+    detected_browser = (
+        credentials.get('impersonate')
+        or detect_impersonate_target(detected_user_agent)
+    )
+
+    detected_ch = (
+        credentials.get('sec_ch_ua')
+        or '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"'
+    )
+
+    # CSRF
+    csrf_token_val = (
+        session_cookies.get('ct0')
+        or CSRF_TOKEN
+    )
+
+    outputLog(f"[INFO] browser={detected_browser}")
+    outputLog(f"[INFO] proxy={target_proxy or 'none'}")
+
+    # API
+    api = TwitterAPI(
+        AUTH_TOKEN,
+        csrf_token_val,
+        session_cookies,
+        proxy=target_proxy,
+        user_agent=detected_user_agent,
+        sec_ch_ua=detected_ch
+    )
+
+    async with AsyncSession(
+        impersonate=detected_browser,
+        cookies=session_cookies
+    ) as session:
+
+        results = await api.natural_retweet_action(
+            tweet_id,
+            session
+        )
+
+    outputLog(results)
+
+    return results['retweet'] , results['retweet_reason']
+
+
+#async def test_natural_retweet(tweet_id: str | None = None) -> dict[str, bool]:
+#    tweet_id = tweet_id or DEFAULT_TWEET_ID
+#    outputLog("\n" + "=" * 50)
+#    outputLog("テスト: 自然フローRT")
+#    outputLog("=" * 50)
+
+#    ctx = build_runtime_context(load_first_account())
+#    print_runtime_context(ctx)
+
+#    async with AsyncSession(
+#        impersonate=ctx["browser"],
+#        cookies=ctx["cookies"],
+#        proxies=ctx["proxies"],
+#    ) as session:
+#        results = await ctx["api"].natural_retweet_action(tweet_id, session)
+#        results = await diagnose_failures(ctx, tweet_id, session, results)
+
+#    save_cookies_if_needed(ctx)
+#    log_failed_actions(ctx, tweet_id, results)
+#    outputLog("\n結果:")
+#    outputLog(f"  インプレッション: {'[OK] 成功' if results.get('impression') else '[NG] 失敗'}")
+#    outputLog(f"  RT: {'[OK] 成功' if results.get('retweet') else '[NG] 失敗'}")
+#    if results.get("retweet_wait_seconds") is not None:
+#        outputLog(f"  RT待機: {results['retweet_wait_seconds']:.1f}s")
+#    return results
+
 def fix_broken_cookie_json(cookie_text):
 
     # ""abc"" → "abc"

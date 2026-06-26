@@ -7,7 +7,7 @@ namespace ChildTweet
 
     public partial class ChildTweet : Form
     {
-        private TweetHttpServer server = new TweetHttpServer();
+        private TweetHttpServer server;
 
         const double ver = 1.20;
 
@@ -24,6 +24,8 @@ namespace ChildTweet
         {
             try
             {
+                server = new TweetHttpServer();
+
                 ReadIniƒtƒ@ƒCƒ‹();
 
                 string logDir = @"C:\DBotManager\ChildTweet\logs";

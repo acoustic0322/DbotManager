@@ -69,8 +69,6 @@ namespace ChildTweet
         public string contents1 { get; set; }
         public bool result2 { get; set; }
         public string contents2 { get; set; }
-        public bool result3 { get; set; }
-        public string contents3 { get; set; }
     }
 
 
@@ -443,34 +441,63 @@ namespace ChildTweet
                             }
                             */
 
-                            if (result.result1)
+                            if(procType == TweetProcTypes.いいねブックマーク)
                             {
-                                int count =
-                                    Interlocked.Increment(ref counter.Like);
+                                if (result.result1)
+                                {
+                                    int count =
+                                        Interlocked.Increment(ref counter.Like);
 
-                                _log(
-                                    $"❤️ 成功({count}/{max_count}) " +
-                                    $"AccountId={accountId}");
+                                    _log(
+                                        $"❤️ 成功({count}/{max_count}) " +
+                                        $"AccountId={accountId}");
+                                }
+
+                                if (result.result2)
+                                {
+                                    int count =
+                                        Interlocked.Increment(ref counter.Bookmark);
+
+                                    _log(
+                                        $"🔖 成功({count}/{max_count}) " +
+                                        $"AccountId={accountId}");
+                                }
                             }
-
-                            if (result.result2)
+                            else if(procType == TweetProcTypes.いいね)
                             {
-                                int count =
-                                    Interlocked.Increment(ref counter.Bookmark);
+                                if (result.result1)
+                                {
+                                    int count =
+                                        Interlocked.Increment(ref counter.Like);
 
-                                _log(
-                                    $"🔖 成功({count}/{max_count}) " +
-                                    $"AccountId={accountId}");
+                                    _log(
+                                        $"❤️ 成功({count}/{max_count}) " +
+                                        $"AccountId={accountId}");
+                                }
                             }
-
-                            if (result.result3)
+                            else if (procType == TweetProcTypes.ブックマーク)
                             {
-                                int count =
-                                    Interlocked.Increment(ref counter.Repost);
+                                if (result.result1)
+                                {
+                                    int count =
+                                        Interlocked.Increment(ref counter.Bookmark);
 
-                                _log(
-                                    $"🔁 成功({count}/{max_count}) " +
-                                    $"AccountId={accountId}");
+                                    _log(
+                                        $"🔖 成功({count}/{max_count}) " +
+                                        $"AccountId={accountId}");
+                                }
+                            }
+                            else if (procType == TweetProcTypes.リポスト)
+                            {
+                                if (result.result1)
+                                {
+                                    int count =
+                                        Interlocked.Increment(ref counter.Repost);
+
+                                    _log(
+                                        $"🔁 成功({count}/{max_count}) " +
+                                        $"AccountId={accountId}");
+                                }
                             }
                         }
                         catch (Exception ex)

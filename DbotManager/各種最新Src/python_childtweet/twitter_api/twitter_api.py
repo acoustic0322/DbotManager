@@ -15,6 +15,11 @@ import threading
 import re
 from curl_cffi.requests import AsyncSession
 
+import config
+from config import outputLog
+
+
+
 class TwitterAPI:
     """X (Twitter) の非公式API操作クラス"""
     _tid_server_lock = threading.Lock()
@@ -93,7 +98,7 @@ class TwitterAPI:
                             key, val = pair.strip().split('=', 1)
                             parsed_cookies[key.strip()] = val.strip()
                 except Exception as e:
-                    print(f"[WARN] Cookie parse error in init: {type(e).__name__}: {e}")
+                    outputLog(f"[WARN] Cookie parse error in init: {type(e).__name__}: {e}")
                     parsed_cookies = {}
 
         # すべてのクッキーを保持（手動ブラウザセッションと完全に一致させるため、フィルタリングを廃止）
@@ -101,7 +106,7 @@ class TwitterAPI:
         
         # 必須Cookieのログ確認（デバッグ用）
         # if 'auth_token' not in self.cookies:
-        #     print("[WARN] auth_token missing in initialized cookies")
+        #     outputLog("[WARN] auth_token missing in initialized cookies")
 
         # User-Agent設定 (デフォルトはChrome 142に合わせる)
         # ユーザーからUAが渡された場合はそれを優先し、CHもそこから生成する
@@ -173,7 +178,7 @@ class TwitterAPI:
 
             TwitterAPI._tid_server_ready = False
                 
-            print("[System] Starting Node.js TID Server...")
+            outputLog("[System] Starting Node.js TID Server...")
             current_dir = os.path.dirname(os.path.abspath(__file__))
             script_path = os.path.join(current_dir, 'tid_node', 'server.js')
             node_path = shutil.which('node')
@@ -210,7 +215,7 @@ class TwitterAPI:
                     raise RuntimeError(f"Node.js TID Server exited early with code {self.server_process.returncode}. See tid_node/server.log")
                 if is_server_ready(timeout=0.5):
                     TwitterAPI._tid_server_ready = True
-                    print("[System] Node.js TID Server started.")
+                    outputLog("[System] Node.js TID Server started.")
                     return
                 time.sleep(0.5)
             raise RuntimeError("Node.js TID Server did not become ready. See tid_node/server.log")
@@ -326,7 +331,7 @@ class TwitterAPI:
     def _log_http_failure(self, label: str, url: str, response) -> None:
         """HTTP失敗をURL・status・本文つきで表示する"""
         preview = self._response_preview(response)
-        print(f"[WARN] {label} failed: status={response.status_code} url={url}")
+        outputLog(f"[WARN] {label} failed: status={response.status_code} url={url}")
         header_keys = [
             'content-type',
             'x-transaction-id',
@@ -340,9 +345,9 @@ class TwitterAPI:
             if value:
                 header_parts.append(f"{key}={value}")
         if header_parts:
-            print(f"[WARN] {label} headers: {', '.join(header_parts)}")
+            outputLog(f"[WARN] {label} headers: {', '.join(header_parts)}")
         if preview:
-            print(f"[WARN] {label} response: {preview}")
+            outputLog(f"[WARN] {label} response: {preview}")
 
     def _classify_api_failure(self, status_code: Optional[int], response_body: str = "", error_message: str = "") -> str:
         """Return a concise operational failure label for logs."""
@@ -377,6 +382,91 @@ class TwitterAPI:
         preview = " ".join(body[:240].split())
         return f"UNKNOWN_API_ERROR | {status_part}{code_part} preview={preview}"
 
+    def _detect_account_lock_marker(self, body: str = "", url: str = "") -> Optional[str]:
+        """Return a lock/challenge label when a read-only page clearly shows account access gates."""
+        url_lower = (url or "").lower()
+        body_lower = (body or "").lower()
+        if "account/access" in url_lower:
+            return "account/access"
+
+        strong_markers = (
+            "account is locked",
+            "temporarily locked",
+            "unlock your account",
+            "verify your account",
+            "account has been locked",
+            "your account has been locked",
+            "challenge_required",
+            "challenge required",
+            "arkose",
+            "アカウントはロック",
+            "ロックされています",
+            "本人確認",
+            "認証が必要",
+        )
+        for marker in strong_markers:
+            if marker in body_lower:
+                return marker
+        return None
+
+    async def probe_account_lock_state(self, session: AsyncSession) -> Dict[str, object]:
+        """Read-only probe for account lock/challenge pages without sending actions."""
+        probes = (
+            ("home_html", "https://x.com/home"),
+            ("account_access", "https://x.com/account/access"),
+        )
+        headers = self._build_full_headers(
+            referer="https://x.com/home",
+            extra_headers={
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "sec-fetch-dest": "document",
+                "sec-fetch-mode": "navigate",
+                "sec-fetch-site": "same-origin",
+            },
+        )
+
+        for label, url in probes:
+            try:
+                response = await session.get(
+                    url,
+                    headers=headers,
+                    proxy=self._normalized_proxy(),
+                    timeout=30,
+                    allow_redirects=True,
+                )
+                final_url = str(getattr(response, "url", url))
+                text = response.text or ""
+                marker = self._detect_account_lock_marker(text[:12000], final_url if label == "home_html" else "")
+                if marker:
+                    reason = (
+                        "ACCOUNT_LOCKED_OR_CHALLENGE_REQUIRED | "
+                        f"read-only probe={label} HTTP {response.status_code} marker={marker}"
+                    )
+                    self.last_error_summary = reason
+                    return {
+                        "locked": True,
+                        "reason": reason,
+                        "probe": label,
+                        "status_code": response.status_code,
+                        "url": final_url,
+                    }
+            except Exception as exc:
+                return {
+                    "locked": None,
+                    "reason": f"ACCOUNT_LOCK_PROBE exception: {type(exc).__name__}: {exc}",
+                    "probe": label,
+                    "status_code": None,
+                    "url": url,
+                }
+
+        return {
+            "locked": False,
+            "reason": None,
+            "probe": "home_html/account_access",
+            "status_code": None,
+            "url": None,
+        }
+
     def _sec_ch_ua_mobile(self) -> Optional[str]:
         ua_lower = (self.user_agent or "").lower()
         if not self.sec_ch_ua:
@@ -403,7 +493,7 @@ class TwitterAPI:
         """アカウントを一時停止"""
         self.status = 'paused'
         self.pause_until = datetime.now() + timedelta(hours=hours)
-        print(f"[PAUSE] アカウント一時停止: {hours}時間")
+        outputLog(f"[PAUSE] アカウント一時停止: {hours}時間")
     
     async def _wait_natural(self, base_min: float = 1.0, base_max: float = 3.0):
         """人間らしい待機時間（ロングテール追加）"""
@@ -507,7 +597,7 @@ class TwitterAPI:
                     data = response.json()
                     self.last_detail_tweet_ids = self._extract_thread_tweet_ids(data, tweet_id)
                     if len(self.last_detail_tweet_ids) > 1:
-                        print(f"[THREAD] collected {len(self.last_detail_tweet_ids)} tweet ids from detail")
+                        outputLog(f"[THREAD] collected {len(self.last_detail_tweet_ids)} tweet ids from detail")
 
                     entries = data.get("data", {}).get("threaded_conversation_with_injections_v2", {}).get("instructions", [])
                     for instruction in entries:
@@ -518,12 +608,21 @@ class TwitterAPI:
                                 continue
                             content = entry.get("content", {}).get("itemContent", {})
                             tweet_result = content.get("tweet_results", {}).get("result", {})
+                            if not tweet_result:
+                                self.last_error_summary = (
+                                    "TWEET_DETAIL_EMPTY_RESULT | HTTP 200 but tweet_results.result is empty; "
+                                    "request/viewer-specific TweetDetail empty result"
+                                )
+                                continue
                             legacy = (
                                 tweet_result.get("legacy", {})
                                 or tweet_result.get("core", {}).get("legacy", {})
                                 or tweet_result.get("tweet", {}).get("legacy", {})
                             )
-                            user_result = tweet_result.get("core", {}).get("user_results", {}).get("result", {})
+                            user_result = (
+                                tweet_result.get("core", {}).get("user_results", {}).get("result", {})
+                                or tweet_result.get("tweet", {}).get("core", {}).get("user_results", {}).get("result", {})
+                            )
                             screen_name = (
                                 user_result.get("core", {}).get("screen_name")
                                 or user_result.get("legacy", {}).get("screen_name")
@@ -539,12 +638,12 @@ class TwitterAPI:
                                     media_info["has_image"] = True
 
                             if screen_name:
-                                print(f"[DEBUG] screen_name取得成功: @{screen_name}, Media: {media_info}")
+                                outputLog(f"[DEBUG] screen_name取得成功: @{screen_name}, Media: {media_info}")
                                 self.last_error_summary = None
                                 return screen_name, media_info
                 except Exception as exc:
                     self.last_error_summary = f"TWEET_DETAIL parse exception: {type(exc).__name__}: {exc}"
-                    print(f"[WARN] {self.last_error_summary}")
+                    outputLog(f"[WARN] {self.last_error_summary}")
                 return "Unknown", media_info
 
             if response.status_code == 429:
@@ -563,7 +662,7 @@ class TwitterAPI:
             return None, media_info
         except Exception as exc:
             self.last_error_summary = f"TWEET_DETAIL exception: {type(exc).__name__}: {exc}"
-            print(f"[WARN] {self.last_error_summary}")
+            outputLog(f"[WARN] {self.last_error_summary}")
             return None, media_info
 
 
@@ -633,10 +732,10 @@ class TwitterAPI:
                 state["bookmarked"] = bool(legacy.get("bookmarked"))
             elif "bookmarked_by" in legacy:
                 state["bookmarked"] = bool(legacy.get("bookmarked_by"))
-            print(f"[ENGAGEMENT_VERIFY] tweet_id={tweet_id} favorited={state['favorited']} bookmarked={state['bookmarked']}")
+            outputLog(f"[ENGAGEMENT_VERIFY] tweet_id={tweet_id} favorited={state['favorited']} bookmarked={state['bookmarked']}")
             return state
         except Exception as exc:
-            print(f"[ENGAGEMENT_VERIFY] exception: {type(exc).__name__}: {exc}")
+            outputLog(f"[ENGAGEMENT_VERIFY] exception: {type(exc).__name__}: {exc}")
             return state
 
     async def fetch_user_profile(self, screen_name: str, session: AsyncSession) -> bool:
@@ -677,7 +776,7 @@ class TwitterAPI:
             return False
         except Exception as exc:
             self.last_error_summary = f"USER_PROFILE exception: {type(exc).__name__}: {exc}"
-            print(f"[PROFILE] Exception: {type(exc).__name__}")
+            outputLog(f"[PROFILE] Exception: {type(exc).__name__}")
             return False
     async def _execute_via_native_curl(self, url: str, payload: str, referer: str, 
                                        success_keyword: Union[str, List[str]] = '"Done"', 
@@ -687,7 +786,7 @@ class TwitterAPI:
         try:
             if not transaction_id:
                 self.last_error_summary = "TID取得失敗"
-                print(f"[WARN] {self.last_error_summary}")
+                outputLog(f"[WARN] {self.last_error_summary}")
                 return {'success': False, 'cookies': {}, 'error_type': 'TID Error', 'error_message': self.last_error_summary}
 
             # 共通ヘッダーを使用（これがメインの簡略化ポイント）
@@ -731,7 +830,7 @@ class TwitterAPI:
 
             except Exception as e:
                 self.last_error_summary = f"Request exception: {str(e)}"
-                print(f"[WARN] {self.last_error_summary}")
+                outputLog(f"[WARN] {self.last_error_summary}")
                 return {'success': False, 'cookies': {}, 'error_type': 'Exception', 'error_message': str(e)}
 
             # 成功判定
@@ -762,7 +861,7 @@ class TwitterAPI:
             error_summary = self._classify_api_failure(r.status_code, r.text or "")
             self.last_error_summary = error_summary
 
-            print(f"[ERROR] {error_summary}")
+            outputLog(f"[ERROR] {error_summary}")
             return {
                 'success': False,
                 'cookies': {},
@@ -773,14 +872,14 @@ class TwitterAPI:
 
         except Exception as e:
             self.last_error_summary = f"Execution exception: {str(e)}"
-            print(f"[WARN] _execute_via_native_curl: {self.last_error_summary}")
+            outputLog(f"[WARN] _execute_via_native_curl: {self.last_error_summary}")
             return {'success': False, 'cookies': {}, 'error_type': 'Exception', 'error_message': str(e)}
 
     async def _generate_dynamic_transaction_id(self, path: str, method: str = 'POST', purpose: str = 'api') -> Optional[str]:
         """Node.jsサーバーから用途別にTID取得"""
         try:
             if time.time() < TwitterAPI._tid_server_disabled_until:
-                print(f"[WARN] {purpose} Node.js TID cooldown; fallback transaction id for {method} {path}")
+                outputLog(f"[WARN] {purpose} Node.js TID cooldown; fallback transaction id for {method} {path}")
                 return self._generate_session_transaction_id()
 
             await asyncio.to_thread(self._ensure_tid_server_running)
@@ -807,9 +906,9 @@ class TwitterAPI:
                                     tid_value = response.read().decode('utf-8').strip()
                                     if tid_value:
                                         return tid_value
-                                print(f"[WARN] TID Server Query returned HTTP {response.status} (attempt {attempt}/3)")
+                                outputLog(f"[WARN] TID Server Query returned HTTP {response.status} (attempt {attempt}/3)")
                         except Exception as e:
-                            print(f"[WARN] TID Server Query Error (attempt {attempt}/3): {e}")
+                            outputLog(f"[WARN] TID Server Query Error (attempt {attempt}/3): {e}")
                         time.sleep(0.35 * attempt)
                     return None
             
@@ -823,10 +922,10 @@ class TwitterAPI:
                 return tid
             TwitterAPI._tid_server_disabled_until = time.time() + 600
             fallback_tid = self._generate_session_transaction_id()
-            print(f"[WARN] {purpose} Node.js TID failed; falling back to session transaction id for {method} {path}")
+            outputLog(f"[WARN] {purpose} Node.js TID failed; falling back to session transaction id for {method} {path}")
             return fallback_tid
         except Exception as e:
-            print(f"[WARN] Node.js TID Error: {e}")
+            outputLog(f"[WARN] Node.js TID Error: {e}")
             self.last_error_summary = f"{purpose} TID取得失敗: {type(e).__name__}: {e}"
             return None
 
@@ -854,7 +953,7 @@ class TwitterAPI:
         query_id = await self._resolve_graphql_operation("CreateRetweet", session, "/home")
         if not query_id:
             self.last_error_summary = "RETWEET query id not resolved; set X_QUERY_ID_CREATE_RETWEET"
-            print(f"[RETWEET] {self.last_error_summary}")
+            outputLog(f"[RETWEET] {self.last_error_summary}")
             return False
 
         path = f"/i/api/graphql/{query_id}/CreateRetweet"
@@ -867,7 +966,7 @@ class TwitterAPI:
             "queryId": query_id,
         }, separators=(",", ":"))
 
-        print("[Processing] Generating TID via Node.js...")
+        outputLog("[Processing] Generating TID via Node.js...")
         tid = await self._generate_engagement_transaction_id(path, 'POST')
         if not tid:
             return False
@@ -889,7 +988,7 @@ class TwitterAPI:
         query_id = await self._resolve_graphql_operation("CreateBookmark", session, "/home")
         if not query_id:
             self.last_error_summary = "BOOKMARK query id not resolved; set X_QUERY_ID_CREATE_BOOKMARK"
-            print(f"[BOOKMARK] {self.last_error_summary}")
+            outputLog(f"[BOOKMARK] {self.last_error_summary}")
             return False
 
         path = f"/i/api/graphql/{query_id}/CreateBookmark"
@@ -898,7 +997,7 @@ class TwitterAPI:
             "variables": {"tweet_id": str(tweet_id)},
             "queryId": query_id
         }, separators=(",", ":"))
-        print("[Processing] Generating TID via Node.js...")
+        outputLog("[Processing] Generating TID via Node.js...")
         tid = await self._generate_engagement_transaction_id(path, "POST")
         if not tid:
             return False
@@ -914,7 +1013,7 @@ class TwitterAPI:
         state = await self.verify_tweet_engagement_state(tweet_id, session, referer=referer)
         if state.get("bookmarked") is True:
             self.last_error_summary = None
-            print(f"[BOOKMARK] POST result was uncertain, but TweetDetail shows bookmarked=true: {tweet_id}")
+            outputLog(f"[BOOKMARK] POST result was uncertain, but TweetDetail shows bookmarked=true: {tweet_id}")
             return True
         self.last_error_summary = original_summary or self.last_error_summary
         return False
@@ -935,7 +1034,7 @@ class TwitterAPI:
         # 空白なしのJSON文字列に自動変換（Xの要求仕様に合わせる）
         payload = json.dumps(payload_data, separators=(',', ':'))
         
-        print("[Processing] Generating TID via Node.js...")
+        outputLog("[Processing] Generating TID via Node.js...")
         tid = await self._generate_engagement_transaction_id('/i/api/graphql/lI07N6Otwv1PhnEgXILM7A/FavoriteTweet', 'POST')
         if not tid:
             return False
@@ -951,7 +1050,7 @@ class TwitterAPI:
         state = await self.verify_tweet_engagement_state(tweet_id, session, referer=referer)
         if state.get("favorited") is True:
             self.last_error_summary = None
-            print(f"[LIKE] POST result was uncertain, but TweetDetail shows favorited=true: {tweet_id}")
+            outputLog(f"[LIKE] POST result was uncertain, but TweetDetail shows favorited=true: {tweet_id}")
             return True
         self.last_error_summary = original_summary or self.last_error_summary
         return False
@@ -1042,7 +1141,7 @@ class TwitterAPI:
                 timeout=30,
             )
             if response.status_code != 200:
-                print(f"[ROUTE] {operation_name} bootstrap failed: HTTP {response.status_code}")
+                outputLog(f"[ROUTE] {operation_name} bootstrap failed: HTTP {response.status_code}")
                 return None
             html = response.text or ""
             sources = [html]
@@ -1082,12 +1181,12 @@ class TwitterAPI:
                     if match:
                         query_id = match.group(1)
                         self._graphql_operation_cache[operation_name] = query_id
-                        print(f"[ROUTE] Resolved {operation_name} query id")
+                        outputLog(f"[ROUTE] Resolved {operation_name} query id")
                         return query_id
         except Exception as exc:
-            print(f"[ROUTE] {operation_name} discovery failed: {type(exc).__name__}: {exc}")
+            outputLog(f"[ROUTE] {operation_name} discovery failed: {type(exc).__name__}: {exc}")
 
-        print(f"[ROUTE] {operation_name} query id not found; set {env_key} to override")
+        outputLog(f"[ROUTE] {operation_name} query id not found; set {env_key} to override")
         return None
 
     async def _fetch_timeline_operation(
@@ -1140,7 +1239,7 @@ class TwitterAPI:
 
                 data = response.json()
                 found = self._json_contains_tweet_id(data, tweet_id)
-                print(f"[ROUTE] {operation_name}: page={page} target_found={found}")
+                outputLog(f"[ROUTE] {operation_name}: page={page} target_found={found}")
                 if found:
                     return True
 
@@ -1149,21 +1248,21 @@ class TwitterAPI:
 
                 cursor = self._find_bottom_cursor(data)
                 if not cursor:
-                    print(f"[ROUTE] {operation_name}: no bottom cursor")
+                    outputLog(f"[ROUTE] {operation_name}: no bottom cursor")
                     break
                 current_variables["cursor"] = cursor
-                print(f"[ROUTE] {operation_name}: loading page {page + 1}")
+                outputLog(f"[ROUTE] {operation_name}: loading page {page + 1}")
 
             return False
         except Exception as exc:
-            print(f"[ROUTE] {operation_name} failed: {type(exc).__name__}: {exc}")
+            outputLog(f"[ROUTE] {operation_name} failed: {type(exc).__name__}: {exc}")
             return False
 
     async def fetch_search_timeline(self, tweet_id: str, session: AsyncSession) -> bool:
         """投稿者指定の検索タイムラインから対象ツイートを取得する。"""
         screen_name, _ = await self.view_tweet(tweet_id, session)
         if not screen_name or screen_name == "Unknown":
-            print("[ROUTE] SearchTimeline skipped: tweet author could not be resolved")
+            outputLog("[ROUTE] SearchTimeline skipped: tweet author could not be resolved")
             return False
 
         # --- 検索クエリの分散化 ---
@@ -1209,10 +1308,10 @@ class TwitterAPI:
             if response.status_code == 200:
                 if tweet_id is not None:
                     found = self._json_contains_tweet_id(response.json(), tweet_id)
-                    print(f"[HOME] target_found={found} tweet_id={tweet_id}")
+                    outputLog(f"[HOME] target_found={found} tweet_id={tweet_id}")
                     return found
                 self.last_error_summary = None
-                print("[HOME] ホームタイムライン取得成功 (Warm-up)")
+                outputLog("[HOME] ホームタイムライン取得成功 (Warm-up)")
                 return True
 
             try:
@@ -1224,7 +1323,7 @@ class TwitterAPI:
             return False
         except Exception as e:
             self.last_error_summary = f"HOME_TIMELINE exception: {type(e).__name__}: {e}"
-            print(f"[HOME] Exception: {type(e).__name__}: {e}")
+            outputLog(f"[HOME] Exception: {type(e).__name__}: {e}")
             return False
     async def send_client_event_log(
         self,
@@ -1297,7 +1396,7 @@ class TwitterAPI:
 
         if not log_data:
             self.last_error_summary = "IMPRESSION skipped: no client events for the selected route"
-            print(f"[IMPRESSION] {self.last_error_summary}")
+            outputLog(f"[IMPRESSION] {self.last_error_summary}")
             return False
         payload = urllib.parse.urlencode({
             "debug": "true",
@@ -1318,13 +1417,13 @@ class TwitterAPI:
             for event in log_data
         ]
         event_label = ", ".join(event_names)
-        print(f"[IMPRESSION] Sending {event_label} for tweet_id: {tweet_id}")
+        outputLog(f"[IMPRESSION] Sending {event_label} for tweet_id: {tweet_id}")
         for url, path in candidates:
             try:
                 tid = await self._generate_client_event_transaction_id(path, 'POST')
                 if not tid:
                     self.last_error_summary = self.last_error_summary or f"IMPRESSION TID取得失敗: {path}"
-                    print(f"[WARN] IMPRESSION skipped: {self.last_error_summary}")
+                    outputLog(f"[WARN] IMPRESSION skipped: {self.last_error_summary}")
                     continue
                 
                 # tidが確定した後にヘッダーを構築する
@@ -1341,7 +1440,7 @@ class TwitterAPI:
                     timeout=30
                 )
                 if response.status_code in [200, 204]:
-                    print(f"[IMPRESSION] OK status={response.status_code} url={url}")
+                    outputLog(f"[IMPRESSION] OK status={response.status_code} url={url}")
                     self.last_error_summary = None
                     return True
 
@@ -1353,10 +1452,10 @@ class TwitterAPI:
                 classified = self._classify_api_failure(response.status_code, response_text, "")
                 self.last_error_summary = f"IMPRESSION {classified}"
             except Exception as e:
-                print(f"[WARN] IMPRESSION exception: url={url} error={type(e).__name__}: {e}")
+                outputLog(f"[WARN] IMPRESSION exception: url={url} error={type(e).__name__}: {e}")
                 self.last_error_summary = f"IMPRESSION exception: {type(e).__name__}: {e}"
 
-        print("[WARN] IMPRESSION failed: all endpoints rejected the request")
+        outputLog("[WARN] IMPRESSION failed: all endpoints rejected the request")
         if not self.last_error_summary:
             self.last_error_summary = "IMPRESSION failed: all endpoints rejected the request"
         return False
@@ -1383,7 +1482,7 @@ class TwitterAPI:
         if not unique_ids:
             return False
 
-        print(f"[THREAD] sending impressions for {len(unique_ids)} tweet(s)")
+        outputLog(f"[THREAD] sending impressions for {len(unique_ids)} tweet(s)")
         focal_ok = False
         for index, item_id in enumerate(unique_ids):
             ok = await self.send_client_event_log(
@@ -1421,7 +1520,7 @@ class TwitterAPI:
             label = f"{label}+media"
 
         wait_time *= self.speed_multiplier
-        print(f"[RETWEET_WAIT] RT判断待機 ({label})... ({wait_time:.1f}s)")
+        outputLog(f"[RETWEET_WAIT] RT判断待機 ({label})... ({wait_time:.1f}s)")
         await asyncio.sleep(max(wait_time, 3.0))
         return wait_time
 
@@ -1472,23 +1571,23 @@ class TwitterAPI:
                     include_bottom=False,
                 )
             else:
-                print("[ROUTE] SearchTimeline did not contain target; moving to direct detail")
+                outputLog("[ROUTE] SearchTimeline did not contain target; moving to direct detail")
                 route = "detail"
                 results['route'] = "detail_after_search"
 
         if route == "detail":
-            print(f"[ROUTE] {route_origin} -> tweet detail: {tweet_id}")
+            outputLog(f"[ROUTE] {route_origin} -> tweet detail: {tweet_id}")
             screen_name, media_info = await self.view_tweet(tweet_id, session)
             acquired = bool(screen_name and screen_name != "Unknown")
             if acquired:
                 await self._wait_natural(2.0, 5.0)
                 if media_info.get('has_video'):
                     wait_video = random.uniform(8.0, 18.0)
-                    print(f"[MEDIA] 動画を再生中... ({wait_video:.1f}s)")
+                    outputLog(f"[MEDIA] 動画を再生中... ({wait_video:.1f}s)")
                     await asyncio.sleep(wait_video)
                 elif media_info.get('has_image'):
                     wait_image = random.uniform(5.0, 10.0)
-                    print(f"[MEDIA] 画像を閲覧中... ({wait_image:.1f}s)")
+                    outputLog(f"[MEDIA] 画像を閲覧中... ({wait_image:.1f}s)")
                     await asyncio.sleep(wait_image)
                 else:
                     await self._wait_natural(3.0, 8.0)
@@ -1508,7 +1607,7 @@ class TwitterAPI:
                 )
 
         if acquired and route != "detail":
-            print(f"[THREAD] loading tweet detail for RT context: {tweet_id}")
+            outputLog(f"[THREAD] loading tweet detail for RT context: {tweet_id}")
             detail_screen_name, detail_media_info = await self.view_tweet(tweet_id, session)
             detail_tweet_ids = getattr(self, "last_detail_tweet_ids", None) or [tweet_id]
             extra_tweet_ids = [item_id for item_id in detail_tweet_ids if item_id != tweet_id]
@@ -1520,11 +1619,11 @@ class TwitterAPI:
                 detail_ref = f"https://x.com/{detail_screen_name}/status/{tweet_id}"
                 if media_info.get('has_video'):
                     wait_video = random.uniform(8.0, 18.0)
-                    print(f"[MEDIA] 動画を再生中... ({wait_video:.1f}s)")
+                    outputLog(f"[MEDIA] 動画を再生中... ({wait_video:.1f}s)")
                     await asyncio.sleep(wait_video)
                 elif media_info.get('has_image'):
                     wait_image = random.uniform(5.0, 10.0)
-                    print(f"[MEDIA] 画像を閲覧中... ({wait_image:.1f}s)")
+                    outputLog(f"[MEDIA] 画像を閲覧中... ({wait_image:.1f}s)")
                     await asyncio.sleep(wait_image)
                 if extra_tweet_ids:
                     await self._wait_natural(1.0, 2.0)
@@ -1541,7 +1640,7 @@ class TwitterAPI:
 
         if not acquired:
             results['route_reason'] = "Target tweet could not be acquired from home, search, or detail"
-            print(f"[ROUTE] skipped: {results['route_reason']}")
+            outputLog(f"[ROUTE] skipped: {results['route_reason']}")
             return results
 
         if not results['impression']:
@@ -1549,7 +1648,7 @@ class TwitterAPI:
 
         if screen_name and random.random() < 0.5:
             await self._wait_natural(1.0, 2.0)
-            print(f"[PROFILE] プロフィール閲覧: @{screen_name}")
+            outputLog(f"[PROFILE] プロフィール閲覧: @{screen_name}")
             results['profile_view'] = await self.fetch_user_profile(screen_name, session)
             await self._wait_natural(2.0, 4.0)
 
@@ -1607,22 +1706,22 @@ class TwitterAPI:
                     include_bottom=False,
                 )
             else:
-                print("[ROUTE] SearchTimeline did not contain target; moving to direct detail")
+                outputLog("[ROUTE] SearchTimeline did not contain target; moving to direct detail")
                 route = "detail"
 
         if route == "detail":
-            print(f"[ROUTE] {route_origin} -> tweet detail: {tweet_id}")
+            outputLog(f"[ROUTE] {route_origin} -> tweet detail: {tweet_id}")
             screen_name, media_info = await self.view_tweet(tweet_id, session)
             acquired = bool(screen_name and screen_name != "Unknown")
             if acquired:
                 await self._wait_natural(2.0, 5.0)
                 if media_info.get('has_video'):
                     wait_video = random.uniform(8.0, 18.0)
-                    print(f"[MEDIA] 動画を再生中... ({wait_video:.1f}s)")
+                    outputLog(f"[MEDIA] 動画を再生中... ({wait_video:.1f}s)")
                     await asyncio.sleep(wait_video)
                 elif media_info.get('has_image'):
                     wait_image = random.uniform(5.0, 10.0)
-                    print(f"[MEDIA] 画像を閲覧中... ({wait_image:.1f}s)")
+                    outputLog(f"[MEDIA] 画像を閲覧中... ({wait_image:.1f}s)")
                     await asyncio.sleep(wait_image)
                 else:
                     await self._wait_natural(3.0, 8.0)
@@ -1642,7 +1741,7 @@ class TwitterAPI:
                 )
 
         if acquired and route != "detail":
-            print(f"[THREAD] loading tweet detail for thread impressions: {tweet_id}")
+            outputLog(f"[THREAD] loading tweet detail for thread impressions: {tweet_id}")
             detail_screen_name, _detail_media_info = await self.view_tweet(tweet_id, session)
             detail_tweet_ids = getattr(self, "last_detail_tweet_ids", None) or [tweet_id]
             extra_tweet_ids = [item_id for item_id in detail_tweet_ids if item_id != tweet_id]
@@ -1665,7 +1764,7 @@ class TwitterAPI:
 
         if not acquired:
             results['route_reason'] = "Target tweet could not be acquired from home, search, or detail"
-            print(f"[ROUTE] skipped: {results['route_reason']}")
+            outputLog(f"[ROUTE] skipped: {results['route_reason']}")
             return results
 
         if not results['impression']:
@@ -1673,7 +1772,7 @@ class TwitterAPI:
 
         if route == "detail" and screen_name and random.random() < 0.5:
             await self._wait_natural(1.0, 2.0)
-            print(f"[PROFILE] プロフィール閲覧: @{screen_name}")
+            outputLog(f"[PROFILE] プロフィール閲覧: @{screen_name}")
             await self.fetch_user_profile(screen_name, session)
             await self._wait_natural(2.0, 4.0)
 
@@ -1698,6 +1797,19 @@ class TwitterAPI:
 
         await self._wait_natural(2.0, 4.0)
         return results
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

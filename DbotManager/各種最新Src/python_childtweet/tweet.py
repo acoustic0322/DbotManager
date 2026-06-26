@@ -64,6 +64,7 @@ from check_full_status .check_full_status import check_full_status
 from get_cookie.get_cookie import get_cookie
 from twitter_api.proc import proc_like
 from twitter_api.proc import proc_post
+from twitter_api.proc import proc_repost
 import asyncio
 
 # コマンドライン引数の解析関数
@@ -185,7 +186,8 @@ if credentials:
         rotate_react_api_id(account_id)
 
     elif mode == "repost":
-        result1 , contents1 = proc_repost_v2(credentials, tweet_id)
+#        result1 , contents1 = proc_repost_v2(credentials, tweet_id)
+        result1 , contents1 = asyncio.run(proc_repost(credentials, tweet_id))
         rotate_react_api_id(account_id)
 
     elif mode == "likebookmark":
