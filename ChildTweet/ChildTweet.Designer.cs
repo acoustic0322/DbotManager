@@ -42,6 +42,7 @@
             logListBox.ItemHeight = 15;
             logListBox.Location = new Point(12, 12);
             logListBox.Name = "logListBox";
+            logListBox.SelectionMode = SelectionMode.MultiSimple;
             logListBox.Size = new Size(920, 574);
             logListBox.TabIndex = 0;
             logListBox.KeyDown += logListBox_KeyDown;

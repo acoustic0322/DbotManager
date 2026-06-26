@@ -166,7 +166,7 @@ namespace ChildTweet
                     var text = string.Join(
                         Environment.NewLine,
                         logListBox.SelectedItems.Cast<object>());
-//                    MessageBox.Show(text);
+                    //                    MessageBox.Show(text);
                     CopyToClipboard(text);
                 }
 
@@ -183,7 +183,7 @@ namespace ChildTweet
                 try
                 {
                     Clipboard.SetText(text);
-                    MessageBox.Show("クリップボードにコピーしました");
+                    //                    MessageBox.Show("クリップボードにコピーしました");
                     return;
                 }
                 catch (ExternalException)
