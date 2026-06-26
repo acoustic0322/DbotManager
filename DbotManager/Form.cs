@@ -585,7 +585,17 @@ namespace DbotManager
 
             var userRowWk = userList.Where(x => x.Id == userId).FirstOrDefault();
 
-            if(_tweetTask.SensyukenMode)
+            if(userRowWk is null)
+            {
+                _tweetTask.AdminMode = false;
+            }
+            else
+            {
+                _tweetTask.AdminMode = userRowWk.Admin;
+            }
+
+
+            if (_tweetTask.SensyukenMode)
             {
                 if (userRowWk is null || userRowWk.Admin)
                 {

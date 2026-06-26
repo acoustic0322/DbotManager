@@ -133,6 +133,7 @@ namespace DbotManager
         }
 
         public int UserId { get; set; }
+        public bool AdminMode { get; set; }
         public bool SensyukenMode { get; set; }
         public int CheckUserId { get; set; }
 
@@ -383,7 +384,9 @@ namespace DbotManager
             // MySQLデータアクセスの初期化
             var dataAccess = new MySqlDataAccess(dbConnectin);
             List<VpsMaster> vpsMasterList = dataAccess.GetVpsMaster().Where(x => x.ChildEnable).ToList();
-            if (UserId != 0)
+
+            // 管理者モードでない場合は専用VPSで動作
+            if (UserId != 0 && !AdminMode)
                 vpsMasterList = vpsMasterList.Where(x => x.UserId == UserId).ToList();
 
             if (vpsMasterList.Count == 0) return;
