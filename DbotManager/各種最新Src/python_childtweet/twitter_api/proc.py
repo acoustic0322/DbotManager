@@ -169,7 +169,7 @@ async def proc_repost(credentials, tweet_id: str = None):
 
     outputLog(results)
 
-    return results['retweet'] , results['retweet_reason']
+    return results['retweet'] , results.get('retweet_reason', "")
 
 
 #async def test_natural_retweet(tweet_id: str | None = None) -> dict[str, bool]:

@@ -104,7 +104,7 @@ namespace ChildTweet
             //var repostTask = 順次処理(req, TweetProcTypes.リポスト);
             //var replyTask = 順次処理(req, TweetProcTypes.リプライ);
             //await Task.WhenAll(likebookmarkTask, likeTask, bookmarkTask, repostTask, replyTask);
-            await Task.WhenAll(likebookmarkTask , repostTask);
+            await Task.WhenAll(likebookmarkTask, repostTask);
 
             _log("✔ 全ての処理が完了しました。");
         }
@@ -118,6 +118,8 @@ namespace ChildTweet
             var orderBookmarkList = req.bookmark_list?
                 .OrderBy(_ => _rand.Value.Next())
                 .ToList() ?? new List<int>();
+
+            if (orderLikeList.Count == 0 && orderBookmarkList.Count == 0) return;
 
             // 共通
             var commonList = orderLikeList
@@ -244,6 +246,8 @@ namespace ChildTweet
                             ? 処理カウント
                             : Math.Max(0, 処理カウント - 並列閾値);
 
+                    if (target == 0) continue;
+
                     _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
 
                     await ExecuteParallelPhase(
@@ -270,6 +274,7 @@ namespace ChildTweet
                 .OrderBy(_ => _rand.Value.Next())
                 .ToList() ?? new List<int>();
 
+            if (orderRepostList.Count == 0) return;
 
             var 並列閾値list = new List<int>();
             int p = PARALLEL_COUNT; // 20
@@ -281,7 +286,7 @@ namespace ChildTweet
             並列閾値list.Add(1);
 
             _log(
-                $"🔁 成功目標 repost={req.repost_list}件" +
+                $"🔁 成功目標 repost={req.repost_list.Count}件" +
                 $"並列数初期値={PARALLEL_COUNT}件 " +
                 $"対象アカウント数={req.repost_list.Count}件");
 
@@ -291,7 +296,7 @@ namespace ChildTweet
 
                 // リポスト専用
                 var repostOnlyList = orderRepostList
-                    .Except(req.repost_list)
+                    //                    .Except(req.repost_list)
                     .ToList();
 
                 var accountQueue = new ConcurrentQueue<int>(repostOnlyList);
@@ -307,6 +312,8 @@ namespace ChildTweet
                         並列閾値 == 1
                             ? 処理カウント
                             : Math.Max(0, 処理カウント - 並列閾値);
+
+                    if (target == 0) continue;
 
                     _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
 
@@ -338,7 +345,7 @@ namespace ChildTweet
         }
 
         private async Task ExecuteParallelPhase(
-            TweetProcTypes type ,
+            TweetProcTypes type,
             ConcurrentQueue<int> accountQueue,
             TweetRequest req,
             int parallelCount,
@@ -371,6 +378,7 @@ namespace ChildTweet
 
                         if (likeReached && bookmarkReached && repostReached)
                         {
+                            //                            _log($"Reached Like={likeReached} Bookmark={bookmarkReached} Repost={repostReached}");
                             return;
                         }
 
@@ -384,6 +392,7 @@ namespace ChildTweet
 
                         if (!accountQueue.TryDequeue(out int accountId))
                         {
+                            _log($"accountQueue が空です (accountId={accountId})");
                             return;
                         }
 
@@ -394,11 +403,9 @@ namespace ChildTweet
 
                             TweetProcTypes procType;
 
-                            if(!repostReached)
-                            {
-                                procType = TweetProcTypes.リポスト;
-                            }
-                            else
+                            procType = type;
+
+                            if (type == TweetProcTypes.いいねブックマーク)
                             {
                                 if (likeReached && !bookmarkReached)
                                 {
@@ -408,13 +415,7 @@ namespace ChildTweet
                                 {
                                     procType = TweetProcTypes.いいね;
                                 }
-                                else
-                                {
-                                    procType = TweetProcTypes.いいねブックマーク;
-                                }
                             }
-
-
 
                             var result = await TweetProc(new TweetCommand
                             {
@@ -441,7 +442,7 @@ namespace ChildTweet
                             }
                             */
 
-                            if(procType == TweetProcTypes.いいねブックマーク)
+                            if (procType == TweetProcTypes.いいねブックマーク)
                             {
                                 if (result.result1)
                                 {
@@ -463,7 +464,7 @@ namespace ChildTweet
                                         $"AccountId={accountId}");
                                 }
                             }
-                            else if(procType == TweetProcTypes.いいね)
+                            else if (procType == TweetProcTypes.いいね)
                             {
                                 if (result.result1)
                                 {
