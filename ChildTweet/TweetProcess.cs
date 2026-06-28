@@ -104,7 +104,7 @@ namespace ChildTweet
             //var repostTask = 順次処理(req, TweetProcTypes.リポスト);
             //var replyTask = 順次処理(req, TweetProcTypes.リプライ);
             //await Task.WhenAll(likebookmarkTask, likeTask, bookmarkTask, repostTask, replyTask);
-            await Task.WhenAll(likebookmarkTask, repostTask);
+            await Task.WhenAll(likebookmarkTask , repostTask);
 
             _log("✔ 全ての処理が完了しました。");
         }
@@ -296,7 +296,7 @@ namespace ChildTweet
 
                 // リポスト専用
                 var repostOnlyList = orderRepostList
-                    //                    .Except(req.repost_list)
+//                    .Except(req.repost_list)
                     .ToList();
 
                 var accountQueue = new ConcurrentQueue<int>(repostOnlyList);
@@ -345,7 +345,7 @@ namespace ChildTweet
         }
 
         private async Task ExecuteParallelPhase(
-            TweetProcTypes type,
+            TweetProcTypes type ,
             ConcurrentQueue<int> accountQueue,
             TweetRequest req,
             int parallelCount,
@@ -378,7 +378,7 @@ namespace ChildTweet
 
                         if (likeReached && bookmarkReached && repostReached)
                         {
-                            //                            _log($"Reached Like={likeReached} Bookmark={bookmarkReached} Repost={repostReached}");
+//                            _log($"Reached Like={likeReached} Bookmark={bookmarkReached} Repost={repostReached}");
                             return;
                         }
 
@@ -405,7 +405,7 @@ namespace ChildTweet
 
                             procType = type;
 
-                            if (type == TweetProcTypes.いいねブックマーク)
+                            if(type == TweetProcTypes.いいねブックマーク)
                             {
                                 if (likeReached && !bookmarkReached)
                                 {
@@ -442,7 +442,7 @@ namespace ChildTweet
                             }
                             */
 
-                            if (procType == TweetProcTypes.いいねブックマーク)
+                            if(procType == TweetProcTypes.いいねブックマーク)
                             {
                                 if (result.result1)
                                 {
@@ -464,7 +464,7 @@ namespace ChildTweet
                                         $"AccountId={accountId}");
                                 }
                             }
-                            else if (procType == TweetProcTypes.いいね)
+                            else if(procType == TweetProcTypes.いいね)
                             {
                                 if (result.result1)
                                 {
@@ -478,7 +478,7 @@ namespace ChildTweet
                             }
                             else if (procType == TweetProcTypes.ブックマーク)
                             {
-                                if (result.result1)
+                                if (result.result2)
                                 {
                                     int count =
                                         Interlocked.Increment(ref counter.Bookmark);
