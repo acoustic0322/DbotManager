@@ -145,35 +145,34 @@ namespace ChildTweet
             // いいね・ブクマの共通処理 共通数をカバーする
             try
             {
-
-                if (commonCount == 0)
-                    return;
-
-                var accountQueue = new ConcurrentQueue<int>(commonList);
-
-                var counter = new ProcCounter();
-                int 処理カウント = commonCount;
-                int step = 1;
-
-                foreach (int 並列閾値 in 並列閾値list)
+                if (commonCount != 0)
                 {
-                    int target =
-                        並列閾値 == 1
-                            ? 処理カウント
-                            : Math.Max(0, 処理カウント - 並列閾値);
+                    var accountQueue = new ConcurrentQueue<int>(commonList);
 
-                    _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
+                    var counter = new ProcCounter();
+                    int 処理カウント = commonCount;
+                    int step = 1;
 
-                    await ExecuteParallelPhase(
-                        TweetProcTypes.いいねブックマーク,
-                        accountQueue,
-                        req,
-                        並列閾値,
-                        target,
-                        counter,
-                        処理カウント);
+                    foreach (int 並列閾値 in 並列閾値list)
+                    {
+                        int target =
+                            並列閾値 == 1
+                                ? 処理カウント
+                                : Math.Max(0, 処理カウント - 並列閾値);
 
-                    step++;
+                        _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
+
+                        await ExecuteParallelPhase(
+                            TweetProcTypes.いいねブックマーク,
+                            accountQueue,
+                            req,
+                            並列閾値,
+                            target,
+                            counter,
+                            処理カウント);
+
+                        step++;
+                    }
                 }
             }
             catch (Exception ex)
@@ -195,27 +194,32 @@ namespace ChildTweet
                 var counter = new ProcCounter();
                 int 処理カウント = req.like_count - commonCount;
 
-                int step = 1;
 
-                foreach (int 並列閾値 in 並列閾値list)
+                if(処理カウント != 0)
                 {
-                    int target =
-                        並列閾値 == 1
-                            ? 処理カウント
-                            : Math.Max(0, 処理カウント - 並列閾値);
+                    int step = 1;
 
-                    _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
+                    foreach (int 並列閾値 in 並列閾値list)
+                    {
+                        int target =
+                            並列閾値 == 1
+                                ? 処理カウント
+                                : Math.Max(0, 処理カウント - 並列閾値);
 
-                    await ExecuteParallelPhase(
-                        TweetProcTypes.いいね,
-                        accountQueue,
-                        req,
-                        並列閾値,
-                        target,
-                        counter,
-                        処理カウント);
+                        _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
 
-                    step++;
+                        await ExecuteParallelPhase(
+                            TweetProcTypes.いいね,
+                            accountQueue,
+                            req,
+                            並列閾値,
+                            target,
+                            counter,
+                            処理カウント);
+
+                        step++;
+                    }
+
                 }
             }
             catch (Exception ex)
@@ -237,30 +241,34 @@ namespace ChildTweet
                 var counter = new ProcCounter();
                 int 処理カウント = req.bookmark_count - commonCount;
 
-                int step = 1;
-
-                foreach (int 並列閾値 in 並列閾値list)
+                if (処理カウント != 0)
                 {
-                    int target =
-                        並列閾値 == 1
-                            ? 処理カウント
-                            : Math.Max(0, 処理カウント - 並列閾値);
+                    int step = 1;
 
-                    if (target == 0) continue;
+                    foreach (int 並列閾値 in 並列閾値list)
+                    {
+                        int target =
+                            並列閾値 == 1
+                                ? 処理カウント
+                                : Math.Max(0, 処理カウント - 並列閾値);
 
-                    _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
+                        if (target == 0) continue;
 
-                    await ExecuteParallelPhase(
-                        TweetProcTypes.ブックマーク,
-                        accountQueue,
-                        req,
-                        並列閾値,
-                        target,
-                        counter,
-                        処理カウント);
+                        _log($"並列処理 STEP{step} 成功目標が{target}に到達するまで、並列数{並列閾値}で動作します");
 
-                    step++;
+                        await ExecuteParallelPhase(
+                            TweetProcTypes.ブックマーク,
+                            accountQueue,
+                            req,
+                            並列閾値,
+                            target,
+                            counter,
+                            処理カウント);
+
+                        step++;
+                    }
                 }
+
             }
             catch (Exception ex)
             {
