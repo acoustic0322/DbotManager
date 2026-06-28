@@ -557,7 +557,7 @@ namespace ChildTweet
         public async Task<TweetResult> TweetProc(TweetCommand tweetCommand)
         {
             // Pythonファイルへの相対パス
-            string pythonScriptPath = @"python\tweet.py";
+            string pythonScriptPath = @"C:\DBotManager\ChildTweet\python";
 
             // 実行ディレクトリ（ChildTweet.exe と同じ場所想定）
             string baseDir = AppContext.BaseDirectory;
