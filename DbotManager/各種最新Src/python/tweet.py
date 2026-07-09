@@ -163,150 +163,145 @@ elif mode == "init_check_tweet_account_master":
 credentials = get_account_master(account_id)
 
 if credentials:
-    if mode == "post":
 
-        result1 , contents1 = asyncio.run(proc_post(credentials))
+    if mode == "likebookmark":
+        twitter_api_result = asyncio.run(proc_like(credentials, True ,True, tweet_id))
+        
 
-#        result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
+        #save_tweet_historyの後に自動リフレッシュしないと、is_unauthorizedがずっとTrueになってしまう
+        print(json.dumps({"result1": twitter_api_result['like'], "contents1": twitter_api_result['like_reason'] , "result2": twitter_api_result['bookmark'], "contents2": twitter_api_result['bookmark_reason']}))
 
-#        if result1 == True:
-#            if media_type != '':
-#                result1 , contents1 = proc_post_v10a(credentials , comment , media_type , media_id , tweet_id , ai_enable)               
-#            else:
-#                result1 , contents1 = proc_post_v2(credentials , comment , "")
-#                #result1 , contents1 = proc_post_v2(credentials , comment , "" , ai_enable)     
-                          
-    elif mode == "monomane":
-        result1 , contents1 = proc_monomane_v1(credentials , tweet_id)
-    elif mode == "reply":
-        result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
-        result1 , contents1 = proc_post_v2(credentials , comment , tweet_id )               
-
-#        result1 , contents1 = proc_post_v2(credentials , comment_id , tweet_id )               
-#        result1 , contents1 = True , "" #未実装
-        rotate_react_api_id(account_id)
-
-    elif mode == "repost":
-#        result1 , contents1 = proc_repost_v2(credentials, tweet_id)
-        result1 , contents1 = asyncio.run(proc_repost(credentials, tweet_id))
-        rotate_react_api_id(account_id)
-
-    elif mode == "likebookmark":
-        result1 , result2, contents1 = asyncio.run(proc_like(credentials, True ,True, tweet_id))
-        rotate_react_api_id(account_id)
+        save_tweet_history(account_id, comment_id , "like"     , tweet_id , twitter_api_result['like'] , twitter_api_result['like_reason'] , False , "")
+        save_tweet_history(account_id, comment_id , "bookmark" , tweet_id , twitter_api_result['bookmark'] , twitter_api_result['bookmark_reason'] , False , "")
 
     elif mode == "like":
-#        result1 , contents1 = proc_like_v2(credentials, tweet_id)
-#        result1 , contents1 = proc_like(credentials, tweet_id)
-        result1 , result2, contents1 = asyncio.run(proc_like(credentials, True ,False, tweet_id))
-        rotate_react_api_id(account_id)
-    elif mode == "jap_like":
-        if not tweet_name:  # None または空文字列のときにTrue
-            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_like_jap(tweet_name, tweet_id , jap_api_key , quantity)
-    elif mode == "jap_bookmark":
-        if not tweet_name:  # None または空文字列のときにTrue
-            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_bookmark_jap(tweet_name, tweet_id , jap_api_key , quantity)
-    elif mode == "jap_repost":
-        if not tweet_name:  # None または空文字列のときにTrue
-            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_repost_jap(tweet_name, tweet_id , jap_api_key , quantity)
-    elif mode == "search":
-        result1 , contents1 = proc_search_v2(credentials)
+        twitter_api_result = asyncio.run(proc_like(credentials, True ,False, tweet_id))
+
+        print(twitter_api_result)
+
+        print(json.dumps({"result1": twitter_api_result['like'], "contents1": twitter_api_result['like_reason'] , "result2": False, "contents2": ""}))
+        save_tweet_history(account_id, comment_id , "like"     , tweet_id , twitter_api_result['like'] , twitter_api_result['like_reason'] , False , "")
+
     elif mode == "bookmark":
-#        result1 , contents1 = proc_bookmark_v2(credentials, tweet_id)
-        result1 , result2, contents1 = asyncio.run(proc_like(credentials, False ,True, tweet_id))
-        rotate_react_api_id(account_id)
-    elif mode == "follow":
-#        result1 , contents1 = proc_following_v1(credentials, tweet_name)
-        result1 , contents1 = proc_following_v2(credentials, tweet_name)
-    elif mode == "unfollow":
-        result1 , contents1 = proc_unfollowing_v2(credentials, tweet_name)
+        twitter_api_result = asyncio.run(proc_like(credentials, False ,True, tweet_id))
 
-    elif mode == "refresh":
-        result1 , contents1 , contents2= refresh_access_token(credentials,0)
-        if result1 == True:
-            delete_account_error_log(account_id)
-            unlock_unauthorized(account_id)
+        print(json.dumps({"result1": False, "contents1": "" , "result2": twitter_api_result['bookmark'], "contents2": twitter_api_result['bookmark_reason']}))
+        save_tweet_history(account_id, comment_id , "bookmark" , tweet_id , twitter_api_result['bookmark'] , twitter_api_result['bookmark_reason'] , False , "")
 
-    elif mode == "checkairep":
-        result1 , contents1 = check_replies(credentials , get_account_master(account_id2))
-    elif mode == "get_profile":
-        proc_profile_image(account_id , credentials['login_id'])
+    elif mode == "repost":
+        twitter_api_result = asyncio.run(proc_repost(credentials, tweet_id))
 
-    elif mode == "get_tweet":
-        result1 , contents1 = proc_get_tweet(credentials)
-
-    elif mode == "jap_profile":
-        if not tweet_name:  # None または空文字列のときにTrue
-            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_profile_jap(tweet_name, tweet_id , jap_api_key , quantity)
-    elif mode == "jap_detail":
-        if not tweet_name:  # None または空文字列のときにTrue
-            tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
-        result1 , contents1 = proc_detail_jap(tweet_name, tweet_id , jap_api_key , quantity)
-    elif mode == "get_username":
-        username, user_id, result1, contents1 = get_my_username(credentials)
-    elif mode == "check_full_status":
-
-        # アカウント名未取得の場合は取得してからフォロワー取得
-        account_name = credentials.get('account_name')
-
-        if not account_name:
-            account_name, user_id, success, error = get_my_username(credentials)
-
-            if not success or not account_name:
-                outputLog(f"アカウント名取得失敗: {error}")
-                sys.exit(1)
-
-        check_full_status(
-            credentials.get('id'),
-            account_name
-                )        
-
-    elif mode == "get_cookie":
-        result1, contents1 = get_cookie(credentials)
 
     else:
-        # エラーメッセージを標準エラーに出力
-        outputLog(f"サポートされていないmode: {mode}")
-        # 終了コードを1にして異常終了を示す
-        sys.exit(1)
 
-    outputLog(f"result1={result1}")
-    outputLog(f"contents1={contents1}")
-    outputLog(f"result2={result2}")
-    outputLog(f"contents2={contents2}")
+        if mode == "post":
+            result1 , contents1 = asyncio.run(proc_post(credentials))
+                          
+        elif mode == "monomane":
+            result1 , contents1 = proc_monomane_v1(credentials , tweet_id)
+        elif mode == "reply":
+            result1 , comment = proc_get_comment_v2(credentials , comment_id , "" , ai_enable)
+            result1 , contents1 = proc_post_v2(credentials , comment , tweet_id )               
 
-    #save_tweet_historyの後に自動リフレッシュしないと、is_unauthorizedがずっとTrueになってしまう
-    print(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
+        elif mode == "jap_like":
+            if not tweet_name:  # None または空文字列のときにTrue
+                tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+            result1 , contents1 = proc_like_jap(tweet_name, tweet_id , jap_api_key , quantity)
+        elif mode == "jap_bookmark":
+            if not tweet_name:  # None または空文字列のときにTrue
+                tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+            result1 , contents1 = proc_bookmark_jap(tweet_name, tweet_id , jap_api_key , quantity)
+        elif mode == "jap_repost":
+            if not tweet_name:  # None または空文字列のときにTrue
+                tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+            result1 , contents1 = proc_repost_jap(tweet_name, tweet_id , jap_api_key , quantity)
+        elif mode == "search":
+            result1 , contents1 = proc_search_v2(credentials)
+        elif mode == "follow":
+    #        result1 , contents1 = proc_following_v1(credentials, tweet_name)
+            result1 , contents1 = proc_following_v2(credentials, tweet_name)
+        elif mode == "unfollow":
+            result1 , contents1 = proc_unfollowing_v2(credentials, tweet_name)
 
-    if mode == "likebookmark":    
-        save_tweet_history(account_id, comment_id , "like" , tweet_id , result1 , contents1 , False , "")
-        save_tweet_history(account_id, comment_id , "bookmark" , tweet_id , result2 , contents1 , False , "")
-    else:
+        elif mode == "refresh":
+            result1 , contents1 , contents2= refresh_access_token(credentials,0)
+            if result1 == True:
+                delete_account_error_log(account_id)
+                unlock_unauthorized(account_id)
+
+        elif mode == "checkairep":
+            result1 , contents1 = check_replies(credentials , get_account_master(account_id2))
+        elif mode == "get_profile":
+            proc_profile_image(account_id , credentials['login_id'])
+
+        elif mode == "get_tweet":
+            result1 , contents1 = proc_get_tweet(credentials)
+
+        elif mode == "jap_profile":
+            if not tweet_name:  # None または空文字列のときにTrue
+                tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+            result1 , contents1 = proc_profile_jap(tweet_name, tweet_id , jap_api_key , quantity)
+        elif mode == "jap_detail":
+            if not tweet_name:  # None または空文字列のときにTrue
+                tweet_name = get_username_from_tweet_id_v2(credentials, tweet_id)
+            result1 , contents1 = proc_detail_jap(tweet_name, tweet_id , jap_api_key , quantity)
+        elif mode == "get_username":
+            username, user_id, result1, contents1 = get_my_username(credentials)
+        elif mode == "check_full_status":
+
+            # アカウント名未取得の場合は取得してからフォロワー取得
+            account_name = credentials.get('account_name')
+
+            if not account_name:
+                account_name, user_id, success, error = get_my_username(credentials)
+
+                if not success or not account_name:
+                    outputLog(f"アカウント名取得失敗: {error}")
+                    sys.exit(1)
+
+            check_full_status(
+                credentials.get('id'),
+                account_name
+                    )        
+
+        elif mode == "get_cookie":
+            result1, contents1 = get_cookie(credentials)
+
+        else:
+            # エラーメッセージを標準エラーに出力
+            outputLog(f"サポートされていないmode: {mode}")
+            # 終了コードを1にして異常終了を示す
+            sys.exit(1)
+
+        outputLog(f"result1={result1}")
+        outputLog(f"contents1={contents1}")
+        outputLog(f"result2={result2}")
+        outputLog(f"contents2={contents2}")
+
+        #save_tweet_historyの後に自動リフレッシュしないと、is_unauthorizedがずっとTrueになってしまう
+        print(json.dumps({"result1": result1, "contents1": contents1 , "result2": result2, "contents2": contents2}))
+
         save_tweet_history(account_id, comment_id , mode , tweet_id , result1 , contents1 , result2 , contents2)
 
-    # --- 仕上げ：ここから追加 ---
-    # contents1（APIレスポンス）に 401 が含まれているかチェック
-    is_unauthorized = False
-    if isinstance(contents1, str) and ('"status": 401' in contents1 or "Could not authenticate you" in contents1):
-        is_unauthorized = True
+        # --- 仕上げ：ここから追加 ---
+        # contents1（APIレスポンス）に 401 が含まれているかチェック
+        is_unauthorized = False
+        if isinstance(contents1, str) and ('"status": 401' in contents1 or "Could not authenticate you" in contents1):
+            is_unauthorized = True
 
-    # トークン切れを検知した場合、その場でリフレッシュを試みる
-    if is_unauthorized:
-        outputLog(f"ID:{account_id} トークン切れを自動検知。リフレッシュを開始します...")
-        res_ref, acc_tok, ref_tok = refresh_access_token(credentials,0)
-        if res_ref:
-            outputLog("自動リフレッシュ成功。エラーログを削除しました。")
-            delete_account_error_log(account_id)
-            unlock_unauthorized(account_id)
-            # 履歴保存用のステータスを更新（任意）
-            result2 = True 
-            contents2 = "Auto Refreshed"
-        else:
-            outputLog("自動リフレッシュ失敗。手動連携が必要です。")
+        # トークン切れを検知した場合、その場でリフレッシュを試みる
+        if is_unauthorized:
+            outputLog(f"ID:{account_id} トークン切れを自動検知。リフレッシュを開始します...")
+            res_ref, acc_tok, ref_tok = refresh_access_token(credentials,0)
+            if res_ref:
+                outputLog("自動リフレッシュ成功。エラーログを削除しました。")
+                delete_account_error_log(account_id)
+                unlock_unauthorized(account_id)
+                # 履歴保存用のステータスを更新（任意）
+                result2 = True 
+                contents2 = "Auto Refreshed"
+            else:
+                outputLog("自動リフレッシュ失敗。手動連携が必要です。")
 
     sys.exit(0)
 #        sys.exit(1)    #false時?

@@ -138,6 +138,7 @@ class TwitterAPI:
         # レート制限検知
         self.rate_limit_count = 0
         self.last_error_summary = None
+        self.last_summary_type = None
         
         # Node.jsサーバー管理
         self._ensure_tid_server_running()
@@ -349,38 +350,83 @@ class TwitterAPI:
         if preview:
             outputLog(f"[WARN] {label} response: {preview}")
 
-    def _classify_api_failure(self, status_code: Optional[int], response_body: str = "", error_message: str = "") -> str:
-        """Return a concise operational failure label for logs."""
+    def _classify_api_failure(
+        self,
+        status_code: Optional[int],
+        response_body: str = "",
+        error_message: str = ""
+    ) -> tuple[str, str]:
+        """Return (summary_type, summary_text)."""
+
         body = response_body or ""
         message = error_message or ""
         combined = f"{message} {body}".lower()
 
         code_match = re.search(r'"code"\s*:\s*(\d+)', body)
         code = code_match.group(1) if code_match else None
+
         status_part = f"HTTP {status_code}" if status_code else "HTTP unknown"
         code_part = f" code={code}" if code else ""
         msg_part = f" message={message}" if message and message != "No error message" else ""
 
-        if status_code == 401 or code == "32" or any(token in combined for token in ("could not authenticate", "not authorized", "invalid or expired token")):
-            return f"TOKEN_EXPIRED_OR_INVALID | {status_part}{code_part}{msg_part}"
-        if code == "326" or any(token in combined for token in ("locked", "account is temporarily locked", "challenge", "verify your account")):
-            return f"ACCOUNT_LOCKED_OR_CHALLENGE_REQUIRED | {status_part}{code_part}{msg_part}"
-        if code == "64" or any(token in combined for token in ("suspended", "deactivated", "offboarded")):
-            return f"ACCOUNT_SUSPENDED_DEACTIVATED_OR_OFFBOARDED | {status_part}{code_part}{msg_part}"
+        if status_code == 401 or code == "32" or any(
+            token in combined for token in (
+                "could not authenticate",
+                "not authorized",
+                "invalid or expired token"
+            )
+        ):
+            return "TOKEN_EXPIRED_OR_INVALID", \
+                f"TOKEN_EXPIRED_OR_INVALID | {status_part}{code_part}{msg_part}"
+
+        if code == "326" or any(
+            token in combined for token in (
+                "locked",
+                "account is temporarily locked",
+                "challenge",
+                "verify your account"
+            )
+        ):
+            return "ACCOUNT_LOCKED_OR_CHALLENGE_REQUIRED", \
+                f"ACCOUNT_LOCKED_OR_CHALLENGE_REQUIRED | {status_part}{code_part}{msg_part}"
+
+        if code == "64" or any(
+            token in combined for token in (
+                "suspended",
+                "deactivated",
+                "offboarded"
+            )
+        ):
+            return "ACCOUNT_SUSPENDED_DEACTIVATED_OR_OFFBOARDED", \
+                f"ACCOUNT_SUSPENDED_DEACTIVATED_OR_OFFBOARDED | {status_part}{code_part}{msg_part}"
+
         if status_code == 429 or code == "88":
-            return f"RATE_LIMITED | {status_part}{code_part}{msg_part}"
+            return "RATE_LIMITED", \
+                f"RATE_LIMITED | {status_part}{code_part}{msg_part}"
+
         if code == "226":
-            return f"SPAM_OR_AUTOMATION_DETECTED | {status_part}{code_part}{msg_part}"
+            return "SPAM_OR_AUTOMATION_DETECTED", \
+                f"SPAM_OR_AUTOMATION_DETECTED | {status_part}{code_part}{msg_part}"
+
         if code == "344":
-            return f"POST_LIMIT_OR_COOKIE_DEGRADED | {status_part}{code_part}{msg_part}"
+            return "POST_LIMIT_OR_COOKIE_DEGRADED", \
+                f"POST_LIMIT_OR_COOKIE_DEGRADED | {status_part}{code_part}{msg_part}"
+
         if status_code == 403:
-            return f"FORBIDDEN_OR_PERMISSION_DENIED | {status_part}{code_part}{msg_part}"
+            return "FORBIDDEN_OR_PERMISSION_DENIED", \
+                f"FORBIDDEN_OR_PERMISSION_DENIED | {status_part}{code_part}{msg_part}"
+
         if status_code == 404:
-            return f"ENDPOINT_OR_OPERATION_NOT_FOUND | {status_part}{code_part}{msg_part}"
+            return "ENDPOINT_OR_OPERATION_NOT_FOUND", \
+                f"ENDPOINT_OR_OPERATION_NOT_FOUND | {status_part}{code_part}{msg_part}"
+
         if msg_part:
-            return f"API_ERROR | {status_part}{code_part}{msg_part}"
+            return "API_ERROR", \
+                f"API_ERROR | {status_part}{code_part}{msg_part}"
+
         preview = " ".join(body[:240].split())
-        return f"UNKNOWN_API_ERROR | {status_part}{code_part} preview={preview}"
+        return "UNKNOWN_API_ERROR", \
+            f"UNKNOWN_API_ERROR | {status_part}{code_part} preview={preview}"
 
     def _detect_account_lock_marker(self, body: str = "", url: str = "") -> Optional[str]:
         """Return a lock/challenge label when a read-only page clearly shows account access gates."""
@@ -640,6 +686,7 @@ class TwitterAPI:
                             if screen_name:
                                 outputLog(f"[DEBUG] screen_name取得成功: @{screen_name}, Media: {media_info}")
                                 self.last_error_summary = None
+                                self.last_summary_type = None
                                 return screen_name, media_info
                 except Exception as exc:
                     self.last_error_summary = f"TWEET_DETAIL parse exception: {type(exc).__name__}: {exc}"
@@ -854,6 +901,7 @@ class TwitterAPI:
                 if new_cookies:
                     self.cookies.update(new_cookies)
                 self.last_error_summary = None
+                self.last_summary_type = None
                 return {'success': True, 'cookies': new_cookies}
 
             # 失敗時
@@ -1013,6 +1061,7 @@ class TwitterAPI:
         state = await self.verify_tweet_engagement_state(tweet_id, session, referer=referer)
         if state.get("bookmarked") is True:
             self.last_error_summary = None
+            self.last_summary_type = None
             outputLog(f"[BOOKMARK] POST result was uncertain, but TweetDetail shows bookmarked=true: {tweet_id}")
             return True
         self.last_error_summary = original_summary or self.last_error_summary
@@ -1050,6 +1099,7 @@ class TwitterAPI:
         state = await self.verify_tweet_engagement_state(tweet_id, session, referer=referer)
         if state.get("favorited") is True:
             self.last_error_summary = None
+            self.last_summary_type = None
             outputLog(f"[LIKE] POST result was uncertain, but TweetDetail shows favorited=true: {tweet_id}")
             return True
         self.last_error_summary = original_summary or self.last_error_summary
@@ -1311,6 +1361,7 @@ class TwitterAPI:
                     outputLog(f"[HOME] target_found={found} tweet_id={tweet_id}")
                     return found
                 self.last_error_summary = None
+                self.last_summary_type = None
                 outputLog("[HOME] ホームタイムライン取得成功 (Warm-up)")
                 return True
 
@@ -1442,6 +1493,7 @@ class TwitterAPI:
                 if response.status_code in [200, 204]:
                     outputLog(f"[IMPRESSION] OK status={response.status_code} url={url}")
                     self.last_error_summary = None
+                    self.last_summary_type = None
                     return True
 
                 self._log_http_failure("IMPRESSION", url, response)

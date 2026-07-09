@@ -95,9 +95,17 @@ async def proc_like(credentials, exe_like, exe_bookmark, tweet_id: str = None):
             do_bookmark=exe_bookmark
         )
 
+    # 戻り値のキーを補完
+    results.setdefault("like", False)
+    results.setdefault("like_reason", "")
+    results.setdefault("bookmark", False)
+    results.setdefault("bookmark_reason", "")    
+    results.setdefault("retweet", False)
+    results.setdefault("retweet_reason", "")    
+
     outputLog(results)
 
-    return results['like'], results['bookmark'], ""
+    return results
 
 async def proc_repost(credentials, tweet_id: str = None):
 
@@ -167,9 +175,17 @@ async def proc_repost(credentials, tweet_id: str = None):
             session
         )
 
+    # 戻り値のキーを補完
+    results.setdefault("like", False)
+    results.setdefault("like_reason", "")
+    results.setdefault("bookmark", False)
+    results.setdefault("bookmark_reason", "")    
+    results.setdefault("retweet", False)
+    results.setdefault("retweet_reason", "")    
+
     outputLog(results)
 
-    return results['retweet'] , results.get('retweet_reason', "")
+    return results
 
 
 #async def test_natural_retweet(tweet_id: str | None = None) -> dict[str, bool]:
