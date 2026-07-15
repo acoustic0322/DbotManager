@@ -102,6 +102,10 @@ async def proc_like(credentials, exe_like, exe_bookmark, tweet_id: str = None):
     results.setdefault("bookmark_reason", "")    
     results.setdefault("retweet", False)
     results.setdefault("retweet_reason", "")    
+    results.setdefault("like_error_type", "")
+    results.setdefault("bookmark_error_type", "")
+    results.setdefault("retweet_error_type", "")
+    results.setdefault("impression_error_type", "")
 
     outputLog(results)
 

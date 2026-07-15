@@ -24,9 +24,6 @@ config.read('config.ini')
 min_wait = float(config['WAIT_TIME']['min'])
 max_wait = float(config['WAIT_TIME']['max'])
 
-print(min_wait)
-print(max_wait)
-
 
 def background_task(tweet_id, like_list, bookmark_list, repost_list, reply_list, reptorep):
     # 各リストを処理

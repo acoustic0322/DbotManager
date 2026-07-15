@@ -41,6 +41,7 @@ from twitter_api_v2 import proc_following_v1
 from mysql import get_account_master
 from mysql import get_check_account_list
 from mysql import save_tweet_history
+from mysql import save_tweet_history_twitter_api
 from mysql import get_search_list
 from twitter_api_v2 import proc_update_refresh_token
 from twitter_api_v2 import proc_update_check_full_status
@@ -165,27 +166,24 @@ if credentials:
 
     if mode == "likebookmark":
         twitter_api_result = asyncio.run(proc_like(credentials, True ,True, tweet_id))
-        
 
         #save_tweet_historyの後に自動リフレッシュしないと、is_unauthorizedがずっとTrueになってしまう
         print(json.dumps({"result1": twitter_api_result['like'], "contents1": twitter_api_result['like_reason'] , "result2": twitter_api_result['bookmark'], "contents2": twitter_api_result['bookmark_reason']}))
 
-        save_tweet_history(account_id, comment_id , "like"     , tweet_id , twitter_api_result['like'] , twitter_api_result['like_reason'] , False , "")
-        save_tweet_history(account_id, comment_id , "bookmark" , tweet_id , twitter_api_result['bookmark'] , twitter_api_result['bookmark_reason'] , False , "")
+        save_tweet_history_twitter_api(account_id, comment_id , "like"     , tweet_id , twitter_api_result['like'] , twitter_api_result['like_error_type'] , twitter_api_result['like_reason'])
+        save_tweet_history_twitter_api(account_id, comment_id , "bookmark" , tweet_id , twitter_api_result['bookmark'] , twitter_api_result['bookmark_error_type'] , twitter_api_result['bookmark_reason'] )
 
     elif mode == "like":
         twitter_api_result = asyncio.run(proc_like(credentials, True ,False, tweet_id))
 
-        print(twitter_api_result)
-
         print(json.dumps({"result1": twitter_api_result['like'], "contents1": twitter_api_result['like_reason'] , "result2": False, "contents2": ""}))
-        save_tweet_history(account_id, comment_id , "like"     , tweet_id , twitter_api_result['like'] , twitter_api_result['like_reason'] , False , "")
+        save_tweet_history_twitter_api(account_id, comment_id , "like"     , tweet_id , twitter_api_result['like'] , twitter_api_result['like_error_type'] ,twitter_api_result['like_reason'] )
 
     elif mode == "bookmark":
         twitter_api_result = asyncio.run(proc_like(credentials, False ,True, tweet_id))
 
         print(json.dumps({"result1": False, "contents1": "" , "result2": twitter_api_result['bookmark'], "contents2": twitter_api_result['bookmark_reason']}))
-        save_tweet_history(account_id, comment_id , "bookmark" , tweet_id , twitter_api_result['bookmark'] , twitter_api_result['bookmark_reason'] , False , "")
+        save_tweet_history_twitter_api(account_id, comment_id , "bookmark" , tweet_id , twitter_api_result['bookmark'] , twitter_api_result['bookmark_error_type'] ,twitter_api_result['bookmark_reason'] )
 
     elif mode == "repost":
         twitter_api_result = asyncio.run(proc_repost(credentials, tweet_id))

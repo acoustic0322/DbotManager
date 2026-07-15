@@ -1,0 +1,1 @@
+python tweet.py mode=get_tweet account_id=1 debug=True

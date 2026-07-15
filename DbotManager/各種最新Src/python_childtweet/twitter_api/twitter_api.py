@@ -695,7 +695,15 @@ class TwitterAPI:
 
             if response.status_code == 429:
                 self.rate_limit_count += 1
-                self.last_error_summary = f"TWEET_DETAIL {self._classify_api_failure(response.status_code, self._response_preview(response), '')}"
+
+                #self.last_error_summary = f"TWEET_DETAIL {self._classify_api_failure(response.status_code, self._response_preview(response), '')}"
+                summary_type, summary_text = self._classify_api_failure(
+                    response.status_code,
+                    self._response_preview(response)
+                )
+                self.last_summary_type = summary_type
+                self.last_error_summary = f"TWEET_DETAIL | {summary_text}"
+
                 if self.rate_limit_count >= 3:
                     self.pause_account(hours=2)
                 return None, media_info
@@ -704,7 +712,15 @@ class TwitterAPI:
                 response_text = response.text or ""
             except Exception:
                 response_text = ""
-            self.last_error_summary = f"TWEET_DETAIL {self._classify_api_failure(response.status_code, response_text, '')}"
+
+#            self.last_error_summary = f"TWEET_DETAIL {self._classify_api_failure(response.status_code, response_text, '')}"
+            summary_type, summary_text = self._classify_api_failure(
+                response.status_code,
+                response_text
+            )
+            self.last_summary_type = summary_type
+            self.last_error_summary = f"TWEET_DETAIL | {summary_text}"
+
             self._log_http_failure("TWEET_DETAIL", url, response)
             return None, media_info
         except Exception as exc:
@@ -818,7 +834,15 @@ class TwitterAPI:
                 response_text = response.text or ""
             except Exception:
                 response_text = ""
-            self.last_error_summary = f"USER_PROFILE {self._classify_api_failure(response.status_code, response_text, '')}"
+
+            #self.last_error_summary = f"USER_PROFILE {self._classify_api_failure(response.status_code, response_text, '')}"
+            summary_type, summary_text = self._classify_api_failure(
+                response.status_code,
+                response_text
+            )
+            self.last_summary_type = summary_type
+            self.last_error_summary = f"USER_PROFILE | {summary_text}"            
+
             self._log_http_failure("USER_PROFILE", url, response)
             return False
         except Exception as exc:
@@ -906,15 +930,25 @@ class TwitterAPI:
 
             # 失敗時
             self._log_http_failure("API", url, r)
-            error_summary = self._classify_api_failure(r.status_code, r.text or "")
-            self.last_error_summary = error_summary
 
-            outputLog(f"[ERROR] {error_summary}")
+            #error_summary = self._classify_api_failure(r.status_code, r.text or "")
+            #self.last_error_summary = error_summary
+            summary_type, summary_text = self._classify_api_failure(
+                r.status_code,
+                r.text or ""
+            )
+
+            self.last_summary_type = summary_type
+            self.last_error_summary = summary_text
+
+            outputLog(f"[ERROR(type)] {summary_type}")
+            outputLog(f"[ERROR(text)] {summary_text}")
+
             return {
                 'success': False,
                 'cookies': {},
                 'error_type': 'API_ERROR',
-                'error_message': error_summary,
+                'error_message': summary_text,
                 'response_body': (r.text or "")[:500]
             }
 
@@ -1369,7 +1403,15 @@ class TwitterAPI:
                 response_text = response.text or ""
             except Exception:
                 response_text = ""
-            self.last_error_summary = f"HOME_TIMELINE {self._classify_api_failure(response.status_code, response_text)}"
+
+            #self.last_error_summary = f"HOME_TIMELINE {self._classify_api_failure(response.status_code, response_text)}"
+            summary_type, summary_text = self._classify_api_failure(
+                response.status_code,
+                response_text
+            )
+            self.last_summary_type = summary_type
+            self.last_error_summary = f"HOME_TIMELINE | {summary_text}"
+
             self._log_http_failure("HOME_TIMELINE", url, response)
             return False
         except Exception as e:
@@ -1501,8 +1543,16 @@ class TwitterAPI:
                     response_text = response.text or ""
                 except Exception:
                     response_text = ""
-                classified = self._classify_api_failure(response.status_code, response_text, "")
-                self.last_error_summary = f"IMPRESSION {classified}"
+
+#                classified = self._classify_api_failure(response.status_code, response_text, "")
+#                self.last_error_summary = f"IMPRESSION {classified}"
+                summary_type, summary_text = self._classify_api_failure(
+                    response.status_code,
+                    response_text
+                )
+                self.last_summary_type = summary_type
+                self.last_error_summary = f"IMPRESSION | {summary_text}"
+
             except Exception as e:
                 outputLog(f"[WARN] IMPRESSION exception: url={url} error={type(e).__name__}: {e}")
                 self.last_error_summary = f"IMPRESSION exception: {type(e).__name__}: {e}"
@@ -1697,6 +1747,7 @@ class TwitterAPI:
 
         if not results['impression']:
             results['impression_reason'] = self.last_error_summary or "IMPRESSION returned False without explicit API error"
+            results['impression_error_type'] = self.last_summary_type
 
         if screen_name and random.random() < 0.5:
             await self._wait_natural(1.0, 2.0)
@@ -1708,6 +1759,7 @@ class TwitterAPI:
         results['retweet'] = await self.retweet_tweet(tweet_id, session, referer=ref)
         if not results['retweet']:
             results['retweet_reason'] = self.last_error_summary or "retweet returned False without explicit API error"
+            results['retweet_error_type'] = self.last_summary_type
 
         await self._wait_natural(2.0, 4.0)
         return results
@@ -1821,6 +1873,7 @@ class TwitterAPI:
 
         if not results['impression']:
             results['impression_reason'] = self.last_error_summary or "IMPRESSION returned False without explicit API error"
+            results['impression_error_type'] = self.last_summary_type
 
         if route == "detail" and screen_name and random.random() < 0.5:
             await self._wait_natural(1.0, 2.0)
@@ -1840,11 +1893,13 @@ class TwitterAPI:
                 results['like'] = await self.like_tweet(tweet_id, session, referer=ref)
                 if not results['like']:
                     results['like_reason'] = self.last_error_summary or "like returned False without explicit API error"
+                    results['like_error_type'] = self.last_summary_type
                 await self._wait_natural(1.5, 3.0)
             elif act == "bookmark":
                 results['bookmark'] = await self.bookmark_tweet(tweet_id, session, referer=ref)
                 if not results['bookmark']:
                     results['bookmark_reason'] = self.last_error_summary or "bookmark returned False without explicit API error"
+                    results['bookmark_error_type'] = self.last_summary_type
                 await self._wait_natural(0.5, 1.5)
 
         await self._wait_natural(2.0, 4.0)

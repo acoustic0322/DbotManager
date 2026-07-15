@@ -1,0 +1,1 @@
+python tweet.py mode=get_cookie account_id=1

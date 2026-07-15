@@ -755,6 +755,95 @@ def get_check_account_list(id):
         connection.close()        
 
 # ツイート履歴をデータベースに保存する関数
+
+def save_tweet_history_twitter_api(account_id, comment_id, mode, target_tweet_id , result , error_type , error_log):
+    connection = None
+    try:
+        connection = pymysql.connect(
+            host=config.db_host,
+            user='root',
+            password='abcd1234',
+            database='d_bot',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor         
+        )
+        
+        # --- 修正ポイント1：安全に文字列化して判定 ---
+ #       error_type = ""
+ #       log_text = str(error_log) if error_log else ""
+
+#        outputLog(f"log_text={log_text}")
+
+#        if "Your account is temporarily locked" in log_text:
+#            error_type = "lock"
+#        elif "The user used for authentication is suspended" in log_text:
+#            error_type = "suspention"
+#        elif '"status": 401' in log_text or "Could not authenticate you" in log_text:
+#            error_type = "unauthorized"
+
+#        outputLog(f"error_type={error_type}")
+
+        with connection.cursor() as cursor:
+            # 1. 履歴の保存
+            sql = """
+                INSERT INTO tweet_history (account_id, comment_id, mode, target_tweet_id, updatetime , result , error_log , error_type)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, (account_id, comment_id, mode, target_tweet_id, datetime.now(), result , error_log , error_type ))
+            connection.commit()
+
+            # --- 修正ポイント2：INSERT ... ON DUPLICATE KEY UPDATE を使用 ---
+            if error_type:
+                error_sql = """
+                    INSERT INTO account_error_log (account_id, user_id, error_type, error_log, updatetime)
+                    SELECT %s, am.user_id, %s, %s, NOW()
+                    FROM account_master am WHERE am.id = %s
+                    ON DUPLICATE KEY UPDATE 
+                        user_id = VALUES(user_id),
+                        error_type = VALUES(error_type), 
+                        error_log = VALUES(error_log), 
+                        updatetime = NOW()
+                """
+                cursor.execute(error_sql, (account_id, error_type, error_log, account_id))
+                connection.commit()
+
+	    # 2026.04.04 Start account_masterのフラグ更新
+#            if error_type == 'lock':
+            if error_type == "ACCOUNT_LOCKED_OR_CHALLENGE_REQUIRED":
+                outputLog(f"lock account_id={account_id}")
+                error_sql = """ UPDATE account_master SET is_locked = 1 WHERE id = %s """
+                cursor.execute(error_sql, (account_id,))
+                connection.commit()
+
+#            if error_type == 'suspention':
+            elif error_type == "ACCOUNT_SUSPENDED_DEACTIVATED_OR_OFFBOARDED":                
+                outputLog(f"suspention account_id={account_id}")
+                error_sql = """ UPDATE account_master SET is_suspended = 1 WHERE id = %s """
+                cursor.execute(error_sql, (account_id,))
+                connection.commit()
+
+#            if error_type == 'unauthorized':
+            elif error_type == "TOKEN_EXPIRED_OR_INVALID":                
+                outputLog(f"unauthorized account_id={account_id}")
+                error_sql = """ UPDATE account_master SET is_unauthorized = 1 WHERE id = %s """
+                cursor.execute(error_sql, (account_id,))
+                connection.commit()
+
+            elif error_type == "TOKEN_EXPIRED_OR_INVALID":                
+                outputLog(f"is_cookie_expired  account_id={account_id}")
+                error_sql = """ UPDATE account_master SET is_cookie_expired = 1 WHERE id = %s """
+                cursor.execute(error_sql, (account_id,))
+                connection.commit()
+                
+	    # 2026.04.04 End account_masterのフラグ更新
+
+    except Exception as ex:
+        # DB周りでエラーが起きてもプログラム全体を落とさない
+        outputLog(f"save_tweet_history DB Error: {str(ex)}")
+    finally:
+        if connection:
+            connection.close()
+
 def save_tweet_history(account_id, comment_id, mode, target_tweet_id , result , error_log , result2 = None , error_log2 = None):
     connection = None
     try:

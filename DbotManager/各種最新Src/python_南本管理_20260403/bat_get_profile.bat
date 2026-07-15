@@ -1,1 +1,0 @@
-python tweet.py mode=get_profile account_id=940

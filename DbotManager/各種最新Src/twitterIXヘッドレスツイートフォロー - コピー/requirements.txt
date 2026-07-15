@@ -1,9 +1,0 @@
-wikit
-pandas
-loguru
-streamlit
-watchdog
-google-generativeai
-requests
-pymysql
-psycopg2-binary

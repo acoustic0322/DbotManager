@@ -1,1 +1,0 @@
-python tweet.py mode=reply account_id=1 comment_id=0 tweet_id=1984199739060183221 debug=True 

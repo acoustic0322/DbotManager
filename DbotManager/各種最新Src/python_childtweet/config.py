@@ -8,6 +8,8 @@ import inspect
 import pytz
 #from dateutil import parser  # dateutilを使用
 
+import inspect
+
 def convert_tweet_datetime(iso_format_date):
 
 #    try:
@@ -70,6 +72,35 @@ def convert_tweet_datetime2(tweet_datetime_str):
 
 def outputLog(message):
 
+    # 呼び出し元情報
+    caller_frame = inspect.currentframe().f_back
+    caller_info = inspect.getframeinfo(caller_frame)
+
+    file_name = os.path.basename(caller_info.filename)
+    function_name = caller_info.function
+    line_number = caller_info.lineno
+
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    log_message = (
+        f"[{current_time}]"
+        f"[{file_name} - {function_name} - Line {line_number}] "
+        f"{message}"
+    )
+
+    # ログフォルダ作成
+    os.makedirs(log_dir, exist_ok=True)
+
+    # 日付ごとのログファイル
+    log_file = os.path.join(
+        log_dir,
+        f"pylog_{datetime.now().strftime('%Y%m%d')}.log"
+    )
+
+    # ファイルへ追記
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(str(log_message) + "\n")
+
     if debug == False:
         return
 
@@ -103,6 +134,7 @@ config.read(config_file, encoding="utf-8")
 media_dir = config.get("Paths", "media_dir", fallback=os.path.dirname(os.path.abspath(__file__)))
 #media_dir = "D:\DbotManager\DbotManager\bin\Debug\python\upload"
 #print("media_dir=",media_dir)
+log_dir = config.get("Paths", "log_dir", fallback=os.path.dirname(os.path.abspath(__file__)))
 
 debug = True
 
