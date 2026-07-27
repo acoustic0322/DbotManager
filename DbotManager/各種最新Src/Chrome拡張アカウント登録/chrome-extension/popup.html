@@ -1,1 +1,98 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>X Account Sync</title><link rel="stylesheet" href="popup.css"></head><body><main><h1>X Account Sync</h1><section class="summary"><div><span>ユーザー名</span><strong id="screenName">未取得</strong></div><div><span>表示名</span><strong id="displayName">未取得</strong></div><div><span>Twitter User ID</span><strong id="twitterUserId">未取得</strong></div><div><span>auth_token</span><strong id="authTokenState">未取得</strong></div><div><span>ct0</span><strong id="ct0State">未取得</strong></div></section><button id="captureButton" class="primary">X情報を取得</button><div class="button-row"><button id="addButton" disabled>アカウント追加</button><button id="updateButton" disabled>アカウント更新</button></div><button id="settingsButton" class="secondary">接続設定を開く</button><p id="status" class="status"></p><details><summary>取得JSONを表示</summary><pre id="output">{}</pre></details></main><script src="popup.js"></script></body></html>
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>DBot X アカウント管理</title>
+
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+
+    <main>
+
+        <h1>DBot X アカウント管理</h1>
+
+        <div id="version" class="version">
+            Version 1.0.0
+        </div>
+
+        <section class="summary">
+
+            <div>
+                <span>ユーザー名</span>
+                <strong id="screenName">未取得</strong>
+            </div>
+
+            <div>
+                <span>表示名</span>
+                <strong id="displayName">未取得</strong>
+            </div>
+
+        </section>
+
+        <!-- Versionダブルクリックで表示 -->
+        <section id="adminPanel" class="summary" hidden>
+
+            <div>
+                <span>Twitter User ID</span>
+                <strong id="twitterUserId">未取得</strong>
+            </div>
+
+            <div>
+                <span>auth_token</span>
+                <strong id="authTokenState">未取得</strong>
+            </div>
+
+            <div>
+                <span>ct0</span>
+                <strong id="ct0State">未取得</strong>
+            </div>
+
+        </section>
+
+        <button type="button" id="captureButton" class="primary">
+            X情報を取得
+        </button>
+
+        <div class="button-row">
+
+            <button type="button" id="addButton" disabled>
+                アカウント追加
+            </button>
+
+            <button type="button" id="updateButton" disabled>
+                アカウント更新
+            </button>
+
+        </div>
+
+        <hr>
+
+        <button type="button" id="settingsButton" class="secondary">
+            接続設定を開く
+        </button>
+
+        <p id="status" class="status">
+            「X情報を取得」を押してください。
+        </p>
+
+        <!-- Versionダブルクリックで表示 -->
+        <details id="jsonPanel" hidden>
+
+            <summary>取得JSONを表示</summary>
+
+            <pre id="output">{}</pre>
+
+        </details>
+
+    </main>
+
+    <script src="popup.js"></script>
+
+</body>
+
+</html>

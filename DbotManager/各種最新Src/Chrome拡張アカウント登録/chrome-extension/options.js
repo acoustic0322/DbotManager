@@ -1,1 +1,82 @@
-"use strict";const apiUrl=document.getElementById('apiUrl'),apiToken=document.getElementById('apiToken'),userId=document.getElementById('userId'),password=document.getElementById('password'),statusElement=document.getElementById('status');function setStatus(m,t=''){statusElement.textContent=m;statusElement.className=t}function norm(v){return String(v||'').trim().replace(/\/+$/,'')}async function load(){const s=await chrome.storage.local.get({apiUrl:'https://d-bot.happywinds.net',apiToken:'',userId:'',password:''});apiUrl.value=s.apiUrl;apiToken.value=s.apiToken;userId.value=s.userId;password.value=s.password}async function save(){const v={apiUrl:norm(apiUrl.value),apiToken:apiToken.value.trim(),userId:userId.value.trim(),password:password.value};await chrome.storage.local.set(v);setStatus('設定を保存しました。','success');return v}document.getElementById('saveButton').addEventListener('click',async()=>{try{await save()}catch(e){setStatus(e.message,'error')}});document.getElementById('testButton').addEventListener('click',async()=>{try{const v=await save();const r=await fetch(v.apiUrl+'/health');if(!r.ok)throw new Error(`接続テストに失敗しました: HTTP ${r.status}`);const j=await r.json();if(j.status!=='ok')throw new Error('APIから想定外の応答が返されました。');setStatus('接続OKです。','success')}catch(e){setStatus(e.message,'error')}});load();
+"use strict";
+
+/* ==========================================
+ * 画面部品
+ * ========================================== */
+
+const userId = document.getElementById("userId");
+const password = document.getElementById("password");
+
+const saveButton = document.getElementById("saveButton");
+const statusElement = document.getElementById("status");
+
+/* ==========================================
+ * 共通関数
+ * ========================================== */
+
+/**
+ * ステータス表示
+ */
+function setStatus(message, type = "") {
+    statusElement.textContent = message;
+    statusElement.className = type;
+}
+
+/* ==========================================
+ * 設定読込
+ * ========================================== */
+
+async function loadSettings() {
+
+    const settings = await chrome.storage.local.get({
+        userId: "",
+        password: ""
+    });
+
+    userId.value = settings.userId;
+    password.value = settings.password;
+}
+
+/* ==========================================
+ * 設定保存
+ * ========================================== */
+
+async function saveSettings() {
+
+    await chrome.storage.local.set({
+
+        userId: userId.value.trim(),
+        password: password.value
+
+    });
+
+    setStatus("設定を保存しました。", "success");
+}
+
+/* ==========================================
+ * イベント
+ * ========================================== */
+
+saveButton.addEventListener("click", async () => {
+
+    try {
+
+        await saveSettings();
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        setStatus(
+            error.message || "保存に失敗しました。",
+            "error"
+        );
+    }
+});
+
+/* ==========================================
+ * 初期化
+ * ========================================== */
+
+loadSettings();

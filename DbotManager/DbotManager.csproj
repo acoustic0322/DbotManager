@@ -198,6 +198,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="各種最新Src\Chrome拡張アカウント登録\chrome-extension\manifest.json" />
+    <None Include="各種最新Src\Chrome拡張アカウント登録\README.md" />
+    <None Include="各種最新Src\Chrome拡張アカウント登録\server_0727\.env.example" />
+    <None Include="各種最新Src\Chrome拡張アカウント登録\server_0727\run_server.bat" />
     <None Include="各種最新Src\d-bot_childtweet\check_refresh.bat" />
     <None Include="各種最新Src\d-bot_childtweet\child_tweet.bat" />
     <None Include="各種最新Src\d-bot_childtweet\config.ini" />
@@ -251,6 +255,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\chrome-extension\options.css" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\chrome-extension\options.html" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\chrome-extension\options.js" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\chrome-extension\popup.css" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\chrome-extension\popup.html" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\chrome-extension\popup.js" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\server_0727\app.py" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\server_0727\requirements.txt" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\server_0727\test_queries.sql" />
+    <Content Include="各種最新Src\Chrome拡張アカウント登録\新規 テキスト ドキュメント.txt" />
     <Content Include="各種最新Src\d-bot_childtweet\child_tweet.py" />
     <Content Include="各種最新Src\d-bot_childtweet\config.py" />
     <Content Include="各種最新Src\d-bot_childtweet\mysql.py" />
