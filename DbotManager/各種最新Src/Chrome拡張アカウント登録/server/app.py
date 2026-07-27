@@ -233,25 +233,31 @@ def add_account(req: AccountRequest):
                 cursor.execute(
                     """
                     SELECT
-                        id
+                        user_id
                     FROM
                         account_master
                     WHERE
-                        user_id = %s
-                        AND twitter_user_id = %s
+                        twitter_user_id = %s
                     LIMIT 1
                     """,
-                    (
-                        str(user_id),
-                        account.twitter_user_id,
-                    ),
+                    (account.twitter_user_id,),
                 )
 
-                if cursor.fetchone():
-                    raise HTTPException(
-                        409,
-                        "このXアカウントは既に登録されています。",
-                    )
+                owner = cursor.fetchone()
+
+                if owner:
+                    print(owner["user_id"])
+                    print(user_id)
+                    if int(owner["user_id"]) == int(user_id):
+                        raise HTTPException(
+                            409,
+                            "このXアカウントは既に登録されています。",
+                        )
+                    else:
+                        raise HTTPException(
+                            409,
+                            "このXアカウントは他のユーザーに登録されています。",
+                        )
 
                 cursor.execute(
                     """
@@ -385,6 +391,30 @@ def update_account(req: AccountRequest):
 
             with connection.cursor() as cursor:
 
+                # 他ユーザーが所有していないかチェック
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        user_id
+                    FROM
+                        account_master
+                    WHERE
+                        twitter_user_id = %s
+                    LIMIT 1
+                    """,
+                    (account.twitter_user_id,),
+                )
+
+                owner = cursor.fetchone()
+
+                if owner and int(owner["user_id"]) != int(user_id):
+                    raise HTTPException(
+                        409,
+                        "このXアカウントは他のユーザーに登録されています。",
+                    )
+
+                # 更新対象を取得
                 cursor.execute(
                     """
                     SELECT

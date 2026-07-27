@@ -28,10 +28,17 @@ function setStatus(message, type = "") {
 
 async function loadSettings() {
 
+    const settings = await chrome.storage.sync.get([
+        "userId",
+        "password"
+    ]);
+
+/*
     const settings = await chrome.storage.local.get({
         userId: "",
         password: ""
     });
+*/
 
     userId.value = settings.userId;
     password.value = settings.password;
@@ -43,12 +50,18 @@ async function loadSettings() {
 
 async function saveSettings() {
 
+    await chrome.storage.sync.set({
+        userId: userId.value.trim(),
+        password: password.value
+    });
+
+/*
     await chrome.storage.local.set({
 
         userId: userId.value.trim(),
         password: password.value
-
     });
+*/
 
     setStatus("設定を保存しました。", "success");
 }

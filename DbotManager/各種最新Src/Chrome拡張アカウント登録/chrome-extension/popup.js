@@ -46,10 +46,17 @@ function setStatus(message, type = "") {
  * 接続設定取得
  */
 async function getSettings() {
+
+    return chrome.storage.sync.get({
+        userId: "",
+        password: ""
+    });
+/*
     return chrome.storage.local.get({
         userId: "",
         password: ""
     });
+*/
 }
 
 /**
@@ -305,8 +312,6 @@ async function captureSession() {
     }
     catch (error) {
 
-        console.error(error);
-
         capturedData = null;
 
         setActionButtonsEnabled(false);
@@ -367,7 +372,7 @@ async function postAccount(apiPath) {
     const settings = await getSettings();
 
     if (!settings.userId || !settings.password) {
-        throw new Error("接続設定を入力してください。");
+        throw new Error("ユーザー設定を入力してください。");
     }
 
     const response = await fetch(`${API_URL}${apiPath}`, {
@@ -433,9 +438,6 @@ addButton.addEventListener("click", async () => {
         await addAccount();
     }
     catch (error) {
-
-        console.error(error);
-
         setStatus(error.message, "error");
     }
 });
@@ -446,9 +448,6 @@ updateButton.addEventListener("click", async () => {
         await updateAccount();
     }
     catch (error) {
-
-        console.error(error);
-
         setStatus(error.message, "error");
     }
 });
