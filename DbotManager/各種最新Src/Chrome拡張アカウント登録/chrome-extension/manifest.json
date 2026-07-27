@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "X Account Sync",
+  "version": "2.0.0",
+  "description": "XのCookie・アカウント情報を取得し、account_masterへ追加・更新します。",
+  "permissions": ["cookies", "storage", "tabs", "scripting", "activeTab"],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://d-bot.happywinds.net/*",
+    "http://127.0.0.1:8000/*",
+    "http://localhost:8000/*"
+  ],
+  "action": {"default_title": "X Account Sync", "default_popup": "popup.html"},
+  "options_page": "options.html"
+}
