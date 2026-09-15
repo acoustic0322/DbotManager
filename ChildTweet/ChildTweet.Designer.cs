@@ -102,6 +102,7 @@
             Name = "ChildTweet";
             Text = "ChildTweet";
             Load += ChildTweet_Load;
+            Load += ApplyVersionToTitle;
             ResumeLayout(false);
             PerformLayout();
         }

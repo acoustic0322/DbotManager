@@ -282,7 +282,15 @@ namespace ChildTweet
                 .OrderBy(_ => _rand.Value.Next())
                 .ToList() ?? new List<int>();
 
-            if (orderRepostList.Count == 0) return;
+            if (orderRepostList.Count == 0)
+            {
+                if (req.repost_count > 0)
+                    _log($"⚠ リポスト未達 成功=0/{req.repost_count} 候補アカウントなし");
+                else
+                    _log("✔ リポスト処理なし 成功=0/0");
+
+                return;
+            }
 
             var 並列閾値list = new List<int>();
             int p = PARALLEL_COUNT; // 20
@@ -294,7 +302,7 @@ namespace ChildTweet
             並列閾値list.Add(1);
 
             _log(
-                $"🔁 成功目標 repost={req.repost_list.Count}件" +
+                $"🔁 成功目標 repost={req.repost_count}件" +
                 $"並列数初期値={PARALLEL_COUNT}件 " +
                 $"対象アカウント数={req.repost_list.Count}件");
 
@@ -334,12 +342,29 @@ namespace ChildTweet
                         counter,
                         処理カウント);
 
+                    _log(
+                        $"🔁 並列処理 STEP{step} 完了 " +
+                        $"成功={Volatile.Read(ref counter.Repost)}/{処理カウント} " +
+                        $"残り候補={accountQueue.Count}");
+
                     step++;
+                }
+
+                int successCount = Volatile.Read(ref counter.Repost);
+                if (successCount >= 処理カウント)
+                {
+                    _log($"✔ リポスト完了 成功={successCount}/{処理カウント}");
+                }
+                else
+                {
+                    _log(
+                        $"⚠ リポスト未達 成功={successCount}/{処理カウント} " +
+                        $"残り候補={accountQueue.Count}");
                 }
             }
             catch (Exception ex)
             {
-                _log(ex.ToString());
+                _log($"❌ リポスト処理異常終了 {ex}");
             }
 
 
@@ -350,6 +375,7 @@ namespace ChildTweet
             public int Like;
             public int Bookmark;
             public int Repost;
+            public int RepostInFlight;
         }
 
         private async Task ExecuteParallelPhase(
@@ -390,6 +416,31 @@ namespace ChildTweet
                             return;
                         }
 
+                        // リポストは成功数だけで停止判定すると、複数ワーカーが同時に
+                        // 判定を通過して指定件数より多く実行されるため、実行中の件数も
+                        // 含めて枠を確保する。
+                        bool repostSlotReserved = false;
+                        if (useRepost)
+                        {
+                            while (true)
+                            {
+                                int completed = Volatile.Read(ref counter.Repost);
+                                int inFlight = Volatile.Read(ref counter.RepostInFlight);
+
+                                if (completed + inFlight >= targetCount)
+                                    return;
+
+                                if (Interlocked.CompareExchange(
+                                        ref counter.RepostInFlight,
+                                        inFlight + 1,
+                                        inFlight) == inFlight)
+                                {
+                                    repostSlotReserved = true;
+                                    break;
+                                }
+                            }
+                        }
+
                         /*
                         if (Volatile.Read(ref counter.Like) >= targetCount &&
                             Volatile.Read(ref counter.Bookmark) >= targetCount)
@@ -400,6 +451,9 @@ namespace ChildTweet
 
                         if (!accountQueue.TryDequeue(out int accountId))
                         {
+                            if (repostSlotReserved)
+                                Interlocked.Decrement(ref counter.RepostInFlight);
+
                             _log($"accountQueue が空です (accountId={accountId})");
                             return;
                         }
@@ -513,6 +567,11 @@ namespace ChildTweet
                         {
                             _log(
                                 $"AccountId={accountId} Error={ex.Message}");
+                        }
+                        finally
+                        {
+                            if (repostSlotReserved)
+                                Interlocked.Decrement(ref counter.RepostInFlight);
                         }
                     }
                 }))

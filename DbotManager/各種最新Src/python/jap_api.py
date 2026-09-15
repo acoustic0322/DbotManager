@@ -12,7 +12,9 @@ def proc_like_jap(tweet_name, tweet_id , jap_api_key, quantity = 10):
     api_url = 'https://justanotherpanel.com/api/v2'
 
     action = 'add'            # アクションタイプ
-    service_id = '7743'  # Japan Likes専用サービスID
+#    service_id = '7743'  # Japan Likes専用サービスID
+    service_id = '10189'  # Japan Likes専用サービスID 2026.09.02更新
+
 
     link = f'https://x.com/{tweet_name}/status/{tweet_id}'
 
@@ -243,7 +245,7 @@ def proc_detail_jap(tweet_name, tweet_id , jap_api_key , quantity = 10):
 def get_available_service_id(api_key):
     """ 利用可能な service_id を取得する """
     api_url = 'https://justanotherpanel.com/api/v2'
-    response = requests.get(api_url, params={'key': api_key, 'action': 'services'})
+    response = requests.post(api_url, data={'key': api_key, 'action': 'services'})
     
     if response.status_code == 200:
         try:

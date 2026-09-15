@@ -147,7 +147,7 @@ def proc_repost_jap(tweet_name, tweet_id , jap_api_key , quantity = 10):
 def get_available_service_id(api_key):
     """ 利用可能な service_id を取得する """
     api_url = 'https://justanotherpanel.com/api/v2'
-    response = requests.get(api_url, params={'key': api_key, 'action': 'services'})
+    response = requests.post(api_url, data={'key': api_key, 'action': 'services'})
     
     if response.status_code == 200:
         try:

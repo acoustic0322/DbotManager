@@ -28,6 +28,8 @@ namespace DbotManager
 
     public partial class Form : System.Windows.Forms.Form
     {
+        private const string Version = "1.21.0";
+
         TweetTask _tweetTask;
         DiscordTask _discordTask;
         ReserveTask _reserveTask;
@@ -55,6 +57,7 @@ namespace DbotManager
         public Form(string[] args)
         {
             InitializeComponent();
+            this.Text = $"DbotManager Ver.{Version}";
 
 
             DbConnection.MachineName = "203.137.53.205";
